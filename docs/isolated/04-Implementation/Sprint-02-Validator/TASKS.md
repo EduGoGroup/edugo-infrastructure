@@ -1,419 +1,190 @@
-# Tareas: Sprint-02-Validator
+# TASKS - Sprint-02-Validator
 
-**Sprint:** Sprint-02-Validator  
-**Duración:** 2-3 horas
+## ✅ Fase 1 - COMPLETADAS
 
----
+### Implementación de validator.go
 
-## TASK-001: Crear schemas/validator.go
+- [x] **Estructura EventValidator**
+  - [x] Struct con cache de schemas en memoria
+  - [x] Map[string]*gojsonschema.Schema para lookups rápidos
 
-**Descripción:** Implementar validador de eventos con JSON Schema
+- [x] **Constructor NewEventValidator()**
+  - [x] Carga automática de 4 schemas
+  - [x] Schemas embebidos con `//go:embed events/*.json`
+  - [x] Error handling si falla carga de schema
 
-**Pasos:**
+- [x] **Método: loadSchema()**
+  - [x] Lee schema desde embed.FS
+  - [x] Compila schema con gojsonschema
+  - [x] Almacena en cache con key "event_type:version"
 
-1. Crear archivo `schemas/validator.go`
+- [x] **Método: Validate()**
+  - [x] Auto-detect event_type desde evento
+  - [x] Auto-detect event_version desde evento
+  - [x] Validación de campos requeridos (event_type, event_version)
+  - [x] Delega a ValidateWithType()
 
-```go
-package schemas
+- [x] **Método: ValidateWithType()**
+  - [x] Validación explícita con tipo y versión
+  - [x] Lookup de schema en cache
+  - [x] Error si schema no encontrado
+  - [x] Ejecuta validación con gojsonschema
+  - [x] Mensajes de error detallados con lista de violaciones
 
-import (
-    "embed"
-    "fmt"
-    "sync"
+- [x] **Método: ValidateJSON()**
+  - [x] Acepta JSON bytes (útil para RabbitMQ consumers)
+  - [x] Validación desde bytes sin parsing a Go struct
+  - [x] Misma lógica de validación
 
-    "github.com/xeipuuv/gojsonschema"
-)
+- [x] **Schemas embebidos**
+  - [x] material.uploaded v1.0
+  - [x] assessment.generated v1.0
+  - [x] material.deleted v1.0
+  - [x] student.enrolled v1.0
 
-//go:embed events/*.schema.json
-var schemaFiles embed.FS
+### Tests de Validación
 
-// Validator valida eventos contra JSON Schemas
-type Validator struct {
-    schemas map[string]*gojsonschema.Schema
-    mu      sync.RWMutex
-}
+- [x] **TestMaterialUploadedValidation**
+  - [x] Caso válido: evento con todos los campos correctos
+  - [x] UUIDs generados con uuid.New()
+  - [x] Caso inválido: evento con campos faltantes
+  - [x] Validar que evento inválido es rechazado
 
-// NewValidator crea un nuevo validador cargando todos los schemas
-func NewValidator() (*Validator, error) {
-    v := &Validator{
-        schemas: make(map[string]*gojsonschema.Schema),
-    }
+- [x] **TestValidateJSON**
+  - [x] Validación desde JSON bytes
+  - [x] Evento assessment.generated
+  - [x] Formato JSON bien formado
+  - [x] Validar que evento válido es aceptado
 
-    // Cargar todos los schemas
-    entries, err := schemaFiles.ReadDir("events")
-    if err != nil {
-        return nil, fmt.Errorf("error reading schemas directory: %w", err)
-    }
+### Documentación
 
-    for _, entry := range entries {
-        if entry.IsDir() {
-            continue
-        }
-
-        // Leer schema file
-        schemaData, err := schemaFiles.ReadFile("events/" + entry.Name())
-        if err != nil {
-            return nil, fmt.Errorf("error reading schema %s: %w", entry.Name(), err)
-        }
-
-        // Parsear schema
-        schemaLoader := gojsonschema.NewBytesLoader(schemaData)
-        schema, err := gojsonschema.NewSchema(schemaLoader)
-        if err != nil {
-            return nil, fmt.Errorf("error parsing schema %s: %w", entry.Name(), err)
-        }
-
-        // Extraer nombre del schema (sin extensión)
-        // material-uploaded-v1.schema.json → material-uploaded-v1
-        schemaName := entry.Name()
-        schemaName = schemaName[:len(schemaName)-len(".schema.json")]
-
-        v.schemas[schemaName] = schema
-    }
-
-    return v, nil
-}
-
-// Validate valida un evento contra un schema específico
-func (v *Validator) Validate(event interface{}, schemaName string) error {
-    v.mu.RLock()
-    schema, exists := v.schemas[schemaName]
-    v.mu.RUnlock()
-
-    if !exists {
-        return fmt.Errorf("schema not found: %s", schemaName)
-    }
-
-    // Validar
-    documentLoader := gojsonschema.NewGoLoader(event)
-    result, err := schema.Validate(documentLoader)
-    if err != nil {
-        return fmt.Errorf("validation error: %w", err)
-    }
-
-    if !result.Valid() {
-        // Construir error con todos los problemas
-        errMsg := "validation failed:"
-        for _, err := range result.Errors() {
-            errMsg += fmt.Sprintf("\n  - %s", err.String())
-        }
-        return fmt.Errorf("%s", errMsg)
-    }
-
-    return nil
-}
-
-// ListSchemas retorna lista de schemas disponibles
-func (v *Validator) ListSchemas() []string {
-    v.mu.RLock()
-    defer v.mu.RUnlock()
-
-    schemas := make([]string, 0, len(v.schemas))
-    for name := range v.schemas {
-        schemas = append(schemas, name)
-    }
-    return schemas
-}
-```
-
-2. Actualizar `schemas/go.mod`
-
-```go
-module github.com/EduGoGroup/edugo-infrastructure/schemas
-
-go 1.24
-
-require (
-    github.com/xeipuuv/gojsonschema v1.2.0
-)
-```
-
-3. Ejecutar `go mod tidy`
-
-**Estimación:** 60 minutos
+- [x] Comentarios inline en código
+- [x] README.md del sprint con ejemplos de uso
+- [x] PHASE2_BRIDGE.md con pendientes
+- [x] Ejemplos en README principal
 
 ---
 
-## TASK-002: Crear tests del validador
+## ⏳ Fase 2 - PENDIENTES
 
-**Descripción:** Tests con eventos válidos e inválidos
+### Tests Exhaustivos
 
-**Pasos:**
+- [ ] **TestMaterialDeletedValidation**
+  - [ ] Happy path: evento válido
+  - [ ] Validar campos: material_id, school_id, teacher_id, deleted_by_id
+  - [ ] Caso inválido: campos faltantes
 
-1. Crear `schemas/validator_test.go`
+- [ ] **TestStudentEnrolledValidation**
+  - [ ] Happy path: evento válido
+  - [ ] Validar campos: student_id, school_id, academic_unit_id, enrollment_date
+  - [ ] Caso inválido: fecha en formato incorrecto
 
-```go
-package schemas
+- [ ] **TestEventTypeValidation**
+  - [ ] event_type faltante → error "event_type faltante o inválido"
+  - [ ] event_version faltante → error "event_version faltante o inválido"
+  - [ ] event_type desconocido → error "schema no encontrado"
 
-import (
-    "testing"
+- [ ] **TestInvalidFormats**
+  - [ ] UUID inválido (ej: "123" en vez de UUID)
+  - [ ] Timestamp en formato incorrecto
+  - [ ] file_url sin prefijo s3://
+  - [ ] file_size_bytes negativo o cero
+  - [ ] questions_count negativo
 
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/require"
-)
+- [ ] **TestPayloadValidation**
+  - [ ] String donde debería ser integer
+  - [ ] Integer donde debería ser string
+  - [ ] Campo extra no definido en schema (verificar comportamiento)
 
-func TestNewValidator(t *testing.T) {
-    validator, err := NewValidator()
-    require.NoError(t, err)
-    require.NotNil(t, validator)
+### Benchmarks
 
-    // Verificar que cargó los 4 schemas
-    schemas := validator.ListSchemas()
-    assert.Len(t, schemas, 4)
-    assert.Contains(t, schemas, "material-uploaded-v1")
-    assert.Contains(t, schemas, "assessment-generated-v1")
-    assert.Contains(t, schemas, "material-deleted-v1")
-    assert.Contains(t, schemas, "student-enrolled-v1")
-}
+- [ ] **BenchmarkValidation**
+  - [ ] Medir tiempo de validación de 1 evento
+  - [ ] Objetivo: <0.1ms por evento
 
-func TestValidator_Validate_ValidEvent(t *testing.T) {
-    validator, err := NewValidator()
-    require.NoError(t, err)
+- [ ] **BenchmarkValidation10k**
+  - [ ] Validar 10,000 eventos
+  - [ ] Objetivo: <1 segundo total
+  - [ ] Verificar que cache funciona (no recarga schemas)
 
-    // Evento válido
-    event := map[string]interface{}{
-        "event_id":      "01JCXYZ123ABC456DEF789GHI",
-        "event_type":    "material.uploaded",
-        "event_version": "1.0",
-        "timestamp":     "2025-11-16T10:00:00Z",
-        "payload": map[string]interface{}{
-            "material_id": "550e8400-e29b-41d4-a716-446655440000",
-            "school_id":   "660e8400-e29b-41d4-a716-446655440001",
-            "teacher_id":  "770e8400-e29b-41d4-a716-446655440002",
-            "unit_id":     "880e8400-e29b-41d4-a716-446655440003",
-            "file_url":    "s3://edugo-materials/test.pdf",
-            "file_size_bytes": 2048000,
-            "file_type":   "application/pdf",
-            "title":       "Test Material",
-        },
-    }
+- [ ] **BenchmarkValidationMemory**
+  - [ ] Medir uso de memoria
+  - [ ] Validar que no hay memory leaks
 
-    err = validator.Validate(event, "material-uploaded-v1")
-    assert.NoError(t, err)
-}
+### Tests de Todos los Schemas
 
-func TestValidator_Validate_InvalidEvent(t *testing.T) {
-    validator, err := NewValidator()
-    require.NoError(t, err)
+- [ ] **material.uploaded v1.0**
+  - [x] Happy path (ya testeado)
+  - [ ] Todos los campos requeridos
+  - [ ] Formatos (UUID, date-time, pattern)
 
-    tests := []struct {
-        name          string
-        event         map[string]interface{}
-        schemaName    string
-        expectedError string
-    }{
-        {
-            name: "missing event_id",
-            event: map[string]interface{}{
-                "event_type": "material.uploaded",
-                "timestamp":  "2025-11-16T10:00:00Z",
-                "payload":    map[string]interface{}{},
-            },
-            schemaName:    "material-uploaded-v1",
-            expectedError: "event_id",
-        },
-        {
-            name: "invalid event_type",
-            event: map[string]interface{}{
-                "event_id":   "01JCXYZ123",
-                "event_type": "wrong.type",
-                "timestamp":  "2025-11-16T10:00:00Z",
-                "payload":    map[string]interface{}{},
-            },
-            schemaName:    "material-uploaded-v1",
-            expectedError: "event_type",
-        },
-        {
-            name: "missing payload fields",
-            event: map[string]interface{}{
-                "event_id":   "01JCXYZ123",
-                "event_type": "material.uploaded",
-                "event_version": "1.0",
-                "timestamp":  "2025-11-16T10:00:00Z",
-                "payload":    map[string]interface{}{
-                    // Falta material_id, file_url, etc.
-                },
-            },
-            schemaName:    "material-uploaded-v1",
-            expectedError: "material_id",
-        },
-    }
+- [ ] **assessment.generated v1.0**
+  - [x] Happy path (ya testeado)
+  - [ ] mongo_document_id formato
+  - [ ] questions_count mínimo
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            err := validator.Validate(tt.event, tt.schemaName)
-            assert.Error(t, err)
-            assert.Contains(t, err.Error(), tt.expectedError)
-        })
-    }
-}
+- [ ] **material.deleted v1.0**
+  - [ ] Happy path
+  - [ ] deleted_by_id requerido
 
-func TestValidator_Validate_SchemaNotFound(t *testing.T) {
-    validator, err := NewValidator()
-    require.NoError(t, err)
+- [ ] **student.enrolled v1.0**
+  - [ ] Happy path
+  - [ ] enrollment_date formato
 
-    event := map[string]interface{}{}
-    err = validator.Validate(event, "non-existent-schema")
-    
-    assert.Error(t, err)
-    assert.Contains(t, err.Error(), "schema not found")
-}
-```
+### Mejoras Futuras
 
-2. Ejecutar tests
-
-```bash
-cd schemas
-go test -v
-```
-
-**Estimación:** 45 minutos
+- [ ] Agregar más eventos según necesidades del proyecto
+- [ ] Versionado de schemas (v2.0, v3.0)
+- [ ] Validación de compatibilidad entre versiones
+- [ ] Cache con TTL (si schemas crecen mucho)
+- [ ] Métrica de validaciones realizadas
+- [ ] Integración con RabbitMQ consumers (ejemplo)
 
 ---
 
-## TASK-003: Crear ejemplo de uso
+## 📊 Métricas
 
-**Descripción:** Documentar cómo integrar en api-mobile y worker
+### Fase 1
+- **Líneas de código:** 130 (validator.go) + 78 (example_test.go) = 208 total
+- **Tests:** 2 tests
+- **Tests passing:** 2/2
+- **Schemas embebidos:** 4
+- **Eventos validados:** 2 de 4 (material.uploaded, assessment.generated)
+- **Cobertura:** 100% de happy paths
 
-**Pasos:**
-
-1. Crear `schemas/examples/validate_event.go`
-
-```go
-package main
-
-import (
-    "encoding/json"
-    "fmt"
-    "log"
-
-    "github.com/EduGoGroup/edugo-infrastructure/schemas"
-)
-
-func main() {
-    // Inicializar validador
-    validator, err := schemas.NewValidator()
-    if err != nil {
-        log.Fatalf("Error creating validator: %v", err)
-    }
-
-    // Ejemplo 1: Validar evento válido
-    validEvent := map[string]interface{}{
-        "event_id":      "01JCXYZ123ABC456DEF789GHI",
-        "event_type":    "material.uploaded",
-        "event_version": "1.0",
-        "timestamp":     "2025-11-16T10:00:00Z",
-        "payload": map[string]interface{}{
-            "material_id":     "550e8400-e29b-41d4-a716-446655440000",
-            "file_url":        "s3://edugo-materials/test.pdf",
-            "file_size_bytes": 2048000,
-            "file_type":       "application/pdf",
-        },
-    }
-
-    if err := validator.Validate(validEvent, "material-uploaded-v1"); err != nil {
-        fmt.Printf("❌ Validation failed: %v\n", err)
-    } else {
-        fmt.Println("✅ Event is valid")
-    }
-
-    // Ejemplo 2: Validar evento inválido
-    invalidEvent := map[string]interface{}{
-        "event_type": "material.uploaded",
-        // Falta event_id, timestamp, payload
-    }
-
-    if err := validator.Validate(invalidEvent, "material-uploaded-v1"); err != nil {
-        fmt.Printf("✅ Correctly detected invalid event: %v\n", err)
-    }
-
-    // Ejemplo 3: Uso en api-mobile (publisher)
-    fmt.Println("\nEjemplo de uso en api-mobile:")
-    fmt.Println("------------------------------")
-    examplePublisher()
-
-    // Ejemplo 4: Uso en worker (consumer)
-    fmt.Println("\nEjemplo de uso en worker:")
-    fmt.Println("-------------------------")
-    exampleConsumer()
-}
-
-func examplePublisher() {
-    code := `
-// En api-mobile al publicar evento
-import "github.com/EduGoGroup/edugo-infrastructure/schemas"
-
-type MaterialPublisher struct {
-    validator *schemas.Validator
-    rabbit    *rabbit.Publisher
-}
-
-func (p *MaterialPublisher) PublishMaterialUploaded(material *Material) error {
-    event := Event{
-        EventID:      generateUUIDv7(),
-        EventType:    "material.uploaded",
-        EventVersion: "1.0",
-        Timestamp:    time.Now(),
-        Payload: map[string]interface{}{
-            "material_id": material.ID,
-            "file_url":    material.FileURL,
-            // ... otros campos
-        },
-    }
-
-    // Validar ANTES de publicar
-    if err := p.validator.Validate(event, "material-uploaded-v1"); err != nil {
-        return fmt.Errorf("invalid event: %w", err)
-    }
-
-    // Publicar evento válido
-    return p.rabbit.Publish("material.uploaded", event)
-}
-`
-    fmt.Println(code)
-}
-
-func exampleConsumer() {
-    code := `
-// En worker al consumir evento
-import "github.com/EduGoGroup/edugo-infrastructure/schemas"
-
-type MaterialConsumer struct {
-    validator *schemas.Validator
-}
-
-func (c *MaterialConsumer) HandleMessage(msg []byte) error {
-    var event Event
-    if err := json.Unmarshal(msg, &event); err != nil {
-        return err
-    }
-
-    // Validar evento recibido
-    if err := c.validator.Validate(event, "material-uploaded-v1"); err != nil {
-        logger.Error("invalid event received", err)
-        // NO reintentar (enviar a DLQ directamente)
-        return nil
-    }
-
-    // Procesar evento válido
-    return c.processMaterial(event.Payload)
-}
-`
-    fmt.Println(code)
-}
-```
-
-2. Documentar en README principal
-
-**Estimación:** 30 minutos
+### Fase 2 (objetivos)
+- **Tests exhaustivos:** 10+
+- **Benchmarks:** 3
+- **Eventos validados:** 4/4
+- **Edge cases validados:** 8+
+- **Cobertura total:** >90%
+- **Performance:** <1s para 10,000 eventos
 
 ---
 
-## ✅ Checklist de Completitud
+## 🔗 Referencias
 
-- [ ] validator.go creado
-- [ ] go.mod actualizado con gojsonschema
-- [ ] Tests con eventos válidos pasan
-- [ ] Tests con eventos inválidos detectan errores
-- [ ] Ejemplo de uso creado
-- [ ] README actualizado
+- Código: `schemas/validator.go`
+- Tests: `schemas/example_test.go`
+- Docs: `README.md`, `PHASE2_BRIDGE.md`
+- JSON Schemas: `schemas/events/`
+- gojsonschema: https://github.com/xeipuuv/gojsonschema
+
+---
+
+## 💡 Notas Técnicas
+
+### Ventajas de la Implementación Actual
+
+- ✅ Schemas embebidos → binario autónomo (no archivos externos)
+- ✅ Cache en memoria → validaciones rápidas
+- ✅ 3 APIs diferentes → flexible para diferentes casos de uso
+- ✅ No requiere servicios externos → fácil de testear
+- ✅ Mensajes de error detallados → debugging sencillo
+
+### Consideraciones
+
+- Actualmente solo 4 eventos → fácil extender agregando schemas
+- gojsonschema es robusto pero tiene overhead → considerar alternativas si performance crítica
+- Cache simple en memoria → OK para <100 schemas
+- Sin versionado automático → considerar para futuro (v1.0 → v2.0)

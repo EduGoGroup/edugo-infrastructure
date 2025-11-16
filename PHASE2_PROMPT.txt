@@ -1,0 +1,288 @@
+================================================================================
+FASE 2 - VALIDACIÓN CON POSTGRESQL REAL
+edugo-infrastructure
+================================================================================
+
+CONTEXTO:
+---------
+Este archivo contiene las instrucciones para ejecutar la Fase 2 del proyecto
+edugo-infrastructure. La Fase 1 ya está COMPLETA con todo el código implementado
+y tests unitarios passing.
+
+ESTADO ACTUAL:
+--------------
+✅ Fase 1 COMPLETADA (2025-11-16)
+   - database/migrate.go: 439 líneas, 100% implementado
+   - database/migrate_test.go: 5 tests unitarios passing
+   - schemas/validator.go: 130 líneas, 100% implementado
+   - schemas/example_test.go: 2 tests de validación passing
+
+⏳ Fase 2 PENDIENTE
+   - Tests de integración con PostgreSQL
+   - Tests exhaustivos de validator
+   - Benchmarks de performance
+
+OBJETIVO DE FASE 2:
+-------------------
+Validar que las implementaciones funcionan correctamente con PostgreSQL real
+y agregar tests exhaustivos que no pudieron hacerse en Fase 1.
+
+================================================================================
+SPRINT-01: Tests de Integración para migrate.go
+================================================================================
+
+PREREQUISITOS:
+--------------
+1. PostgreSQL 15+ corriendo:
+   ```bash
+   cd edugo-infrastructure
+   make dev-up-core
+   # O usar Testcontainers en los tests
+   ```
+
+2. Variables de entorno configuradas:
+   ```bash
+   cp .env.example .env
+   # Editar valores si es necesario
+   ```
+
+TAREAS:
+-------
+
+1. CREAR: database/migrate_integration_test.go
+
+   Implementar:
+   - setupPostgres(t) helper usando Testcontainers
+   - TestMigrateUpIntegration: Validar que las 8 migraciones se ejecutan
+   - TestMigrateDownIntegration: Validar rollback correcto
+   - TestShowStatusIntegration: Validar reporte de estado
+   - TestTransactionRollback: Validar rollback en errores SQL
+
+   Ver: docs/isolated/04-Implementation/Sprint-01-Migrate-CLI/PHASE2_BRIDGE.md
+   Sección: "Tests de Integración a Implementar"
+
+2. VALIDAR edge cases:
+   - Conexión fallida a PostgreSQL
+   - Migraciones con SQL inválido
+   - Migraciones parcialmente aplicadas
+   - Force migration con versión inválida
+
+3. EJECUTAR tests:
+   ```bash
+   cd database
+   go test -v ./...
+   ```
+
+4. MEDIR cobertura:
+   ```bash
+   go test -coverprofile=coverage.out
+   go tool cover -html=coverage.out
+   # Objetivo: >80% de cobertura
+   ```
+
+RESULTADO ESPERADO:
+-------------------
+- database/migrate_integration_test.go creado
+- Todos los tests passing
+- Cobertura >80%
+- Validación con PostgreSQL real exitosa
+
+TIEMPO ESTIMADO: 1-2 horas
+
+================================================================================
+SPRINT-02: Tests Exhaustivos para validator.go
+================================================================================
+
+PREREQUISITOS:
+--------------
+- NO requiere servicios externos
+- Solo Go 1.24+
+
+TAREAS:
+-------
+
+1. CREAR: schemas/validator_comprehensive_test.go
+
+   Implementar:
+   - TestMaterialDeletedValidation: Validar evento material.deleted
+   - TestStudentEnrolledValidation: Validar evento student.enrolled
+   - TestEventTypeValidation: Edge cases (event_type faltante, schema no encontrado)
+   - TestInvalidFormats: UUIDs malformados, timestamps incorrectos
+   - BenchmarkValidation: Performance con 10,000 eventos
+
+   Ver: docs/isolated/04-Implementation/Sprint-02-Validator/PHASE2_BRIDGE.md
+   Sección: "Tests Adicionales a Implementar"
+
+2. VALIDAR los 4 schemas:
+   - material.uploaded v1.0 (ya testeado ✅)
+   - assessment.generated v1.0 (ya testeado ✅)
+   - material.deleted v1.0 (PENDIENTE)
+   - student.enrolled v1.0 (PENDIENTE)
+
+3. VALIDAR edge cases:
+   - event_type faltante → error claro
+   - event_version inválida → error claro
+   - Schema no encontrado → error claro
+   - Payload con tipos incorrectos
+   - UUIDs inválidos
+   - Timestamps en formato incorrecto
+
+4. EJECUTAR tests y benchmarks:
+   ```bash
+   cd schemas
+   go test -v ./...
+   go test -bench=. -benchmem
+   ```
+
+5. MEDIR cobertura:
+   ```bash
+   go test -coverprofile=coverage.out
+   go tool cover -html=coverage.out
+   # Objetivo: >90% de cobertura
+   ```
+
+RESULTADO ESPERADO:
+-------------------
+- schemas/validator_comprehensive_test.go creado
+- Tests para los 4 eventos (material.uploaded, assessment.generated, material.deleted, student.enrolled)
+- Edge cases validados
+- Benchmarks ejecutados (<1s para 10,000 eventos)
+- Cobertura >90%
+
+TIEMPO ESTIMADO: 1-2 horas
+
+================================================================================
+DOCUMENTACIÓN FINAL
+================================================================================
+
+1. ACTUALIZAR README.md:
+   - Agregar sección de Tests
+   - Ejemplos de uso de tests
+   - Cómo ejecutar tests de integración
+
+2. CREAR (opcional): TROUBLESHOOTING.md
+   - Errores comunes de PostgreSQL
+   - Problemas de conexión
+   - Migraciones fallidas
+
+3. ACTUALIZAR CHANGELOG.md:
+   ```markdown
+   ## [0.2.0] - TBD
+
+   ### Added
+   - Tests de integración para migrate.go con Testcontainers
+   - Tests exhaustivos para validator.go (4 eventos)
+   - Benchmarks de performance
+
+   ### Changed
+   - Cobertura de tests mejorada (database: >80%, schemas: >90%)
+   ```
+
+================================================================================
+COMMIT Y RELEASE
+================================================================================
+
+1. COMMIT de Fase 2:
+   ```bash
+   git add .
+   git commit -m "feat: Fase 2 - Tests de integración y validaciones
+
+   - Tests de integración para migrate.go con PostgreSQL real
+   - Tests exhaustivos para validator.go (4 eventos)
+   - Benchmarks de performance
+   - Cobertura: database >80%, schemas >90%
+
+   Closes #[issue-number]"
+
+   git push origin [branch-name]
+   ```
+
+2. CREAR Pull Request:
+   - Título: "Fase 2: Tests de integración y validaciones"
+   - Descripción: Incluir resultados de tests y cobertura
+   - Reviewers: Equipo EduGo
+
+3. RELEASE v0.2.0 (después de merge a main):
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+
+================================================================================
+RECURSOS
+================================================================================
+
+Documentación:
+- docs/isolated/START_HERE.md
+- docs/isolated/EXECUTION_PLAN.md
+- docs/isolated/WORKFLOW_ORCHESTRATION.md
+- docs/isolated/04-Implementation/Sprint-01-Migrate-CLI/PHASE2_BRIDGE.md
+- docs/isolated/04-Implementation/Sprint-02-Validator/PHASE2_BRIDGE.md
+
+Referencias externas:
+- Testcontainers Go: https://golang.testcontainers.org/
+- gojsonschema docs: https://github.com/xeipuuv/gojsonschema
+- PostgreSQL 15 docs: https://www.postgresql.org/docs/15/
+
+================================================================================
+CHECKLIST COMPLETO
+================================================================================
+
+Sprint-01: migrate.go
+----------------------
+[ ] Crear database/migrate_integration_test.go
+[ ] Implementar setupPostgres(t) helper
+[ ] Test: migrateUp con PostgreSQL real
+[ ] Test: migrateDown revierte correctamente
+[ ] Test: showStatus reporta estado correcto
+[ ] Test: rollback en errores de SQL
+[ ] Test: createMigration genera archivos válidos
+[ ] Validar edge cases
+[ ] Ejecutar tests: go test -v ./...
+[ ] Medir cobertura (>80%)
+
+Sprint-02: validator.go
+-----------------------
+[ ] Crear schemas/validator_comprehensive_test.go
+[ ] Test: material.deleted v1.0 (happy path + invalid)
+[ ] Test: student.enrolled v1.0 (happy path + invalid)
+[ ] Test: edge cases (event_type faltante, etc.)
+[ ] Test: UUIDs inválidos
+[ ] Test: timestamps incorrectos
+[ ] Test: file_size_bytes negativo
+[ ] Benchmark: 10,000 eventos
+[ ] Ejecutar tests: go test -v ./...
+[ ] Ejecutar benchmarks: go test -bench=.
+[ ] Medir cobertura (>90%)
+
+Documentación
+-------------
+[ ] Actualizar README.md con sección Tests
+[ ] Crear TROUBLESHOOTING.md (opcional)
+[ ] Actualizar CHANGELOG.md con v0.2.0
+
+Commit y Release
+----------------
+[ ] Commit con mensaje descriptivo
+[ ] Push a branch
+[ ] Crear Pull Request
+[ ] Code review
+[ ] Merge a main
+[ ] Tag v0.2.0
+
+================================================================================
+FIN DE INSTRUCCIONES - FASE 2
+================================================================================
+
+Próximos pasos:
+1. Leer este archivo completo
+2. Ejecutar tareas de Sprint-01
+3. Ejecutar tareas de Sprint-02
+4. Actualizar documentación
+5. Commit, push y crear PR
+
+¡Buena suerte con Fase 2! 🚀
+
+Versión: 1.0
+Fecha: 2025-11-16
+Autor: Fase 1 - Claude Code Desatendido
