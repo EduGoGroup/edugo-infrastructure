@@ -33,7 +33,18 @@ jobs:
         with:
           go-version: '1.24'
       
-      - name: Ejecutar migraciones
+      - name: Validar sintaxis SQL
+        run: |
+          echo "🔍 Validando sintaxis de archivos SQL..."
+          for file in database/migrations/postgres/*.up.sql; do
+            if [ ! -s "$file" ]; then
+              echo "❌ Archivo vacío: $file"
+              exit 1
+            fi
+            echo "✅ $(basename $file)"
+          done
+      
+      - name: Ejecutar migraciones UP
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -45,24 +56,56 @@ jobs:
           cd database
           go mod download
           go run migrate.go up
+      
+      - name: Verificar tablas creadas
+        env:
+          PGPASSWORD: test123
+        run: |
+          echo "🔍 Verificando tablas..."
+          psql -h localhost -U edugo -d edugo_test -c "\dt" | grep -E 'users|schools|materials|assessment'
+          echo "✅ Tablas creadas correctamente"
+      
+      - name: Ejecutar migraciones DOWN
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: edugo_test
+          DB_USER: edugo
+          DB_PASSWORD: test123
+          DB_SSL_MODE: disable
+        run: |
+          cd database
+          for i in {1..8}; do
+            go run migrate.go down || true
+          done
 
   test-modules:
-    name: Tests de Módulos Go
+    name: Tests de Módulos Go (${{ matrix.module }})
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
         module: [database, schemas]
+        go-version: ['1.24', '1.25']
     
     steps:
       - uses: actions/checkout@v4
       
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: ${{ matrix.go-version }}
+      
+      - name: Download dependencies
+        run: |
+          cd ${{ matrix.module }}
+          go mod download
       
       - name: Run tests
         run: |
           cd ${{ matrix.module }}
-          go mod download
-          go test -v ./...
+          go test -v -race -coverprofile=coverage.out ./...
+      
+      - name: Check coverage
+        run: |
+          cd ${{ matrix.module }}
+          go tool cover -func=coverage.out
