@@ -80,3 +80,19 @@
 
 **Mantenedor:** Equipo EduGo  
 **Repositorio:** https://github.com/EduGoGroup/edugo-infrastructure
+
+## [0.1.1] - 2025-11-16
+
+### Added
+- **CONTRIBUTING.md** con guía completa de desarrollo
+- **sync-main-to-dev.yml** workflow de sincronización automática
+- CI/CD mejorado siguiendo patrón de edugo-shared
+
+### Changed
+- **release.yml** ahora valida todos los módulos antes de publicar
+- **ci.yml** con matrix strategy para Go 1.24 y 1.25
+- Release workflow extrae changelog automáticamente
+
+### Documentation
+- Workflow completo documentado: feature → dev → main → tags
+- Convenciones de commits estandarizadas
