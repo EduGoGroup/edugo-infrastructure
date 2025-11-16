@@ -7,6 +7,7 @@ toolchain go1.24.10
 require (
 	github.com/lib/pq v1.10.9
 	github.com/testcontainers/testcontainers-go v0.40.0
+	go.mongodb.org/mongo-driver v1.17.3
 )
 
 require (
