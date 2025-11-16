@@ -2,8 +2,8 @@ package schemas
 
 import (
 	"embed"
+	"errors"
 	"fmt"
-	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -23,15 +23,15 @@ func NewEventValidator() (*EventValidator, error) {
 	}
 
 	// Cargar schemas desde filesystem embebido
-	schemaFiles := []string{
-		"material.uploaded:1.0",
-		"assessment.generated:1.0",
-		"material.deleted:1.0",
-		"student.enrolled:1.0",
+	schemaFiles := map[string]string{
+		"material.uploaded:1.0":    "events/material-uploaded-v1.schema.json",
+		"assessment.generated:1.0": "events/assessment-generated-v1.schema.json",
+		"material.deleted:1.0":     "events/material-deleted-v1.schema.json",
+		"student.enrolled:1.0":     "events/student-enrolled-v1.schema.json",
 	}
 
-	for _, key := range schemaFiles {
-		if err := v.loadSchema(key); err != nil {
+	for key, filename := range schemaFiles {
+		if err := v.loadSchema(key, filename); err != nil {
 			return nil, fmt.Errorf("error cargando schema %s: %w", key, err)
 		}
 	}
@@ -39,10 +39,8 @@ func NewEventValidator() (*EventValidator, error) {
 	return v, nil
 }
 
-func (v *EventValidator) loadSchema(key string) error {
-	filename := getSchemaFilename(key)
-	
-	schemaBytes, err := schemasFS.ReadFile(filepath.Join("events", filename))
+func (v *EventValidator) loadSchema(key, filename string) error {
+	schemaBytes, err := schemasFS.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -62,17 +60,17 @@ func (v *EventValidator) Validate(event interface{}) error {
 	// Extraer event_type y event_version del evento
 	eventMap, ok := event.(map[string]interface{})
 	if !ok {
-		return fmt.Errorf("evento debe ser un objeto JSON")
+		return errors.New("evento debe ser un objeto JSON")
 	}
 
 	eventType, ok := eventMap["event_type"].(string)
 	if !ok {
-		return fmt.Errorf("event_type faltante o inválido")
+		return errors.New("event_type faltante o inválido")
 	}
 
 	eventVersion, ok := eventMap["event_version"].(string)
 	if !ok {
-		return fmt.Errorf("event_version faltante o inválido")
+		return errors.New("event_version faltante o inválido")
 	}
 
 	return v.ValidateWithType(event, eventType, eventVersion)
@@ -81,7 +79,7 @@ func (v *EventValidator) Validate(event interface{}) error {
 // ValidateWithType valida especificando el tipo y versión explícitamente
 func (v *EventValidator) ValidateWithType(event interface{}, eventType, eventVersion string) error {
 	key := fmt.Sprintf("%s:%s", eventType, eventVersion)
-	
+
 	schema, exists := v.schemas[key]
 	if !exists {
 		return fmt.Errorf("schema no encontrado para %s", key)
@@ -94,11 +92,11 @@ func (v *EventValidator) ValidateWithType(event interface{}, eventType, eventVer
 	}
 
 	if !result.Valid() {
-		errMsg := fmt.Sprintf("validación falló para %s:", key)
+		errMsg := "validación falló para " + key + ":"
 		for _, desc := range result.Errors() {
 			errMsg += fmt.Sprintf("\n  - %s", desc)
 		}
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	return nil
@@ -107,7 +105,7 @@ func (v *EventValidator) ValidateWithType(event interface{}, eventType, eventVer
 // ValidateJSON valida un evento en formato JSON bytes
 func (v *EventValidator) ValidateJSON(jsonBytes []byte, eventType, eventVersion string) error {
 	key := fmt.Sprintf("%s:%s", eventType, eventVersion)
-	
+
 	schema, exists := v.schemas[key]
 	if !exists {
 		return fmt.Errorf("schema no encontrado para %s", key)
@@ -120,46 +118,12 @@ func (v *EventValidator) ValidateJSON(jsonBytes []byte, eventType, eventVersion 
 	}
 
 	if !result.Valid() {
-		errMsg := fmt.Sprintf("validación falló para %s:", key)
+		errMsg := "validación falló para " + key + ":"
 		for _, desc := range result.Errors() {
 			errMsg += fmt.Sprintf("\n  - %s", desc)
 		}
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 
 	return nil
-}
-
-func getSchemaFilename(key string) string {
-	// material.uploaded:1.0 → material-uploaded-v1.schema.json
-	parts := splitKey(key)
-	eventType := parts[0]
-	version := parts[1]
-	
-	eventType = replaceAll(eventType, ".", "-")
-	version = replaceAll(version, ".", "")
-	
-	return fmt.Sprintf("%s-v%s.schema.json", eventType, version)
-}
-
-func splitKey(key string) [2]string {
-	for i := len(key) - 1; i >= 0; i-- {
-		if key[i] == ':' {
-			return [2]string{key[:i], key[i+1:]}
-		}
-	}
-	return [2]string{key, ""}
-}
-
-func replaceAll(s, old, new string) string {
-	result := ""
-	for i := 0; i < len(s); i++ {
-		if s[i:i+len(old)] == old {
-			result += new
-			i += len(old) - 1
-		} else {
-			result += string(s[i])
-		}
-	}
-	return result
 }
