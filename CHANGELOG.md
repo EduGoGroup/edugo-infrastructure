@@ -69,9 +69,72 @@
 
 ---
 
-## Próximas Versiones Planeadas
+## [0.3.0] - 2025-11-16 - 🗄️ MONGODB MIGRATIONS RELEASE
 
-### [0.2.0] - 2025-11-16 - 🧪 TESTS & VALIDATION RELEASE
+### Added - database
+
+#### Migraciones MongoDB (6 colecciones)
+- **material_assessment** (001) - Contenido de assessments/quizzes generados por IA
+  - Preguntas, opciones, respuestas correctas
+  - Validación JSON Schema y índices
+  - Relacionada con tabla PostgreSQL: assessment
+- **material_content** (002) - Contenido procesado de materiales educativos
+  - Texto extraído, estructura parseada, resumen IA
+  - Full-text search en español
+  - Relacionada con tabla PostgreSQL: materials
+- **assessment_attempt_result** (003) - Resultados detallados de intentos
+  - Respuestas del estudiante, tiempo por pregunta, score
+  - Relacionada con tabla PostgreSQL: assessment_attempt
+- **audit_logs** (004) - Logs de auditoría del sistema
+  - Eventos de usuarios, recursos, sistema
+  - TTL: 90 días de retención
+- **notifications** (005) - Notificaciones para usuarios
+  - In-app, push, email con prioridades y categorías
+  - TTL: 30 días para archivadas
+- **analytics_events** (006) - Eventos de analítica y comportamiento
+  - Navegación, sesiones, interacciones
+  - TTL: 365 días de retención
+
+#### CLI MongoDB
+- **mongodb_migrate.go** - CLI completo para migraciones MongoDB
+  - Comandos: up, down, status, create, force
+  - Ejecuta scripts JavaScript via mongosh
+  - Tracking en colección schema_migrations
+  - Patrón idéntico a migrate.go de PostgreSQL
+
+#### Seeds MongoDB
+- 6 archivos de seeds con datos de prueba
+  - material_content.js (2 documentos)
+  - assessment_attempt_result.js (2 documentos)
+  - audit_logs.js (5 documentos)
+  - notifications.js (4 documentos)
+  - analytics_events.js (6 documentos)
+
+#### Documentación
+- **MONGODB_SCHEMA.md** - Schema completo de las 6 colecciones
+  - Estructura, índices, validaciones
+  - Relación con PostgreSQL
+  - Queries de ejemplo y guía de uso
+- **README.md** actualizado con sección MongoDB
+  - Comandos de CLI con build tags
+  - Variables de entorno
+  - Referencias a documentación
+
+### Changed
+- **Build tags agregados** para resolución de conflictos de compilación
+  - migrate.go con tag `!mongodb` (PostgreSQL, por defecto)
+  - mongodb_migrate.go con tag `mongodb` (requiere `-tags mongodb`)
+- **Dependencias actualizadas**
+  - Agregado go.mongodb.org/mongo-driver v1.17.3
+
+### Fixed
+- Sintaxis de seeds MongoDB para compatibilidad con JavaScript
+  - Reemplazado `use edugo;` por `db = db.getSiblingDB('edugo');`
+  - Corregidos comentarios de ejecución en todos los seeds
+
+---
+
+## [0.2.0] - 2025-11-16 - 🧪 TESTS & VALIDATION RELEASE
 
 #### Added - database
 - **Tests de integración** con Testcontainers para PostgreSQL

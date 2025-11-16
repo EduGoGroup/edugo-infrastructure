@@ -1,3 +1,6 @@
+//go:build !mongodb
+// +build !mongodb
+
 package main
 
 import (
