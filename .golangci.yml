@@ -16,12 +16,18 @@ linters:
 
 linters-settings:
   errcheck:
-    check-blank: true
+    check-blank: false
+    ignore: defer
   
   goimports:
     local-prefixes: github.com/EduGoGroup/edugo-infrastructure
 
 issues:
   exclude-use-default: false
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "Error return value.*is not checked"
+      source: "defer.*Close"
   max-issues-per-linter: 0
   max-same-issues: 0

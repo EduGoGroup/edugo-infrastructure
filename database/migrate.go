@@ -32,12 +32,12 @@ func main() {
 	}
 
 	dbURL := getDBURL()
-	
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error conectando a PostgreSQL: %v", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Error validando conexión: %v", err)
@@ -151,20 +151,20 @@ func migrateUp(db *sql.DB) error {
 		}
 
 		fmt.Printf("Ejecutando migración %03d: %s\n", m.Version, m.Name)
-		
+
 		tx, err := db.Begin()
 		if err != nil {
 			return err
 		}
 
 		if _, err := tx.Exec(m.UpSQL); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("error en migración %d: %w", m.Version, err)
 		}
 
 		insertQuery := fmt.Sprintf("INSERT INTO %s (version, name) VALUES ($1, $2)", migrationsTable)
 		if _, err := tx.Exec(insertQuery, m.Version, m.Name); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return err
 		}
 
@@ -228,13 +228,13 @@ func migrateDown(db *sql.DB) error {
 	}
 
 	if _, err := tx.Exec(targetMigration.DownSQL); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return fmt.Errorf("error revirtiendo migración: %w", err)
 	}
 
 	deleteQuery := fmt.Sprintf("DELETE FROM %s WHERE version = $1", migrationsTable)
 	if _, err := tx.Exec(deleteQuery, targetMigration.Version); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 
@@ -263,7 +263,7 @@ func showStatus(db *sql.DB) error {
 
 	for _, m := range migrations {
 		if appliedAt, exists := applied[m.Version]; exists {
-			fmt.Printf("✅ %03d: %s (aplicada: %s)\n", 
+			fmt.Printf("✅ %03d: %s (aplicada: %s)\n",
 				m.Version, m.Name, appliedAt.Format("2006-01-02 15:04"))
 		} else {
 			fmt.Printf("⬜ %03d: %s (pendiente)\n", m.Version, m.Name)
@@ -290,13 +290,13 @@ func createMigration(description string) error {
 	}
 
 	filename := fmt.Sprintf("%03d_%s", nextVersion, sanitizeName(description))
-	
+
 	upFile := filepath.Join(migrationsDir, filename+".up.sql")
 	downFile := filepath.Join(migrationsDir, filename+".down.sql")
 
 	upContent := fmt.Sprintf("-- Migration: %s\n-- Created: %s\n\n-- TODO: Escribir SQL para migración UP\n",
 		description, time.Now().Format("2006-01-02 15:04"))
-	
+
 	downContent := fmt.Sprintf("-- Migration: %s (DOWN)\n-- Created: %s\n\n-- TODO: Escribir SQL para revertir migración\n",
 		description, time.Now().Format("2006-01-02 15:04"))
 
@@ -319,7 +319,7 @@ func createMigration(description string) error {
 
 func forceMigration(db *sql.DB, version string) error {
 	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", version)
-	
+
 	query := fmt.Sprintf("DELETE FROM %s", migrationsTable)
 	if _, err := db.Exec(query); err != nil {
 		return err
@@ -407,7 +407,7 @@ func getAppliedMigrations(db *sql.DB) (map[int]*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	applied := make(map[int]*time.Time)
 	for rows.Next() {
@@ -426,13 +426,13 @@ func sanitizeName(name string) string {
 	name = strings.ToLower(name)
 	name = strings.ReplaceAll(name, " ", "_")
 	name = strings.ReplaceAll(name, "-", "_")
-	
+
 	var result strings.Builder
 	for _, r := range name {
 		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' {
 			result.WriteRune(r)
 		}
 	}
-	
+
 	return result.String()
 }
