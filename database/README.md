@@ -29,15 +29,15 @@ Genera:
 
 ```bash
 cd database
-go run mongodb_migrate.go up      # Ejecutar migraciones
-go run mongodb_migrate.go down    # Revertir última
-go run mongodb_migrate.go status  # Ver estado
+go run -tags mongodb mongodb_migrate.go up      # Ejecutar migraciones
+go run -tags mongodb mongodb_migrate.go down    # Revertir última
+go run -tags mongodb mongodb_migrate.go status  # Ver estado
 ```
 
 ### Crear Nueva Migración
 
 ```bash
-go run mongodb_migrate.go create "add_new_collection"
+go run -tags mongodb mongodb_migrate.go create "add_new_collection"
 ```
 
 Genera:
