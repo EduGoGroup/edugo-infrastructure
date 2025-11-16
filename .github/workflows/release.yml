@@ -37,27 +37,23 @@ jobs:
       - name: Verificar formato
         working-directory: ${{ matrix.module }}
         run: |
-          if ! gofmt -l . | grep -q .; then
-            echo "✓ Código formateado correctamente"
-          else
+          if gofmt -l . | grep -q .; then
             echo "✗ Código no está formateado:"
             gofmt -l .
             exit 1
+          else
+            echo "✓ Código formateado correctamente"
           fi
 
       - name: Análisis estático (go vet)
         working-directory: ${{ matrix.module }}
         run: go vet ./...
 
-      - name: Ejecutar tests
-        working-directory: ${{ matrix.module }}
-        run: go test -v -race ./...
-
       - name: Tests con cobertura
         working-directory: ${{ matrix.module }}
         run: |
           mkdir -p coverage
-          go test -v -race -coverprofile=coverage/coverage.out -covermode=atomic ./... || true
+          go test -v -race -coverprofile=coverage/coverage.out -covermode=atomic ./...
           if [ -f coverage/coverage.out ]; then
             go tool cover -func=coverage/coverage.out
           fi
@@ -89,6 +85,7 @@ jobs:
           if [[ $TAG == *"/"* ]]; then
             MODULE=${TAG%/*}
             VERSION=${TAG#*/}
+            VERSION=${VERSION#v}
             echo "module=$MODULE" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "is_module=true" >> $GITHUB_OUTPUT
@@ -104,7 +101,7 @@ jobs:
           VERSION="${{ steps.tag.outputs.version }}"
           
           if grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
-            CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+            CHANGELOG=$(awk "/## \[$VERSION\]/,/^## \[/{if (/^## \[/ && !/## \[$VERSION\]/) exit; print}" CHANGELOG.md | sed '1d')
           else
             CHANGELOG="Release ${{ steps.tag.outputs.tag }}"
           fi

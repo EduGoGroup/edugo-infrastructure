@@ -75,9 +75,11 @@ jobs:
           DB_SSL_MODE: disable
         run: |
           cd database
+          echo "⬇️ Revirtiendo migraciones..."
           for i in {1..8}; do
-            go run migrate.go down || true
+            go run migrate.go down
           done
+          echo "✅ Migraciones revertidas"
 
   test-modules:
     name: Tests de Módulos Go (${{ matrix.module }})
@@ -100,12 +102,9 @@ jobs:
           cd ${{ matrix.module }}
           go mod download
       
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
           cd ${{ matrix.module }}
-          go test -v -race -coverprofile=coverage.out ./...
-      
-      - name: Check coverage
-        run: |
-          cd ${{ matrix.module }}
-          go tool cover -func=coverage.out
+          mkdir -p coverage
+          go test -v -race -coverprofile=coverage/coverage.out -covermode=atomic ./...
+          go tool cover -func=coverage/coverage.out
