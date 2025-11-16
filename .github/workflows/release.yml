@@ -6,6 +6,9 @@ on:
       - 'v*.*.*'
       - '*/v*.*.*'
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     name: Create GitHub Release
@@ -14,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Extract tag info
         id: tag_info
@@ -27,20 +32,42 @@ jobs:
             echo "module=$MODULE" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "is_module=true" >> $GITHUB_OUTPUT
+            echo "title=$MODULE $VERSION" >> $GITHUB_OUTPUT
           else
             echo "version=$TAG" >> $GITHUB_OUTPUT
             echo "is_module=false" >> $GITHUB_OUTPUT
+            echo "title=edugo-infrastructure $TAG" >> $GITHUB_OUTPUT
           fi
       
-      - name: Create Release
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION="${{ steps.tag_info.outputs.version }}"
+          
+          if [ -f "CHANGELOG.md" ]; then
+            # Extraer sección del changelog para esta versión
+            NOTES=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '$d' | tail -n +2)
+            
+            if [ -z "$NOTES" ]; then
+              NOTES="Release $VERSION
+
+Ver CHANGELOG.md para detalles completos."
+            fi
+            
+            # Escapar para GitHub Actions
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "notes=Release $VERSION" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag_info.outputs.tag }}
-          name: ${{ steps.tag_info.outputs.tag }}
-          body: |
-            Release ${{ steps.tag_info.outputs.version }}
-            
-            Ver CHANGELOG.md para detalles completos.
+          name: ${{ steps.tag_info.outputs.title }}
+          body: ${{ steps.changelog.outputs.notes }}
           draft: false
           prerelease: false
         env:
