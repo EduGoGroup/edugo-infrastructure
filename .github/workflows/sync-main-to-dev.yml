@@ -27,5 +27,12 @@ jobs:
           git fetch origin main
           git fetch origin dev
           git checkout dev
-          git merge origin/main -m "chore: sync main $(git rev-parse --short origin/main) to dev"
-          git push origin dev
+          
+          if git merge origin/main -m "chore: sync main $(git rev-parse --short origin/main) to dev"; then
+            git push origin dev
+            echo "✅ Sincronización exitosa"
+          else
+            echo "❌ Conflicto detectado en merge main → dev"
+            echo "Se requiere intervención manual"
+            exit 1
+          fi
