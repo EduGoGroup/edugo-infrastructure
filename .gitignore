@@ -1,0 +1,41 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary
+*.test
+*.out
+coverage/
+
+# Go workspace
+go.work
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Docker
+docker/volumes/
+*.log
+
+# Database
+*.db
+*.sqlite*
+
+# Temporary
+tmp/
+temp/
+
+# Seeds generated
+seeds/generated/
