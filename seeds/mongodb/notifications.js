@@ -1,7 +1,8 @@
 // Seeds for notifications collection
-// Execute with: mongosh --host localhost:27017/edugo < notifications.js
+// Execute with: mongosh edugo < notifications.js
+// Or: mongosh --eval "$(cat notifications.js)"
 
-use edugo;
+db = db.getSiblingDB('edugo');
 
 // Notification 1 - Assessment ready for student
 db.notifications.insertOne({

@@ -1,7 +1,8 @@
 // Seeds for analytics_events collection
-// Execute with: mongosh --host localhost:27017/edugo < analytics_events.js
+// Execute with: mongosh edugo < analytics_events.js
+// Or: mongosh --eval "$(cat analytics_events.js)"
 
-use edugo;
+db = db.getSiblingDB('edugo');
 
 // Event 1 - Page view
 db.analytics_events.insertOne({

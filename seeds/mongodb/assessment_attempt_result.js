@@ -1,7 +1,8 @@
 // Seeds for assessment_attempt_result collection
-// Execute with: mongosh --host localhost:27017/edugo < assessment_attempt_result.js
+// Execute with: mongosh edugo < assessment_attempt_result.js
+// Or: mongosh --eval "$(cat assessment_attempt_result.js)"
 
-use edugo;
+db = db.getSiblingDB('edugo');
 
 // Attempt result 1 (Student completed Physics assessment)
 db.assessment_attempt_result.insertOne({

@@ -1,7 +1,8 @@
 // Seeds for material_content collection
-// Execute with: mongosh --host localhost:27017/edugo < material_content.js
+// Execute with: mongosh edugo < material_content.js
+// Or: mongosh --eval "$(cat material_content.js)"
 
-use edugo;
+db = db.getSiblingDB('edugo');
 
 // Material content 1 (for Physics material)
 db.material_content.insertOne({

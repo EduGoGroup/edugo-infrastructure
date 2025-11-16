@@ -1,7 +1,8 @@
 // Seeds for audit_logs collection
-// Execute with: mongosh --host localhost:27017/edugo < audit_logs.js
+// Execute with: mongosh edugo < audit_logs.js
+// Or: mongosh --eval "$(cat audit_logs.js)"
 
-use edugo;
+db = db.getSiblingDB('edugo');
 
 // Audit log 1 - User login
 db.audit_logs.insertOne({
