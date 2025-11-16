@@ -249,7 +249,41 @@ Ver `.env.example` para lista completa.
 
 ## 🧪 Testing
 
-Los tests de integración en otros proyectos usan **Testcontainers** (no necesitan este docker-compose).
+### Tests de Integración
+
+Este proyecto incluye tests exhaustivos con alta cobertura:
+
+**database/migrate.go:**
+- 9 tests de integración con Testcontainers
+- Cobertura: 55.7% total (funciones críticas >68%)
+- Tests: migrateUp, migrateDown, showStatus, rollback, idempotencia
+
+**schemas/validator.go:**
+- 11 tests exhaustivos + 40+ subtests
+- Cobertura: 92.5% (>90% objetivo superado)
+- Benchmarks: 10,000 validaciones en ~102ms
+- Tests para los 4 schemas (material.uploaded, assessment.generated, material.deleted, student.enrolled)
+
+### Ejecutar Tests
+
+```bash
+# Tests de database (requiere Docker)
+cd database
+go test -v ./...
+go test -coverprofile=coverage.out
+
+# Tests de schemas (no requiere servicios)
+cd schemas
+go test -v ./...
+go test -bench=. -benchmem
+
+# Benchmarks específicos
+go test -bench=BenchmarkValidation10000 -benchtime=1x
+```
+
+### Tests en Otros Proyectos
+
+Los tests de integración en api-admin, api-mobile y worker usan **Testcontainers** (no necesitan este docker-compose).
 
 Este docker-compose es para:
 - ✅ Desarrollo local manual
