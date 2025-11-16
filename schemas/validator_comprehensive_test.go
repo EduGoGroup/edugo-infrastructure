@@ -2,6 +2,7 @@ package schemas_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-infrastructure/schemas"
@@ -677,14 +678,5 @@ func BenchmarkValidation10000(b *testing.B) {
 
 // Helper function
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || len(s) > len(substr)+1 && indexOf(s, substr) >= 0))
-}
-
-func indexOf(s, substr string) int {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return i
-		}
-	}
-	return -1
+	return strings.Contains(s, substr)
 }

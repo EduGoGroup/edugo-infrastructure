@@ -67,6 +67,13 @@ func setupPostgres(t *testing.T) (*sql.DB, func()) {
 		time.Sleep(time.Second)
 	}
 
+	// Verificar si la base de datos está lista después del loop de ping
+	if err := db.Ping(); err != nil {
+		db.Close()
+		container.Terminate(ctx)
+		t.Fatalf("Database no está lista después de 30 segundos: %v", err)
+	}
+
 	cleanup := func() {
 		db.Close()
 		container.Terminate(ctx)
@@ -298,9 +305,6 @@ func TestTransactionRollback(t *testing.T) {
 
 	t.Logf("✅ Rollback automático funciona correctamente")
 
-	// Cleanup de archivos temporales
-	os.Remove(invalidUpSQL)
-	os.Remove(invalidDownSQL)
 	_ = originalDir // Evitar warning de variable no usada
 }
 
