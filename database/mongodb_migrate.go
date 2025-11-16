@@ -24,11 +24,11 @@ const (
 )
 
 type Migration struct {
-	Version   int
-	Name      string
-	UpScript  string
+	Version    int
+	Name       string
+	UpScript   string
 	DownScript string
-	AppliedAt *time.Time
+	AppliedAt  *time.Time
 }
 
 func main() {

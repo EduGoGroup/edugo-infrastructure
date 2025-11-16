@@ -347,8 +347,8 @@ func TestCreateMigration(t *testing.T) {
 	// Nota: Este test realmente crearía archivos en migrations/postgres
 	// Por ahora solo validamos la función sanitizeName que es crítica
 
-	_ = tmpDir        // Evitar warning
-	_ = originalDir   // Evitar warning
+	_ = tmpDir      // Evitar warning
+	_ = originalDir // Evitar warning
 }
 
 // TestPartialMigrations valida aplicar migraciones parcialmente
