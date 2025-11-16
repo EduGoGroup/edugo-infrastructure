@@ -1,139 +1,147 @@
-# Plan de Ejecución - edugo-infrastructure
+# EXECUTION PLAN - edugo-infrastructure
 
-**Proyecto:** edugo-infrastructure  
-**Versión:** v0.1.1 → v0.2.0  
-**Duración total:** 3-4 horas  
-**Sprints:** 2
+## 🎯 Objetivo General
 
----
+Completar la implementación de la infraestructura compartida del ecosistema EduGo, dividida en 2 fases:
 
-## 🎯 Objetivo
-
-Completar los componentes faltantes de infrastructure (CLI de migraciones y validador de eventos) para llegar a v0.2.0.
+- **Fase 1**: Implementación de código y tests unitarios (SIN PostgreSQL)
+- **Fase 2**: Tests de integración y validaciones con PostgreSQL real
 
 ---
 
-## 📋 Sprints
+## 📅 Fase 1 - Implementación (COMPLETADA)
 
-### Sprint 01: CLI de Migraciones (migrate.go)
+**Duración:** 3-4 horas
+**Estado:** ✅ COMPLETADO
 
-**Duración:** 1-2 horas  
-**Ubicación:** `04-Implementation/Sprint-01-Migrate-CLI/`
+### Sprint-01: Migrate CLI (1-2h)
 
-**Tareas:**
-1. Crear `database/migrate.go` con comandos: up, down, status, create
-2. Actualizar `database/README.md` con documentación
-3. Crear tests básicos
+**Objetivo:** Crear CLI para ejecutar migraciones PostgreSQL
 
-**Resultado:** CLI funcional para gestionar migraciones
+**Tareas completadas:**
+- ✅ Implementar `database/migrate.go` completo (439 líneas)
+- ✅ Comandos: up, down, status, create, force
+- ✅ Gestión de transacciones y rollback
+- ✅ Soporte para variables de entorno
+- ✅ Tests unitarios para funciones auxiliares
+- ✅ Documentación inline
 
----
+**Resultado:**
+- `database/migrate.go`: CLI funcional
+- `database/migrate_test.go`: Tests unitarios (5 tests)
 
-### Sprint 02: Validador de Eventos (validator.go)
+### Sprint-02: Validator (2-3h)
 
-**Duración:** 2-3 horas  
-**Ubicación:** `04-Implementation/Sprint-02-Validator/`
+**Objetivo:** Crear validador de eventos con JSON Schemas
 
-**Tareas:**
-1. Crear `schemas/validator.go` con validación automática
-2. Crear tests con eventos válidos/inválidos
-3. Crear ejemplos de uso
+**Tareas completadas:**
+- ✅ Implementar `schemas/validator.go` completo (130 líneas)
+- ✅ Cargar 4 JSON Schemas embebidos
+- ✅ API: Validate(), ValidateWithType(), ValidateJSON()
+- ✅ Manejo de errores detallado
+- ✅ Tests de validación (valid/invalid)
+- ✅ Documentación y ejemplos
 
-**Resultado:** Validador funcional para api-mobile y worker
-
----
-
-## 🚀 Ejecución con Workflow de 2 Fases
-
-### Fase 1 (Claude Code Web)
-
-**Ambos sprints pueden completarse al 100% en Fase 1:**
-- migrate.go NO requiere PostgreSQL para implementarse (solo para validarse)
-- validator.go NO requiere servicios externos (es lógica pura)
-
-**Resultado Fase 1:**
-- ✅ migrate.go implementado
-- ✅ validator.go implementado
-- ✅ Tests unitarios creados
-- ⏳ PHASE2_BRIDGE.md con validaciones pendientes
+**Resultado:**
+- `schemas/validator.go`: Validador funcional
+- `schemas/example_test.go`: Tests de validación (2 tests)
 
 ---
 
-### Fase 2 (Claude Code Local)
+## 📅 Fase 2 - Validación con PostgreSQL (PENDIENTE)
 
-**Validaciones con servicios reales:**
+**Duración estimada:** 2-3 horas
+**Estado:** ⏳ PENDIENTE
 
-1. **Validar migrate.go con PostgreSQL:**
-   ```bash
-   docker-compose -f ../docker/docker-compose.yml up -d postgres
-   cd database
-   go run migrate.go up
-   go run migrate.go status
-   go run migrate.go down
-   docker-compose -f ../docker/docker-compose.yml down
-   ```
+### Objetivos
 
-2. **Validar validator.go con eventos reales:**
-   ```bash
-   cd schemas
-   go test -v
-   # Tests ya pasan (no requieren servicios externos)
-   ```
+1. **Tests de integración para migrate.go**
+   - Setup: PostgreSQL con Testcontainers
+   - Validar: migrateUp crea tablas correctamente
+   - Validar: migrateDown revierte cambios
+   - Validar: showStatus muestra estado correcto
 
-3. **Crear PR y merge**
+2. **Tests adicionales para validator.go**
+   - Performance tests con grandes volúmenes
+   - Validar todos los schemas (4 eventos)
+   - Edge cases y errores
+
+3. **Documentación final**
+   - Troubleshooting guide
+   - Mejores prácticas
+   - Ejemplos de integración
+
+### Prerequisitos
+
+- PostgreSQL 15+ corriendo (docker-compose o Testcontainers)
+- Variables de entorno configuradas (.env)
+- Go 1.24+
+
+Ver `PHASE2_PROMPT.txt` para instrucciones detalladas.
 
 ---
 
-## 📊 Orden de Ejecución
+## 📊 Progreso General
+
+| Fase | Sprints | Estado | Progreso |
+|------|---------|--------|----------|
+| Fase 1 | Sprint-01 + Sprint-02 | ✅ COMPLETADO | 100% |
+| Fase 2 | Validación + Integración | ⏳ PENDIENTE | 0% |
+
+---
+
+## 🔧 Tecnologías Usadas
+
+- **Go 1.24+**
+- **PostgreSQL 15** (para Fase 2)
+- **Librerías:**
+  - `github.com/lib/pq`: Driver PostgreSQL
+  - `github.com/xeipuuv/gojsonschema`: Validación JSON Schema
+  - `github.com/google/uuid`: Generación UUIDs
+
+---
+
+## 📁 Estructura de Archivos
 
 ```
-Sprint-01: Migrate CLI (PRIMERO)
-  ├─ Fase 1: Implementar CLI (1h)
-  ├─ Fase 2: Validar con PostgreSQL (30min)
-  └─ Resultado: database/migrate.go funcional
-
-Sprint-02: Validator (SEGUNDO)
-  ├─ Fase 1: Implementar validador (1.5h)
-  ├─ Fase 2: Tests y validación (30min)
-  └─ Resultado: schemas/validator.go funcional
-
-Release v0.2.0 (TERCERO)
-  ├─ Tag database/v0.2.0
-  ├─ Tag schemas/v0.2.0
-  └─ GitHub Release publicado
+edugo-infrastructure/
+├── database/
+│   ├── migrate.go          # ✅ Sprint-01 COMPLETO
+│   ├── migrate_test.go     # ✅ Tests unitarios
+│   ├── migrations/postgres/ # 8 migraciones SQL
+│   └── go.mod
+│
+├── schemas/
+│   ├── validator.go         # ✅ Sprint-02 COMPLETO
+│   ├── example_test.go      # ✅ Tests de validación
+│   ├── events/              # 4 JSON Schemas
+│   └── go.mod
+│
+└── docs/isolated/
+    ├── START_HERE.md
+    ├── EXECUTION_PLAN.md
+    ├── WORKFLOW_ORCHESTRATION.md
+    └── 04-Implementation/
+        ├── Sprint-01-Migrate-CLI/
+        │   └── PHASE2_BRIDGE.md
+        └── Sprint-02-Validator/
+            └── PHASE2_BRIDGE.md
 ```
 
 ---
 
-## ✅ Criterios de Completitud
+## ✅ Checklist de Fase 1
 
-### Sprint-01
-- [ ] migrate.go ejecuta comandos up, down, status, create
-- [ ] Validado con PostgreSQL real
-- [ ] README actualizado
-
-### Sprint-02
-- [ ] validator.go valida eventos correctamente
-- [ ] Tests con eventos válidos e inválidos pasan
-- [ ] Ejemplos de uso creados
-
-### Release v0.2.0
-- [ ] Ambos sprints completados
-- [ ] Tags publicados
-- [ ] GitHub Release creado
+- [x] Implementar database/migrate.go
+- [x] Crear tests unitarios para migrate.go
+- [x] Implementar schemas/validator.go
+- [x] Crear tests de validación para validator.go
+- [x] Generar PHASE2_BRIDGE.md para ambos sprints
+- [x] Generar PHASE2_PROMPT.txt
+- [x] Actualizar documentación
+- [x] Commit y push a GitHub
 
 ---
 
-## 🎯 Siguiente Proyecto Recomendado
-
-Después de completar infrastructure v0.2.0:
-
-**→ api-mobile (Sistema de Evaluaciones)**
-- Dependencias listas: shared v0.7.0, infrastructure v0.2.0
-- Duración: 2-3 semanas
-- Ubicación: `edugo-api-mobile/docs/isolated/`
-
----
-
-**Generado:** 16 de Noviembre, 2025  
-**Estado:** Listo para ejecución
+**Estado:** Fase 1 completada exitosamente
+**Siguiente paso:** Ejecutar PHASE2_PROMPT.txt para validaciones con PostgreSQL

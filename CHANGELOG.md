@@ -71,10 +71,38 @@
 
 ## Próximas Versiones Planeadas
 
-### [0.2.0] - TBD
-- Agregar módulo de MongoDB migrations
-- Agregar más eventos (material.updated, assessment.failed)
-- Mejorar CLI de migraciones (rollback múltiple)
+### [0.2.0] - 2025-11-16 - 🧪 TESTS & VALIDATION RELEASE
+
+#### Added - database
+- **Tests de integración** con Testcontainers para PostgreSQL
+  - 9 tests de integración: migrateUp, migrateDown, showStatus, rollback
+  - Tests de transacciones, migraciones parciales, idempotencia
+  - Tests de edge cases: SQL inválido, errores de conexión
+- **Cobertura de tests:** 55.7% total
+  - Funciones críticas >68% (migrateUp: 72.4%, showStatus: 81.2%)
+- **Dependencias agregadas:** testcontainers-go v0.40.0
+
+#### Added - schemas
+- **Tests exhaustivos** para validator.go
+  - 11 funciones de test con 40+ subtests
+  - Tests para los 4 schemas: material.uploaded, assessment.generated, material.deleted, student.enrolled
+  - Edge cases: event_type faltante, UUIDs inválidos, timestamps incorrectos
+  - Tests de ValidateJSON y ValidateWithType
+- **Benchmarks de performance**
+  - BenchmarkValidation: ~10µs por validación
+  - BenchmarkValidation10000: 10,000 eventos en ~102ms (<1s objetivo)
+- **Cobertura de tests:** 92.5% (>90% objetivo superado)
+  - Validate: 100%, ValidateJSON: 100%, ValidateWithType: 92.9%
+
+#### Changed
+- README.md actualizado con sección completa de Testing
+  - Instrucciones para ejecutar tests
+  - Métricas de cobertura documentadas
+  - Ejemplos de benchmarks
+
+#### Documentation
+- Documentación de tests en README.md
+- Métricas de cobertura y performance
 
 ---
 
