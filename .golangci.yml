@@ -1,0 +1,33 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gofmt
+    - goimports
+
+linters-settings:
+  errcheck:
+    check-blank: false
+    ignore: defer
+  
+  goimports:
+    local-prefixes: github.com/EduGoGroup/edugo-infrastructure
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "Error return value.*is not checked"
+      source: "defer.*Close"
+  max-issues-per-linter: 0
+  max-same-issues: 0
