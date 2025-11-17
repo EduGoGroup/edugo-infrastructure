@@ -1,4 +1,4 @@
-package testing
+package migrations
 
 import (
 	"database/sql"
