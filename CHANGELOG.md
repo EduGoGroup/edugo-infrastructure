@@ -1,6 +1,6 @@
 # Changelog - edugo-infrastructure
 
-## [0.7.0] - 2025-11-17 - 🏗️ SCHEMA EXTENSION RELEASE
+## [0.7.1] - 2025-11-17 - 🏗️ SCHEMA EXTENSION RELEASE
 
 ### 🚨 BREAKING CHANGES
 
@@ -10,7 +10,7 @@ Este release extiende las migraciones existentes 002, 003, 004 con campos adicio
 
 Los proyectos que usen infrastructure v0.5.0 deben:
 1. Recrear base de datos (estamos en desarrollo)
-2. Actualizar a v0.7.0: `go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.7.0`
+2. Actualizar a v0.7.1: `go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.7.1`
 
 ### Added (postgres)
 
