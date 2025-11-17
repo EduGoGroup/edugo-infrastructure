@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/EduGoGroup/edugo-infrastructure/schemas/events/material-deleted-v1",
+  "title": "Material Deleted Event",
+  "description": "Evento publicado cuando se elimina un material",
+  "type": "object",
+  "required": ["event_id", "event_type", "event_version", "timestamp", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "material.deleted"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object",
+      "required": ["material_id", "school_id", "deleted_by_user_id"],
+      "properties": {
+        "material_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID del material eliminado"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "deleted_by_user_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID del usuario que eliminó el material"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Razón de la eliminación (opcional)"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

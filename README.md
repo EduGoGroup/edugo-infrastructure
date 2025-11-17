@@ -1,30 +1,30 @@
 # edugo-infrastructure
 
-**Infraestructura compartida del ecosistema EduGo**
+**Infraestructura compartida modular del ecosistema EduGo**
 
 ---
 
 ## 🎯 Propósito
 
-Centraliza toda la infraestructura compartida entre proyectos:
+Centraliza toda la infraestructura compartida entre proyectos con módulos independientes:
 
-- 🗄️ **Migraciones de BD** (PostgreSQL + MongoDB)
-- 🐳 **Docker Compose** con perfiles
-- 📋 **JSON Schemas** de eventos RabbitMQ
-- 🛠️ **Scripts** automatizados
-- 🌱 **Seeds** de datos de prueba
+- 🐘 **postgres/** - Migraciones PostgreSQL
+- 🍃 **mongodb/** - Migraciones MongoDB
+- 📨 **messaging/** - Validación de eventos RabbitMQ
+- 🐳 **docker/** - Docker Compose con perfiles
+- 🛠️ **scripts/** - Scripts automatizados
 
 **Problema que resuelve:**
 - ❌ Migraciones duplicadas entre proyectos
-- ❌ Setup manual lento (1-2 horas)
+- ❌ Dependencias innecesarias (cada proyecto solo usa lo que necesita)
+- ❌ Setup manual lento
 - ❌ Eventos sin validación
-- ❌ Configuración inconsistente
 
 **Solución:**
-- ✅ 1 fuente de verdad para infraestructura
-- ✅ Setup en 5 minutos: `make dev-setup`
+- ✅ Módulos independientes por tecnología
+- ✅ Importar solo lo necesario
+- ✅ Setup en 5 minutos
 - ✅ Validación automática de eventos
-- ✅ Ownership claro de tablas
 
 ---
 
@@ -35,16 +35,16 @@ Centraliza toda la infraestructura compartida entre proyectos:
 git clone git@github.com:EduGoGroup/edugo-infrastructure.git
 cd edugo-infrastructure
 
-# 2. Setup completo
-make dev-setup
+# 2. Levantar servicios (docker)
+make dev-up-core          # PostgreSQL + MongoDB
+make dev-up-messaging     # + RabbitMQ
 
-# ✅ Listo! Infraestructura corriendo
+# 3. Ejecutar migraciones
+cd postgres && make migrate-up
+cd ../mongodb && make migrate-up
+
+# ✅ Listo!
 ```
-
-**Servicios disponibles:**
-- PostgreSQL: `localhost:5432`
-- MongoDB: `localhost:27017`
-- RabbitMQ: `localhost:5672` (UI: http://localhost:15672)
 
 ---
 
@@ -52,286 +52,261 @@ make dev-setup
 
 ```
 edugo-infrastructure/
-├── database/              # Módulo: Migraciones
-│   ├── migrations/
-│   │   └── postgres/     # 8 migraciones SQL
-│   ├── go.mod
-│   └── TABLE_OWNERSHIP.md
-│
-├── docker/                # Módulo: Docker Compose
-│   ├── docker-compose.yml  # Con profiles
+├── postgres/              # Módulo Go: Migraciones PostgreSQL
+│   ├── go.mod            # github.com/EduGoGroup/edugo-infrastructure/postgres
+│   ├── migrate.go        # CLI de migraciones
+│   ├── migrations/       # 8 migraciones SQL
+│   ├── seeds/            # Datos de prueba
+│   ├── Makefile
 │   └── README.md
 │
-├── schemas/               # Módulo: JSON Schemas
-│   ├── events/            # 4 schemas de validación
-│   ├── go.mod
+├── mongodb/               # Módulo Go: Migraciones MongoDB
+│   ├── go.mod            # github.com/EduGoGroup/edugo-infrastructure/mongodb
+│   ├── migrate.go        # CLI de migraciones
+│   ├── migrations/       # 6 migraciones JavaScript
+│   ├── seeds/            # Datos de prueba
+│   ├── Makefile
+│   └── README.md
+│
+├── messaging/             # Módulo Go: Validación de eventos
+│   ├── go.mod            # github.com/EduGoGroup/edugo-infrastructure/messaging
+│   ├── validator.go      # Validador de eventos
+│   ├── events/           # 4 JSON Schemas
+│   ├── Makefile
+│   └── README.md
+│
+├── docker/                # Docker Compose con perfiles
+│   ├── docker-compose.yml
 │   └── README.md
 │
 ├── scripts/               # Scripts automatizados
 │   ├── dev-setup.sh
-│   ├── seed-data.sh
 │   └── validate-env.sh
 │
-├── seeds/                 # Datos de prueba
-│   ├── postgres/          # users, schools, materials
-│   └── mongodb/           # assessments
+├── docs/                  # Documentación
+│   ├── TABLE_OWNERSHIP.md
+│   ├── MONGODB_SCHEMA.md
+│   └── ...
 │
-├── Makefile               # Comandos principales
+├── Makefile               # Comandos globales
 ├── .env.example
-├── EVENT_CONTRACTS.md     # Contratos de eventos
+├── EVENT_CONTRACTS.md
 └── README.md
 ```
 
 ---
 
-## 🛠️ Comandos Principales
+## 🛠️ Uso por Proyecto
+
+### api-admin (solo PostgreSQL)
+
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/postgres"
+
+// Solo importa postgres, sin dependencias de MongoDB
+```
 
 ```bash
-make help                 # Ver todos los comandos
+cd edugo-infrastructure
+make dev-up-core          # Solo PostgreSQL + MongoDB (básico)
 
-# Desarrollo
-make dev-setup            # Setup completo (primera vez)
-make dev-up-core          # Solo PostgreSQL + MongoDB
-make dev-up-messaging     # Core + RabbitMQ
-make dev-up-full          # Todo + herramientas
-make dev-teardown         # Limpiar todo
+cd postgres
+make migrate-up
+```
 
-# Migraciones
-make migrate-up           # Ejecutar migraciones
-make migrate-status       # Ver estado
-make seed                 # Cargar datos de prueba
+### api-mobile (PostgreSQL + MongoDB + RabbitMQ)
+
+```go
+import (
+    "github.com/EduGoGroup/edugo-infrastructure/postgres"
+    "github.com/EduGoGroup/edugo-infrastructure/mongodb"
+    "github.com/EduGoGroup/edugo-infrastructure/messaging"
+)
+```
+
+```bash
+cd edugo-infrastructure
+make dev-up-messaging     # PostgreSQL + MongoDB + RabbitMQ
+
+cd postgres && make migrate-up
+cd ../mongodb && make migrate-up
+```
+
+### worker (PostgreSQL + MongoDB + RabbitMQ)
+
+```go
+import (
+    "github.com/EduGoGroup/edugo-infrastructure/postgres"
+    "github.com/EduGoGroup/edugo-infrastructure/mongodb"
+    "github.com/EduGoGroup/edugo-infrastructure/messaging"
+)
 ```
 
 ---
 
-## 🗄️ Módulo: database
+## 📋 Módulos Disponibles
 
-**Propósito:** Migraciones centralizadas de PostgreSQL.
+### 1. postgres/
 
-### Tablas Creadas
+**Propósito:** Migraciones de PostgreSQL
 
-| Migración | Tabla | Owner | Usada por |
-|-----------|-------|-------|-----------|
-| 001 | users | infrastructure | api-admin, api-mobile, worker |
-| 002 | schools | infrastructure | api-admin, api-mobile |
-| 003 | academic_units | infrastructure | api-admin, api-mobile |
-| 004 | memberships | infrastructure | api-admin, api-mobile |
-| 005 | materials | infrastructure | api-mobile, worker |
-| 006 | assessment | infrastructure | api-mobile, worker |
-| 007 | assessment_attempt | infrastructure | api-mobile |
-| 008 | assessment_attempt_answer | infrastructure | api-mobile |
+**Tablas:** users, schools, academic_units, memberships, materials, assessment, assessment_attempt, assessment_attempt_answer
 
-**Ver:** `database/TABLE_OWNERSHIP.md`
-
-### Crear Nueva Migración
-
+**Uso:**
 ```bash
-cd database
-go run migrate.go create "add_avatar_to_users"
-
-# Editar archivos generados:
-# - migrations/postgres/009_add_avatar_to_users.up.sql
-# - migrations/postgres/009_add_avatar_to_users.down.sql
-
-# Ejecutar
-go run migrate.go up
+cd postgres
+make migrate-up          # Ejecutar migraciones
+make migrate-status      # Ver estado
+make migrate-create name="nueva_tabla"
 ```
+
+**Importar:**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/postgres"
+```
+
+**Ver:** [postgres/README.md](postgres/README.md)
 
 ---
 
-## 🐳 Módulo: docker
+### 2. mongodb/
 
-**Propósito:** Docker Compose con perfiles para diferentes necesidades.
+**Propósito:** Migraciones de MongoDB
 
-### Perfiles
+**Colecciones:** material_assessment, material_content, assessment_attempt_result, audit_logs, notifications, analytics_events
+
+**Uso:**
+```bash
+cd mongodb
+make migrate-up          # Ejecutar migraciones
+make migrate-status      # Ver estado
+make migrate-create name="nueva_coleccion"
+```
+
+**Importar:**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb"
+```
+
+**Ver:** [mongodb/README.md](mongodb/README.md)
+
+---
+
+### 3. messaging/
+
+**Propósito:** Validación de eventos RabbitMQ
+
+**Eventos:** material.uploaded, assessment.generated, material.deleted, student.enrolled
+
+**Uso:**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/messaging"
+
+validator := messaging.NewEventValidator()
+if err := validator.Validate(event); err != nil {
+    return err
+}
+```
+
+**Ver:** [messaging/README.md](messaging/README.md)
+
+---
+
+## 🐳 Docker
+
+Perfiles disponibles:
 
 | Perfil | Servicios | Cuándo usar |
 |--------|-----------|-------------|
-| **(default)** | PostgreSQL, MongoDB | api-admin |
-| `messaging` | + RabbitMQ | api-mobile, worker |
-| `cache` | + Redis | Si necesitas caché |
-| `tools` | + PgAdmin, Mongo Express | Debugging |
-
-### Ejemplos
+| **core** | PostgreSQL, MongoDB | api-admin |
+| **messaging** | + RabbitMQ | api-mobile, worker |
+| **cache** | + Redis | Si necesitas caché |
+| **tools** | + PgAdmin, Mongo Express | Debugging |
 
 ```bash
-# Solo core
-docker-compose -f docker/docker-compose.yml up -d
-
-# Core + RabbitMQ (para api-mobile, worker)
-docker-compose -f docker/docker-compose.yml --profile messaging up -d
-
-# Todo + herramientas de debugging
-docker-compose -f docker/docker-compose.yml --profile messaging --profile tools up -d
+make dev-up-core          # PostgreSQL + MongoDB
+make dev-up-messaging     # + RabbitMQ
+make dev-up-cache         # + Redis
+make dev-up-full          # Todo
+make dev-teardown         # Limpiar
 ```
-
----
-
-## 📋 Módulo: schemas
-
-**Propósito:** Validación automática de eventos RabbitMQ.
-
-### Eventos Soportados
-
-- `material.uploaded` v1.0 (api-mobile → worker)
-- `assessment.generated` v1.0 (worker → api-mobile)
-- `material.deleted` v1.0 (api-mobile → worker)
-- `student.enrolled` v1.0 (api-admin → api-mobile)
-
-### Uso
-
-```go
-import "github.com/EduGoGroup/edugo-infrastructure/schemas"
-
-validator := schemas.NewEventValidator()
-if err := validator.Validate(event); err != nil {
-    return err  // Evento inválido
-}
-publisher.Publish(event)  // ✅ Validado
-```
-
-**Ver:** `EVENT_CONTRACTS.md` para detalles completos
-
----
-
-## 🔄 Workflow por Proyecto
-
-### api-admin
-
-```bash
-cd edugo-infrastructure
-make dev-up-core          # Solo PostgreSQL + MongoDB
-
-cd ../edugo-api-admin
-make run                  # Correr API
-```
-
-### api-mobile
-
-```bash
-cd edugo-infrastructure
-make dev-up-messaging     # PostgreSQL + MongoDB + RabbitMQ
-
-cd ../edugo-api-mobile
-make run
-```
-
-### worker
-
-```bash
-cd edugo-infrastructure
-make dev-up-messaging     # PostgreSQL + MongoDB + RabbitMQ
-
-cd ../edugo-worker
-make run
-```
-
----
-
-## 📊 Variables de Entorno
-
-```bash
-cp .env.example .env
-# Editar .env si necesitas cambiar valores
-
-# Validar configuración
-make validate-env
-```
-
-**Principales variables:**
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- `MONGO_URI`
-- `RABBITMQ_URL`
-
-Ver `.env.example` para lista completa.
 
 ---
 
 ## 🧪 Testing
 
-### Tests de Integración
-
-Este proyecto incluye tests exhaustivos con alta cobertura:
-
-**database/migrate.go:**
-- 9 tests de integración con Testcontainers
-- Cobertura: 55.7% total (funciones críticas >68%)
-- Tests: migrateUp, migrateDown, showStatus, rollback, idempotencia
-
-**schemas/validator.go:**
-- 11 tests exhaustivos + 40+ subtests
-- Cobertura: 92.5% (>90% objetivo superado)
-- Benchmarks: 10,000 validaciones en ~102ms
-- Tests para los 4 schemas (material.uploaded, assessment.generated, material.deleted, student.enrolled)
-
-### Ejecutar Tests
+Cada módulo tiene sus propios tests:
 
 ```bash
-# Tests de database (requiere Docker)
-cd database
-go test -v ./...
-go test -coverprofile=coverage.out
+# PostgreSQL
+cd postgres && make test
 
-# Tests de schemas (no requiere servicios)
-cd schemas
-go test -v ./...
-go test -bench=. -benchmem
+# MongoDB
+cd mongodb && make test
 
-# Benchmarks específicos
-go test -bench=BenchmarkValidation10000 -benchtime=1x
+# Messaging
+cd messaging && make test
+cd messaging && make benchmark
 ```
-
-### Tests en Otros Proyectos
-
-Los tests de integración en api-admin, api-mobile y worker usan **Testcontainers** (no necesitan este docker-compose).
-
-Este docker-compose es para:
-- ✅ Desarrollo local manual
-- ✅ Debugging con herramientas visuales
-- ✅ Demos y pruebas exploratorias
 
 ---
 
 ## 📚 Documentación
 
-- **Ownership de tablas:** `database/TABLE_OWNERSHIP.md`
-- **Contratos de eventos:** `EVENT_CONTRACTS.md`
-- **Docker Compose:** `docker/README.md`
-- **JSON Schemas:** `schemas/README.md`
+- **PostgreSQL Tables:** [docs/TABLE_OWNERSHIP.md](docs/TABLE_OWNERSHIP.md)
+- **MongoDB Schemas:** [docs/MONGODB_SCHEMA.md](docs/MONGODB_SCHEMA.md)
+- **Event Contracts:** [EVENT_CONTRACTS.md](EVENT_CONTRACTS.md)
+- **Integration Guide:** [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
 
 ---
 
 ## 🤝 Contribuir
 
-### Agregar Nueva Tabla
+### Agregar migración PostgreSQL
 
 ```bash
-cd database
-go run migrate.go create "create_nueva_tabla"
-
-# Editar SQL generado
-# Actualizar database/TABLE_OWNERSHIP.md
+cd postgres
+make migrate-create name="add_column_to_users"
+# Editar archivos SQL generados
+make migrate-up
 ```
 
-### Agregar Nuevo Evento
+### Agregar migración MongoDB
 
 ```bash
-cd schemas/events
-cp material-uploaded-v1.schema.json nuevo-evento-v1.schema.json
+cd mongodb
+make migrate-create name="add_new_collection"
+# Editar archivos JavaScript generados
+make migrate-up
+```
 
+### Agregar evento
+
+```bash
+cd messaging/events
+cp material-uploaded-v1.schema.json nuevo-evento-v1.schema.json
 # Editar schema
 # Actualizar EVENT_CONTRACTS.md
 ```
 
 ---
 
-## 📞 Soporte
+## 🔄 Versionamiento
 
-**Issues:** https://github.com/EduGoGroup/edugo-infrastructure/issues  
-**Documentación completa:** Ver archivos en cada módulo
+**Versión actual:** 0.5.0
+
+Este proyecto usa **versionamiento único** para el repositorio completo, aunque está organizado en módulos Go independientes.
+
+**Semantic Versioning:**
+- **MAJOR (1.x.x):** Breaking changes en estructura modular o APIs
+- **MINOR (x.1.x):** Nuevas features (nuevas migraciones, schemas, módulos)
+- **PATCH (x.x.1):** Bug fixes
 
 ---
 
-**Versión:** 0.1.0  
-**Última actualización:** 15 de Noviembre, 2025  
+## 📞 Soporte
+
+**Issues:** https://github.com/EduGoGroup/edugo-infrastructure/issues  
+**Versión:** 0.5.0  
+**Última actualización:** 16 de Noviembre, 2025  
 **Mantenedores:** Equipo EduGo

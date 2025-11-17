@@ -1,5 +1,151 @@
 # Changelog - edugo-infrastructure
 
+## [0.5.0] - 2025-11-16 - 🔄 MODULAR ARCHITECTURE RELEASE
+
+### 🚨 BREAKING CHANGES
+
+Este release reorganiza completamente la estructura del proyecto en módulos independientes por tecnología.
+
+#### Migración Requerida
+
+**Antes (v0.3.0):**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/database"
+import "github.com/EduGoGroup/edugo-infrastructure/schemas"
+```
+
+**Ahora (v0.5.0):**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/postgres"
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb"
+import "github.com/EduGoGroup/edugo-infrastructure/messaging"
+```
+
+### Added
+
+#### Nuevos Módulos Go Independientes
+
+- **postgres/** - Módulo de migraciones PostgreSQL
+  - `go.mod`: github.com/EduGoGroup/edugo-infrastructure/postgres
+  - `migrate.go`: CLI sin build tags (simplificado)
+  - `migrations/`: 8 migraciones SQL
+  - `seeds/`: Datos de prueba PostgreSQL
+  - `Makefile`: Comandos específicos del módulo
+  - `README.md`: Documentación completa
+
+- **mongodb/** - Módulo de migraciones MongoDB
+  - `go.mod`: github.com/EduGoGroup/edugo-infrastructure/mongodb
+  - `migrate.go`: CLI sin build tags (simplificado)
+  - `migrations/`: 6 migraciones JavaScript
+  - `seeds/`: Datos de prueba MongoDB
+  - `Makefile`: Comandos específicos del módulo
+  - `README.md`: Documentación completa
+
+- **messaging/** - Módulo de validación de eventos
+  - `go.mod`: github.com/EduGoGroup/edugo-infrastructure/messaging
+  - `validator.go`: Validador de eventos RabbitMQ
+  - `events/`: 4 JSON Schemas
+  - `Makefile`: Tests y benchmarks
+  - `README.md`: Documentación completa
+
+#### Makefiles Específicos por Módulo
+
+- `postgres/Makefile`: migrate-up, migrate-down, migrate-status, seed, test
+- `mongodb/Makefile`: migrate-up, migrate-down, migrate-status, seed, test
+- `messaging/Makefile`: test, coverage, benchmark
+
+#### Documentación Reorganizada
+
+- `README.md` principal actualizado con arquitectura modular
+- Sección "Uso por Proyecto" explicando importaciones selectivas
+- Guías de migración desde v0.3.0
+- Ejemplos de uso para api-admin, api-mobile, worker
+
+### Changed
+
+#### Estructura de Directorios
+
+**Antes:**
+```
+edugo-infrastructure/
+├── database/
+│   ├── migrate.go (build tag: !mongodb)
+│   ├── mongodb_migrate.go (build tag: mongodb)
+│   └── migrations/
+│       ├── postgres/
+│       └── mongodb/
+└── schemas/
+```
+
+**Ahora:**
+```
+edugo-infrastructure/
+├── postgres/        # Módulo independiente
+├── mongodb/         # Módulo independiente
+└── messaging/       # Módulo independiente
+```
+
+#### Dependencias Optimizadas
+
+- Proyectos pueden importar solo módulos necesarios
+- `api-admin`: Solo postgres (sin mongo-driver, ~5MB menos)
+- `api-mobile`: postgres + mongodb + messaging
+- `worker`: postgres + mongodb + messaging
+
+#### CLI Simplificado
+
+- Removidos build tags (`!mongodb`, `mongodb`)
+- Cada módulo tiene su propio `migrate.go` standalone
+- Paths de migraciones simplificados (`migrations/` en lugar de `migrations/postgres/`)
+
+### Removed
+
+- ❌ Módulo `database/` (separado en `postgres/` y `mongodb/`)
+- ❌ Módulo `schemas/` (renombrado a `messaging/`)
+- ❌ Build tags complejos para compilación
+- ❌ Directorio `seeds/` global (movido a cada módulo)
+
+### Fixed
+
+- Conflictos de compilación entre migrate.go y mongodb_migrate.go
+- Dependencias innecesarias en proyectos que no usan todas las tecnologías
+- Complejidad en la estructura de directorios
+
+### Migration Guide
+
+#### Actualizar Imports
+
+```bash
+# En tus proyectos (api-admin, api-mobile, worker)
+find . -name "*.go" -type f -exec sed -i '' 's|edugo-infrastructure/database|edugo-infrastructure/postgres|g' {} +
+find . -name "*.go" -type f -exec sed -i '' 's|edugo-infrastructure/schemas|edugo-infrastructure/messaging|g' {} +
+```
+
+#### Actualizar go.mod
+
+```bash
+go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.5.0
+go get github.com/EduGoGroup/edugo-infrastructure/mongodb@v0.5.0
+go get github.com/EduGoGroup/edugo-infrastructure/messaging@v0.5.0
+go mod tidy
+```
+
+#### Actualizar Scripts
+
+Si usabas:
+```bash
+cd database && go run migrate.go up
+cd database && go run -tags mongodb mongodb_migrate.go up
+```
+
+Ahora usa:
+```bash
+cd postgres && make migrate-up
+cd mongodb && make migrate-up
+```
+
+---
+
 ## [0.1.0] - 2025-11-15 - 🎉 INITIAL RELEASE
 
 ### Added
