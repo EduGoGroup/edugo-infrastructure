@@ -5,9 +5,23 @@
 
 BEGIN;
 
--- 1. Agregar campo time_spent_seconds
+-- 1. Agregar campo time_spent_seconds (sin CHECK inline)
 ALTER TABLE assessment_attempt_answer
-    ADD COLUMN IF NOT EXISTS time_spent_seconds INTEGER CHECK (time_spent_seconds >= 0);
+    ADD COLUMN IF NOT EXISTS time_spent_seconds INTEGER;
+
+-- 1.1 Agregar CHECK constraint de forma idempotente
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'assessment_attempt_answer_time_spent_seconds_check'
+          AND conrelid = 'assessment_attempt_answer'::regclass
+    ) THEN
+        ALTER TABLE assessment_attempt_answer
+            ADD CONSTRAINT assessment_attempt_answer_time_spent_seconds_check CHECK (time_spent_seconds >= 0);
+    END IF;
+END
+$$;
 
 -- 2. Agregar comentario
 COMMENT ON COLUMN assessment_attempt_answer.time_spent_seconds IS 'Tiempo que tomó responder esta pregunta en segundos';

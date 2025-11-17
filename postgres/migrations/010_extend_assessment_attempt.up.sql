@@ -5,10 +5,25 @@
 
 BEGIN;
 
--- 1. Agregar campos faltantes
+-- 1. Agregar campos faltantes (sin CHECK inline para idempotencia)
 ALTER TABLE assessment_attempt
-    ADD COLUMN IF NOT EXISTS time_spent_seconds INTEGER CHECK (time_spent_seconds > 0 AND time_spent_seconds <= 7200),
+    ADD COLUMN IF NOT EXISTS time_spent_seconds INTEGER,
     ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(64);
+
+-- 1.1 Agregar CHECK constraint para time_spent_seconds (permite NULL)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'assessment_attempt_time_spent_seconds_check'
+          AND conrelid = 'assessment_attempt'::regclass
+    ) THEN
+        ALTER TABLE assessment_attempt
+            ADD CONSTRAINT assessment_attempt_time_spent_seconds_check 
+            CHECK (time_spent_seconds IS NULL OR (time_spent_seconds > 0 AND time_spent_seconds <= 7200));
+    END IF;
+END
+$$;
 
 -- 2. Agregar UNIQUE constraint a idempotency_key (separado para evitar conflictos)
 DO $$
@@ -31,14 +46,22 @@ CREATE INDEX IF NOT EXISTS idx_attempt_idempotency_key
     ON assessment_attempt(idempotency_key) 
     WHERE idempotency_key IS NOT NULL;
 
--- 5. Agregar CHECK constraints
-ALTER TABLE assessment_attempt
-    ADD CONSTRAINT IF NOT EXISTS check_attempt_time_logical 
-        CHECK (completed_at IS NULL OR completed_at > started_at);
+-- 5. Agregar CHECK constraint para validar completed_at > started_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'check_attempt_time_logical'
+    ) THEN
+        ALTER TABLE assessment_attempt
+            ADD CONSTRAINT check_attempt_time_logical
+                CHECK (completed_at IS NULL OR completed_at > started_at);
+    END IF;
+END $$;
 
 COMMENT ON CONSTRAINT check_attempt_time_logical ON assessment_attempt IS 'Validar que completed_at > started_at';
 
--- Nota: No agregamos constraint de time_spent = (completed - started) 
+-- Nota: No agregamos constraint de time_spent = (completed - started)
 -- porque datos existentes pueden no cumplirlo. Se validará en aplicación.
 
 COMMIT;

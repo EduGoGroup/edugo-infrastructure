@@ -5,11 +5,22 @@
 
 BEGIN;
 
--- Verificar prerequisitos
+-- Verificar prerequisitos: tabla assessment
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'assessment') THEN
         RAISE EXCEPTION 'Tabla assessment no existe. Ejecutar migraciones primero.';
+    END IF;
+END $$;
+
+-- Verificar prerequisitos: materials suficientes
+DO $$
+DECLARE
+    v_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM materials;
+    IF v_count < 3 THEN
+        RAISE EXCEPTION 'Se requieren al menos 3 materials en la base de datos. Actual: %', v_count;
     END IF;
 END $$;
 
@@ -75,12 +86,24 @@ INSERT INTO assessment (
 
 COMMIT;
 
--- Verificación
+-- Verificación: comprobar que los IDs específicos existen
 DO $$
 DECLARE
-    v_count INTEGER;
+    v_missing TEXT := '';
 BEGIN
-    SELECT COUNT(*) INTO v_count FROM assessment;
-    RAISE NOTICE 'Assessments insertados: %', v_count;
-    ASSERT v_count >= 3, 'Se esperaban al menos 3 assessments';
+    IF NOT EXISTS (SELECT 1 FROM assessment WHERE mongo_document_id = '507f1f77bcf86cd799439011') THEN
+        v_missing := v_missing || '507f1f77bcf86cd799439011 ';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM assessment WHERE mongo_document_id = '507f1f77bcf86cd799439012') THEN
+        v_missing := v_missing || '507f1f77bcf86cd799439012 ';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM assessment WHERE mongo_document_id = '507f1f77bcf86cd799439013') THEN
+        v_missing := v_missing || '507f1f77bcf86cd799439013 ';
+    END IF;
+    
+    IF v_missing <> '' THEN
+        RAISE EXCEPTION 'Faltan assessments con mongo_document_id: %', v_missing;
+    ELSE
+        RAISE NOTICE 'Todos los assessments esperados están presentes.';
+    END IF;
 END $$;

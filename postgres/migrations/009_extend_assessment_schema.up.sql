@@ -5,12 +5,27 @@
 
 BEGIN;
 
--- 1. Agregar campos faltantes a assessment
+-- 1. Agregar campos faltantes a assessment (sin CHECK constraints inline)
 ALTER TABLE assessment
     ADD COLUMN IF NOT EXISTS title VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS pass_threshold INTEGER DEFAULT 70 CHECK (pass_threshold >= 0 AND pass_threshold <= 100),
+    ADD COLUMN IF NOT EXISTS pass_threshold INTEGER DEFAULT 70,
     ADD COLUMN IF NOT EXISTS max_attempts INTEGER,
     ADD COLUMN IF NOT EXISTS time_limit_minutes INTEGER;
+
+-- 1.1 Agregar CHECK constraint de forma idempotente
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'assessment_pass_threshold_check'
+          AND conrelid = 'assessment'::regclass
+    ) THEN
+        ALTER TABLE assessment
+            ADD CONSTRAINT assessment_pass_threshold_check
+            CHECK (pass_threshold >= 0 AND pass_threshold <= 100);
+    END IF;
+END
+$$;
 
 -- 2. Agregar total_questions (sincronizado con questions_count)
 ALTER TABLE assessment
@@ -41,6 +56,10 @@ BEGIN
         NEW.questions_count := NEW.total_questions;
     ELSIF NEW.questions_count IS NOT NULL THEN
         NEW.total_questions := NEW.questions_count;
+    ELSE
+        -- Si ambos son NULL, inicializar en 0
+        NEW.total_questions := 0;
+        NEW.questions_count := 0;
     END IF;
     RETURN NEW;
 END;
