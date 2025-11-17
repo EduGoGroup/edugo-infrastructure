@@ -1,6 +1,7 @@
 -- Tabla: schools (Owner: infrastructure)
 -- Creada por: edugo-infrastructure
--- Usada por: api-admin, api-mobile
+-- Usada por: api-admin, api-mobile, worker
+-- Versión: v0.7.0 (extendida con metadata para api-admin)
 
 CREATE TABLE IF NOT EXISTS schools (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS schools (
     country VARCHAR(100) NOT NULL DEFAULT 'Chile',
     phone VARCHAR(50),
     email VARCHAR(255),
+    metadata JSONB DEFAULT '{}'::jsonb,  -- NUEVO: Extensibilidad (logo, config, etc.)
     is_active BOOLEAN NOT NULL DEFAULT true,
     subscription_tier VARCHAR(50) NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free', 'basic', 'premium', 'enterprise')),
     max_teachers INTEGER NOT NULL DEFAULT 10,
@@ -26,3 +28,4 @@ CREATE INDEX idx_schools_tier ON schools(subscription_tier);
 
 COMMENT ON TABLE schools IS 'Escuelas/Instituciones educativas';
 COMMENT ON COLUMN schools.subscription_tier IS 'Nivel de subscripción: free, basic, premium, enterprise';
+COMMENT ON COLUMN schools.metadata IS 'Metadata extensible: logo, configuración institucional, etc.';
