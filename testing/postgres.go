@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -74,7 +75,7 @@ func ApplyMigrations(db *sql.DB, migrationsPath string) error {
 }
 
 // ApplySeeds ejecuta todos los archivos SQL de un directorio de seeds
-// Los ejecuta en orden alfabético
+// Los ejecuta en orden correcto considerando dependencias de FK
 func ApplySeeds(db *sql.DB, seedsPath string) error {
 	files, err := os.ReadDir(seedsPath)
 	if err != nil {
@@ -91,8 +92,11 @@ func ApplySeeds(db *sql.DB, seedsPath string) error {
 		}
 	}
 
-	// Ejecutar en orden alfabético
-	for _, filename := range sqlFiles {
+	// Ordenar seeds por dependencias (orden correcto para FKs)
+	orderedSeeds := orderSeedsByDependencies(sqlFiles)
+
+	// Ejecutar seeds en orden
+	for _, filename := range orderedSeeds {
 		fullPath := filepath.Join(seedsPath, filename)
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
@@ -107,14 +111,50 @@ func ApplySeeds(db *sql.DB, seedsPath string) error {
 	return nil
 }
 
+// orderSeedsByDependencies ordena seeds respetando dependencias de FK
+// Orden: users -> schools -> materials (y otros que dependan de schools)
+func orderSeedsByDependencies(files []string) []string {
+	// Definir orden de prioridad (menor número = se ejecuta primero)
+	priority := map[string]int{
+		"users.sql":     1, // Sin dependencias
+		"schools.sql":   2, // Sin dependencias
+		"materials.sql": 3, // Depende de schools
+		// Agregar más según sea necesario
+	}
+
+	// Ordenar por prioridad, luego alfabético
+	sort.Slice(files, func(i, j int) bool {
+		priI, okI := priority[files[i]]
+		priJ, okJ := priority[files[j]]
+
+		// Si ambos tienen prioridad definida, usar esa
+		if okI && okJ {
+			return priI < priJ
+		}
+
+		// Si solo uno tiene prioridad, ese va primero
+		if okI {
+			return true
+		}
+		if okJ {
+			return false
+		}
+
+		// Si ninguno tiene prioridad, orden alfabético
+		return files[i] < files[j]
+	})
+
+	return files
+}
+
 // CleanDatabase trunca todas las tablas excepto schema_migrations
 // Útil para limpiar datos entre tests
 func CleanDatabase(db *sql.DB) error {
 	// Obtener lista de tablas
 	query := `
-		SELECT tablename 
-		FROM pg_tables 
-		WHERE schemaname = 'public' 
+		SELECT tablename
+		FROM pg_tables
+		WHERE schemaname = 'public'
 		AND tablename != $1
 		ORDER BY tablename
 	`
