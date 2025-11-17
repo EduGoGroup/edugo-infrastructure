@@ -1,5 +1,104 @@
 # Changelog - edugo-infrastructure
 
+## [0.7.0] - 2025-11-17 - 🏗️ SCHEMA EXTENSION RELEASE
+
+### 🚨 BREAKING CHANGES
+
+Este release extiende las migraciones existentes 002, 003, 004 con campos adicionales y validaciones extendidas.
+
+#### Migración Requerida
+
+Los proyectos que usen infrastructure v0.5.0 deben:
+1. Recrear base de datos (estamos en desarrollo)
+2. Actualizar a v0.7.0: `go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.7.0`
+
+### Added (postgres)
+
+#### Soporte completo de jerarquía académica
+
+**Migration 003 - academic_units:**
+- Campo `parent_unit_id UUID` para estructura jerárquica (auto-referencia)
+- Campo `description TEXT` para descripciones detalladas
+- Campo `metadata JSONB` para datos flexibles adicionales
+- CHECK constraint extendido con tipos: 'school', 'grade', 'class', 'section', 'club', 'department'
+- Función `prevent_academic_unit_cycles()` para prevenir ciclos en jerarquía
+- Trigger `prevent_cycles` que valida antes de INSERT/UPDATE
+- Vista `v_academic_unit_tree` con CTE recursivo para consultar árbol completo
+
+**Migration 002 - schools:**
+- Campo `metadata JSONB` para configuraciones específicas por escuela
+
+**Migration 004 - memberships:**
+- Campo `metadata JSONB` para datos adicionales de membresía
+- CHECK constraint extendido con roles: 'teacher', 'student', 'guardian', 'coordinator', 'admin', 'assistant'
+
+#### Seeds actualizados
+
+**postgres/seeds/academic_units.sql:**
+- Datos de ejemplo con jerarquía completa
+- Escuela → Grado → Sección
+- Escuela → Departamento → Clase
+- Ejemplos de metadata JSONB
+
+**postgres/seeds/memberships.sql:**
+- Datos de ejemplo con todos los roles
+- Ejemplos de metadata JSONB
+
+### Changed (postgres)
+
+#### Migration 003 - academic_units
+- `academic_year` ahora es NULLABLE con DEFAULT 0 (antes NOT NULL)
+  - `0` = sin año académico específico (para departamentos, clubes)
+  - `>0` = año académico específico (para grados, clases)
+
+### Migration Guide
+
+#### Si tienes datos existentes
+
+**OPCIÓN 1: Desarrollo (Recomendado)**
+```bash
+# Recrear base de datos con nuevo schema
+cd postgres
+make migrate-down
+make migrate-up
+make seed
+```
+
+**OPCIÓN 2: Producción (Cuando aplique)**
+Estos son cambios en migraciones base. En producción futura se requerirá:
+```sql
+-- Agregar columnas nuevas (ejecutar manualmente)
+ALTER TABLE schools ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE academic_units ADD COLUMN parent_unit_id UUID REFERENCES academic_units(id);
+ALTER TABLE academic_units ADD COLUMN description TEXT;
+ALTER TABLE academic_units ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE academic_units ALTER COLUMN academic_year DROP NOT NULL;
+ALTER TABLE memberships ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
+
+-- Actualizar CHECK constraints...
+```
+
+#### Actualizar código
+
+```go
+// Ahora puedes usar jerarquía
+type AcademicUnit struct {
+    ID           uuid.UUID
+    ParentUnitID *uuid.UUID  // NUEVO: nullable
+    SchoolID     uuid.UUID
+    Type         string      // Tipos extendidos: school, grade, class, section, club, department
+    Description  *string     // NUEVO: nullable
+    Metadata     json.RawMessage  // NUEVO
+    AcademicYear int         // CAMBIADO: ahora puede ser 0
+}
+
+// Consultar árbol completo
+rows, err := db.Query("SELECT * FROM v_academic_unit_tree WHERE root_unit_id = $1", rootID)
+```
+
+---
+
+
 ## [0.5.0] - 2025-11-16 - 🔄 MODULAR ARCHITECTURE RELEASE
 
 ### 🚨 BREAKING CHANGES

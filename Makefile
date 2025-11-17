@@ -137,3 +137,22 @@ DB_PORT ?= 5432
 DB_NAME ?= edugo_dev
 DB_USER ?= edugo
 DB_PASSWORD ?= changeme
+
+# ===================
+# CALIDAD DE CÓDIGO
+# ===================
+
+.PHONY: lint
+lint: ## Linter completo con golangci-lint
+	@echo "🔎 Ejecutando golangci-lint..."
+	@golangci-lint run --timeout=5m || (echo "⚠️  Instalar con: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest" && exit 1)
+
+.PHONY: fmt
+fmt: ## Formatear código Go
+	@echo "📝 Formateando código..."
+	@go fmt ./...
+
+.PHONY: vet
+vet: ## Analizar código con go vet
+	@echo "🔍 Analizando código..."
+	@go vet ./...
