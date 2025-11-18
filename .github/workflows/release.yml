@@ -17,7 +17,9 @@ jobs:
       fail-fast: true
       matrix:
         module:
-          - database
+          - postgres
+          - mongodb
+          - messaging
           - schemas
 
     steps:
@@ -78,7 +80,7 @@ jobs:
         run: |
           TAG=${GITHUB_REF#refs/tags/}
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          
+
           if [[ $TAG == *"/"* ]]; then
             MODULE=${TAG%/*}
             VERSION=${TAG#*/}
@@ -96,13 +98,13 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ steps.tag.outputs.version }}"
-          
+
           if grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
             CHANGELOG=$(awk "/## \[$VERSION\]/,/^## \[/{if (/^## \[/ && !/## \[$VERSION\]/) exit; print}" CHANGELOG.md | sed '1d')
           else
             CHANGELOG="Release ${{ steps.tag.outputs.tag }}"
           fi
-          
+
           echo "$CHANGELOG" > /tmp/changelog.md
 
       - name: Crear GitHub Release
@@ -110,7 +112,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=${{ steps.tag.outputs.tag }}
-          
+
           gh release create "$TAG" \
             --title "Release $TAG" \
             --notes-file /tmp/changelog.md \
@@ -120,12 +122,22 @@ jobs:
 
 ## 📦 Instalación
 
-### Módulo database
+### Módulo PostgreSQL
 \`\`\`bash
-go get github.com/EduGoGroup/edugo-infrastructure/database@$TAG
+go get github.com/EduGoGroup/edugo-infrastructure/postgres@$TAG
 \`\`\`
 
-### Módulo schemas
+### Módulo MongoDB
+\`\`\`bash
+go get github.com/EduGoGroup/edugo-infrastructure/mongodb@$TAG
+\`\`\`
+
+### Módulo Messaging
+\`\`\`bash
+go get github.com/EduGoGroup/edugo-infrastructure/messaging@$TAG
+\`\`\`
+
+### Módulo Schemas
 \`\`\`bash
 go get github.com/EduGoGroup/edugo-infrastructure/schemas@$TAG
 \`\`\`
