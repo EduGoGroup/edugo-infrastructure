@@ -1,5 +1,99 @@
 # Changelog - edugo-infrastructure
 
+## [0.8.0] - 2025-11-18 - 🧹 SIMPLIFICATION RELEASE
+
+### 🚨 BREAKING CHANGES
+
+**Simplificación de estructura de módulos**
+
+#### Módulos Eliminados
+
+1. **`migrations/`** → Movido a `postgres/testing/`
+   - El módulo `migrations/` era solo para testing de PostgreSQL
+   - Ahora es parte del módulo `postgres/` como subpaquete `testing/`
+   
+2. **`database/`** → Eliminado (obsoleto)
+   - Era el módulo monolítico pre-refactor v0.5.0
+   - Fue reemplazado por `postgres/` y `mongodb/` separados
+
+#### Migración Requerida para Proyectos Consumidores
+
+**Antes (obsoleto):**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/migrations"
+
+migrations.ApplyMigrations(db, migrationsPath)
+migrations.ApplySeeds(db, seedsPath)
+migrations.CleanDatabase(db)
+```
+
+**Después (correcto):**
+```go
+import pgtesting "github.com/EduGoGroup/edugo-infrastructure/postgres/testing"
+
+pgtesting.ApplyMigrations(db, migrationsPath)
+pgtesting.ApplySeeds(db, seedsPath)
+pgtesting.CleanDatabase(db)
+```
+
+**Actualizar go.mod:**
+```bash
+# Eliminar módulo obsoleto
+go mod edit -dropreplace github.com/EduGoGroup/edugo-infrastructure/migrations
+
+# Actualizar postgres
+go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.8.0
+go mod tidy
+```
+
+#### Proyectos Afectados
+
+- ✅ **api-mobile** - Requiere actualización
+- ✅ **worker** - Requiere actualización (si usa)
+- ❌ **api-admin** - No afectado (no usa migrations/)
+
+---
+
+### Changed
+### Added (MongoDB - edugo-worker collections)
+
+- **Collection `material_summary`**: Resúmenes de materiales generados por OpenAI GPT-4
+  - Validación JSON Schema estricta
+  - 4 índices optimizados (1 unique en material_id)
+  - Soporte para múltiples idiomas (es, en, pt)
+  - Versionado para reprocesamiento
+  - Tracking de uso de tokens y tiempos de procesamiento
+  
+- **Collection `material_assessment_worker`**: Evaluaciones/quizzes automáticos generados por IA
+  - 3-20 preguntas por assessment
+  - Múltiples tipos de preguntas (multiple_choice, true_false, open)
+  - 5 índices optimizados (1 unique en material_id)
+  - Tracking de dificultad y puntos por pregunta
+  - Explicaciones automáticas para cada respuesta
+  
+- **Collection `material_event`**: Auditoría de eventos procesados por worker
+  - TTL index de 90 días (auto-eliminación automática)
+  - 7 índices para queries de auditoría
+  - Soporte para reintentos y error tracking
+  - Estados: pending, processing, completed, failed
+  
+- **6 nuevas migraciones MongoDB** (007-009 con UP/DOWN)
+- **3 seeds de datos de prueba** para las nuevas collections
+- **Total collections MongoDB: 9** (6 existentes + 3 nuevas de worker)
+
+
+- **postgres/**: Ahora incluye subpaquete `testing/` con helpers de testing
+  - `testing.ApplyMigrations()` - Aplicar migraciones en tests
+  - `testing.ApplySeeds()` - Aplicar seeds en tests
+  - `testing.CleanDatabase()` - Limpiar base de datos en tests
+
+### Removed
+
+- **migrations/**: Eliminado, usar `postgres/testing/` en su lugar
+- **database/**: Eliminado, usar `postgres/` o `mongodb/` según necesidad
+
+---
+
 ## [0.7.1] - 2025-11-17 - 🏗️ SCHEMA EXTENSION RELEASE
 
 ### 🚨 BREAKING CHANGES
@@ -161,6 +255,32 @@ import "github.com/EduGoGroup/edugo-infrastructure/messaging"
 - Ejemplos de uso para api-admin, api-mobile, worker
 
 ### Changed
+### Added (MongoDB - edugo-worker collections)
+
+- **Collection `material_summary`**: Resúmenes de materiales generados por OpenAI GPT-4
+  - Validación JSON Schema estricta
+  - 4 índices optimizados (1 unique en material_id)
+  - Soporte para múltiples idiomas (es, en, pt)
+  - Versionado para reprocesamiento
+  - Tracking de uso de tokens y tiempos de procesamiento
+  
+- **Collection `material_assessment_worker`**: Evaluaciones/quizzes automáticos generados por IA
+  - 3-20 preguntas por assessment
+  - Múltiples tipos de preguntas (multiple_choice, true_false, open)
+  - 5 índices optimizados (1 unique en material_id)
+  - Tracking de dificultad y puntos por pregunta
+  - Explicaciones automáticas para cada respuesta
+  
+- **Collection `material_event`**: Auditoría de eventos procesados por worker
+  - TTL index de 90 días (auto-eliminación automática)
+  - 7 índices para queries de auditoría
+  - Soporte para reintentos y error tracking
+  - Estados: pending, processing, completed, failed
+  
+- **6 nuevas migraciones MongoDB** (007-009 con UP/DOWN)
+- **3 seeds de datos de prueba** para las nuevas collections
+- **Total collections MongoDB: 9** (6 existentes + 3 nuevas de worker)
+
 
 #### Estructura de Directorios
 
@@ -366,6 +486,32 @@ cd mongodb && make migrate-up
   - Referencias a documentación
 
 ### Changed
+### Added (MongoDB - edugo-worker collections)
+
+- **Collection `material_summary`**: Resúmenes de materiales generados por OpenAI GPT-4
+  - Validación JSON Schema estricta
+  - 4 índices optimizados (1 unique en material_id)
+  - Soporte para múltiples idiomas (es, en, pt)
+  - Versionado para reprocesamiento
+  - Tracking de uso de tokens y tiempos de procesamiento
+  
+- **Collection `material_assessment_worker`**: Evaluaciones/quizzes automáticos generados por IA
+  - 3-20 preguntas por assessment
+  - Múltiples tipos de preguntas (multiple_choice, true_false, open)
+  - 5 índices optimizados (1 unique en material_id)
+  - Tracking de dificultad y puntos por pregunta
+  - Explicaciones automáticas para cada respuesta
+  
+- **Collection `material_event`**: Auditoría de eventos procesados por worker
+  - TTL index de 90 días (auto-eliminación automática)
+  - 7 índices para queries de auditoría
+  - Soporte para reintentos y error tracking
+  - Estados: pending, processing, completed, failed
+  
+- **6 nuevas migraciones MongoDB** (007-009 con UP/DOWN)
+- **3 seeds de datos de prueba** para las nuevas collections
+- **Total collections MongoDB: 9** (6 existentes + 3 nuevas de worker)
+
 - **Build tags agregados** para resolución de conflictos de compilación
   - migrate.go con tag `!mongodb` (PostgreSQL, por defecto)
   - mongodb_migrate.go con tag `mongodb` (requiere `-tags mongodb`)
@@ -425,6 +571,32 @@ cd mongodb && make migrate-up
 - CI/CD mejorado siguiendo patrón de edugo-shared
 
 ### Changed
+### Added (MongoDB - edugo-worker collections)
+
+- **Collection `material_summary`**: Resúmenes de materiales generados por OpenAI GPT-4
+  - Validación JSON Schema estricta
+  - 4 índices optimizados (1 unique en material_id)
+  - Soporte para múltiples idiomas (es, en, pt)
+  - Versionado para reprocesamiento
+  - Tracking de uso de tokens y tiempos de procesamiento
+  
+- **Collection `material_assessment_worker`**: Evaluaciones/quizzes automáticos generados por IA
+  - 3-20 preguntas por assessment
+  - Múltiples tipos de preguntas (multiple_choice, true_false, open)
+  - 5 índices optimizados (1 unique en material_id)
+  - Tracking de dificultad y puntos por pregunta
+  - Explicaciones automáticas para cada respuesta
+  
+- **Collection `material_event`**: Auditoría de eventos procesados por worker
+  - TTL index de 90 días (auto-eliminación automática)
+  - 7 índices para queries de auditoría
+  - Soporte para reintentos y error tracking
+  - Estados: pending, processing, completed, failed
+  
+- **6 nuevas migraciones MongoDB** (007-009 con UP/DOWN)
+- **3 seeds de datos de prueba** para las nuevas collections
+- **Total collections MongoDB: 9** (6 existentes + 3 nuevas de worker)
+
 - **release.yml** ahora valida todos los módulos antes de publicar
 - **ci.yml** con matrix strategy para Go 1.24 y 1.25
 - Release workflow extrae changelog automáticamente
