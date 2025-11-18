@@ -39,3 +39,9 @@ temp/
 
 # Seeds generated
 seeds/generated/
+
+# Compiled cmd binaries
+postgres/cmd/migrate/migrate
+postgres/cmd/runner/runner
+mongodb/cmd/migrate/migrate
+mongodb/cmd/runner/runner

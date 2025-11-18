@@ -1,73 +1,148 @@
-# Módulo PostgreSQL - edugo-infrastructure
+# PostgreSQL - Estructura de 4 Capas
 
-Módulo de migraciones para PostgreSQL del ecosistema EduGo.
+## 📁 Estructura
 
-## 🎯 Propósito
-
-Gestionar las migraciones de base de datos PostgreSQL de forma centralizada y controlada.
-
-## 🗄️ Tablas Gestionadas
-
-| Migración | Tabla | Descripción |
-|-----------|-------|-------------|
-| 001 | users | Usuarios del sistema (admin, teacher, student, guardian) |
-| 002 | schools | Instituciones educativas |
-| 003 | academic_units | Cursos, clases, secciones |
-| 004 | memberships | Relación usuario-escuela-curso |
-| 005 | materials | Materiales educativos |
-| 006 | assessment | Quizzes (referencia a MongoDB) |
-| 007 | assessment_attempt | Intentos de estudiantes |
-| 008 | assessment_attempt_answer | Respuestas individuales |
+```
+postgres/
+├── structure/          # Capa 1: Definición de tablas (sin FK, sin CHECK)
+│   ├── 001_users.sql
+│   ├── 002_schools.sql
+│   ├── 003_academic_units.sql
+│   ├── 004_memberships.sql
+│   ├── 005_materials.sql
+│   ├── 006_assessment.sql
+│   ├── 007_assessment_attempt.sql
+│   ├── 008_assessment_attempt_answer.sql
+│   ├── 009_extend_assessment.sql
+│   ├── 010_extend_attempt.sql
+│   └── 011_extend_answer.sql
+│
+├── constraints/        # Capa 2: Foreign Keys, UNIQUE, CHECK, Triggers, Views
+│   ├── 001_users.sql
+│   ├── 002_schools.sql
+│   ├── 003_academic_units.sql
+│   ├── 004_memberships.sql
+│   ├── 005_materials.sql
+│   ├── 006_assessment.sql
+│   ├── 007_assessment_attempt.sql
+│   ├── 008_assessment_attempt_answer.sql
+│   ├── 009_extend_assessment.sql
+│   ├── 010_extend_attempt.sql
+│   └── 011_extend_answer.sql
+│
+├── seeds/              # Capa 3: Datos iniciales/demo
+│   └── (vacío por ahora)
+│
+├── testing/            # Capa 4: Tests SQL
+│   └── (vacío por ahora)
+│
+├── cmd/
+│   ├── migrate/        # CLI de migraciones tradicionales (legacy)
+│   │   └── migrate.go
+│   └── runner/         # Runner de 4 capas (nuevo)
+│       └── runner.go
+│
+├── go.mod              # Módulo Go
+└── migrations/         # Migraciones originales (legacy)
+```
 
 ## 🚀 Uso
 
-### Ejecutar Migraciones
+### Ejecutar con runner (nueva arquitectura de 4 capas)
 
 ```bash
-cd postgres
-go run migrate.go up
+# Configurar variables de entorno (opcional)
+export POSTGRES_HOST=localhost
+export POSTGRES_PORT=5432
+export POSTGRES_USER=edugo
+export POSTGRES_PASSWORD=edugo_dev_2024
+export POSTGRES_DB=edugo_db
+
+# Opción 1: Ejecutar directamente
+cd cmd/runner
+go run .
+
+# Opción 2: Compilar y ejecutar
+cd cmd/runner
+go build -o runner .
+./runner
+
+# Opción 3: Desde el directorio postgres/
+go run ./cmd/runner
 ```
 
-### Ver Estado
+### Ejecutar migraciones tradicionales (legacy)
 
 ```bash
-go run migrate.go status
+# Ver ayuda
+cd cmd/migrate
+go run . --help
+
+# Aplicar migraciones
+go run . up
+
+# Revertir última migración
+go run . down
 ```
 
-### Revertir Última Migración
+### Salida esperada
 
-```bash
-go run migrate.go down
+```
+✓ Conectado a PostgreSQL: edugo@localhost:5432/edugo_db
+
+═══════════════════════════════════════════════════════════════
+  CAPA: STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+▸ Ejecutando: 001_users.sql
+  ✓ Éxito
+▸ Ejecutando: 002_schools.sql
+  ✓ Éxito
+...
+
+═══════════════════════════════════════════════════════════════
+  CAPA: CONSTRAINTS
+═══════════════════════════════════════════════════════════════
+
+▸ Ejecutando: 001_users.sql
+  ✓ Éxito
+...
+
+═══════════════════════════════════════════════════════════════
+  RESUMEN FINAL
+═══════════════════════════════════════════════════════════════
+✓ Archivos ejecutados: 22
+⊘ Archivos omitidos: 0
+✓ Todas las capas procesadas exitosamente
 ```
 
-### Crear Nueva Migración
+## 📋 Orden de ejecución
 
-```bash
-go run migrate.go create "add_column_to_users"
-```
+1. **STRUCTURE** (azul): Crea tablas, índices, comentarios
+2. **CONSTRAINTS** (púrpura): Agrega FK, UNIQUE, CHECK, triggers, views
+3. **SEEDS** (verde): Inserta datos iniciales
+4. **TESTING** (cyan): Ejecuta tests SQL
 
-## 🔧 Variables de Entorno
+## 🔧 Características
 
-```bash
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=edugo_dev
-DB_USER=edugo
-DB_PASSWORD=changeme
-DB_SSL_MODE=disable
-```
+- ✅ Separa estructura de constraints para evitar dependencias circulares
+- ✅ Preserva TODO: CHECK constraints, COMMENTS, UNIQUE, triggers, views
+- ✅ Nombres cortos: `001_users.sql` en lugar de `001_create_users.sql`
+- ✅ Mantiene orden 001-011 de migraciones originales
+- ✅ Runner Go con colores y resumen detallado
+- ✅ Idempotente: se puede ejecutar múltiples veces
+- ✅ Archivos 009-011 vacíos (extensiones ya incluidas en 006-008)
 
-## 📦 Importar en Proyectos
+## 🎯 Ventajas sobre migraciones
 
-```go
-import "github.com/EduGoGroup/edugo-infrastructure/postgres"
-```
+- **Atómico**: Se ejecuta todo o nada
+- **Rápido**: No hay control de versiones, ideal para dev
+- **Simple**: Un comando ejecuta todo
+- **Flexible**: Fácil agregar seeds y tests
+- **Visual**: Colores por capa para seguimiento claro
 
-## 📚 Documentación
+## 📝 Notas
 
-Ver documentación completa de ownership en: `../docs/TABLE_OWNERSHIP.md`
-
----
-
-**Versión:** 0.5.0  
-**Mantenedores:** Equipo EduGo
+- Los archivos 009, 010, 011 existen solo para compatibilidad
+- Las extensiones ya están incluidas en 006, 007, 008
+- Los directorios `seeds/` y `testing/` están preparados para uso futuro
