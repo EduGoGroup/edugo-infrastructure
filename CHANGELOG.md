@@ -1,5 +1,73 @@
 # Changelog - edugo-infrastructure
 
+## [0.8.0] - 2025-11-18 - 🧹 SIMPLIFICATION RELEASE
+
+### 🚨 BREAKING CHANGES
+
+**Simplificación de estructura de módulos**
+
+#### Módulos Eliminados
+
+1. **`migrations/`** → Movido a `postgres/testing/`
+   - El módulo `migrations/` era solo para testing de PostgreSQL
+   - Ahora es parte del módulo `postgres/` como subpaquete `testing/`
+   
+2. **`database/`** → Eliminado (obsoleto)
+   - Era el módulo monolítico pre-refactor v0.5.0
+   - Fue reemplazado por `postgres/` y `mongodb/` separados
+
+#### Migración Requerida para Proyectos Consumidores
+
+**Antes (obsoleto):**
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/migrations"
+
+migrations.ApplyMigrations(db, migrationsPath)
+migrations.ApplySeeds(db, seedsPath)
+migrations.CleanDatabase(db)
+```
+
+**Después (correcto):**
+```go
+import pgtesting "github.com/EduGoGroup/edugo-infrastructure/postgres/testing"
+
+pgtesting.ApplyMigrations(db, migrationsPath)
+pgtesting.ApplySeeds(db, seedsPath)
+pgtesting.CleanDatabase(db)
+```
+
+**Actualizar go.mod:**
+```bash
+# Eliminar módulo obsoleto
+go mod edit -dropreplace github.com/EduGoGroup/edugo-infrastructure/migrations
+
+# Actualizar postgres
+go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.8.0
+go mod tidy
+```
+
+#### Proyectos Afectados
+
+- ✅ **api-mobile** - Requiere actualización
+- ✅ **worker** - Requiere actualización (si usa)
+- ❌ **api-admin** - No afectado (no usa migrations/)
+
+---
+
+### Changed
+
+- **postgres/**: Ahora incluye subpaquete `testing/` con helpers de testing
+  - `testing.ApplyMigrations()` - Aplicar migraciones en tests
+  - `testing.ApplySeeds()` - Aplicar seeds en tests
+  - `testing.CleanDatabase()` - Limpiar base de datos en tests
+
+### Removed
+
+- **migrations/**: Eliminado, usar `postgres/testing/` en su lugar
+- **database/**: Eliminado, usar `postgres/` o `mongodb/` según necesidad
+
+---
+
 ## [0.7.1] - 2025-11-17 - 🏗️ SCHEMA EXTENSION RELEASE
 
 ### 🚨 BREAKING CHANGES
