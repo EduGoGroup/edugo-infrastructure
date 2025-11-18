@@ -40,7 +40,8 @@ Se ha creado exitosamente la estructura de 4 capas para PostgreSQL, separando la
 - `testing/.gitkeep` - Directorio preparado
 
 ### Infraestructura
-- `runner.go` - Runner Go funcional con colores por capa
+- `cmd/runner/runner.go` - Runner Go funcional con colores por capa
+- `cmd/migrate/migrate.go` - CLI de migraciones tradicionales (legacy)
 - `go.mod` - Módulo Go con dependencia lib/pq
 - `go.sum` - Checksums de dependencias
 - `README.md` - Documentación completa
@@ -109,11 +110,16 @@ Se ha creado exitosamente la estructura de 4 capas para PostgreSQL, separando la
 cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-infrastructure/postgres
 
 # Opción 1: Ejecutar directamente
-go run runner.go
+cd cmd/runner
+go run .
 
 # Opción 2: Compilar y ejecutar
-go build -o runner runner.go
+cd cmd/runner
+go build -o runner .
 ./runner
+
+# Opción 3: Desde postgres/
+go run ./cmd/runner
 ```
 
 ## 🎨 Salida Esperada

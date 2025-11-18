@@ -36,14 +36,19 @@ postgres/
 ├── testing/            # Capa 4: Tests SQL
 │   └── (vacío por ahora)
 │
-├── runner.go           # Runner Go para ejecutar las 4 capas
+├── cmd/
+│   ├── migrate/        # CLI de migraciones tradicionales (legacy)
+│   │   └── migrate.go
+│   └── runner/         # Runner de 4 capas (nuevo)
+│       └── runner.go
+│
 ├── go.mod              # Módulo Go
-└── migrations/         # (legacy) Migraciones originales
+└── migrations/         # Migraciones originales (legacy)
 ```
 
 ## 🚀 Uso
 
-### Ejecutar con runner.go
+### Ejecutar con runner (nueva arquitectura de 4 capas)
 
 ```bash
 # Configurar variables de entorno (opcional)
@@ -53,12 +58,31 @@ export POSTGRES_USER=edugo
 export POSTGRES_PASSWORD=edugo_dev_2024
 export POSTGRES_DB=edugo_db
 
-# Ejecutar runner
-go run runner.go
+# Opción 1: Ejecutar directamente
+cd cmd/runner
+go run .
 
-# O compilar y ejecutar
-go build -o runner runner.go
+# Opción 2: Compilar y ejecutar
+cd cmd/runner
+go build -o runner .
 ./runner
+
+# Opción 3: Desde el directorio postgres/
+go run ./cmd/runner
+```
+
+### Ejecutar migraciones tradicionales (legacy)
+
+```bash
+# Ver ayuda
+cd cmd/migrate
+go run . --help
+
+# Aplicar migraciones
+go run . up
+
+# Revertir última migración
+go run . down
 ```
 
 ### Salida esperada

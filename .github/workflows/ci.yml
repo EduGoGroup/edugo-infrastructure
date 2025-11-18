@@ -10,7 +10,7 @@ jobs:
   validate-migrations:
     name: Validar Migraciones SQL
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15-alpine
@@ -25,42 +25,41 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
-      
+          go-version: "1.24"
+
       - name: Ejecutar migraciones
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: edugo_test
-          DB_USER: edugo
-          DB_PASSWORD: test123
-          DB_SSL_MODE: disable
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: edugo_test
+          POSTGRES_USER: edugo
+          POSTGRES_PASSWORD: test123
         run: |
-          cd database
+          cd postgres
           go mod download
-          go run migrate.go up
+          go run cmd/migrate/migrate.go up
 
   test-modules:
     name: Tests de Módulos Go
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
-        module: [database, schemas]
-    
+        module: [postgres, mongodb, messaging, schemas]
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
-      
+          go-version: "1.24"
+
       - name: Run tests
         run: |
           cd ${{ matrix.module }}
