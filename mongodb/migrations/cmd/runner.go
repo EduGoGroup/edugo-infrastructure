@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/EduGoGroup/edugo-infrastructure/mongodb/constraints"
-	"github.com/EduGoGroup/edugo-infrastructure/mongodb/structure"
+	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/constraints"
+	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/structure"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

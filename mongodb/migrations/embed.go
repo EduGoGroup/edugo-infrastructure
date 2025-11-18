@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Nota: structure y constraints son subpaquetes del módulo migrations
+
 // ApplyAll ejecuta structure + constraints (base de datos limpia lista para usar)
 // Equivalente a: ApplyStructure() + ApplyConstraints()
 //
