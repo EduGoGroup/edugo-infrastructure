@@ -1,4 +1,0 @@
--- Extensión de constraints para assessment_attempt (migración 010)
--- Nota: Los constraints ya están en 007_assessment_attempt.sql
--- Este archivo existe solo para mantener compatibilidad con orden de migraciones
--- No requiere ejecutar nada adicional en constraints
