@@ -69,21 +69,26 @@ dev-reset: dev-teardown dev-setup ## Reset completo (teardown + setup)
 
 .PHONY: migrate-up
 migrate-up: ## Ejecutar migraciones pendientes
-	@echo "📊 Ejecutando migraciones..."
-	@cd database && go run migrate.go up
+	@echo "📊 Ejecutando migraciones PostgreSQL..."
+	@cd postgres && go run cmd/migrate/migrate.go up
 
 .PHONY: migrate-down
 migrate-down: ## Revertir última migración
-	@echo "⬇️  Revirtiendo migración..."
-	@cd database && go run migrate.go down
+	@echo "⬇️  Revirtiendo migración PostgreSQL..."
+	@cd postgres && go run cmd/migrate/migrate.go down
 
 .PHONY: migrate-status
 migrate-status: ## Ver estado de migraciones
-	@cd database && go run migrate.go status
+	@cd postgres && go run cmd/migrate/migrate.go status
 
 .PHONY: migrate-create
 migrate-create: ## Crear nueva migración (uso: make migrate-create NAME="add_column")
-	@cd database && go run migrate.go create "$(NAME)"
+	@cd postgres && go run cmd/migrate/migrate.go create "$(NAME)"
+
+.PHONY: runner-up
+runner-up: ## Ejecutar runner de 4 capas (estructura + constraints + seeds + testing)
+	@echo "🚀 Ejecutando runner de 4 capas..."
+	@cd postgres && go run cmd/runner/runner.go
 
 # ===================
 # SEEDS
@@ -128,8 +133,8 @@ status: ## Ver estado general del ambiente
 	@echo "Docker:"
 	@cd docker && docker-compose ps || echo "  Servicios no corriendo"
 	@echo ""
-	@echo "Migraciones:"
-	@cd database && go run migrate.go status 2>/dev/null || echo "  No ejecutadas aún"
+	@echo "Migraciones PostgreSQL:"
+	@cd postgres && go run cmd/migrate/migrate.go status 2>/dev/null || echo "  No ejecutadas aún"
 
 # Variables por defecto (pueden sobreescribirse con .env)
 DB_HOST ?= localhost
