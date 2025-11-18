@@ -18,8 +18,6 @@ CREATE TABLE IF NOT EXISTS assessment_attempt (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-    WHERE idempotency_key IS NOT NULL;
-
 COMMENT ON TABLE assessment_attempt IS 'Intentos de estudiantes en assessments';
 COMMENT ON COLUMN assessment_attempt.time_spent_seconds IS 'Tiempo total del intento en segundos (max 2 horas)';
 COMMENT ON COLUMN assessment_attempt.idempotency_key IS 'Clave para prevenir intentos duplicados';

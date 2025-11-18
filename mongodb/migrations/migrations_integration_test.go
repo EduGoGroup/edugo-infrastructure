@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// TestIntegration tests de integración con MongoDB real
+// TestIntegration tests de integración con MongoDB en testcontainer
 // Solo se ejecutan si ENABLE_INTEGRATION_TESTS=true
 func TestIntegration(t *testing.T) {
 	if os.Getenv("ENABLE_INTEGRATION_TESTS") != "true" {
@@ -21,23 +23,46 @@ func TestIntegration(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Conectar a MongoDB
-	uri := os.Getenv("MONGO_TEST_URL")
-	if uri == "" {
-		uri = "mongodb://localhost:27017"
+	// Crear testcontainer MongoDB
+	req := testcontainers.ContainerRequest{
+		Image:        "mongo:7",
+		ExposedPorts: []string{"27017/tcp"},
+		WaitingFor:   wait.ForLog("Waiting for connections"),
 	}
 
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		t.Fatalf("Error creando container: %v", err)
+	}
+	defer container.Terminate(ctx)
+
+	// Obtener endpoint
+	host, err := container.Host(ctx)
+	if err != nil {
+		t.Fatalf("Error obteniendo host: %v", err)
+	}
+
+	port, err := container.MappedPort(ctx, "27017")
+	if err != nil {
+		t.Fatalf("Error obteniendo puerto: %v", err)
+	}
+
+	// Conectar a MongoDB
+	uri := "mongodb://" + host + ":" + port.Port()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		t.Fatalf("Error conectando: %v", err)
 	}
 	defer client.Disconnect(ctx)
 
-	db := client.Database("edugo_test")
+	db := client.Database("testdb")
 
-	// Limpiar BD antes de empezar
-	dropAllCollections(t, ctx, db)
+	t.Log("✅ Container MongoDB creado y conectado")
 
+	// Ejecutar tests
 	t.Run("ApplyAll", testApplyAll(ctx, db))
 	t.Run("CRUD_MaterialAssessment", testCRUDMaterialAssessment(ctx, db))
 	t.Run("CRUD_Notifications", testCRUDNotifications(ctx, db))
@@ -167,13 +192,13 @@ func testCRUDNotifications(ctx context.Context, db *mongo.Database) func(*testin
 
 		// CREATE
 		doc := bson.M{
-			"user_id":  "usr_test_1",
-			"type":     "test_notification",
-			"title":    "Test Title",
-			"message":  "Test Message",
-			"status":   "unread",
-			"priority": "normal",
-			"created_at": time.Now(),
+			"user_id":           "usr_test_1",
+			"notification_type": "system.announcement",
+			"title":             "Test Title",
+			"message":           "Test Message",
+			"is_read":           false,
+			"priority":          "medium",
+			"created_at":        time.Now(),
 		}
 
 		result, err := coll.InsertOne(ctx, doc)
@@ -191,7 +216,7 @@ func testCRUDNotifications(ctx context.Context, db *mongo.Database) func(*testin
 		// UPDATE - marcar como leída
 		_, err = coll.UpdateOne(ctx,
 			bson.M{"_id": result.InsertedID},
-			bson.M{"$set": bson.M{"status": "read", "read_at": time.Now()}},
+			bson.M{"$set": bson.M{"is_read": true, "read_at": time.Now()}},
 		)
 		if err != nil {
 			t.Fatalf("Error actualizando: %v", err)
@@ -228,20 +253,5 @@ func testIndexesValidation(ctx context.Context, db *mongo.Database) func(*testin
 		}
 
 		t.Logf("✅ Índices creados: %d", len(indexes))
-	}
-}
-
-// dropAllCollections elimina todas las collections para empezar limpio
-func dropAllCollections(t *testing.T, ctx context.Context, db *mongo.Database) {
-	collections, err := db.ListCollectionNames(ctx, bson.M{})
-	if err != nil {
-		t.Logf("Warning: Error listando collections: %v", err)
-		return
-	}
-
-	for _, collection := range collections {
-		if err := db.Collection(collection).Drop(ctx); err != nil {
-			t.Logf("Warning: Error eliminando collection %s: %v", collection, err)
-		}
 	}
 }

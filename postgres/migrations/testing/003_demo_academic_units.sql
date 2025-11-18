@@ -1,27 +1,27 @@
 -- Mock Data: Unidades académicas de demostración
 
 -- Cursos de la Escuela Primaria
-INSERT INTO academic_units (id, school_id, name, unit_type, parent_id, created_at, updated_at) VALUES
+INSERT INTO academic_units (id, school_id, name, code, type, parent_unit_id, created_at, updated_at) VALUES
 -- Grados
-('au_primary_grade1', 'sch_demo_primary', 'Primer Grado', 'grade', NULL, NOW(), NOW()),
-('au_primary_grade2', 'sch_demo_primary', 'Segundo Grado', 'grade', NULL, NOW(), NOW()),
-('au_primary_grade3', 'sch_demo_primary', 'Tercer Grado', 'grade', NULL, NOW(), NOW()),
+('c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Primer Grado', 'G1', 'grade', NULL, NOW(), NOW()),
+('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Segundo Grado', 'G2', 'grade', NULL, NOW(), NOW()),
+('c3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Tercer Grado', 'G3', 'grade', NULL, NOW(), NOW()),
 
 -- Secciones de Primer Grado
-('au_primary_g1_a', 'sch_demo_primary', 'Sección A', 'section', 'au_primary_grade1', NOW(), NOW()),
-('au_primary_g1_b', 'sch_demo_primary', 'Sección B', 'section', 'au_primary_grade1', NOW(), NOW());
+('c4eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Sección A', 'G1A', 'section', 'c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', NOW(), NOW()),
+('c5eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Sección B', 'G1B', 'section', 'c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', NOW(), NOW());
 
 -- Cursos del Colegio Secundario
-INSERT INTO academic_units (id, school_id, name, unit_type, parent_id, created_at, updated_at) VALUES
--- Años
-('au_secondary_year1', 'sch_demo_secondary', 'Primer Año', 'year', NULL, NOW(), NOW()),
-('au_secondary_year2', 'sch_demo_secondary', 'Segundo Año', 'year', NULL, NOW(), NOW()),
+INSERT INTO academic_units (id, school_id, name, code, type, parent_unit_id, created_at, updated_at) VALUES
+-- Grados (Secundaria)
+('c6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', 'b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Primer Año', 'Y1', 'grade', NULL, NOW(), NOW()),
+('c7eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', 'b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Segundo Año', 'Y2', 'grade', NULL, NOW(), NOW()),
 
--- Divisiones de Primer Año
-('au_secondary_y1_div1', 'sch_demo_secondary', 'División 1', 'division', 'au_secondary_year1', NOW(), NOW()),
-('au_secondary_y1_div2', 'sch_demo_secondary', 'División 2', 'division', 'au_secondary_year1', NOW(), NOW());
+-- Secciones de Primer Año
+('c8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', 'b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Sección 1', 'Y1S1', 'section', 'c6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', NOW(), NOW()),
+('c9eebc99-9c0b-4ef8-bb6d-6bb9bd380a99', 'b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Sección 2', 'Y1S2', 'section', 'c6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', NOW(), NOW());
 
--- Cursos del Instituto Técnico
-INSERT INTO academic_units (id, school_id, name, unit_type, parent_id, created_at, updated_at) VALUES
-('au_tech_programming', 'sch_demo_tech', 'Programación I', 'course', NULL, NOW(), NOW()),
-('au_tech_databases', 'sch_demo_tech', 'Bases de Datos', 'course', NULL, NOW(), NOW());
+-- Cursos del Instituto Técnico (Departamentos)
+INSERT INTO academic_units (id, school_id, name, code, type, parent_unit_id, created_at, updated_at) VALUES
+('d1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'Programación I', 'PROG1', 'department', NULL, NOW(), NOW()),
+('d2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'Bases de Datos', 'DB1', 'department', NULL, NOW(), NOW());

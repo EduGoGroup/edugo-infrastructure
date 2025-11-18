@@ -1,26 +1,62 @@
 package migrations_test
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 	_ "github.com/lib/pq"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// TestIntegration tests de integración con PostgreSQL real
+// TestIntegration tests de integración con PostgreSQL en testcontainer
 // Solo se ejecutan si ENABLE_INTEGRATION_TESTS=true
 func TestIntegration(t *testing.T) {
 	if os.Getenv("ENABLE_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration tests. Set ENABLE_INTEGRATION_TESTS=true to run")
 	}
 
-	// Conectar a PostgreSQL
-	connStr := os.Getenv("POSTGRES_TEST_URL")
-	if connStr == "" {
-		connStr = "host=localhost port=5432 user=edugo password=edugo_dev_2024 dbname=edugo_test sslmode=disable"
+	ctx := context.Background()
+
+	// Crear testcontainer PostgreSQL
+	req := testcontainers.ContainerRequest{
+		Image:        "postgres:15-alpine",
+		ExposedPorts: []string{"5432/tcp"},
+		Env: map[string]string{
+			"POSTGRES_USER":     "test",
+			"POSTGRES_PASSWORD": "test",
+			"POSTGRES_DB":       "testdb",
+		},
+		WaitingFor: wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
 	}
+
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		t.Fatalf("Error creando container: %v", err)
+	}
+	defer container.Terminate(ctx)
+
+	// Obtener host y puerto
+	host, err := container.Host(ctx)
+	if err != nil {
+		t.Fatalf("Error obteniendo host: %v", err)
+	}
+
+	port, err := container.MappedPort(ctx, "5432")
+	if err != nil {
+		t.Fatalf("Error obteniendo puerto: %v", err)
+	}
+
+	// Conectar a PostgreSQL
+	connStr := fmt.Sprintf("host=%s port=%s user=test password=test dbname=testdb sslmode=disable",
+		host, port.Port())
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -32,9 +68,9 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("Error verificando conexión: %v", err)
 	}
 
-	// Limpiar BD antes de empezar
-	dropAllTables(t, db)
+	t.Log("✅ Container PostgreSQL creado y conectado")
 
+	// Ejecutar tests
 	t.Run("ApplyAll", testApplyAll(db))
 	t.Run("CRUD_Users", testCRUDUsers(db))
 	t.Run("CRUD_Schools", testCRUDSchools(db))
@@ -69,23 +105,26 @@ func testApplyAll(db *sql.DB) func(*testing.T) {
 				t.Errorf("Tabla %s no fue creada", table)
 			}
 		}
+
+		t.Logf("✅ Todas las %d tablas creadas correctamente", len(tables))
 	}
 }
 
 func testCRUDUsers(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// CREATE
+		// CREATE - Usar UUIDs válidos
+		userID := "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
 		_, err := db.Exec(`
 			INSERT INTO users (id, email, password_hash, role, first_name, last_name)
 			VALUES ($1, $2, $3, $4, $5, $6)
-		`, "usr_test_1", "test@edugo.com", "hash123", "student", "Test", "User")
+		`, userID, "test@edugo.com", "hash123", "student", "Test", "User")
 		if err != nil {
 			t.Fatalf("Error insertando usuario: %v", err)
 		}
 
 		// READ
 		var email, role string
-		err = db.QueryRow(`SELECT email, role FROM users WHERE id = $1`, "usr_test_1").Scan(&email, &role)
+		err = db.QueryRow(`SELECT email, role FROM users WHERE id = $1`, userID).Scan(&email, &role)
 		if err != nil {
 			t.Fatalf("Error leyendo usuario: %v", err)
 		}
@@ -94,44 +133,47 @@ func testCRUDUsers(db *sql.DB) func(*testing.T) {
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE users SET role = $1 WHERE id = $2`, "teacher", "usr_test_1")
+		_, err = db.Exec(`UPDATE users SET role = $1 WHERE id = $2`, "teacher", userID)
 		if err != nil {
 			t.Fatalf("Error actualizando usuario: %v", err)
 		}
 
-		err = db.QueryRow(`SELECT role FROM users WHERE id = $1`, "usr_test_1").Scan(&role)
+		err = db.QueryRow(`SELECT role FROM users WHERE id = $1`, userID).Scan(&role)
 		if err != nil || role != "teacher" {
 			t.Errorf("Update falló: role=%s", role)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM users WHERE id = $1`, "usr_test_1")
+		_, err = db.Exec(`DELETE FROM users WHERE id = $1`, userID)
 		if err != nil {
 			t.Fatalf("Error eliminando usuario: %v", err)
 		}
 
 		var count int
-		db.QueryRow(`SELECT COUNT(*) FROM users WHERE id = $1`, "usr_test_1").Scan(&count)
+		db.QueryRow(`SELECT COUNT(*) FROM users WHERE id = $1`, userID).Scan(&count)
 		if count != 0 {
 			t.Errorf("Usuario no fue eliminado")
 		}
+
+		t.Log("✅ CRUD users OK")
 	}
 }
 
 func testCRUDSchools(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// CREATE
+		// CREATE - Usar UUID válido e incluir code (NOT NULL)
+		schoolID := "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22"
 		_, err := db.Exec(`
-			INSERT INTO schools (id, name, address, city, country)
-			VALUES ($1, $2, $3, $4, $5)
-		`, "sch_test_1", "Escuela Test", "Calle 123", "Buenos Aires", "Argentina")
+			INSERT INTO schools (id, name, code, address, city, country)
+			VALUES ($1, $2, $3, $4, $5, $6)
+		`, schoolID, "Escuela Test", "SCH_TEST_001", "Calle 123", "Buenos Aires", "Argentina")
 		if err != nil {
 			t.Fatalf("Error insertando escuela: %v", err)
 		}
 
 		// READ
 		var name, city string
-		err = db.QueryRow(`SELECT name, city FROM schools WHERE id = $1`, "sch_test_1").Scan(&name, &city)
+		err = db.QueryRow(`SELECT name, city FROM schools WHERE id = $1`, schoolID).Scan(&name, &city)
 		if err != nil {
 			t.Fatalf("Error leyendo escuela: %v", err)
 		}
@@ -140,37 +182,52 @@ func testCRUDSchools(db *sql.DB) func(*testing.T) {
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE schools SET city = $1 WHERE id = $2`, "Córdoba", "sch_test_1")
+		_, err = db.Exec(`UPDATE schools SET city = $1 WHERE id = $2`, "Córdoba", schoolID)
 		if err != nil {
 			t.Fatalf("Error actualizando: %v", err)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM schools WHERE id = $1`, "sch_test_1")
+		_, err = db.Exec(`DELETE FROM schools WHERE id = $1`, schoolID)
 		if err != nil {
 			t.Fatalf("Error eliminando: %v", err)
 		}
+
+		t.Log("✅ CRUD schools OK")
 	}
 }
 
 func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// Primero crear school (FK dependency)
-		db.Exec(`INSERT INTO schools (id, name, address, city, country) VALUES ($1, $2, $3, $4, $5)`,
-			"sch_mat_test", "School FK", "Address", "City", "Country")
+		// Primero crear user y school (FK dependencies) - Nuevos IDs para no interferir con test anterior
+		userID := "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33"
+		schoolID := "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44"
+		materialID := "e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55"
+
+		_, err := db.Exec(`INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES ($1, $2, $3, $4, $5, $6)`,
+			userID, "teacher.mat@test.com", "hash", "teacher", "Teacher", "Material")
+		if err != nil {
+			t.Fatalf("Error creando user FK: %v", err)
+		}
+
+		_, err = db.Exec(`INSERT INTO schools (id, name, code, address, city, country) VALUES ($1, $2, $3, $4, $5, $6)`,
+			schoolID, "School FK", "SCH002", "Address", "City", "Country")
+		if err != nil {
+			t.Fatalf("Error creando school FK: %v", err)
+		}
 
 		// CREATE material
-		_, err := db.Exec(`
-			INSERT INTO materials (id, school_id, title, content_type, storage_provider, storage_key, created_by)
+		_, err = db.Exec(`
+			INSERT INTO materials (id, school_id, uploaded_by_teacher_id, title, file_url, file_type, file_size_bytes)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
-		`, "mat_test_1", "sch_mat_test", "Material Test", "document", "s3", "key123", "usr_creator")
+		`, materialID, schoolID, userID, "Material Test", "https://example.com/file.pdf", "application/pdf", 1024)
 		if err != nil {
 			t.Fatalf("Error insertando material: %v", err)
 		}
 
 		// READ
 		var title string
-		err = db.QueryRow(`SELECT title FROM materials WHERE id = $1`, "mat_test_1").Scan(&title)
+		err = db.QueryRow(`SELECT title FROM materials WHERE id = $1`, materialID).Scan(&title)
 		if err != nil {
 			t.Fatalf("Error leyendo material: %v", err)
 		}
@@ -179,30 +236,27 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE materials SET title = $1 WHERE id = $2`, "Material Updated", "mat_test_1")
+		_, err = db.Exec(`UPDATE materials SET title = $1 WHERE id = $2`, "Material Updated", materialID)
 		if err != nil {
 			t.Fatalf("Error actualizando: %v", err)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM materials WHERE id = $1`, "mat_test_1")
+		_, err = db.Exec(`DELETE FROM materials WHERE id = $1`, materialID)
 		if err != nil {
 			t.Fatalf("Error eliminando: %v", err)
 		}
 
 		// Cleanup FK
-		db.Exec(`DELETE FROM schools WHERE id = $1`, "sch_mat_test")
+		db.Exec(`DELETE FROM schools WHERE id = $1`, schoolID)
+		db.Exec(`DELETE FROM users WHERE id = $1`, userID)
+
+		t.Log("✅ CRUD materials OK")
 	}
 }
 
 func testApplyMockData(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// Limpiar y aplicar estructura de nuevo
-		dropAllTables(t, db)
-		if err := migrations.ApplyAll(db); err != nil {
-			t.Fatalf("Error aplicando migraciones: %v", err)
-		}
-
 		// Aplicar mock data
 		if err := migrations.ApplyMockData(db); err != nil {
 			t.Fatalf("Error aplicando mock data: %v", err)
@@ -220,27 +274,6 @@ func testApplyMockData(db *sql.DB) func(*testing.T) {
 			t.Error("Mock data no insertó escuelas")
 		}
 
-		t.Logf("✅ Mock data aplicado correctamente: %d usuarios, escuelas, etc.", count)
-	}
-}
-
-// dropAllTables elimina todas las tablas para empezar limpio
-func dropAllTables(t *testing.T, db *sql.DB) {
-	tables := []string{
-		"assessment_attempt_answer",
-		"assessment_attempt",
-		"assessment",
-		"materials",
-		"memberships",
-		"academic_units",
-		"schools",
-		"users",
-	}
-
-	for _, table := range tables {
-		_, err := db.Exec(`DROP TABLE IF EXISTS ` + table + ` CASCADE`)
-		if err != nil {
-			t.Logf("Warning: Error eliminando tabla %s: %v", table, err)
-		}
+		t.Logf("✅ Mock data aplicado correctamente")
 	}
 }
