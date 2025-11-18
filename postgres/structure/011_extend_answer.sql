@@ -1,0 +1,4 @@
+-- Extensión de assessment_attempt_answer (migración 011)
+-- Nota: Los campos ya están en 008_assessment_attempt_answer.sql
+-- Este archivo existe solo para mantener compatibilidad con orden de migraciones
+-- No requiere ejecutar nada adicional en structure

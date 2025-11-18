@@ -1,0 +1,4 @@
+-- Extensión de constraints para assessment_attempt_answer (migración 011)
+-- Nota: Los constraints ya están en 008_assessment_attempt_answer.sql
+-- Este archivo existe solo para mantener compatibilidad con orden de migraciones
+-- No requiere ejecutar nada adicional en constraints

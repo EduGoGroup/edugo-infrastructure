@@ -1,0 +1,4 @@
+-- Extensión de constraints para assessment (migración 009)
+-- Nota: Los constraints ya están en 006_assessment.sql
+-- Este archivo existe solo para mantener compatibilidad con orden de migraciones
+-- No requiere ejecutar nada adicional en constraints
