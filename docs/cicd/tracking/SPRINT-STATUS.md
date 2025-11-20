@@ -1,9 +1,43 @@
 # Estado del Sprint Actual
 
-**Proyecto:** edugo-shared  
-**Sprint:** Pendiente  
+⚠️ **UBICACIÓN:**
+```
+📍 Archivo: docs/cicd/tracking/SPRINT-STATUS.md
+📍 Este archivo se actualiza EN TIEMPO REAL
+📍 Lee ../PROMPTS.md para saber qué prompt usar
+```
+
+**Proyecto:** edugo-infrastructure  
+**Sprint:** Pendiente de iniciar  
 **Fase Actual:** Ninguna  
-**Última Actualización:** Pendiente
+**Última Actualización:** 20 Nov 2025, 19:00 hrs
+
+---
+
+## 🚦 INDICADORES RÁPIDOS
+
+```
+🎯 Sprint:        Sin sprint activo
+📊 Fase:          N/A
+📈 Progreso:      0% (0/0 tareas)
+⏱️ Última sesión: 20 Nov 2025, 19:00
+👤 Responsable:   Pendiente
+🔄 Branch:        N/A
+```
+
+---
+
+## 👉 PRÓXIMA ACCIÓN RECOMENDADA
+
+**Acción:** Iniciar Sprint 1 (CRÍTICO - Resolver fallos)
+
+**Prompts disponibles:**
+- Para SPRINT-1: Ver [../PROMPTS.md](../PROMPTS.md) → Fase 1
+- Para SPRINT-4: Ver [../PROMPTS.md](../PROMPTS.md) → Fase 1 (después de Sprint 1)
+
+**Sprints disponibles:**
+- [SPRINT-1-TASKS.md](../sprints/SPRINT-1-TASKS.md) - 🔴 CRÍTICO: Resolver fallos
+- [SPRINT-4-TASKS.md](../sprints/SPRINT-4-TASKS.md) - Workflows Reusables (futuro)
 
 ---
 
@@ -82,7 +116,7 @@
 ### Al Iniciar un Sprint:
 1. Actualizar sección "Sprint Activo"
 2. Llenar tabla de "FASE 1" con todas las tareas del sprint
-3. Inicializar contadores
+3. Inicializar contadores en "INDICADORES RÁPIDOS"
 
 ### Durante Ejecución:
 1. Actualizar estado de tareas en tiempo real
@@ -97,7 +131,7 @@
 
 ### Al Cambiar de Fase:
 1. Cerrar fase actual
-2. Actualizar "Fase Actual"
+2. Actualizar "Fase Actual" y "INDICADORES RÁPIDOS"
 3. Preparar tabla de siguiente fase
 
 ---
@@ -105,7 +139,7 @@
 ## 💬 Preguntas Rápidas
 
 **P: ¿Cuál es el sprint actual?**  
-R: Ver sección "Sprint Activo"
+R: Ver sección "Sprint Activo" o "INDICADORES RÁPIDOS"
 
 **P: ¿En qué tarea estoy?**  
 R: Buscar primera tarea con estado `🔄 En progreso`
@@ -119,7 +153,10 @@ R: Ver "Progreso Global" → Tareas pendientes
 **P: ¿Tengo stubs pendientes?**  
 R: Ver sección "Bloqueos y Decisiones"
 
+**P: ¿Qué prompt debo usar?**  
+R: Ver [../PROMPTS.md](../PROMPTS.md) según tu fase actual
+
 ---
 
-**Última actualización:** Pendiente  
+**Última actualización:** 20 Nov 2025, 19:00 hrs  
 **Generado por:** Claude Code

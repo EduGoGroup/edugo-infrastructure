@@ -1,5 +1,14 @@
 # Plan de Implementación CI/CD - edugo-infrastructure
 
+⚠️ **UBICACIÓN DE ESTE DOCUMENTO:**
+```
+📍 Ruta: docs/cicd/README.md (dentro del repo edugo-infrastructure)
+📍 Carpeta base: docs/cicd/
+📍 Todas las rutas son relativas a: docs/cicd/
+⚠️ NO confundir con: /edugo-infrastructure/README.md (README principal)
+⚠️ NO uses archivos fuera de docs/cicd/ (pueden ser versiones viejas)
+```
+
 **Proyecto:** edugo-infrastructure  
 **Tipo:** B (Librería compartida + **Hogar de Workflows Reusables**)  
 **Estado Actual:** 🔴 CRÍTICO - Success Rate: 20%  
@@ -339,7 +348,7 @@ documentation: "Completa con ejemplos"
 open README.md  # Este archivo
 
 # 2. Ejecutar solo tareas P0 del Sprint 1
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 # Ejecutar:
 # - Tarea 1.1: Analizar fallos (60 min)
 # - Tarea 1.2: Backup (15 min)
@@ -357,10 +366,10 @@ open SPRINT-1-TASKS.md
 ```bash
 # 1. Leer documentación completa (30 min)
 open README.md
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 
 # 2. Ejecutar Sprint 1 día por día (3-4 días)
-# Ver SPRINT-1-TASKS.md para detalles
+# Ver sprints/SPRINT-1-TASKS.md para detalles
 
 # 3. Validar y mergear
 # Total: 12-16 horas
@@ -373,7 +382,7 @@ open SPRINT-1-TASKS.md
 ```bash
 # 1. Esperar Sprint 1 completado y en prod
 # 2. Leer Sprint 4
-open SPRINT-4-TASKS.md
+open sprints/SPRINT-4-TASKS.md
 
 # 3. Diseñar workflows reusables
 # 4. Migrar proyectos consumidores
@@ -438,7 +447,7 @@ open SPRINT-4-TASKS.md
 gh run list --repo EduGoGroup/edugo-infrastructure --limit 10
 
 # 2. Comenzar análisis
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 # Ir a Tarea 1.1: Analizar Fallos
 
 # 3. Ejecutar solo P0
@@ -454,10 +463,10 @@ open SPRINT-1-TASKS.md
 open README.md
 
 # 2. Leer plan detallado
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 
 # 3. Ejecutar día por día
-# Ver cronograma en SPRINT-1-TASKS.md
+# Ver cronograma en sprints/SPRINT-1-TASKS.md
 ```
 
 ---
@@ -478,7 +487,7 @@ No hay Sprint 4 sin infrastructure ESTABLE
 
 **¡Es hora de resolver la crisis!**
 
-**Siguiente acción:** `open SPRINT-1-TASKS.md`
+**Siguiente acción:** `open sprints/SPRINT-1-TASKS.md`
 
 ---
 

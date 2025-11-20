@@ -2,14 +2,21 @@
 
 **🎯 Punto de Entrada Principal**
 
+⚠️ **UBICACIÓN DE ESTE ARCHIVO:**
+```
+📍 Ruta: docs/cicd/INDEX.md (dentro del repo edugo-infrastructure)
+📍 Todas las rutas son relativas a: docs/cicd/
+⚠️ NO uses archivos fuera de docs/cicd/ (pueden ser viejos)
+```
+
 ---
 
 ## 🗺️ Navegación Rápida
 
 ### Para Empezar
 1. **[README.md](./README.md)** ⭐ - Lee esto primero (10-15 min)
-2. **[SPRINT-1-TASKS.md](./SPRINT-1-TASKS.md)** ⭐⭐⭐ - Plan detallado Sprint 1 (Resolver fallos críticos)
-3. **[SPRINT-4-TASKS.md](./SPRINT-4-TASKS.md)** - Plan detallado Sprint 4 (Workflows reusables)
+2. **[sprints/SPRINT-1-TASKS.md](./sprints/SPRINT-1-TASKS.md)** ⭐⭐⭐ - Plan detallado Sprint 1 (Resolver fallos críticos)
+3. **[sprints/SPRINT-4-TASKS.md](./sprints/SPRINT-4-TASKS.md)** - Plan detallado Sprint 4 (Workflows reusables)
 
 ---
 
@@ -65,6 +72,26 @@ Total Estimado: 32-41 horas de implementación
 
 ## 🚀 Quick Actions
 
+### 🎯 USAR PROMPTS ESTÁNDAR
+**Archivo:** [PROMPTS.md](PROMPTS.md) ⭐⭐⭐
+
+Para ejecutar sprints de manera consistente:
+```bash
+# Ver prompts disponibles
+open PROMPTS.md
+
+# Copiar el prompt de la fase que necesitas (1, 2, o 3)
+# Pegar en Claude y seguir instrucciones
+```
+
+**Ventajas:**
+- ✅ Prompts no ambiguos y probados
+- ✅ Instrucciones paso a paso claras
+- ✅ Manejo automático de migajas (breadcrumbs)
+- ✅ Control de CI/CD con timeouts
+
+---
+
 ### Acción 1: VER FALLOS ACTUALES (URGENTE)
 ```bash
 # Ver último fallo
@@ -76,7 +103,12 @@ gh run list --repo EduGoGroup/edugo-infrastructure --limit 10 --json status,conc
 
 ### Acción 2: Comenzar Sprint 1 AHORA (CRÍTICO)
 ```bash
-open SPRINT-1-TASKS.md
+# Opción A: Usar prompt estándar (RECOMENDADO)
+open PROMPTS.md
+# Copiar prompt de FASE 1, reemplazar X con 1
+
+# Opción B: Manual
+open sprints/SPRINT-1-TASKS.md
 # Ir a Tarea 1.1: Analizar Fallos
 # Seguir instrucciones paso a paso
 ```
@@ -96,8 +128,22 @@ open README.md
 02-infrastructure/
 ├── INDEX.md                    ← Estás aquí
 ├── README.md                   ← Contexto crítico del proyecto
-├── SPRINT-1-TASKS.md          ← ⚠️ URGENTE: Resolver fallos
-└── SPRINT-4-TASKS.md          ← Workflows reusables (futuro)
+├── docs/                       ← Documentación y análisis
+├── sprints/                    ← Planes de sprint
+│   ├── SPRINT-1-TASKS.md      ← ⚠️ URGENTE: Resolver fallos
+│   ├── SPRINT-4-TASKS.md      ← Workflows reusables (futuro)
+│   ├── SPRINT-ENTITIES.md
+│   └── SPRINT-TRACKING.md
+├── tracking/                   ← Seguimiento de ejecución
+│   ├── REGLAS.md
+│   ├── SPRINT-STATUS.md
+│   ├── logs/
+│   ├── errors/
+│   ├── decisions/
+│   └── reviews/
+└── assets/                     ← Recursos auxiliares
+    ├── workflows/
+    └── scripts/
 
 Referencias:
 ├── ../../01-ANALISIS-ESTADO-ACTUAL.md
@@ -176,7 +222,7 @@ Día 4: Testing + PR (2-3h)
 
 ### Semanas 2-3: WORKFLOWS REUSABLES (Sprint 4)
 ```
-Ver: SPRINT-4-TASKS.md
+Ver: sprints/SPRINT-4-TASKS.md
 ```
 
 ---
@@ -185,16 +231,16 @@ Ver: SPRINT-4-TASKS.md
 
 ### Soy el Firefighter (URGENTE)
 → Lee: **README.md** (10 min)
-→ Ejecuta: **SPRINT-1-TASKS.md** Tareas 1.1-2.1 (4-6h)
+→ Ejecuta: **sprints/SPRINT-1-TASKS.md** Tareas 1.1-2.1 (4-6h)
 → Objetivo: Resolver fallos YA
 
 ### Soy el Implementador Completo
-→ Lee: **README.md** → **SPRINT-1-TASKS.md**
+→ Lee: **README.md** → **sprints/SPRINT-1-TASKS.md**
 → Ejecuta: Sprint 1 completo (12-16h)
 → Luego: Sprint 4 cuando Sprint 1 esté en prod
 
 ### Soy el Arquitecto de CI/CD
-→ Lee: **README.md** + **SPRINT-4-TASKS.md**
+→ Lee: **README.md** + **sprints/SPRINT-4-TASKS.md**
 → Diseña: Workflows reusables
 → Coordina: Migración de proyectos
 
@@ -285,13 +331,13 @@ Antes de comenzar:
 
 ```bash
 # MODO EMERGENCIA (4-6h)
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 # Ejecutar SOLO Tareas P0: 1.1, 1.2, 2.1, 2.2
 
 # MODO COMPLETO (12-16h)
 open README.md
 # Leer contexto completo
-# Luego ejecutar SPRINT-1-TASKS.md completo
+# Luego ejecutar sprints/SPRINT-1-TASKS.md completo
 ```
 
 ---
@@ -309,7 +355,7 @@ Has llegado al final del índice. Ahora entiendes:
 open README.md
 # Leer contexto (10 min)
 
-open SPRINT-1-TASKS.md
+open sprints/SPRINT-1-TASKS.md
 # Comenzar Tarea 1.1 YA
 ```
 
@@ -329,9 +375,9 @@ open SPRINT-1-TASKS.md
 **Nuevo:** Sistema completo de tracking y control de ejecución de sprints.
 
 ### Documentación:
-- **[SPRINT-TRACKING.md](SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
-- **[.sprint-tracking/REGLAS.md](.sprint-tracking/REGLAS.md)** - Reglas completas de ejecución
-- **[.sprint-tracking/SPRINT-STATUS.md](.sprint-tracking/SPRINT-STATUS.md)** - Estado en tiempo real
+- **[sprints/SPRINT-TRACKING.md](sprints/SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
+- **[tracking/REGLAS.md](tracking/REGLAS.md)** - Reglas completas de ejecución
+- **[tracking/SPRINT-STATUS.md](tracking/SPRINT-STATUS.md)** - Estado en tiempo real
 
 ### Características:
 - 🎯 **3 Fases:** Implementación → Resolución Stubs → Validación/CI/CD
@@ -340,5 +386,5 @@ open SPRINT-1-TASKS.md
 - ⏱️ **Control CI/CD:** Timeout de 5 minutos con polling
 - 🤖 **Clasificación Copilot:** Manejo inteligente de comentarios
 
-**Ver:** [SPRINT-TRACKING.md](SPRINT-TRACKING.md) para comenzar.
+**Ver:** [sprints/SPRINT-TRACKING.md](sprints/SPRINT-TRACKING.md) para comenzar.
 
