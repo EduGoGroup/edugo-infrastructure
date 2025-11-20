@@ -21,10 +21,11 @@ var Files embed.FS
 // Uso típico: Inicializar base de datos en ambiente de desarrollo o testing
 //
 // Ejemplo:
-//   import "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
-//   if err := migrations.ApplyAll(db); err != nil {
-//       log.Fatal(err)
-//   }
+//
+//	import "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+//	if err := migrations.ApplyAll(db); err != nil {
+//	    log.Fatal(err)
+//	}
 func ApplyAll(db *sql.DB) error {
 	if err := ApplyStructure(db); err != nil {
 		return fmt.Errorf("error aplicando structure: %w", err)
@@ -41,7 +42,8 @@ func ApplyAll(db *sql.DB) error {
 // Uso típico: Cuando necesitas crear tablas en orden específico sin dependencias
 //
 // Ejemplo:
-//   migrations.ApplyStructure(db)
+//
+//	migrations.ApplyStructure(db)
 func ApplyStructure(db *sql.DB) error {
 	return applyLayer(db, "structure")
 }
@@ -52,8 +54,9 @@ func ApplyStructure(db *sql.DB) error {
 // Uso típico: Agregar constraints después de haber creado las tablas
 //
 // Ejemplo:
-//   migrations.ApplyStructure(db)
-//   migrations.ApplyConstraints(db)
+//
+//	migrations.ApplyStructure(db)
+//	migrations.ApplyConstraints(db)
 func ApplyConstraints(db *sql.DB) error {
 	return applyLayer(db, "constraints")
 }
@@ -64,8 +67,9 @@ func ApplyConstraints(db *sql.DB) error {
 // Uso típico: Inicializar datos mínimos en ambiente de producción/staging
 //
 // Ejemplo:
-//   migrations.ApplyAll(db)
-//   migrations.ApplySeeds(db)  // Datos iniciales
+//
+//	migrations.ApplyAll(db)
+//	migrations.ApplySeeds(db)  // Datos iniciales
 func ApplySeeds(db *sql.DB) error {
 	return applyLayer(db, "seeds")
 }
@@ -76,8 +80,9 @@ func ApplySeeds(db *sql.DB) error {
 // Uso típico: Tests de integración, ambiente de desarrollo
 //
 // Ejemplo:
-//   migrations.ApplyAll(db)
-//   migrations.ApplyMockData(db)  // Datos de prueba
+//
+//	migrations.ApplyAll(db)
+//	migrations.ApplyMockData(db)  // Datos de prueba
 func ApplyMockData(db *sql.DB) error {
 	return applyLayer(db, "testing")
 }
@@ -93,11 +98,12 @@ func ApplyMockData(db *sql.DB) error {
 //   - error: Si el script no existe
 //
 // Ejemplo:
-//   script, err := migrations.GetScript("structure/001_users.sql")
-//   if err != nil {
-//       log.Fatal(err)
-//   }
-//   db.Exec(script)
+//
+//	script, err := migrations.GetScript("structure/001_users.sql")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	db.Exec(script)
 func GetScript(name string) (string, error) {
 	content, err := Files.ReadFile(name)
 	if err != nil {
@@ -110,18 +116,20 @@ func GetScript(name string) (string, error) {
 // Útil para inspeccionar qué scripts están disponibles
 //
 // Retorna map con estructura:
-//   {
-//     "structure": ["001_users.sql", "002_schools.sql", ...],
-//     "constraints": ["001_users.sql", ...],
-//     "seeds": [...],
-//     "testing": [...]
-//   }
+//
+//	{
+//	  "structure": ["001_users.sql", "002_schools.sql", ...],
+//	  "constraints": ["001_users.sql", ...],
+//	  "seeds": [...],
+//	  "testing": [...]
+//	}
 //
 // Ejemplo:
-//   scripts := migrations.ListScripts()
-//   for layer, files := range scripts {
-//       fmt.Printf("%s: %v\n", layer, files)
-//   }
+//
+//	scripts := migrations.ListScripts()
+//	for layer, files := range scripts {
+//	    fmt.Printf("%s: %v\n", layer, files)
+//	}
 func ListScripts() map[string][]string {
 	result := make(map[string][]string)
 	layers := []string{"structure", "constraints", "seeds", "testing"}
@@ -155,11 +163,12 @@ func ListScripts() map[string][]string {
 //   - map[string]string: Mapa de nombre_archivo -> contenido
 //
 // Ejemplo:
-//   scripts, err := migrations.GetScriptsByLayer("structure")
-//   for name, content := range scripts {
-//       fmt.Printf("Script: %s\n", name)
-//       db.Exec(content)
-//   }
+//
+//	scripts, err := migrations.GetScriptsByLayer("structure")
+//	for name, content := range scripts {
+//	    fmt.Printf("Script: %s\n", name)
+//	    db.Exec(content)
+//	}
 func GetScriptsByLayer(layer string) (map[string]string, error) {
 	validLayers := map[string]bool{
 		"structure":   true,

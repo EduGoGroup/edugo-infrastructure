@@ -23,9 +23,9 @@ func TestMaterialDeletedValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -41,10 +41,10 @@ func TestMaterialDeletedValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
-				"reason":              "Material obsoleto",
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
+				"reason":             "Material obsoleto",
 			},
 		}
 
@@ -78,9 +78,9 @@ func TestMaterialDeletedValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         "not-a-uuid",
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        "not-a-uuid",
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -96,9 +96,9 @@ func TestMaterialDeletedValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16 10:00:00", // Formato incorrecto
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -114,9 +114,9 @@ func TestMaterialDeletedValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -159,11 +159,11 @@ func TestStudentEnrolledValidation(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"student_id":           uuid.New().String(),
-				"school_id":            uuid.New().String(),
-				"membership_id":        uuid.New().String(),
-				"academic_unit_id":     uuid.New().String(),
-				"enrolled_by_user_id":  uuid.New().String(),
+				"student_id":          uuid.New().String(),
+				"school_id":           uuid.New().String(),
+				"membership_id":       uuid.New().String(),
+				"academic_unit_id":    uuid.New().String(),
+				"enrolled_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -217,9 +217,9 @@ func TestEventTypeValidation(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		event       map[string]interface{}
-		shouldError bool
+		name          string
+		event         map[string]interface{}
+		shouldError   bool
 		errorContains string
 	}{
 		{
@@ -230,7 +230,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError: true,
+			shouldError:   true,
 			errorContains: "event_type faltante",
 		},
 		{
@@ -241,7 +241,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":  "2025-11-16T10:00:00Z",
 				"payload":    map[string]interface{}{},
 			},
-			shouldError: true,
+			shouldError:   true,
 			errorContains: "event_version faltante",
 		},
 		{
@@ -253,7 +253,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError: true,
+			shouldError:   true,
 			errorContains: "schema no encontrado",
 		},
 		{
@@ -265,7 +265,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError: true,
+			shouldError:   true,
 			errorContains: "schema no encontrado",
 		},
 		{
@@ -277,7 +277,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError: true,
+			shouldError:   true,
 			errorContains: "event_type faltante",
 		},
 	}
@@ -315,9 +315,9 @@ func TestInvalidFormats(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -333,9 +333,9 @@ func TestInvalidFormats(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         "",
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        "",
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -351,9 +351,9 @@ func TestInvalidFormats(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -369,9 +369,9 @@ func TestInvalidFormats(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "16/11/2025 10:00:00",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -387,9 +387,9 @@ func TestInvalidFormats(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         12345,
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        12345,
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -413,9 +413,9 @@ func TestValidateJSONMethod(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -468,9 +468,9 @@ func TestValidateWithType(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -486,9 +486,9 @@ func TestValidateWithType(t *testing.T) {
 			"event_version": "1.0",
 			"timestamp":     "2025-11-16T10:00:00Z",
 			"payload": map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		}
 
@@ -527,18 +527,18 @@ func TestAllFourSchemas(t *testing.T) {
 			eventType:    "assessment.generated",
 			eventVersion: "1.0",
 			payload: map[string]interface{}{
-				"material_id":        uuid.New().String(),
-				"mongo_document_id":  "507f1f77bcf86cd799439011", // MongoDB ObjectID válido (24 hex chars)
-				"questions_count":    10, // integer, no float
+				"material_id":       uuid.New().String(),
+				"mongo_document_id": "507f1f77bcf86cd799439011", // MongoDB ObjectID válido (24 hex chars)
+				"questions_count":   10,                         // integer, no float
 			},
 		},
 		{
 			eventType:    "material.deleted",
 			eventVersion: "1.0",
 			payload: map[string]interface{}{
-				"material_id":         uuid.New().String(),
-				"school_id":           uuid.New().String(),
-				"deleted_by_user_id":  uuid.New().String(),
+				"material_id":        uuid.New().String(),
+				"school_id":          uuid.New().String(),
+				"deleted_by_user_id": uuid.New().String(),
 			},
 		},
 		{
