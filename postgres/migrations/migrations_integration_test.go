@@ -16,6 +16,9 @@ import (
 // TestIntegration tests de integración con PostgreSQL en testcontainer
 // Solo se ejecutan si ENABLE_INTEGRATION_TESTS=true
 func TestIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
 	if os.Getenv("ENABLE_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration tests. Set ENABLE_INTEGRATION_TESTS=true to run")
 	}
