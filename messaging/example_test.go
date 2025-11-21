@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/EduGoGroup/edugo-infrastructure/schemas"
+	messaging "github.com/EduGoGroup/edugo-infrastructure/messaging"
 	"github.com/google/uuid"
 )
 
 func TestMaterialUploadedValidation(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestMaterialUploadedValidation(t *testing.T) {
 }
 
 func TestValidateJSON(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}

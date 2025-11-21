@@ -1,0 +1,141 @@
+name: Sync Branches (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      source-branch:
+        description: 'Branch de origen'
+        required: false
+        type: string
+        default: 'main'
+
+      target-branch:
+        description: 'Branch de destino'
+        required: false
+        type: string
+        default: 'dev'
+
+      create-pr-on-conflict:
+        description: 'Crear PR si hay conflictos'
+        required: false
+        type: boolean
+        default: true
+
+      auto-merge:
+        description: 'Auto-merge si no hay conflictos'
+        required: false
+        type: boolean
+        default: true
+
+    outputs:
+      result:
+        description: 'Resultado de la sincronizacion'
+        value: ${{ jobs.sync.outputs.result }}
+
+      has-conflicts:
+        description: 'Si hubo conflictos'
+        value: ${{ jobs.sync.outputs.has-conflicts }}
+
+      pr-number:
+        description: 'Numero de PR creado (si aplica)'
+        value: ${{ jobs.sync.outputs.pr-number }}
+
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  sync:
+    name: Sync ${{ inputs.source-branch }} -> ${{ inputs.target-branch }}
+    runs-on: ubuntu-latest
+
+    outputs:
+      result: ${{ steps.sync.outcome }}
+      has-conflicts: ${{ steps.merge.outputs.has-conflicts }}
+      pr-number: ${{ steps.create-pr.outputs.pr-number }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch branches
+        run: |
+          echo "Fetching branches..."
+          git fetch origin ${{ inputs.source-branch }}
+          git fetch origin ${{ inputs.target-branch }}
+
+      - name: Attempt merge
+        id: merge
+        run: |
+          echo "=========================================="
+          echo "Sincronizando branches"
+          echo "=========================================="
+          echo "Source: ${{ inputs.source-branch }}"
+          echo "Target: ${{ inputs.target-branch }}"
+          echo "=========================================="
+
+          git checkout ${{ inputs.target-branch }}
+
+          # Intentar merge
+          if git merge origin/${{ inputs.source-branch }} --no-edit; then
+            echo "has-conflicts=false" >> $GITHUB_OUTPUT
+            echo "Merge exitoso sin conflictos"
+
+            if [ "${{ inputs.auto-merge }}" == "true" ]; then
+              echo "Pushing changes..."
+              git push origin ${{ inputs.target-branch }}
+              echo "Push completado"
+            fi
+          else
+            echo "has-conflicts=true" >> $GITHUB_OUTPUT
+            echo "Conflictos detectados"
+            git merge --abort
+            exit 0
+          fi
+
+      - name: Create PR on conflicts
+        id: create-pr
+        if: steps.merge.outputs.has-conflicts == 'true' && inputs.create-pr-on-conflict
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Sync ${{ inputs.source-branch }} -> ${{ inputs.target-branch }}`,
+              head: '${{ inputs.source-branch }}',
+              base: '${{ inputs.target-branch }}',
+              body: `Sincronizacion automatica de \`${{ inputs.source-branch }}\` a \`${{ inputs.target-branch }}\`.
+
+            ⚠️ **CONFLICTOS DETECTADOS**
+
+            Por favor, resuelve los conflictos manualmente y mergea este PR.
+
+            ---
+            🤖 Generado automaticamente por GitHub Actions`
+            });
+
+            core.setOutput('pr-number', pr.number);
+            console.log(`PR creado: #${pr.number}`);
+
+      - name: Sync Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Sync Summary"
+          echo "=========================================="
+          echo "Source: ${{ inputs.source-branch }}"
+          echo "Target: ${{ inputs.target-branch }}"
+          echo "Status: ${{ steps.merge.outcome }}"
+          echo "Conflicts: ${{ steps.merge.outputs.has-conflicts }}"
+          echo "PR Number: ${{ steps.create-pr.outputs.pr-number }}"
+          echo "=========================================="
