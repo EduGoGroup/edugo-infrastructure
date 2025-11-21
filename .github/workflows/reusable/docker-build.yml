@@ -1,0 +1,109 @@
+name: Docker Build (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        description: 'Nombre de la imagen (sin registry)'
+        required: true
+        type: string
+
+      registry:
+        description: 'Registry de Docker'
+        required: false
+        type: string
+        default: 'ghcr.io'
+
+      context:
+        description: 'Contexto de build'
+        required: false
+        type: string
+        default: '.'
+
+      dockerfile:
+        description: 'Path al Dockerfile'
+        required: false
+        type: string
+        default: 'Dockerfile'
+
+      platforms:
+        description: 'Plataformas para build multi-arch'
+        required: false
+        type: string
+        default: 'linux/amd64,linux/arm64'
+
+      push:
+        description: 'Push al registry'
+        required: false
+        type: boolean
+        default: true
+
+      tags:
+        description: 'Tags adicionales (separados por salto de linea)'
+        required: false
+        type: string
+        default: ''
+
+      build-args:
+        description: 'Build arguments (separados por salto de linea)'
+        required: false
+        type: string
+        default: ''
+
+    outputs:
+      image:
+        description: 'Full image name with tags'
+        value: ${{ jobs.build.outputs.image }}
+
+      digest:
+        description: 'Image digest'
+        value: ${{ jobs.build.outputs.digest }}
+
+      metadata:
+        description: 'Build metadata'
+        value: ${{ jobs.build.outputs.metadata }}
+
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build.outputs.digest }}
+      metadata: ${{ steps.meta.outputs.json }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/docker-build-edugo@main
+        id: build
+        with:
+          image-name: ${{ inputs.image-name }}
+          registry: ${{ inputs.registry }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ inputs.context }}
+          dockerfile: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: ${{ inputs.push }}
+          tags: ${{ inputs.tags }}
+          build-args: ${{ inputs.build-args }}
+
+      - name: Build Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Docker Build Summary"
+          echo "=========================================="
+          echo "Image: ${{ inputs.registry }}/${{ github.repository_owner }}/${{ inputs.image-name }}"
+          echo "Platforms: ${{ inputs.platforms }}"
+          echo "Push: ${{ inputs.push }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
+          echo "=========================================="
