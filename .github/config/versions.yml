@@ -1,0 +1,34 @@
+# Versiones centralizadas para workflows reusables
+# Actualizar aqui y todos los workflows se actualizan
+
+go:
+  version: "1.25"
+  versions_matrix:
+    - "1.24"
+    - "1.25"
+    - "1.26"
+
+tools:
+  golangci-lint: "v1.64.7"
+
+github-actions:
+  checkout: "v4"
+  setup-go: "v5"
+  upload-artifact: "v4"
+  download-artifact: "v4"
+  github-script: "v7"
+
+docker:
+  setup-buildx: "v3"
+  login-action: "v3"
+  build-push-action: "v5"
+  metadata-action: "v5"
+
+coverage:
+  default-threshold: 33
+
+# Configuracion de EduGo
+edugo:
+  goprivate: "github.com/EduGoGroup/*"
+  docker-registry: "ghcr.io"
+  docker-platforms: "linux/amd64,linux/arm64"
