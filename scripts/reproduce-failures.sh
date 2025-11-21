@@ -3,6 +3,7 @@
 # Intenta reproducir los fallos identificados localmente
 
 set -e
+set -o pipefail
 
 echo "🔬 Reproduciendo fallos de CI localmente..."
 echo "Versión de Go: $(go version)"

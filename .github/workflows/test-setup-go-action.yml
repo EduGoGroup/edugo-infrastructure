@@ -31,10 +31,10 @@ jobs:
       - name: Test con version especifica
         uses: ./.github/actions/setup-edugo-go
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: false
 
       - name: Verificar version
         run: |
-          go version | grep -q "go1.24" || exit 1
+          go version | grep -q "go1.25" || exit 1
           echo "Version correcta verificada"

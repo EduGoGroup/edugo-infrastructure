@@ -336,6 +336,8 @@ func createMigration(description string) error {
 //     }
 //   }
 // });
+//
+// db.collection("new_collection").createIndex({ field1: 1 }, { unique: true });
 
 print("✅ Migration %s UP completed");
 `,
@@ -346,7 +348,7 @@ print("✅ Migration %s UP completed");
 
 // TODO: Escribir código JavaScript para revertir migración
 // Ejemplo:
-// db.new_collection.drop();
+// db.collection("new_collection").drop();
 
 print("✅ Migration %s DOWN completed");
 `,
@@ -492,30 +494,12 @@ func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
 }
 
 func executeMigrationScript(db *mongo.Database, script string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	// La función eval es un command de mongo que permite ejecutar JS
-	// El script se pasa como una función anónima para que se ejecute en el servidor
-	command := bson.D{
-		{Key: "eval", Value: fmt.Sprintf("function() { %s }", script)},
-	}
-
-	var result bson.M
-	if err := db.RunCommand(ctx, command).Decode(&result); err != nil {
+	runner := newScriptRunner(ctx, db)
+	if err := runner.Run(script); err != nil {
 		return fmt.Errorf("error ejecutando script de migración: %w", err)
-	}
-
-	// Verificar si la ejecución del script en sí misma devolvió un error
-	if retval, ok := result["retval"]; ok {
-		if errval, ok := retval.(bson.M)["err"]; ok {
-			return fmt.Errorf("error en script de migración: %v", errval)
-		}
-	}
-
-	// `eval` puede retornar `ok: 0.0` si hay un error de sintaxis o similar
-	if okValue, ok := result["ok"].(float64); ok && okValue == 0.0 {
-		return fmt.Errorf("falló la ejecución del script: %v", result["errmsg"])
 	}
 
 	return nil

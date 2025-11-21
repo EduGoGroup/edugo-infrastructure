@@ -5,13 +5,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/EduGoGroup/edugo-infrastructure/schemas"
+	messaging "github.com/EduGoGroup/edugo-infrastructure/messaging"
 	"github.com/google/uuid"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // TestMaterialDeletedValidation valida el evento material.deleted
 func TestMaterialDeletedValidation(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -129,7 +130,7 @@ func TestMaterialDeletedValidation(t *testing.T) {
 
 // TestStudentEnrolledValidation valida el evento student.enrolled
 func TestStudentEnrolledValidation(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -211,7 +212,7 @@ func TestStudentEnrolledValidation(t *testing.T) {
 
 // TestEventTypeValidation valida edge cases relacionados con event_type y event_version
 func TestEventTypeValidation(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -230,8 +231,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError:   true,
-			errorContains: "event_type faltante",
+		shouldError:   true,
+		errorContains: "event_type missing or invalid",
 		},
 		{
 			name: "missing_event_version",
@@ -241,8 +242,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":  "2025-11-16T10:00:00Z",
 				"payload":    map[string]interface{}{},
 			},
-			shouldError:   true,
-			errorContains: "event_version faltante",
+		shouldError:   true,
+		errorContains: "event_version missing or invalid",
 		},
 		{
 			name: "unknown_event_type",
@@ -253,8 +254,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError:   true,
-			errorContains: "schema no encontrado",
+		shouldError:   true,
+		errorContains: "schema not found",
 		},
 		{
 			name: "unknown_event_version",
@@ -265,8 +266,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError:   true,
-			errorContains: "schema no encontrado",
+		shouldError:   true,
+		errorContains: "schema not found",
 		},
 		{
 			name: "event_type_wrong_type",
@@ -277,8 +278,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-			shouldError:   true,
-			errorContains: "event_type faltante",
+		shouldError:   true,
+		errorContains: "failed to unmarshal event metadata",
 		},
 	}
 
@@ -303,7 +304,7 @@ func TestEventTypeValidation(t *testing.T) {
 
 // TestInvalidFormats valida casos de formatos inválidos
 func TestInvalidFormats(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -401,7 +402,7 @@ func TestInvalidFormats(t *testing.T) {
 
 // TestValidateJSONMethod valida el método ValidateJSON con bytes (casos exhaustivos)
 func TestValidateJSONMethod(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -456,7 +457,7 @@ func TestValidateJSONMethod(t *testing.T) {
 
 // TestValidateWithType valida el método ValidateWithType
 func TestValidateWithType(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -474,7 +475,8 @@ func TestValidateWithType(t *testing.T) {
 			},
 		}
 
-		if err := validator.ValidateWithType(event, "material.deleted", "1.0"); err != nil {
+		loader := gojsonschema.NewGoLoader(event)
+		if err := validator.ValidateWithType(loader, "material.deleted", "1.0"); err != nil {
 			t.Errorf("Validación falló: %v", err)
 		}
 	})
@@ -492,8 +494,9 @@ func TestValidateWithType(t *testing.T) {
 			},
 		}
 
+		loader := gojsonschema.NewGoLoader(event)
 		// Validar como student.enrolled aunque el payload es de material.deleted
-		if err := validator.ValidateWithType(event, "student.enrolled", "1.0"); err == nil {
+		if err := validator.ValidateWithType(loader, "student.enrolled", "1.0"); err == nil {
 			t.Error("Se esperaba error por payload incompatible")
 		}
 	})
@@ -501,7 +504,7 @@ func TestValidateWithType(t *testing.T) {
 
 // TestAllFourSchemas valida que los 4 schemas funcionan correctamente
 func TestAllFourSchemas(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -571,7 +574,7 @@ func TestAllFourSchemas(t *testing.T) {
 
 // TestNotObjectEvent valida el comportamiento cuando el evento no es un objeto
 func TestNotObjectEvent(t *testing.T) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		t.Fatalf("Error creando validador: %v", err)
 	}
@@ -592,7 +595,7 @@ func TestNotObjectEvent(t *testing.T) {
 
 // BenchmarkValidation mide la performance de validación con 10,000 eventos
 func BenchmarkValidation(b *testing.B) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		b.Fatalf("Error creando validador: %v", err)
 	}
@@ -620,7 +623,7 @@ func BenchmarkValidation(b *testing.B) {
 
 // BenchmarkValidationJSON mide la performance de ValidateJSON
 func BenchmarkValidationJSON(b *testing.B) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		b.Fatalf("Error creando validador: %v", err)
 	}
@@ -650,7 +653,7 @@ func BenchmarkValidationJSON(b *testing.B) {
 
 // BenchmarkValidation10000 valida específicamente 10,000 eventos
 func BenchmarkValidation10000(b *testing.B) {
-	validator, err := schemas.NewEventValidator()
+	validator, err := messaging.NewEventValidator()
 	if err != nil {
 		b.Fatalf("Error creando validador: %v", err)
 	}

@@ -4,9 +4,7 @@
 go:
   version: "1.25"
   versions_matrix:
-    - "1.24"
     - "1.25"
-    - "1.26"
 
 tools:
   golangci-lint: "v1.64.7"

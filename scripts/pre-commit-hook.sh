@@ -3,6 +3,7 @@
 # Ejecuta checks básicos antes de permitir commit
 
 set -e
+set -o pipefail
 
 echo "🔍 Ejecutando pre-commit hooks..."
 echo ""

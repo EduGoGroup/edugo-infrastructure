@@ -51,9 +51,12 @@ runs:
       shell: bash
       run: |
         echo "Configurando acceso a repos privados de EduGoGroup..."
-        git config --global url."https://${{ inputs.github-token }}@github.com/".insteadOf "https://github.com/"
+        echo "::add-mask::${GH_TOKEN}"
+        git config --global url."https://${GH_ACTOR}:${GH_TOKEN}@github.com/EduGoGroup/".insteadOf "https://github.com/EduGoGroup/"
       env:
         GOPRIVATE: github.com/EduGoGroup/*
+        GH_TOKEN: ${{ inputs.github-token }}
+        GH_ACTOR: ${{ github.actor }}
 
     - name: Verificar configuracion
       shell: bash
