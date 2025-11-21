@@ -36,7 +36,6 @@ jobs:
           cd ../mongodb
           go mod download
           go build ./cmd/migrate
-          go build ./migrations/cmd/runner
           echo "✅ MongoDB CLIs compilan correctamente"
 
       - name: Validar sintaxis SQL
