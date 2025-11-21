@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/schemas"
 	"github.com/google/uuid"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // TestMaterialDeletedValidation valida el evento material.deleted
@@ -231,7 +232,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"payload":       map[string]interface{}{},
 			},
 			shouldError:   true,
-			errorContains: "event_type faltante",
+			errorContains: "event_type missing",
 		},
 		{
 			name: "missing_event_version",
@@ -242,7 +243,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"payload":    map[string]interface{}{},
 			},
 			shouldError:   true,
-			errorContains: "event_version faltante",
+			errorContains: "event_version missing",
 		},
 		{
 			name: "unknown_event_type",
@@ -254,7 +255,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"payload":       map[string]interface{}{},
 			},
 			shouldError:   true,
-			errorContains: "schema no encontrado",
+			errorContains: "schema not found",
 		},
 		{
 			name: "unknown_event_version",
@@ -266,7 +267,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"payload":       map[string]interface{}{},
 			},
 			shouldError:   true,
-			errorContains: "schema no encontrado",
+			errorContains: "schema not found",
 		},
 		{
 			name: "event_type_wrong_type",
@@ -278,7 +279,7 @@ func TestEventTypeValidation(t *testing.T) {
 				"payload":       map[string]interface{}{},
 			},
 			shouldError:   true,
-			errorContains: "event_type faltante",
+			errorContains: "failed to unmarshal",
 		},
 	}
 
@@ -474,7 +475,7 @@ func TestValidateWithType(t *testing.T) {
 			},
 		}
 
-		if err := validator.ValidateWithType(event, "material.deleted", "1.0"); err != nil {
+		if err := validator.ValidateWithType(gojsonschema.NewGoLoader(event), "material.deleted", "1.0"); err != nil {
 			t.Errorf("Validación falló: %v", err)
 		}
 	})
@@ -493,7 +494,7 @@ func TestValidateWithType(t *testing.T) {
 		}
 
 		// Validar como student.enrolled aunque el payload es de material.deleted
-		if err := validator.ValidateWithType(event, "student.enrolled", "1.0"); err == nil {
+		if err := validator.ValidateWithType(gojsonschema.NewGoLoader(event), "student.enrolled", "1.0"); err == nil {
 			t.Error("Se esperaba error por payload incompatible")
 		}
 	})

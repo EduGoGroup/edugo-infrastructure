@@ -1,6 +1,6 @@
 module github.com/EduGoGroup/edugo-infrastructure/schemas
 
-go 1.24
+go 1.25
 
 require github.com/xeipuuv/gojsonschema v1.2.0
 

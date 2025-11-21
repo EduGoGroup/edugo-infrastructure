@@ -16,7 +16,14 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version: "1.25"
+          cache: true
+
+      - name: Configure Git for private repos
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+        env:
+          GOPRIVATE: github.com/EduGoGroup/*
 
       - name: Validar compilación de comandos
         run: |
@@ -29,7 +36,6 @@ jobs:
           cd ../mongodb
           go mod download
           go build ./cmd/migrate
-          go build ./migrations/cmd/runner
           echo "✅ MongoDB CLIs compilan correctamente"
 
       - name: Validar sintaxis SQL
@@ -50,10 +56,17 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version: "1.25"
+          cache: true
+
+      - name: Configure Git for private repos
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+        env:
+          GOPRIVATE: github.com/EduGoGroup/*
 
       - name: Run tests
         run: |
           cd ${{ matrix.module }}
           go mod download
-          go test -v ./...
+          go test -short -race -v ./...

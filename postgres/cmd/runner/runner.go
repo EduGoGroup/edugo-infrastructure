@@ -73,7 +73,7 @@ func main() {
 
 	for _, layer := range layers {
 		layerDir := filepath.Join(baseDir, layer.Directory)
-		
+
 		// Verificar si el directorio existe
 		if _, err := os.Stat(layerDir); os.IsNotExist(err) {
 			fmt.Printf("%s⊘ Capa %s: directorio no existe, omitiendo...%s\n\n",
@@ -126,7 +126,7 @@ func executeLayer(db *sql.DB, layerDir string, color string) (executed, skipped 
 	// Ejecutar cada archivo SQL
 	for _, filename := range sqlFiles {
 		filePath := filepath.Join(layerDir, filename)
-		
+
 		// Leer contenido del archivo
 		content, err := os.ReadFile(filePath)
 		if err != nil {
@@ -135,7 +135,7 @@ func executeLayer(db *sql.DB, layerDir string, color string) (executed, skipped 
 		}
 
 		sqlContent := string(content)
-		
+
 		// Verificar si el archivo tiene contenido ejecutable
 		if isEmptyOrComment(sqlContent) {
 			fmt.Printf("%s⊘ %s (vacío/comentarios)%s\n", colorYellow, filename, colorReset)
@@ -145,7 +145,7 @@ func executeLayer(db *sql.DB, layerDir string, color string) (executed, skipped 
 
 		// Ejecutar el SQL
 		fmt.Printf("%s▸ Ejecutando: %s%s\n", color, filename, colorReset)
-		
+
 		_, err = db.Exec(sqlContent)
 		if err != nil {
 			log.Printf("%s  ✗ Error: %v%s\n", colorRed, err, colorReset)

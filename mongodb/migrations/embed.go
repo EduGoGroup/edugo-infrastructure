@@ -17,10 +17,11 @@ import (
 // Uso típico: Inicializar base de datos en ambiente de desarrollo o testing
 //
 // Ejemplo:
-//   import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
-//   if err := migrations.ApplyAll(ctx, db); err != nil {
-//       log.Fatal(err)
-//   }
+//
+//	import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+//	if err := migrations.ApplyAll(ctx, db); err != nil {
+//	    log.Fatal(err)
+//	}
 func ApplyAll(ctx context.Context, db *mongo.Database) error {
 	if err := ApplyStructure(ctx, db); err != nil {
 		return fmt.Errorf("error aplicando structure: %w", err)
@@ -37,7 +38,8 @@ func ApplyAll(ctx context.Context, db *mongo.Database) error {
 // Uso típico: Cuando necesitas crear collections en orden específico
 //
 // Ejemplo:
-//   migrations.ApplyStructure(ctx, db)
+//
+//	migrations.ApplyStructure(ctx, db)
 func ApplyStructure(ctx context.Context, db *mongo.Database) error {
 	structureFuncs := []func(context.Context, *mongo.Database) error{
 		structure.CreateMaterialAssessment,
@@ -66,8 +68,9 @@ func ApplyStructure(ctx context.Context, db *mongo.Database) error {
 // Uso típico: Agregar índices después de haber creado las collections
 //
 // Ejemplo:
-//   migrations.ApplyStructure(ctx, db)
-//   migrations.ApplyConstraints(ctx, db)
+//
+//	migrations.ApplyStructure(ctx, db)
+//	migrations.ApplyConstraints(ctx, db)
 func ApplyConstraints(ctx context.Context, db *mongo.Database) error {
 	constraintsFuncs := []func(context.Context, *mongo.Database) error{
 		constraints.CreateMaterialAssessmentIndexes,
@@ -112,12 +115,13 @@ func ApplyMockData(ctx context.Context, db *mongo.Database) error {
 // Útil para debugging y documentación
 //
 // Retorna map con estructura:
-//   {
-//     "structure": ["CreateMaterialAssessment", "CreateMaterialContent", ...],
-//     "constraints": ["CreateMaterialAssessmentIndexes", ...],
-//     "seeds": [],
-//     "testing": []
-//   }
+//
+//	{
+//	  "structure": ["CreateMaterialAssessment", "CreateMaterialContent", ...],
+//	  "constraints": ["CreateMaterialAssessmentIndexes", ...],
+//	  "seeds": [],
+//	  "testing": []
+//	}
 func ListFunctions() map[string][]string {
 	return map[string][]string{
 		"structure": {

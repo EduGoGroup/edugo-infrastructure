@@ -1,0 +1,134 @@
+name: Go Test (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Version de Go a usar'
+        required: false
+        type: string
+        default: '1.25'
+
+      coverage-threshold:
+        description: 'Umbral minimo de cobertura (%)'
+        required: false
+        type: number
+        default: 33
+
+      working-directory:
+        description: 'Directorio de trabajo'
+        required: false
+        type: string
+        default: '.'
+
+      run-race:
+        description: 'Ejecutar tests con -race'
+        required: false
+        type: boolean
+        default: true
+
+      test-flags:
+        description: 'Flags adicionales para go test'
+        required: false
+        type: string
+        default: '-short'
+
+      upload-coverage:
+        description: 'Subir reporte de cobertura como artifact'
+        required: false
+        type: boolean
+        default: true
+
+    outputs:
+      coverage:
+        description: 'Porcentaje de cobertura'
+        value: ${{ jobs.test.outputs.coverage }}
+
+      test-result:
+        description: 'Resultado de los tests'
+        value: ${{ jobs.test.outputs.result }}
+
+    secrets:
+      GITHUB_TOKEN:
+        required: false
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
+      result: ${{ steps.test.outcome }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go Environment
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
+        with:
+          go-version: ${{ inputs.go-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN || github.token }}
+
+      - name: Download dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          echo "Descargando dependencias..."
+          go mod download
+          go mod verify
+
+      - name: Run tests
+        id: test
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          echo "=========================================="
+          echo "Ejecutando tests"
+          echo "=========================================="
+          echo "Directorio: ${{ inputs.working-directory }}"
+          echo "Go version: ${{ inputs.go-version }}"
+          echo "Flags: ${{ inputs.test-flags }}"
+          echo "Race detection: ${{ inputs.run-race }}"
+          echo "=========================================="
+
+          RACE_FLAG=""
+          if [ "${{ inputs.run-race }}" == "true" ]; then
+            RACE_FLAG="-race"
+          fi
+
+          go test ${{ inputs.test-flags }} $RACE_FLAG -coverprofile=coverage.out ./...
+
+          echo "Tests completados exitosamente"
+
+      - name: Check coverage
+        id: coverage
+        if: always()
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/coverage-check@main
+        with:
+          coverage-file: 'coverage.out'
+          threshold: ${{ inputs.coverage-threshold }}
+          fail-on-threshold: true
+          generate-html: true
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Upload coverage report
+        if: inputs.upload-coverage && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            ${{ inputs.working-directory }}/coverage.out
+            ${{ inputs.working-directory }}/coverage.html
+          retention-days: 30
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Test Summary"
+          echo "=========================================="
+          echo "Status: ${{ steps.test.outcome }}"
+          echo "Coverage: ${{ steps.coverage.outputs.coverage }}%"
+          echo "Threshold: ${{ inputs.coverage-threshold }}%"
+          echo "Passed: ${{ steps.coverage.outputs.passed }}"
+          echo "=========================================="

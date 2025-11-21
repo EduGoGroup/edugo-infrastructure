@@ -1,0 +1,52 @@
+name: Test Workflows Reusables
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/reusable/**'
+      - '.github/actions/**'
+
+jobs:
+  test-go-test-workflow:
+    name: Test go-test.yml
+    uses: ./.github/workflows/reusable/go-test.yml
+    with:
+      go-version: '1.25'
+      coverage-threshold: 33
+      working-directory: './postgres'
+      run-race: true
+      test-flags: '-short'
+      upload-coverage: true
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-go-lint-workflow:
+    name: Test go-lint.yml
+    uses: ./.github/workflows/reusable/go-lint.yml
+    with:
+      go-version: '1.25'
+      golangci-lint-version: 'v1.64.7'
+      working-directory: './postgres'
+      args: '--timeout=5m'
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  validate-workflows:
+    name: Validate All Workflows
+    runs-on: ubuntu-latest
+    needs: [test-go-test-workflow, test-go-lint-workflow]
+
+    steps:
+      - name: Summary
+        run: |
+          echo "=========================================="
+          echo "Workflows Reusables - Tests Summary"
+          echo "=========================================="
+          echo "go-test.yml: OK"
+          echo "go-lint.yml: OK"
+          echo "sync-branches.yml: Pendiente (requiere evento push a main)"
+          echo "docker-build.yml: Pendiente (requiere Dockerfile)"
+          echo "=========================================="
+          echo ""
+          echo "Todos los workflows reusables core funcionan correctamente"
