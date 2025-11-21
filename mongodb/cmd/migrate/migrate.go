@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -458,13 +458,9 @@ func loadMigrations() ([]Migration, error) {
 	}
 
 	// Ordenar por versión
-	for i := 0; i < len(migrations)-1; i++ {
-		for j := i + 1; j < len(migrations); j++ {
-			if migrations[i].Version > migrations[j].Version {
-				migrations[i], migrations[j] = migrations[j], migrations[i]
-			}
-		}
-	}
+	sort.Slice(migrations, func(i, j int) bool {
+		return migrations[i].Version < migrations[j].Version
+	})
 
 	return migrations, nil
 }
@@ -496,27 +492,33 @@ func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
 }
 
 func executeMigrationScript(db *mongo.Database, script string) error {
-	// Guardar script temporalmente
-	tmpFile, err := os.CreateTemp("", "migration-*.js")
-	if err != nil {
-		return err
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// La función eval es un command de mongo que permite ejecutar JS
+	// El script se pasa como una función anónima para que se ejecute en el servidor
+	command := bson.D{
+		{Key: "eval", Value: fmt.Sprintf("function() { %s }", script)},
 	}
-	defer os.Remove(tmpFile.Name())
 
-	if _, err := tmpFile.WriteString(script); err != nil {
-		return err
+	var result bson.M
+	if err := db.RunCommand(ctx, command).Decode(&result); err != nil {
+		return fmt.Errorf("error ejecutando script de migración: %w", err)
 	}
-	tmpFile.Close()
 
-	// Construir comando mongosh
-	mongoURI := getMongoURI()
-	dbName := getEnv("MONGO_DB_NAME", "edugo")
+	// Verificar si la ejecución del script en sí misma devolvió un error
+	if retval, ok := result["retval"]; ok {
+		if errval, ok := retval.(bson.M)["err"]; ok {
+			return fmt.Errorf("error en script de migración: %v", errval)
+		}
+	}
 
-	cmd := exec.Command("mongosh", mongoURI+"/"+dbName, "--file", tmpFile.Name(), "--quiet")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// `eval` puede retornar `ok: 0.0` si hay un error de sintaxis o similar
+	if okValue, ok := result["ok"].(float64); ok && okValue == 0.0 {
+		return fmt.Errorf("falló la ejecución del script: %v", result["errmsg"])
+	}
 
-	return cmd.Run()
+	return nil
 }
 
 func sanitizeName(name string) string {

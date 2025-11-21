@@ -2,6 +2,10 @@
 
 **Infraestructura compartida modular del ecosistema EduGo**
 
+![CI Status](https://github.com/EduGoGroup/edugo-infrastructure/workflows/CI/badge.svg)
+![Go Version](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ---
 
 ## 🎯 Propósito
@@ -235,32 +239,84 @@ make dev-teardown         # Limpiar
 
 ## 🧪 Testing
 
-Cada módulo tiene sus propios tests:
+### CI/CD
+
+**Workflows automáticos:**
+- ✅ Tests unitarios en cada PR (`-short` flag)
+- ✅ Race detection habilitado (`-race`)
+- ✅ Go 1.25 estandarizado
+- ✅ Pre-commit hooks para calidad de código
+
+**Ver configuración completa:** [docs/WORKFLOWS.md](docs/WORKFLOWS.md)
+
+### Tests Locales
 
 ```bash
-# PostgreSQL
-cd postgres && make test
+# Tests unitarios (rápidos, sin servicios externos)
+cd postgres && go test -short -v ./...
+cd mongodb && go test -short -v ./...
+cd messaging && go test -short -v ./...
 
-# MongoDB
-cd mongodb && make test
+# Tests de integración (requieren Docker)
+cd postgres && ENABLE_INTEGRATION_TESTS=true go test -v ./...
+cd mongodb && ENABLE_INTEGRATION_TESTS=true go test -v ./...
 
-# Messaging
-cd messaging && make test
-cd messaging && make benchmark
+# Benchmarks
+cd messaging && go test -bench=. -benchmem
+```
+
+### Pre-commit Hooks
+
+Instala hooks locales para validar código antes de commit:
+
+```bash
+# Una sola vez por clon del repo
+./scripts/setup-hooks.sh
+
+# Los hooks ejecutarán automáticamente:
+# 1. go fmt (formato)
+# 2. go vet (análisis estático)
+# 3. go mod tidy check
+# 4. go test -short (tests unitarios)
 ```
 
 ---
 
 ## 📚 Documentación
 
+### Infraestructura y Base de Datos
 - **PostgreSQL Tables:** [docs/TABLE_OWNERSHIP.md](docs/TABLE_OWNERSHIP.md)
 - **MongoDB Schemas:** [docs/MONGODB_SCHEMA.md](docs/MONGODB_SCHEMA.md)
 - **Event Contracts:** [EVENT_CONTRACTS.md](EVENT_CONTRACTS.md)
 - **Integration Guide:** [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
 
+### CI/CD y Desarrollo
+- **Workflows y Testing:** [docs/WORKFLOWS.md](docs/WORKFLOWS.md) ⭐
+- **Sprint Planning:** [docs/cicd/](docs/cicd/)
+- **Pre-commit Hooks:** [scripts/pre-commit-hook.sh](scripts/pre-commit-hook.sh)
+
 ---
 
 ## 🤝 Contribuir
+
+### Setup Inicial
+
+```bash
+# 1. Clonar repo
+git clone git@github.com:EduGoGroup/edugo-infrastructure.git
+cd edugo-infrastructure
+
+# 2. Instalar pre-commit hooks
+./scripts/setup-hooks.sh
+
+# 3. Verificar Go version
+go version  # Debe ser 1.25+
+
+# 4. Validar setup
+for module in postgres mongodb messaging schemas; do
+  cd $module && go mod download && cd ..
+done
+```
 
 ### Agregar migración PostgreSQL
 
@@ -269,6 +325,9 @@ cd postgres
 make migrate-create name="add_column_to_users"
 # Editar archivos SQL generados
 make migrate-up
+
+# Validar
+go test -short -v ./...
 ```
 
 ### Agregar migración MongoDB
@@ -278,6 +337,9 @@ cd mongodb
 make migrate-create name="add_new_collection"
 # Editar archivos JavaScript generados
 make migrate-up
+
+# Validar
+go test -short -v ./...
 ```
 
 ### Agregar evento
@@ -287,7 +349,43 @@ cd messaging/events
 cp material-uploaded-v1.schema.json nuevo-evento-v1.schema.json
 # Editar schema
 # Actualizar EVENT_CONTRACTS.md
+
+# Validar
+cd ../
+go test -short -v ./...
 ```
+
+### Workflow de Contribución
+
+1. **Crear branch:**
+   ```bash
+   git checkout -b feature/descripcion-breve
+   ```
+
+2. **Hacer cambios** (los pre-commit hooks validarán automáticamente)
+
+3. **Ejecutar tests:**
+   ```bash
+   # Unit tests (obligatorio)
+   go test -short -race -v ./...
+
+   # Integration tests (recomendado antes de merge)
+   ENABLE_INTEGRATION_TESTS=true go test -v ./...
+   ```
+
+4. **Commit con conventional commits:**
+   ```bash
+   git commit -m "feat(postgres): add new migration for users"
+   git commit -m "fix(mongodb): correct schema validation"
+   git commit -m "docs: update WORKFLOWS.md"
+   ```
+
+5. **Push y crear PR:**
+   ```bash
+   git push -u origin feature/descripcion-breve
+   ```
+
+6. **Esperar CI** antes de merge (debe estar ✅ verde)
 
 ---
 

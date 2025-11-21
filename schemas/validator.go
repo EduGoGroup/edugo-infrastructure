@@ -2,8 +2,11 @@ package schemas
 
 import (
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
+	"strings"
 
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -11,28 +14,41 @@ import (
 //go:embed events/*.json
 var schemasFS embed.FS
 
-// EventValidator valida eventos contra JSON Schemas
+// EventValidator validates events against JSON Schemas.
 type EventValidator struct {
 	schemas map[string]*gojsonschema.Schema
 }
 
-// NewEventValidator crea un nuevo validador cargando todos los schemas
+// NewEventValidator creates a new validator by loading all schemas.
 func NewEventValidator() (*EventValidator, error) {
 	v := &EventValidator{
 		schemas: make(map[string]*gojsonschema.Schema),
 	}
 
-	// Cargar schemas desde filesystem embebido
-	schemaFiles := map[string]string{
-		"material.uploaded:1.0":    "events/material-uploaded-v1.schema.json",
-		"assessment.generated:1.0": "events/assessment-generated-v1.schema.json",
-		"material.deleted:1.0":     "events/material-deleted-v1.schema.json",
-		"student.enrolled:1.0":     "events/student-enrolled-v1.schema.json",
+	files, err := schemasFS.ReadDir("events")
+	if err != nil {
+		return nil, fmt.Errorf("error reading schemas directory: %w", err)
 	}
 
-	for key, filename := range schemaFiles {
-		if err := v.loadSchema(key, filename); err != nil {
-			return nil, fmt.Errorf("error cargando schema %s: %w", key, err)
+	for _, file := range files {
+		filename := file.Name()
+		if !strings.HasSuffix(filename, ".schema.json") {
+			continue
+		}
+
+		// Derive key from filename, e.g., "material-uploaded-v1.schema.json" -> "material.uploaded:1.0"
+		base := strings.TrimSuffix(filename, ".schema.json")
+		parts := strings.Split(base, "-")
+		if len(parts) < 2 {
+			continue
+		}
+		eventType := strings.Join(parts[:len(parts)-1], ".")
+		version := strings.Replace(parts[len(parts)-1], "v", "", 1) + ".0"
+		key := fmt.Sprintf("%s:%s", eventType, version)
+
+		filepath := path.Join("events", filename)
+		if err := v.loadSchema(key, filepath); err != nil {
+			return nil, fmt.Errorf("error loading schema %s: %w", key, err)
 		}
 	}
 
@@ -42,88 +58,81 @@ func NewEventValidator() (*EventValidator, error) {
 func (v *EventValidator) loadSchema(key, filename string) error {
 	schemaBytes, err := schemasFS.ReadFile(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read schema file %s: %w", filename, err)
 	}
 
 	schemaLoader := gojsonschema.NewBytesLoader(schemaBytes)
 	schema, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to compile schema %s: %w", filename, err)
 	}
 
 	v.schemas[key] = schema
 	return nil
 }
 
-// Validate valida un evento contra su schema correspondiente
+// Validate validates an event against its corresponding schema.
 func (v *EventValidator) Validate(event interface{}) error {
-	// Extraer event_type y event_version del evento
-	eventMap, ok := event.(map[string]interface{})
-	if !ok {
-		return errors.New("evento debe ser un objeto JSON")
+	// Safely extract event_type and event_version by marshaling and unmarshaling.
+	var tempEvent struct {
+		EventType    string `json:"event_type"`
+		EventVersion string `json:"event_version"`
 	}
 
-	eventType, ok := eventMap["event_type"].(string)
-	if !ok {
-		return errors.New("event_type faltante o inválido")
+	// Convert the event to JSON bytes to safely inspect its contents.
+	eventBytes, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event to JSON: %w", err)
+	}
+	if err := json.Unmarshal(eventBytes, &tempEvent); err != nil {
+		return fmt.Errorf("failed to unmarshal event metadata: %w", err)
 	}
 
-	eventVersion, ok := eventMap["event_version"].(string)
-	if !ok {
-		return errors.New("event_version faltante o inválido")
+	if tempEvent.EventType == "" {
+		return errors.New("event_type missing or invalid")
+	}
+	if tempEvent.EventVersion == "" {
+		return errors.New("event_version missing or invalid")
 	}
 
-	return v.ValidateWithType(event, eventType, eventVersion)
+	return v.ValidateWithType(gojsonschema.NewBytesLoader(eventBytes), tempEvent.EventType, tempEvent.EventVersion)
 }
 
-// ValidateWithType valida especificando el tipo y versión explícitamente
-func (v *EventValidator) ValidateWithType(event interface{}, eventType, eventVersion string) error {
+// ValidateWithType validates by explicitly specifying the type and version.
+func (v *EventValidator) ValidateWithType(documentLoader gojsonschema.JSONLoader, eventType, eventVersion string) error {
 	key := fmt.Sprintf("%s:%s", eventType, eventVersion)
 
 	schema, exists := v.schemas[key]
 	if !exists {
-		return fmt.Errorf("schema no encontrado para %s", key)
+		return fmt.Errorf("schema not found for %s", key)
 	}
 
-	documentLoader := gojsonschema.NewGoLoader(event)
 	result, err := schema.Validate(documentLoader)
 	if err != nil {
-		return err
+		return fmt.Errorf("error during validation for %s: %w", key, err)
 	}
 
 	if !result.Valid() {
-		errMsg := "validación falló para " + key + ":"
-		for _, desc := range result.Errors() {
-			errMsg += fmt.Sprintf("\n  - %s", desc)
-		}
-		return errors.New(errMsg)
+		return v.formatValidationErrors(key, result.Errors())
 	}
 
 	return nil
 }
 
-// ValidateJSON valida un evento en formato JSON bytes
+// ValidateJSON validates an event in JSON byte format.
 func (v *EventValidator) ValidateJSON(jsonBytes []byte, eventType, eventVersion string) error {
-	key := fmt.Sprintf("%s:%s", eventType, eventVersion)
-
-	schema, exists := v.schemas[key]
-	if !exists {
-		return fmt.Errorf("schema no encontrado para %s", key)
-	}
-
 	documentLoader := gojsonschema.NewBytesLoader(jsonBytes)
-	result, err := schema.Validate(documentLoader)
-	if err != nil {
-		return err
+	return v.ValidateWithType(documentLoader, eventType, eventVersion)
+}
+
+// formatValidationErrors formats validation errors into a single error message.
+func (v *EventValidator) formatValidationErrors(schemaKey string, validationErrors []gojsonschema.ResultError) error {
+	var errorMessages strings.Builder
+	errorMessages.WriteString(fmt.Sprintf("validation failed for %s:", schemaKey))
+
+	for _, desc := range validationErrors {
+		errorMessages.WriteString(fmt.Sprintf("\n  - %s", desc))
 	}
 
-	if !result.Valid() {
-		errMsg := "validación falló para " + key + ":"
-		for _, desc := range result.Errors() {
-			errMsg += fmt.Sprintf("\n  - %s", desc)
-		}
-		return errors.New(errMsg)
-	}
-
-	return nil
+	return errors.New(errorMessages.String())
 }

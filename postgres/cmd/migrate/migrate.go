@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -317,17 +319,33 @@ func createMigration(description string) error {
 	return nil
 }
 
-func forceMigration(db *sql.DB, version string) error {
-	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", version)
+func forceMigration(db *sql.DB, versionStr string) error {
+	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", versionStr)
 
-	query := fmt.Sprintf("DELETE FROM %s", migrationsTable)
-	if _, err := db.Exec(query); err != nil {
+	version, err := strconv.Atoi(versionStr)
+	if err != nil {
+		return fmt.Errorf("versión inválida, debe ser un número: %s", versionStr)
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	deleteQuery := fmt.Sprintf("DELETE FROM %s", migrationsTable)
+	if _, err := tx.Exec(deleteQuery); err != nil {
+		_ = tx.Rollback()
 		return err
 	}
 
 	// Insertar versión forzada
 	insertQuery := fmt.Sprintf("INSERT INTO %s (version, name) VALUES ($1, $2)", migrationsTable)
-	if _, err := db.Exec(insertQuery, version, "forced"); err != nil {
+	if _, err := tx.Exec(insertQuery, version, "forced"); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
@@ -390,13 +408,9 @@ func loadMigrations() ([]Migration, error) {
 	}
 
 	// Ordenar por versión
-	for i := 0; i < len(migrations)-1; i++ {
-		for j := i + 1; j < len(migrations); j++ {
-			if migrations[i].Version > migrations[j].Version {
-				migrations[i], migrations[j] = migrations[j], migrations[i]
-			}
-		}
-	}
+	sort.Slice(migrations, func(i, j int) bool {
+		return migrations[i].Version < migrations[j].Version
+	})
 
 	return migrations, nil
 }
