@@ -1,0 +1,135 @@
+name: 'EduGo Docker Build'
+description: 'Build y push de imagenes Docker con configuracion estandar EduGo'
+author: 'EduGo Team'
+
+branding:
+  icon: 'box'
+  color: 'purple'
+
+inputs:
+  image-name:
+    description: 'Nombre de la imagen (sin registry)'
+    required: true
+
+  registry:
+    description: 'Registry de Docker'
+    required: false
+    default: 'ghcr.io'
+
+  registry-username:
+    description: 'Usuario del registry'
+    required: false
+    default: ${{ github.actor }}
+
+  registry-password:
+    description: 'Password/token del registry'
+    required: true
+
+  context:
+    description: 'Contexto de build'
+    required: false
+    default: '.'
+
+  dockerfile:
+    description: 'Path al Dockerfile'
+    required: false
+    default: 'Dockerfile'
+
+  platforms:
+    description: 'Plataformas para build multi-arch'
+    required: false
+    default: 'linux/amd64,linux/arm64'
+
+  push:
+    description: 'Push al registry'
+    required: false
+    default: 'true'
+
+  tags:
+    description: 'Tags adicionales (separados por coma)'
+    required: false
+    default: ''
+
+  build-args:
+    description: 'Build arguments'
+    required: false
+    default: ''
+
+  cache-from:
+    description: 'Cache from'
+    required: false
+    default: 'type=gha'
+
+  cache-to:
+    description: 'Cache to'
+    required: false
+    default: 'type=gha,mode=max'
+
+outputs:
+  image:
+    description: 'Full image name with tag'
+    value: ${{ steps.meta.outputs.tags }}
+
+  digest:
+    description: 'Image digest'
+    value: ${{ steps.build.outputs.digest }}
+
+  metadata:
+    description: 'Build metadata'
+    value: ${{ steps.meta.outputs.json }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry-username }}
+        password: ${{ inputs.registry-password }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.registry }}/${{ github.repository_owner }}/${{ inputs.image-name }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix=
+          ${{ inputs.tags }}
+
+    - name: Build and push
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        platforms: ${{ inputs.platforms }}
+        push: ${{ inputs.push }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: ${{ inputs.build-args }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}
+
+    - name: Output summary
+      shell: bash
+      run: |
+        echo "========================================"
+        echo "Docker Build Summary"
+        echo "========================================"
+        echo "Image: ${{ inputs.registry }}/${{ github.repository_owner }}/${{ inputs.image-name }}"
+        echo "Tags: ${{ steps.meta.outputs.tags }}"
+        echo "Digest: ${{ steps.build.outputs.digest }}"
+        echo "Platforms: ${{ inputs.platforms }}"
+        echo "Push: ${{ inputs.push }}"
+        echo "========================================"
