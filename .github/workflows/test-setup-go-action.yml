@@ -1,0 +1,40 @@
+name: Test - Setup Go Action
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/actions/setup-edugo-go/**'
+
+jobs:
+  test-action:
+    name: Test Setup Go Action
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test con defaults
+        id: test-default
+        uses: ./.github/actions/setup-edugo-go
+
+      - name: Verificar outputs
+        run: |
+          echo "Go version: ${{ steps.test-default.outputs.go-version }}"
+          echo "Cache hit: ${{ steps.test-default.outputs.cache-hit }}"
+
+      - name: Test compilacion en infrastructure
+        run: |
+          cd postgres
+          go build ./...
+
+      - name: Test con version especifica
+        uses: ./.github/actions/setup-edugo-go
+        with:
+          go-version: '1.24'
+          cache: false
+
+      - name: Verificar version
+        run: |
+          go version | grep -q "go1.24" || exit 1
+          echo "Version correcta verificada"

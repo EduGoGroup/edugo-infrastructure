@@ -1,0 +1,72 @@
+name: 'Setup EduGo Go Environment'
+description: 'Configura Go con version estandar EduGo y acceso a repos privados'
+author: 'EduGo Team'
+
+branding:
+  icon: 'package'
+  color: 'blue'
+
+inputs:
+  go-version:
+    description: 'Version de Go a usar'
+    required: false
+    default: '1.25'
+
+  cache:
+    description: 'Habilitar cache de Go modules'
+    required: false
+    default: 'true'
+
+  cache-dependency-path:
+    description: 'Path a go.sum para cache'
+    required: false
+    default: 'go.sum'
+
+  github-token:
+    description: 'GitHub token para acceso a repos privados'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  go-version:
+    description: 'Version de Go instalada'
+    value: ${{ steps.setup.outputs.go-version }}
+
+  cache-hit:
+    description: 'Si el cache fue encontrado'
+    value: ${{ steps.setup.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Go
+      id: setup
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+
+    - name: Configurar acceso a repos privados
+      shell: bash
+      run: |
+        echo "Configurando acceso a repos privados de EduGoGroup..."
+        git config --global url."https://${{ inputs.github-token }}@github.com/".insteadOf "https://github.com/"
+      env:
+        GOPRIVATE: github.com/EduGoGroup/*
+
+    - name: Verificar configuracion
+      shell: bash
+      run: |
+        echo "========================================"
+        echo "Go Environment Configurado"
+        echo "========================================"
+        echo "Go version: $(go version)"
+        echo "GOROOT: $(go env GOROOT)"
+        echo "GOPATH: $(go env GOPATH)"
+        echo "GOPRIVATE: $GOPRIVATE"
+        echo "Cache enabled: ${{ inputs.cache }}"
+        echo "Cache hit: ${{ steps.setup.outputs.cache-hit }}"
+        echo "========================================"
+      env:
+        GOPRIVATE: github.com/EduGoGroup/*
