@@ -30,7 +30,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error conectando a MongoDB: %v", err)
 	}
-	defer client.Disconnect(context.Background())
+	defer func() {
+		_ = client.Disconnect(context.Background())
+	}()
 
 	db := client.Database(dbName)
 

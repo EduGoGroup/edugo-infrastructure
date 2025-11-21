@@ -231,8 +231,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-		shouldError:   true,
-		errorContains: "event_type missing or invalid",
+			shouldError:   true,
+			errorContains: "event_type missing or invalid",
 		},
 		{
 			name: "missing_event_version",
@@ -242,8 +242,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":  "2025-11-16T10:00:00Z",
 				"payload":    map[string]interface{}{},
 			},
-		shouldError:   true,
-		errorContains: "event_version missing or invalid",
+			shouldError:   true,
+			errorContains: "event_version missing or invalid",
 		},
 		{
 			name: "unknown_event_type",
@@ -254,8 +254,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-		shouldError:   true,
-		errorContains: "schema not found",
+			shouldError:   true,
+			errorContains: "schema not found",
 		},
 		{
 			name: "unknown_event_version",
@@ -266,8 +266,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-		shouldError:   true,
-		errorContains: "schema not found",
+			shouldError:   true,
+			errorContains: "schema not found",
 		},
 		{
 			name: "event_type_wrong_type",
@@ -278,8 +278,8 @@ func TestEventTypeValidation(t *testing.T) {
 				"timestamp":     "2025-11-16T10:00:00Z",
 				"payload":       map[string]interface{}{},
 			},
-		shouldError:   true,
-		errorContains: "failed to unmarshal event metadata",
+			shouldError:   true,
+			errorContains: "failed to unmarshal event metadata",
 		},
 	}
 

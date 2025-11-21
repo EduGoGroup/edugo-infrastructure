@@ -41,17 +41,17 @@ func (r *scriptRunner) Run(script string) error {
 
 func (r *scriptRunner) injectGlobals() {
 	dbObj := r.newDBObject()
-	r.vm.Set("db", dbObj)
+	_ = r.vm.Set("db", dbObj)
 
 	// Alias para compatibilidad
-	r.vm.Set("ISODate", r.isoDate)
-	r.vm.Set("ObjectId", r.objectID)
-	r.vm.Set("print", r.print)
+	_ = r.vm.Set("ISODate", r.isoDate)
+	_ = r.vm.Set("ObjectId", r.objectID)
+	_ = r.vm.Set("print", r.print)
 
 	console := r.vm.NewObject()
-	console.Set("log", r.print)
-	console.Set("error", r.print)
-	r.vm.Set("console", console)
+	_ = console.Set("log", r.print)
+	_ = console.Set("error", r.print)
+	_ = r.vm.Set("console", console)
 }
 
 func (r *scriptRunner) newDBObject() *goja.Object {
@@ -124,14 +124,14 @@ func (r *scriptRunner) collection(call goja.FunctionCall) goja.Value {
 
 func (r *scriptRunner) buildCollectionObject(col *mongo.Collection) *goja.Object {
 	obj := r.vm.NewObject()
-	obj.Set("insertOne", r.wrapCollectionInsertOne(col))
-	obj.Set("insertMany", r.wrapCollectionInsertMany(col))
-	obj.Set("updateOne", r.wrapCollectionUpdateOne(col))
-	obj.Set("updateMany", r.wrapCollectionUpdateMany(col))
-	obj.Set("deleteOne", r.wrapCollectionDeleteOne(col))
-	obj.Set("deleteMany", r.wrapCollectionDeleteMany(col))
-	obj.Set("drop", r.wrapCollectionDrop(col))
-	obj.Set("createIndex", r.wrapCollectionCreateIndex(col))
+	_ = obj.Set("insertOne", r.wrapCollectionInsertOne(col))
+	_ = obj.Set("insertMany", r.wrapCollectionInsertMany(col))
+	_ = obj.Set("updateOne", r.wrapCollectionUpdateOne(col))
+	_ = obj.Set("updateMany", r.wrapCollectionUpdateMany(col))
+	_ = obj.Set("deleteOne", r.wrapCollectionDeleteOne(col))
+	_ = obj.Set("deleteMany", r.wrapCollectionDeleteMany(col))
+	_ = obj.Set("drop", r.wrapCollectionDrop(col))
+	_ = obj.Set("createIndex", r.wrapCollectionCreateIndex(col))
 
 	return obj
 }
