@@ -48,10 +48,6 @@ on:
         description: 'Resultado de los tests'
         value: ${{ jobs.test.outputs.result }}
 
-    secrets:
-      GITHUB_TOKEN:
-        required: false
-
 jobs:
   test:
     name: Run Tests
@@ -69,7 +65,7 @@ jobs:
         uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
         with:
           go-version: ${{ inputs.go-version }}
-          github-token: ${{ secrets.GITHUB_TOKEN || github.token }}
+          github-token: ${{ github.token }}
 
       - name: Download dependencies
         working-directory: ${{ inputs.working-directory }}
