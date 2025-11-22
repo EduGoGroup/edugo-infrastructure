@@ -420,25 +420,23 @@ gh pr merge --merge
 # Monitorear post-merge en main (Paso 3.6)
 ```
 
-#### Paso 3.8: Release Manual (Solo si usuario lo pide)
-**SI el usuario solicita release:**
+#### Paso 3.8: Versionado por Módulo (No aplica para proyecto completo)
 
-```bash
-# Obtener última versión
-LAST_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+**IMPORTANTE:** Este proyecto NO tiene tags/releases únicos del repositorio completo.
 
-# Incrementar versión (ejemplo: v0.1.0 → v0.1.1)
-NEW_VERSION=$(echo $LAST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+**Política de versionado:**
+- ❌ NO crear tags del proyecto `edugo-infrastructure` completo
+- ✅ Cada módulo tiene versionado independiente:
+  - `postgres/` → v0.x.y
+  - `mongodb/` → v0.x.y  
+  - `messaging/` → v0.x.y
+- ✅ Proyecto en desarrollo (0.x.y)
+- ✅ Tags/releases se crean solo por módulo cuando se requiera
 
-# Crear tag
-git tag -a $NEW_VERSION -m "Release $NEW_VERSION - Sprint X"
-git push origin $NEW_VERSION
-
-# Crear release en GitHub
-gh release create $NEW_VERSION \
-  --title "Release $NEW_VERSION" \
-  --notes "$(cat ./RELEASE-NOTES.md)"
-```
+**Razón:**
+- Este es un repositorio de infraestructura con múltiples módulos independientes
+- Cada módulo evoluciona a su propio ritmo
+- No tiene sentido versionar el conjunto completo
 
 #### Paso 3.9: Sincronización Final
 ```bash

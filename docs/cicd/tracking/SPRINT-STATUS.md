@@ -201,9 +201,13 @@ d4ca5f1 - docs: plantillas listas para migracion
 ### Inmediatos (Pendiente Autorizacion)
 
 - [ ] Push a branch: claude/sprint-4-phase-1-01RwuAiAfdnys2ijxTgaNwEJ
-- [ ] Crear tag v1.0.0 en infrastructure
 - [ ] Crear PR en infrastructure
 - [ ] Review y merge
+
+**Nota sobre versionado:**
+- Este proyecto NO tiene tags/releases únicos
+- Cada módulo (postgres, mongodb, messaging) tiene versionado independiente
+- Proyecto sigue en desarrollo (0.x.y)
 
 ### Post-Merge
 
