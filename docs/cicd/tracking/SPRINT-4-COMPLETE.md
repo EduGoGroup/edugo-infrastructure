@@ -267,8 +267,9 @@ Documentación: `docs/cicd/tracking/reviews/COPILOT-COMMENTS-PR28.md`
 - [x] Completar Sprint 4
 - [x] Mergear PR #28 a dev
 - [x] Verificar CI/CD post-merge
-- [ ] Crear tag v1.0.0 en infrastructure
 - [ ] Anunciar disponibilidad a equipos
+
+**Nota:** No se crean tags/releases del proyecto completo. Cada módulo (postgres, mongodb, messaging) tiene versionado independiente. Proyecto en desarrollo (0.x.y).
 
 ### Semana 1 (Post-Sprint)
 

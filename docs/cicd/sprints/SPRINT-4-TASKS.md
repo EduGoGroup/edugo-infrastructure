@@ -209,12 +209,14 @@ steps:
 ## 🎯 Versionado
 
 **Recomendaciones:**
-- **Producción:** Usar tag específico `@v1.0.0`
-- **Desarrollo:** Usar `@dev` o `@main`
+- **Producción:** Usar rama `@main` (proyecto sin tags/releases únicos)
+- **Desarrollo:** Usar `@dev`
+
+**Nota:** Este proyecto NO tiene versionado único (v1.0.0, etc). Cada módulo (postgres, mongodb, messaging) tiene versionado independiente.
 
 ```yaml
 # Producción (recomendado)
-uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@v1.0.0
+uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@main
 
 # Desarrollo
 uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@dev
