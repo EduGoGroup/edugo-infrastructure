@@ -83,40 +83,57 @@ Las siguientes entities **SÍ fueron creadas** porque tienen migraciones SQL exi
 
 ---
 
-## Plan para Fase 2
+## Resolución en Fase 2 ✅
 
-### Opción 1: Crear Migraciones SQL (Recomendado)
+**Fecha de Resolución:** 22 de Noviembre, 2025  
+**Opción Elegida:** Opción 1 - Crear Migraciones SQL
 
-Si en Fase 2 tenemos acceso a un ambiente con PostgreSQL:
+### Acciones Realizadas
 
-1. **Crear migraciones SQL** para las 6 entities faltantes basándose en:
-   - Necesidades de api-mobile, api-administracion, worker
-   - Diseños existentes en documentación de esos proyectos
-   - Esquemas inferidos de código actual
+1. ✅ **Análisis de proyectos hermanos:**
+   - api-mobile: MaterialVersion, Progress
+   - api-admin: Subject, Unit, GuardianRelation
+   - Descubrimiento: AssessmentQuestion y AssessmentAnswer están en MongoDB
 
-2. **Ejecutar migraciones** en entorno de desarrollo/test
+2. ✅ **Migraciones SQL creadas (5):**
+   - 012_create_material_versions.up.sql + down.sql
+   - 013_create_subjects.up.sql + down.sql
+   - 014_create_units.up.sql + down.sql
+   - 015_create_guardian_relations.up.sql + down.sql
+   - 016_create_progress.up.sql + down.sql
 
-3. **Crear entities Go** reflejando las nuevas tablas
+3. ✅ **Entities PostgreSQL creadas (5):**
+   - material_version.go
+   - subject.go
+   - unit.go
+   - guardian_relation.go
+   - progress.go
 
-4. **Validar** con tests de integración
+4. ✅ **Corrección de alcance:**
+   - AssessmentQuestion y AssessmentAnswer NO son PostgreSQL
+   - Están en MongoDB como parte de MaterialAssessment (ya creadas en Fase 1)
+   - Alcance real: 13 entities PostgreSQL (no 14)
 
-### Opción 2: Actualizar Sprint (Alternativa)
+5. ✅ **Validación:**
+   - Compilación postgres: exitosa
+   - Compilación mongodb: exitosa
+   - Tests: exitosos
 
-Si las migraciones no son prioritarias:
+### Resultado Final
 
-1. **Actualizar `SPRINT-ENTITIES.md`** para reflejar solo 8 entities
-2. **Marcar como completado** con scope reducido
-3. **Crear nuevo sprint** para las 6 entities faltantes cuando sea necesario
+- ✅ **13/13 entities PostgreSQL** (100%)
+- ✅ **3/3 entities MongoDB** (100%)
+- ✅ **16/16 entities totales** (100% del alcance real)
+- ✅ **Documentado en:** `tracking/FASE-2-COMPLETE.md`
+- ✅ **Commits:** 20564c7, d40c563
 
 ---
 
-## Próximos Pasos
+## Estado Final: RESUELTO ✅
 
-1. ✅ Continuar con MongoDB entities (si tienen migraciones/schemas)
-2. ✅ Verificar compilación de entities PostgreSQL creadas
-3. ✅ Crear tests para las 8 entities existentes
-4. ✅ Documentar uso en READMEs
-5. ⏳ **Fase 2:** Decidir entre Opción 1 o Opción 2 según prioridades del proyecto
+Todas las entities bloqueadas han sido resueltas en Fase 2.
+
+El sprint puede continuar a Fase 3 (Validación y PR).
 
 ---
 
