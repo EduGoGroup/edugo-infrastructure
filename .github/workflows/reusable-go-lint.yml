@@ -13,7 +13,7 @@ on:
         description: 'Version de golangci-lint'
         required: false
         type: string
-        default: 'v1.64.7'
+        default: 'v2.4.0'
 
       working-directory:
         description: 'Directorio de trabajo'
@@ -65,7 +65,7 @@ jobs:
 
       - name: Run golangci-lint
         id: lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           version: ${{ inputs.golangci-lint-version }}
           working-directory: ${{ inputs.working-directory }}
