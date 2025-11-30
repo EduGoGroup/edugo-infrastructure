@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/EduGoGroup/edugo-infrastructure/tools/mock-generator/pkg/generator"
 	"github.com/EduGoGroup/edugo-infrastructure/tools/mock-generator/pkg/parser"
 )
 
@@ -39,24 +40,32 @@ func runGenerator(cmd *cobra.Command, args []string) {
 	fmt.Printf("Output dir: %s\n", outputDir)
 	fmt.Println("")
 
-	// Crear parser
+	// Parser
 	p := parser.NewSQLParser()
-
-	// Parsear directorio
 	fmt.Println("Parseando archivos SQL...")
 	tables, err := p.ParseDirectory(testingDir)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Error parseando: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Mostrar estadisticas
-	fmt.Printf("\nParseados %d tablas\n\n", len(tables))
+	fmt.Printf("Parseados %d tablas\n\n", len(tables))
+
+	// Mostrar estadísticas
 	fmt.Println("Estadisticas por tabla:")
 	for tableName, data := range tables {
 		fmt.Printf("  - %-20s: %d registros, %d columnas\n",
 			tableName, len(data.Rows), len(data.Columns))
 	}
 
-	fmt.Println("\nAnalisis completado")
+	// Generador
+	fmt.Println("\nGenerando dataset...")
+	gen := generator.NewDatasetGenerator(outputDir, tables)
+	if err := gen.Generate(); err != nil {
+		fmt.Printf("Error generando: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Dataset generado exitosamente")
+	fmt.Printf("Archivos en: %s\n", outputDir)
 }
