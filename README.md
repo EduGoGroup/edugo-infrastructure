@@ -408,3 +408,27 @@ Este proyecto usa **versionamiento único** para el repositorio completo, aunque
 **Versión:** 0.5.0  
 **Última actualización:** 16 de Noviembre, 2025  
 **Mantenedores:** Equipo EduGo
+
+---
+
+## 📋 Último Plan de Trabajo
+
+**FASE 1: UI Database Infrastructure** - [Ver plan completo](./docs/specs/fase1-ui-database/Plan-Fase1-UI-Database/README.md)
+
+Implementación de 3 nuevas tablas PostgreSQL para soportar UI Roadmap de EduGo:
+- **`user_active_context`** - Contexto/escuela activa del usuario para filtrado en UI
+- **`user_favorites`** - Materiales marcados como favoritos
+- **`user_activity_log`** - Log de actividades del usuario para analytics e historial
+
+**Estado**: 🔄 En planificación  
+**Rama**: `feature/fase1-ui-database-infrastructure`  
+**Fecha**: 1 de Diciembre, 2025  
+**Bloquea**: FASE 2 (APIs), FASE 4 (UI Estudiantes)
+
+**Documentación del plan**:
+- [Resumen ejecutivo](./docs/specs/fase1-ui-database/README.md)
+- [Análisis técnico detallado](./docs/specs/fase1-ui-database/ANALISIS-TECNICO.md)
+- [Plan de fases y pasos](./docs/specs/fase1-ui-database/Plan-Fase1-UI-Database/Planner.md)
+- [Estrategia de commits](./docs/specs/fase1-ui-database/Plan-Fase1-UI-Database/Planner-commit.md)
+- [Archivos afectados](./docs/specs/fase1-ui-database/Plan-Fase1-UI-Database/Files-affected.md)
+- [Tests unitarios](./docs/specs/fase1-ui-database/Plan-Fase1-UI-Database/Test-unit.md)
