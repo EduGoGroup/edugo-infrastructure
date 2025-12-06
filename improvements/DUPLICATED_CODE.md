@@ -256,9 +256,9 @@ Similar a DUP-002, se puede:
 
 ## ✅ Resueltos
 
-| Fecha | ID | Descripción | PR |
-|-------|-----|-------------|-----|
-| - | - | - | - |
+| Fecha | ID | Descripción | Commit |
+|-------|-----|-------------|--------|
+| 2024-12-06 | DUP-001 | Eliminado messaging/validator.go duplicado | ✅ |
 
 ---
 
