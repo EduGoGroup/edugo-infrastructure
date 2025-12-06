@@ -30,7 +30,7 @@ Este directorio contiene documentación sobre código que debe ser mejorado, ref
 ### Priorización Recomendada
 
 ```
-1. 🔴 URGENTE: Eliminar duplicación validator.go (schemas/ vs messaging/)
+1. ✅ RESUELTO: Eliminar duplicación validator.go (schemas/ vs messaging/)
 2. 🟠 IMPORTANTE: Implementar funciones TODO en MongoDB embed.go
 3. 🟡 MEDIO: Crear migraciones para entities pendientes
 4. 🟢 BAJO: Refactorizar código CLI de migraciones
@@ -62,9 +62,11 @@ Este directorio contiene documentación sobre código que debe ser mejorado, ref
 
 ## ✅ Mejoras Completadas
 
-| Fecha | Mejora | PR |
-|-------|--------|-----|
-| - | - | - |
+| Fecha | Mejora | Commit |
+|-------|--------|--------|
+| 2024-12-06 | DUP-001: Eliminado validator.go duplicado en messaging | de47c6a |
+| 2024-12-06 | DEP-006: Constantes para timeouts en MongoDB CLI | ✅ |
+| 2024-12-06 | Limpieza módulo messaging (archivos huérfanos) | ✅ |
 
 ---
 

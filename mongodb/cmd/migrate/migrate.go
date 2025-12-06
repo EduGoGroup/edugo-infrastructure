@@ -18,6 +18,10 @@ import (
 const (
 	migrationsCollection = "schema_migrations"
 	migrationsDir        = "migrations"
+
+	// Timeouts configurables
+	DefaultConnectTimeout   = 10 * time.Second
+	DefaultOperationTimeout = 5 * time.Second
 )
 
 type Migration struct {
@@ -37,7 +41,7 @@ func main() {
 	mongoURI := getMongoURI()
 	dbName := getEnv("MONGO_DB_NAME", "edugo")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultConnectTimeout)
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
@@ -135,7 +139,7 @@ func getEnv(key, defaultValue string) string {
 }
 
 func ensureMigrationsCollection(db *mongo.Database) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
 
 	// Verificar si la colección existe
@@ -188,7 +192,7 @@ func migrateUp(db *mongo.Database) error {
 		}
 
 		// Registrar migración aplicada
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 		defer cancel()
 
 		collection := db.Collection(migrationsCollection)
@@ -258,7 +262,7 @@ func migrateDown(db *mongo.Database) error {
 	}
 
 	// Eliminar registro de migración
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
 
 	collection := db.Collection(migrationsCollection)
@@ -374,7 +378,7 @@ print("✅ Migration %s DOWN completed");
 func forceMigration(db *mongo.Database, version string) error {
 	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", version)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
 
 	collection := db.Collection(migrationsCollection)
@@ -468,7 +472,7 @@ func loadMigrations() ([]Migration, error) {
 }
 
 func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
 
 	collection := db.Collection(migrationsCollection)
