@@ -1,7 +1,15 @@
 {
   "permissions": {
     "additionalDirectories": [
-      "/Users/jhoanmedina/source/EduGo/Analisys"
+      "/Users/jhoanmedina/source/EduGo/Analisys",
+      "/Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-mobile",
+      "/Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion",
+      "/Users/jhoanmedina/source/EduGo/repos-separados/edugo-worker",
+      "/Users/jhoanmedina/source/EduGo/repos-separados/edugo-shared",
+      "/Users/jhoanmedina/source/EduGo/repos-separados/edugo-dev-environment",
+      "/Users/jhoanmedina/source/Edugo/repos-separados/edugo-dev-environment",
+      "/Users/jhoanmedina/source/EduGo/EduUI/apple-app",
+      "/Users/jhoanmedina/source/Documentation/GuideDesign"
     ]
   }
 }
