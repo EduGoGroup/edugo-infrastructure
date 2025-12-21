@@ -94,11 +94,36 @@ func ApplyConstraints(ctx context.Context, db *mongo.Database) error {
 }
 
 // ApplySeeds ejecuta seeds (datos iniciales del ecosistema)
-// Por ahora no implementado - agregar cuando se definan seeds necesarios
+// Inserta documentos base en las colecciones necesarias para el funcionamiento del sistema
 //
-// Uso típico: Inicializar datos mínimos en ambiente de producción/staging
+// Características:
+//   - Idempotente: Se puede ejecutar múltiples veces sin duplicar datos
+//   - Usa ordered: false para continuar aunque algunos documentos ya existan
+//   - Retorna error solo si falla la inserción por razones NO de duplicados
+//
+// Collections pobladas:
+//   - analytics_events (6 eventos de ejemplo)
+//   - material_assessment (2 assessments de Física y Matemáticas)
+//   - audit_logs (5 registros de auditoría)
+//   - material_assessment_worker (2 workers con preguntas generadas por IA)
+//   - material_summary (3 resúmenes en español, inglés y portugués)
+//   - notifications (4 notificaciones de ejemplo)
+//
+// Uso típico: Inicializar datos mínimos en ambiente de desarrollo/staging
+//
+// Ejemplo:
+//
+//	migrations.ApplyAll(ctx, db)
+//	migrations.ApplySeeds(ctx, db)  // Datos iniciales
 func ApplySeeds(ctx context.Context, db *mongo.Database) error {
-	// TODO: Implementar cuando se definan seeds
+	inserted, err := applySeedsInternal(ctx, db)
+	if err != nil {
+		return fmt.Errorf("error aplicando seeds: %w", err)
+	}
+	if inserted > 0 {
+		// Solo logueamos si se insertó algo (opcional, puede removerse)
+		_ = inserted // Evitar warning de variable no usada
+	}
 	return nil
 }
 

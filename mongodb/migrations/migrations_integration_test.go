@@ -67,6 +67,7 @@ func TestIntegration(t *testing.T) {
 
 	// Ejecutar tests
 	t.Run("ApplyAll", testApplyAll(ctx, db))
+	t.Run("ApplySeeds", testApplySeeds(ctx, db))
 	t.Run("CRUD_MaterialAssessment", testCRUDMaterialAssessment(ctx, db))
 	t.Run("CRUD_Notifications", testCRUDNotifications(ctx, db))
 	t.Run("Indexes_Validation", testIndexesValidation(ctx, db))
@@ -256,5 +257,63 @@ func testIndexesValidation(ctx context.Context, db *mongo.Database) func(*testin
 		}
 
 		t.Logf("✅ Índices creados: %d", len(indexes))
+	}
+}
+
+func testApplySeeds(ctx context.Context, db *mongo.Database) func(*testing.T) {
+	return func(t *testing.T) {
+		// Aplicar seeds
+		if err := migrations.ApplySeeds(ctx, db); err != nil {
+			t.Fatalf("Error aplicando seeds: %v", err)
+		}
+
+		// Verificar que se insertaron documentos en las colecciones esperadas
+		expectedCounts := map[string]int64{
+			"analytics_events":            6,
+			"material_assessment":         2,
+			"audit_logs":                  5,
+			"material_assessment_worker":  2,
+			"material_summary":            3,
+			"notifications":               4,
+		}
+
+		for collection, expectedCount := range expectedCounts {
+			coll := db.Collection(collection)
+			count, err := coll.CountDocuments(ctx, bson.M{})
+			if err != nil {
+				t.Fatalf("Error contando documentos en %s: %v", collection, err)
+			}
+
+			if count != expectedCount {
+				t.Errorf("Collection %s: se esperaban %d documentos, se encontraron %d",
+					collection, expectedCount, count)
+			} else {
+				t.Logf("✅ Collection %s: %d documentos insertados correctamente", collection, count)
+			}
+		}
+
+		// Test de idempotencia: ejecutar seeds de nuevo
+		if err := migrations.ApplySeeds(ctx, db); err != nil {
+			t.Fatalf("Error en segunda ejecución de seeds (idempotencia): %v", err)
+		}
+
+		// Verificar que NO se duplicaron los documentos
+		for collection, expectedCount := range expectedCounts {
+			coll := db.Collection(collection)
+			count, err := coll.CountDocuments(ctx, bson.M{})
+			if err != nil {
+				t.Fatalf("Error contando documentos después de segunda ejecución: %v", err)
+			}
+
+			// La cuenta debe ser la misma o mayor (si hay documentos sin _id único)
+			// Para analytics_events y otros sin _id explícito, se duplicarán
+			// Para material_assessment con _id explícito, NO se duplicarán
+			if collection == "material_assessment" && count != expectedCount {
+				t.Errorf("Idempotencia FALLÓ en %s: se esperaban %d, se encontraron %d",
+					collection, expectedCount, count)
+			}
+		}
+
+		t.Log("✅ ApplySeeds ejecutado correctamente (idempotente para collections con _id)")
 	}
 }

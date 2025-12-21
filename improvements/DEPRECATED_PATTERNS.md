@@ -106,13 +106,31 @@ ensureMigrationsCollection(ctx, db)
 
 ---
 
-## DEP-003: Panic en Código de Librería
+## ~~DEP-003: Panic en Código de Librería~~ ✅ RESUELTO
 
 ### Descripción
 
 Uso de `log.Fatal` y `panic` que terminan el programa abruptamente.
 
-### Ubicaciones
+### Estado: ✅ **RESUELTO** (2025-12-20)
+
+**Acción tomada:** Se eliminó el archivo `mongodb/cmd/migrate/script_runner.go` que contenía 41 llamadas a `panic()`.
+
+**Razones de eliminación:**
+1. El archivo implementaba ejecución de scripts JavaScript usando goja
+2. No existían archivos de migración JavaScript en el proyecto (0 archivos .js)
+3. El sistema actual usa migraciones Go (`migrations.ApplyAll()`) directamente
+4. Worker (único consumidor) usa el paquete `migrations`, NO el CLI
+5. Eliminación simplificó el sistema y removió dependencia de `github.com/dop251/goja`
+
+**Impacto:**
+- ✅ Eliminados 12KB de código no usado
+- ✅ Removidos 41 `panic()` de DEP-003
+- ✅ Simplificado sistema de migraciones
+- ✅ Reducida superficie de bugs
+- ✅ Tests siguen pasando correctamente
+
+### Ubicaciones Restantes (Aceptables en CLI)
 
 ```go
 // postgres/cmd/migrate/migrate.go:40
@@ -122,22 +140,13 @@ log.Fatalf("Error conectando a PostgreSQL: %v", err)
 log.Fatalf("Error validando conexión: %v", err)
 ```
 
-### Por Qué es Problemático
+### Por Qué es Aceptable
 
-- `log.Fatal` llama `os.Exit(1)` sin ejecutar defers
-- No permite que el caller maneje el error
-- No permite cleanup graceful
-
-### Cuándo es Aceptable
-
-- En `main()` de un CLI
+- Código de CLI en `main()`
 - Errores verdaderamente irrecuperables
+- Patrón estándar en aplicaciones de línea de comandos
 
-### Nota
-
-En este caso, como es código de CLI en `main()`, es aceptable. Sin embargo, si este código se refactoriza a librería, debe cambiarse.
-
-### Severidad: 🟢 Baja (en contexto de CLI)
+### Severidad: 🟢 Baja (OK en contexto de CLI)
 
 ---
 
@@ -181,46 +190,6 @@ rows, err := db.Query(query, userName)
 
 ---
 
-## DEP-005: Defer en Loop
-
-### Descripción
-
-Uso de `defer` dentro de loops puede causar memory leaks.
-
-### Ejemplo (Hipotético)
-
-```go
-// ❌ MALO
-for _, file := range files {
-	f, _ := os.Open(file)
-	defer f.Close() // Se acumulan hasta que la función termina
-}
-
-// ✅ BIEN
-for _, file := range files {
-	func() {
-		f, _ := os.Open(file)
-		defer f.Close()
-		// usar f
-	}()
-}
-
-// ✅ MEJOR
-for _, file := range files {
-	f, _ := os.Open(file)
-	// usar f
-	f.Close() // Cerrar explícitamente
-}
-```
-
-### Estado en Codebase
-
-No se encontró este patrón problemático en el código actual. ✅
-
-### Severidad: N/A
-
----
-
 ## DEP-006: Magic Numbers
 
 ### Descripción
@@ -239,16 +208,31 @@ ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 //                                                       ^^ magic number
 ```
 
+### Estado Actual
+
+🟡 **Parcialmente resuelto** - Se crearon constantes pero falta una:
+
+```go
+const (
+	DefaultConnectTimeout   = 10 * time.Second
+	DefaultOperationTimeout = 5 * time.Second
+)
+```
+
+### Pendiente
+
+- `2*time.Minute` en línea 501 aún sin constante
+
 ### Patrón Recomendado
 
 ```go
 const (
 	DefaultConnectTimeout   = 10 * time.Second
 	DefaultOperationTimeout = 5 * time.Second
-	DefaultMigrationTimeout = 2 * time.Minute
+	DefaultMigrationTimeout = 2 * time.Minute  // Agregar esta
 )
 
-ctx, cancel := context.WithTimeout(context.Background(), DefaultConnectTimeout)
+ctx, cancel := context.WithTimeout(context.Background(), DefaultMigrationTimeout)
 ```
 
 ### Severidad: 🟢 Baja
@@ -257,14 +241,15 @@ ctx, cancel := context.WithTimeout(context.Background(), DefaultConnectTimeout)
 
 ## 📊 Resumen
 
-| ID | Patrón | Severidad | Acción |
+| ID | Patrón | Severidad | Estado |
 |----|--------|-----------|--------|
-| DEP-001 | Ignorar errores | 🟡 Media | Documentar o loggear |
-| DEP-002 | Context.Background() | 🟡 Media | Refactorizar si se extrae a lib |
-| DEP-003 | log.Fatal | 🟢 Baja | OK en CLI |
+| DEP-001 | Ignorar errores | 🟡 Media | Pendiente |
+| DEP-002 | Context.Background() | 🟡 Media | Pendiente |
+| ~~DEP-003~~ | ~~log.Fatal/panic~~ | ✅ | **RESUELTO** |
 | DEP-004 | SQL concat | 🟢 Baja | OK con constantes |
-| DEP-005 | Defer en loop | ✅ OK | No presente |
-| DEP-006 | Magic numbers | 🟢 Baja | Extraer constantes |
+| DEP-006 | Magic numbers | 🟢 Baja | Parcial |
+
+**Progreso:** 1 de 5 patrones resueltos (20%)
 
 ---
 
