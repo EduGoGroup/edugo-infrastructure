@@ -126,51 +126,151 @@ Los archivos en `mongodb/seeds/*.js` se mantienen como **documentación de refer
 
 ---
 
-## TODO-002: ApplyMockData() No Implementada
+## ~~TODO-002: ApplyMockData() No Implementada~~ ✅ RESUELTO
 
-### Ubicación
+### Estado: ✅ **RESUELTO** (2025-12-20)
+
+### Ubicación Original
 
 ```
 mongodb/migrations/embed.go:105-112
 ```
 
-### Código Actual
+### Problema Original
 
+- Función pública que no hacía nada (retornaba nil)
+- Tests de integración no tenían datos mock centralizados
+- Similar a TODO-001 pero con más variedad de datos
+
+### Solución Implementada
+
+**Archivos creados:**
+- `mongodb/migrations/mock_data.go` (1,089 líneas) - Contiene todos los datos mock en Go
+
+**Archivos modificados:**
+- `mongodb/migrations/embed.go` - Función `ApplyMockData()` ahora invoca `applyMockDataInternal()`
+- `mongodb/migrations/migrations_integration_test.go` - Agregado test `testApplyMockData()`
+
+### Implementación
+
+**1. Estructura similar a seeds.go:**
 ```go
-// ApplyMockData ejecuta datos mock para testing
-// Por ahora no implementado - agregar cuando se definan datos de prueba
-//
-// Uso típico: Tests de integración, ambiente de desarrollo
-func ApplyMockData(ctx context.Context, db *mongo.Database) error {
-	// TODO: Implementar cuando se definan datos mock
-	return nil
+func analyticsEventsMockData() mockDocument {
+    return mockDocument{
+        collection: "analytics_events",
+        documents: []interface{}{
+            // 10 eventos con diferentes plataformas, países, roles
+            bson.D{
+                {Key: "event_name", Value: "user.login"},
+                {Key: "device", Value: bson.D{
+                    {Key: "platform", Value: "mobile"},
+                    {Key: "os", Value: "iOS"},
+                    // ... más variedad
+                }},
+            },
+        },
+    }
 }
 ```
 
-### Problema
+**2. Función principal:**
+```go
+func ApplyMockData(ctx context.Context, db *mongo.Database) error {
+    inserted, err := applyMockDataInternal(ctx, db)
+    if err != nil {
+        return fmt.Errorf("error aplicando mock data: %w", err)
+    }
+    return nil
+}
+```
 
-- Similar a TODO-001
-- Tests de integración no tienen datos mock centralizados
-- No existe directorio `testing/` con archivos de prueba
+**3. Idempotencia:**
+- Igual que ApplySeeds(), usa `InsertMany` con `ordered: false`
+- Ignora errores de clave duplicada
+- Permite ejecutar múltiples veces
 
-### Comparación con PostgreSQL
+### Collections Pobladas
 
-PostgreSQL SÍ tiene implementación funcional con 10 archivos en `testing/`:
-- `001_demo_users.sql`
-- `002_demo_schools.sql`
-- `003_demo_academic_units.sql`
-- etc.
+| Collection | Documentos | Descripción |
+|------------|-----------|-------------|
+| `analytics_events` | 10 | Eventos variados (mobile/tablet/web, diferentes países y plataformas) |
+| `material_assessment` | 3 | Assessments de Química (hard), Historia (easy), Cálculo (medium) |
+| `audit_logs` | 8 | Registros extendidos (material deleted, user created, password changed, brute force, etc.) |
+| `material_assessment_worker` | 3 | Workers en español, inglés y portugués con diferentes subjects |
+| `material_summary` | 5 | Resúmenes en español, inglés, portugués, francés y alemán |
+| `notifications` | 6 | Notificaciones variadas (material ready, system update, deadline, comment, achievement, security alert) |
 
-### Solución Propuesta
+**Total:** 35 documentos mock
 
-1. Crear directorio `mongodb/testing/`
-2. Agregar archivos `.js` con datos mock
-3. Implementar carga similar a PostgreSQL
+### Diferencias vs ApplySeeds()
 
-### Esfuerzo Estimado
+| Aspecto | Seeds (22 docs) | MockData (35 docs) |
+|---------|----------------|-------------------|
+| **Propósito** | Datos mínimos funcionales | Datos variados para testing |
+| **Variedad** | Casos básicos | Múltiples escenarios |
+| **Plataformas** | Principalmente web | Web, mobile, tablet |
+| **Países** | Chile | 10+ países latinoamericanos |
+| **Idiomas** | 3 (es, en, pt) | 5 (es, en, pt, fr, de) |
+| **Dificultades** | easy, medium | easy, medium, hard |
+| **Tipos evento** | 6 tipos | 10 tipos |
+
+### Tests Agregados
+
+```go
+func testApplyMockData(ctx context.Context, db *mongo.Database) func(*testing.T) {
+    // 1. Aplica mock data
+    // 2. Verifica conteo: 10 + 3 + 8 + 3 + 5 + 6 = 35 documentos
+    // 3. Test de idempotencia (ejecuta 2 veces)
+    // 4. Verifica que NO se duplican documentos con _id explícito
+}
+```
+
+### Beneficios
+
+- ✅ **Type-safe**: Go verifica tipos en tiempo de compilación
+- ✅ **Mayor cobertura**: 35 documentos vs 22 en seeds
+- ✅ **Más variedad**: Diferentes plataformas, países, idiomas
+- ✅ **Idempotente**: Se puede ejecutar múltiples veces
+- ✅ **Testeable**: Tests de integración incluidos
+- ✅ **Consistente**: Sigue mismo patrón que ApplySeeds()
+- ✅ **Documentado**: GoDoc completo con comparación vs seeds
+
+### Uso
+
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+
+// Ambiente de desarrollo con datos de prueba
+migrations.ApplyAll(ctx, db)
+migrations.ApplySeeds(ctx, db)      // Datos mínimos
+migrations.ApplyMockData(ctx, db)   // Datos variados para testing
+```
+
+### Casos de Uso
+
+**ApplySeeds()**: Ideal para inicialización mínima
+- Datos esenciales del ecosistema
+- Ambientes productivos
+- CI/CD básico
+
+**ApplyMockData()**: Ideal para desarrollo y demos
+- Tests de integración complejos
+- Demostración de features
+- Desarrollo local
+- QA/Staging con datos variados
+
+### Impacto en Proyectos
+
+- **edugo-worker**: Ahora puede usar `ApplyMockData()` para tests con más variedad
+- **edugo-api-mobile**: Datos mock con eventos mobile/tablet para testing realista
+- **Todos**: Consistencia con patrón PostgreSQL (que tiene `testing/*.sql`)
+
+### Esfuerzo Real
 
 - **Complejidad:** Media
-- **Tiempo:** 2-4 horas
+- **Tiempo:** ~2.5 horas (creación de 35 documentos variados)
+- **Líneas agregadas:** +1,089 líneas en mock_data.go
+- **Líneas modificadas:** ~35 líneas en embed.go + test
 
 ---
 
@@ -277,12 +377,13 @@ func NewEventValidator() (*EventValidator, error) {
 
 | ID | Descripción | Prioridad | Estado | Esfuerzo |
 |----|-------------|-----------|--------|----------|
-| TODO-001 | ApplySeeds() vacía | 🟡 Media | Pendiente | 2-4h |
-| TODO-002 | ApplyMockData() vacía | 🟡 Media | Pendiente | 2-4h |
+| ~~TODO-001~~ | ~~ApplySeeds() vacía~~ | 🟡 Media | ✅ Resuelto | 2h |
+| ~~TODO-002~~ | ~~ApplyMockData() vacía~~ | 🟡 Media | ✅ Resuelto | 2.5h |
 | TODO-004 | Tests MongoDB | 🟠 Media-Alta | Parcial | 2-3h |
 | TODO-005 | Validación schemas | 🟢 Baja | Pendiente | 1h |
 
-### Total Estimado: 7-14 horas
+### Total Completado: 4.5h
+### Total Pendiente: 3-4h
 
 ---
 

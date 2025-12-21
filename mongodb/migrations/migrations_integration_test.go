@@ -68,6 +68,7 @@ func TestIntegration(t *testing.T) {
 	// Ejecutar tests
 	t.Run("ApplyAll", testApplyAll(ctx, db))
 	t.Run("ApplySeeds", testApplySeeds(ctx, db))
+	t.Run("ApplyMockData", testApplyMockData(ctx, db))
 	t.Run("CRUD_MaterialAssessment", testCRUDMaterialAssessment(ctx, db))
 	t.Run("CRUD_Notifications", testCRUDNotifications(ctx, db))
 	t.Run("Indexes_Validation", testIndexesValidation(ctx, db))
@@ -315,5 +316,61 @@ func testApplySeeds(ctx context.Context, db *mongo.Database) func(*testing.T) {
 		}
 
 		t.Log("✅ ApplySeeds ejecutado correctamente (idempotente para collections con _id)")
+	}
+}
+
+func testApplyMockData(ctx context.Context, db *mongo.Database) func(*testing.T) {
+	return func(t *testing.T) {
+		// Aplicar mock data
+		if err := migrations.ApplyMockData(ctx, db); err != nil {
+			t.Fatalf("Error aplicando mock data: %v", err)
+		}
+
+		// Verificar que se insertaron documentos en las colecciones esperadas
+		expectedCounts := map[string]int64{
+			"analytics_events":            10,
+			"material_assessment":         3,
+			"audit_logs":                  8,
+			"material_assessment_worker":  3,
+			"material_summary":            5,
+			"notifications":               6,
+		}
+
+		for collection, expectedCount := range expectedCounts {
+			coll := db.Collection(collection)
+			count, err := coll.CountDocuments(ctx, bson.M{})
+			if err != nil {
+				t.Fatalf("Error contando documentos en %s: %v", collection, err)
+			}
+
+			if count != expectedCount {
+				t.Errorf("Collection %s: se esperaban %d documentos, se encontraron %d",
+					collection, expectedCount, count)
+			} else {
+				t.Logf("✅ Collection %s: %d documentos insertados correctamente", collection, count)
+			}
+		}
+
+		// Test de idempotencia: ejecutar mock data de nuevo
+		if err := migrations.ApplyMockData(ctx, db); err != nil {
+			t.Fatalf("Error en segunda ejecución de mock data (idempotencia): %v", err)
+		}
+
+		// Verificar que NO se duplicaron los documentos
+		for collection, expectedCount := range expectedCounts {
+			coll := db.Collection(collection)
+			count, err := coll.CountDocuments(ctx, bson.M{})
+			if err != nil {
+				t.Fatalf("Error contando documentos después de segunda ejecución: %v", err)
+			}
+
+			// Para material_assessment con _id explícito, NO se duplicarán
+			if collection == "material_assessment" && count != expectedCount {
+				t.Errorf("Idempotencia FALLÓ en %s: se esperaban %d, se encontraron %d",
+					collection, expectedCount, count)
+			}
+		}
+
+		t.Log("✅ ApplyMockData ejecutado correctamente (idempotente para collections con _id)")
 	}
 }

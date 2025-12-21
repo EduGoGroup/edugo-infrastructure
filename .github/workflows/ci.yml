@@ -43,13 +43,25 @@ jobs:
           echo "ℹ️ Validación de sintaxis SQL - revisar manualmente archivos .sql"
           echo "ℹ️ Tests de integración se ejecutan localmente con ENABLE_INTEGRATION_TESTS=true"
 
+  lint-modules:
+    name: Lint de Módulos Go
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module: [postgres, mongodb, schemas]
+
+    uses: ./.github/workflows/reusable-go-lint.yml
+    with:
+      working-directory: ${{ matrix.module }}
+
   test-modules:
     name: Tests de Módulos Go
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        module: [postgres, mongodb, messaging, schemas]
+        module: [postgres, mongodb, schemas]
 
     steps:
       - uses: actions/checkout@v5

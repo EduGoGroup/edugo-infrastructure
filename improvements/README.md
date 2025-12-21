@@ -19,15 +19,15 @@ Este directorio contiene documentación sobre código que debe ser mejorado, ref
 
 ## 📊 Resumen de Hallazgos
 
-### Estadísticas Actualizadas (2025-12-20 - 18:30)
+### Estadísticas Actualizadas (2025-12-20 - 20:15)
 
 | Categoría | Total | Completadas | Parciales | Pendientes |
 |-----------|-------|-------------|-----------|------------|
 | Código duplicado | 3 | 1 (33%) | 0 | 2 (67%) |
 | Patrones deprecados | 6 | 2 (33%) | 1 (17%) | 3 (50%) |
-| TODOs funcionalidades | 5 | 2 (40%) | 1 (20%) | 2 (40%) |
+| TODOs funcionalidades | 5 | 3 (60%) | 1 (20%) | 1 (20%) |
 | Deuda técnica | 6 | 0 (0%) | 2 (33%) | 4 (67%) |
-| **TOTAL** | **20** | **5 (25%)** | **4 (20%)** | **11 (55%)** |
+| **TOTAL** | **20** | **6 (30%)** | **4 (20%)** | **10 (50%)** |
 
 ### Priorización Recomendada
 
@@ -38,12 +38,12 @@ Completadas:
 3. ✅ DEP-005: Verificado que defer en loop no existe
 4. ✅ TODO-003: Migraciones entities ya existen (doc desactualizada)
 5. ✅ TODO-001: Implementado ApplySeeds() MongoDB (22 documentos, 6 colecciones)
+6. ✅ TODO-002: Implementado ApplyMockData() MongoDB (35 documentos, 6 colecciones)
 
 Prioridad Alta:
-6. 🔴 TD-001: Crear release tags para módulos (VALIDADO: ya existen tags)
+7. 🔴 TD-001: Crear release tags para módulos (VALIDADO: ya existen tags)
 
 Prioridad Media:
-7. 🟡 TODO-002: Implementar ApplyMockData() MongoDB
 8. 🟡 TD-002: Integrar lint en CI workflow
 9. 🟡 DEP-002: Refactorizar context.Background() en funciones
 
@@ -91,6 +91,8 @@ Prioridad Baja:
 | 2025-12-20 | DEP-005 | Verificado que defer en loop no existe | Validación |
 | 2025-12-20 | TODO-003 | Migraciones entities ya existían | Doc desactualizada |
 | 2025-12-20 | DEP-003 | Eliminado script_runner.go (41 panic, código no usado) | 6f2b497+ |
+| 2025-12-20 | TODO-001 | Implementado ApplySeeds() MongoDB | ✅ Completado |
+| 2025-12-20 | TODO-002 | Implementado ApplyMockData() MongoDB | ✅ Completado |
 
 ---
 
@@ -99,20 +101,23 @@ Prioridad Baja:
 **Última validación:** 2025-12-20
 
 ```
-Completadas:   15% (3/20)  ████░░░░░░░░░░░░░░░░
+Completadas:   30% (6/20)  ████████░░░░░░░░░░░░
 Parciales:     20% (4/20)  ██████░░░░░░░░░░░░░░
-Pendientes:    65% (13/20) █████████████████░░░
+Pendientes:    50% (10/20) ██████████████░░░░░░
 ```
 
 **Impacto de mejoras completadas:**
 - ✅ Eliminada duplicación crítica (validator.go)
 - ✅ CI/CD configurado (falta integrar lint)
 - ✅ Constantes de timeout creadas
+- ✅ ApplySeeds() MongoDB implementado (22 documentos)
+- ✅ ApplyMockData() MongoDB implementado (35 documentos)
+- ✅ Tests de integración MongoDB funcionando
 
 **Próximas acciones prioritarias:**
-1. Cambiar panic a error en script_runner.go (40+ ocurrencias)
-2. Crear release tags para módulos
-3. Actualizar documentación desincronizada
+1. Integrar lint en CI workflow (TD-002)
+2. Refactorizar context.Background() en funciones (DEP-002)
+3. Validación schemas runtime (TODO-005)
 
 ---
 

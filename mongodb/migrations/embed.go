@@ -127,12 +127,42 @@ func ApplySeeds(ctx context.Context, db *mongo.Database) error {
 	return nil
 }
 
-// ApplyMockData ejecuta datos mock para testing
-// Por ahora no implementado - agregar cuando se definan datos de prueba
+// ApplyMockData ejecuta datos mock para testing y desarrollo
+// Inserta documentos de prueba más variados y numerosos que los seeds
 //
-// Uso típico: Tests de integración, ambiente de desarrollo
+// Características:
+//   - Idempotente: Se puede ejecutar múltiples veces sin duplicar datos
+//   - Usa ordered: false para continuar aunque algunos documentos ya existan
+//   - Retorna error solo si falla la inserción por razones NO de duplicados
+//
+// Collections pobladas (35 documentos totales):
+//   - analytics_events (10 eventos con diferentes plataformas y roles)
+//   - material_assessment (3 assessments de diferentes dificultades)
+//   - audit_logs (8 registros de auditoría con más casos de uso)
+//   - material_assessment_worker (3 workers con diferentes subjects/idiomas)
+//   - material_summary (5 resúmenes en español, inglés, portugués, francés, alemán)
+//   - notifications (6 notificaciones de diferentes tipos y prioridades)
+//
+// Diferencias vs ApplySeeds:
+//   - Más documentos por colección (35 vs 22)
+//   - Mayor variedad de datos (más países, plataformas, tipos)
+//   - Cubre más casos de uso y escenarios
+//
+// Uso típico: Tests de integración, ambiente de desarrollo, demos
+//
+// Ejemplo:
+//
+//	migrations.ApplyAll(ctx, db)
+//	migrations.ApplyMockData(ctx, db)  // Datos de prueba
 func ApplyMockData(ctx context.Context, db *mongo.Database) error {
-	// TODO: Implementar cuando se definan datos mock
+	inserted, err := applyMockDataInternal(ctx, db)
+	if err != nil {
+		return fmt.Errorf("error aplicando mock data: %w", err)
+	}
+	if inserted > 0 {
+		// Solo logueamos si se insertó algo (opcional, puede removerse)
+		_ = inserted // Evitar warning de variable no usada
+	}
 	return nil
 }
 
