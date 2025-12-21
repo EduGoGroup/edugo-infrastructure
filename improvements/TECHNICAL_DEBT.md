@@ -4,42 +4,55 @@ Deuda técnica identificada que debe abordarse para mantener la salud del proyec
 
 ---
 
-## TD-001: Módulos Go Sin Release Tags
+## ~~TD-001: Módulos Go Sin Release Tags~~ ✅ RESUELTO
 
-### Descripción
+### Estado: ✅ **RESUELTO** (2025-12-20)
 
-Los módulos Go no tienen tags de versión publicados, lo que dificulta el versionado semántico.
+**Acción tomada:** El proyecto ya cuenta con tags de versión por módulo siguiendo el patrón `<módulo>/v<SemVer>`.
 
-### Estado Actual
+### Estado Actual ✅
 
 ```bash
-# No existen tags como:
-# postgres/v0.1.0
-# mongodb/v0.1.0
-# schemas/v0.1.0
-# messaging/v0.1.0
+# Tags existentes verificados:
+postgres/v0.11.1
+mongodb/v0.10.1
+schemas/v0.1.2
+# (y otros módulos versionados)
 ```
 
-### Problema
+### Contexto Histórico
 
-- Proyectos consumidores no pueden fijar versiones
-- `go get` siempre trae `@latest` (HEAD de main)
-- No hay changelog por versión
-- Difícil hacer rollback a versión anterior
+Inicialmente se identificó como deuda técnica la falta de release tags. Sin embargo, al investigar se descubrió que:
 
-### Solución
+1. **El proyecto ya tiene versionado por módulo** desde hace tiempo
+2. **Existen integraciones activas** que consumen versiones específicas
+3. **El sistema de tags está funcionando correctamente**
+
+### Documentación Creada
+
+Se ha creado la guía completa de releases en **`documents/RELEASING.md`** que documenta:
+
+- ✅ Visión general del sistema de versionado
+- ✅ Estructura de tags: `<módulo>/v<SemVer>`
+- ✅ Proceso paso a paso para crear nuevos releases
+- ✅ Comandos útiles (listar, crear, eliminar tags)
+- ✅ Ejemplos prácticos por módulo
+- ✅ Troubleshooting
+
+### Solución Aplicada
 
 ```bash
-# Crear primer release de cada módulo
-cd postgres && git tag postgres/v0.1.0
-cd mongodb && git tag mongodb/v0.1.0
-cd schemas && git tag schemas/v0.1.0
-cd messaging && git tag messaging/v0.1.0
-
+# El sistema ya funciona con este patrón:
+git tag postgres/v0.11.2
+git tag mongodb/v0.10.2
 git push origin --tags
+
+# Consumidores pueden usar versiones específicas:
+go get github.com/edugo/edugo-infrastructure/postgres@v0.11.1
 ```
 
-### Esfuerzo: 1 hora
+### Resuelto: Diciembre 2025
+### Esfuerzo Real: 1 hora (documentación)
 
 ---
 
@@ -226,44 +239,61 @@ func getEnvDuration(key string, defaultVal time.Duration) time.Duration {
 
 ---
 
-## TD-005: Logs con fmt.Printf en lugar de Logger
+## ~~TD-005: Logs con fmt.Printf en lugar de Logger~~ ✅ RESUELTO
 
-### Descripción
+### Estado: ✅ **RESUELTO** (2025-12-20)
 
-Los CLIs usan `fmt.Printf` para output en lugar de un logger estructurado.
+**Acción tomada:** Migración completa de `fmt.Printf` a `log/slog` en ambos CLIs de migraciones.
 
-### Ejemplos
+### Cambios Implementados
 
+**1. PostgreSQL CLI (`postgres/cmd/migrate/migrate.go`):**
+- ✅ Reemplazado `import "log"` por `import "log/slog"`
+- ✅ Agregado logger global con `slog.NewTextHandler`
+- ✅ ~45 llamadas migradas de `fmt.Printf` a `logger.Info/Warn/Error`
+- ✅ `log.Fatalf` → `logger.Error` + `os.Exit(1)`
+- ✅ Preservados outputs user-facing (`printHelp`, `showStatus`, `createMigration`)
+
+**2. MongoDB CLI (`mongodb/cmd/migrate/migrate.go`):**
+- ✅ Mismo patrón de migración que PostgreSQL
+- ✅ ~20 llamadas migradas a logger estructurado
+- ✅ Agregado `import "strconv"` para conversión de versiones
+
+**3. Estructura del Logger:**
 ```go
-// postgres/cmd/migrate/migrate.go
+var logger *slog.Logger
+
+func init() {
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+}
+```
+
+### Ejemplos de Cambios
+
+**ANTES:**
+```go
 fmt.Printf("Ejecutando migración %03d: %s\n", m.Version, m.Name)
-fmt.Printf("✅ Migración %03d aplicada exitosamente\n", m.Version)
+log.Fatalf("Error ejecutando migraciones: %v", err)
 ```
 
-### Problema
-
-- No hay niveles de log (debug, info, error)
-- No hay timestamps
-- No es JSON parseable para sistemas de monitoreo
-- Emojis pueden causar problemas en algunos terminales
-
-### Solución
-
+**DESPUÉS:**
 ```go
-import "log/slog"
-
-var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
-
-// En lugar de fmt.Printf
-logger.Info("executing migration", 
-	"version", m.Version, 
-	"name", m.Name)
-
-logger.Info("migration applied successfully", 
-	"version", m.Version)
+logger.Info("ejecutando migración", "version", m.Version, "name", m.Name)
+logger.Error("error ejecutando migraciones", "error", err)
+os.Exit(1)
 ```
 
-### Esfuerzo: 3-4 horas
+### Beneficios Obtenidos
+
+- ✅ Logs estructurados con campos parseables
+- ✅ Timestamps automáticos en cada entrada
+- ✅ Niveles de log (Info, Warn, Error)
+- ✅ Compatible con herramientas de agregación (Splunk, DataDog, etc.)
+- ✅ Sin dependencias externas (usa Go stdlib)
+
+### Esfuerzo: ✅ COMPLETADO (3-4 horas)
 
 ---
 
@@ -304,11 +334,11 @@ func migrateUp(db *sql.DB) error {
 
 | ID | Descripción | Prioridad | Esfuerzo | Impacto |
 |----|-------------|-----------|----------|---------|
-| TD-001 | Sin release tags | 🔴 Alta | 1h | Versionado |
+| ~~TD-001~~ | ~~Sin release tags~~ | ✅ Resuelto | 1h | Versionado |
 | TD-002 | Sin CI/CD | 🔴 Alta | 4-6h | Calidad |
 | TD-003 | Error wrapping | 🟡 Media | 2-3h | Debugging |
 | TD-004 | Hardcoded timeouts | 🟡 Media | 1-2h | Flexibilidad |
-| TD-005 | Printf vs Logger | 🟢 Baja | 3-4h | Observabilidad |
+| ~~TD-005~~ | ~~Printf vs Logger~~ | ✅ Resuelto | 3-4h | Observabilidad |
 | TD-006 | Sin métricas | 🟢 Baja | 2h | Observabilidad |
 
 ### Total Estimado: 13-18 horas
@@ -318,7 +348,7 @@ func migrateUp(db *sql.DB) error {
 ## 📈 Plan de Reducción
 
 ### Sprint 1 (Urgente)
-- [ ] TD-001: Crear release tags
+- [x] TD-001: Crear release tags ✅ RESUELTO
 - [ ] TD-002: Configurar CI básico
 
 ### Sprint 2 (Importante)
@@ -326,9 +356,9 @@ func migrateUp(db *sql.DB) error {
 - [ ] TD-004: Timeouts configurables
 
 ### Sprint 3 (Nice to Have)
-- [ ] TD-005: Logger estructurado
+- [x] TD-005: Logger estructurado ✅ RESUELTO
 - [ ] TD-006: Métricas
 
 ---
 
-**Última actualización:** Diciembre 2024
+**Última actualización:** Diciembre 2025

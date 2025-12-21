@@ -3,14 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+var logger *slog.Logger
+
+func init() {
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+}
 
 const (
 	migrationsCollection = "schema_migrations"
@@ -40,23 +49,26 @@ func main() {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatalf("Error conectando a MongoDB: %v", err)
+		logger.Error("error conectando a MongoDB", "error", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := client.Disconnect(context.Background()); err != nil {
-			log.Printf("Error desconectando MongoDB: %v", err)
+			logger.Error("error desconectando MongoDB", "error", err)
 		}
 	}()
 
 	// Ping para validar conexión
 	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("Error validando conexión: %v", err)
+		logger.Error("error validando conexión", "error", err)
+		os.Exit(1)
 	}
 
 	db := client.Database(dbName)
 
 	if err := ensureMigrationsCollection(db); err != nil {
-		log.Fatalf("Error creando colección de migraciones: %v", err)
+		logger.Error("error creando colección de migraciones", "error", err)
+		os.Exit(1)
 	}
 
 	command := os.Args[1]
@@ -64,14 +76,17 @@ func main() {
 	switch command {
 	case "status":
 		if err := showStatus(db); err != nil {
-			log.Fatalf("Error mostrando estado: %v", err)
+			logger.Error("error mostrando estado", "error", err)
+			os.Exit(1)
 		}
 	case "force":
 		if len(os.Args) < 3 {
-			log.Fatal("Uso: go run migrate.go force VERSION")
+			logger.Error("uso incorrecto", "mensaje", "Uso: go run migrate.go force VERSION")
+			os.Exit(1)
 		}
 		if err := forceMigration(db, os.Args[2]); err != nil {
-			log.Fatalf("Error forzando versión: %v", err)
+			logger.Error("error forzando versión", "error", err)
+			os.Exit(1)
 		}
 	default:
 		printHelp()
@@ -200,7 +215,7 @@ func showStatus(db *mongo.Database) error {
 }
 
 func forceMigration(db *mongo.Database, version string) error {
-	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", version)
+	logger.Warn("forzando versión de migración", "version", version)
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
@@ -213,8 +228,8 @@ func forceMigration(db *mongo.Database, version string) error {
 	}
 
 	// Insertar versión forzada
-	var versionNum int
-	if _, err := fmt.Sscanf(version, "%d", &versionNum); err != nil {
+	versionNum, err := strconv.Atoi(version)
+	if err != nil {
 		return fmt.Errorf("versión inválida: %s", version)
 	}
 
@@ -227,7 +242,7 @@ func forceMigration(db *mongo.Database, version string) error {
 		return err
 	}
 
-	fmt.Println("✅ Versión forzada exitosamente")
+	logger.Info("versión forzada exitosamente", "version", versionNum)
 	return nil
 }
 

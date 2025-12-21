@@ -26,8 +26,8 @@ Este directorio contiene documentación sobre código que debe ser mejorado, ref
 | Código duplicado | 3 | 1 (33%) | 0 | 2 (67%) |
 | Patrones deprecados | 6 | 2 (33%) | 1 (17%) | 3 (50%) |
 | TODOs funcionalidades | 5 | 3 (60%) | 1 (20%) | 1 (20%) |
-| Deuda técnica | 6 | 0 (0%) | 2 (33%) | 4 (67%) |
-| **TOTAL** | **20** | **6 (30%)** | **4 (20%)** | **10 (50%)** |
+| Deuda técnica | 6 | 2 (33%) | 0 | 4 (67%) |
+| **TOTAL** | **20** | **8 (40%)** | **4 (20%)** | **8 (40%)** |
 
 ### Priorización Recomendada
 
@@ -41,7 +41,7 @@ Completadas:
 6. ✅ TODO-002: Implementado ApplyMockData() MongoDB (35 documentos, 6 colecciones)
 
 Prioridad Alta:
-7. 🔴 TD-001: Crear release tags para módulos (VALIDADO: ya existen tags)
+7. ✅ TD-001: Sistema de release tags documentado (ya existía)
 
 Prioridad Media:
 8. 🟡 TD-002: Integrar lint en CI workflow
@@ -51,7 +51,7 @@ Prioridad Baja:
 10. 🟢 DUP-002/003: Aceptar duplicación trivial en CLIs
 11. 🟢 DEP-006: Agregar constante faltante para timeout
 12. 🟢 TODO-005: Validación schemas runtime
-13. 🟢 TD-005: Migrar de fmt.Printf a logger estructurado
+13. ✅ TD-005: Migrado de fmt.Printf a logger estructurado (log/slog)
 ```
 
 ---
@@ -93,6 +93,8 @@ Prioridad Baja:
 | 2025-12-20 | DEP-003 | Eliminado script_runner.go (41 panic, código no usado) | 6f2b497+ |
 | 2025-12-20 | TODO-001 | Implementado ApplySeeds() MongoDB | ✅ Completado |
 | 2025-12-20 | TODO-002 | Implementado ApplyMockData() MongoDB | ✅ Completado |
+| 2025-12-20 | TD-001 | Sistema de release tags documentado (documents/RELEASING.md) | ✅ Completado |
+| 2025-12-20 | TD-005 | Migrado de fmt.Printf a log/slog en ambos CLIs | ✅ Completado |
 
 ---
 
@@ -101,9 +103,9 @@ Prioridad Baja:
 **Última validación:** 2025-12-20
 
 ```
-Completadas:   30% (6/20)  ████████░░░░░░░░░░░░
+Completadas:   40% (8/20)  ████████████░░░░░░░░
 Parciales:     20% (4/20)  ██████░░░░░░░░░░░░░░
-Pendientes:    50% (10/20) ██████████████░░░░░░
+Pendientes:    40% (8/20)  ████████████░░░░░░░░
 ```
 
 **Impacto de mejoras completadas:**
@@ -113,6 +115,8 @@ Pendientes:    50% (10/20) ██████████████░░░�
 - ✅ ApplySeeds() MongoDB implementado (22 documentos)
 - ✅ ApplyMockData() MongoDB implementado (35 documentos)
 - ✅ Tests de integración MongoDB funcionando
+- ✅ Sistema de release tags documentado (documents/RELEASING.md)
+- ✅ Logger estructurado implementado (log/slog en ambos CLIs)
 
 **Próximas acciones prioritarias:**
 1. Integrar lint en CI workflow (TD-002)
@@ -121,5 +125,5 @@ Pendientes:    50% (10/20) ██████████████░░░�
 
 ---
 
-**Última actualización:** Diciembre 2024  
+**Última actualización:** Diciembre 2025  
 **Última validación:** 2025-12-20

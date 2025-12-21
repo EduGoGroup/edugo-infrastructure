@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,6 +13,14 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+var logger *slog.Logger
+
+func init() {
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+}
 
 const (
 	migrationsTable = "schema_migrations"
@@ -37,16 +45,19 @@ func main() {
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("Error conectando a PostgreSQL: %v", err)
+		logger.Error("error conectando a PostgreSQL", "error", err)
+		os.Exit(1)
 	}
 	defer func() { _ = db.Close() }()
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Error validando conexión: %v", err)
+		logger.Error("error validando conexión", "error", err)
+		os.Exit(1)
 	}
 
 	if err := ensureMigrationsTable(db); err != nil {
-		log.Fatalf("Error creando tabla de migraciones: %v", err)
+		logger.Error("error creando tabla de migraciones", "error", err)
+		os.Exit(1)
 	}
 
 	command := os.Args[1]
@@ -54,29 +65,36 @@ func main() {
 	switch command {
 	case "up":
 		if err := migrateUp(db); err != nil {
-			log.Fatalf("Error ejecutando migraciones: %v", err)
+			logger.Error("error ejecutando migraciones", "error", err)
+			os.Exit(1)
 		}
 	case "down":
 		if err := migrateDown(db); err != nil {
-			log.Fatalf("Error revirtiendo migración: %v", err)
+			logger.Error("error revirtiendo migración", "error", err)
+			os.Exit(1)
 		}
 	case "status":
 		if err := showStatus(db); err != nil {
-			log.Fatalf("Error mostrando estado: %v", err)
+			logger.Error("error mostrando estado", "error", err)
+			os.Exit(1)
 		}
 	case "create":
 		if len(os.Args) < 3 {
-			log.Fatal("Uso: go run migrate.go create \"descripcion_migracion\"")
+			logger.Error("uso incorrecto", "mensaje", "Uso: go run migrate.go create \"descripcion_migracion\"")
+			os.Exit(1)
 		}
 		if err := createMigration(os.Args[2]); err != nil {
-			log.Fatalf("Error creando migración: %v", err)
+			logger.Error("error creando migración", "error", err)
+			os.Exit(1)
 		}
 	case "force":
 		if len(os.Args) < 3 {
-			log.Fatal("Uso: go run migrate.go force VERSION")
+			logger.Error("uso incorrecto", "mensaje", "Uso: go run migrate.go force VERSION")
+			os.Exit(1)
 		}
 		if err := forceMigration(db, os.Args[2]); err != nil {
-			log.Fatalf("Error forzando versión: %v", err)
+			logger.Error("error forzando versión", "error", err)
+			os.Exit(1)
 		}
 	default:
 		printHelp()
@@ -152,7 +170,7 @@ func migrateUp(db *sql.DB) error {
 			continue
 		}
 
-		fmt.Printf("Ejecutando migración %03d: %s\n", m.Version, m.Name)
+		logger.Info("ejecutando migración", "version", m.Version, "name", m.Name)
 
 		tx, err := db.Begin()
 		if err != nil {
@@ -175,13 +193,13 @@ func migrateUp(db *sql.DB) error {
 		}
 
 		pendingCount++
-		fmt.Printf("✅ Migración %03d aplicada exitosamente\n", m.Version)
+		logger.Info("migración aplicada exitosamente", "version", m.Version)
 	}
 
 	if pendingCount == 0 {
-		fmt.Println("✅ No hay migraciones pendientes")
+		logger.Info("no hay migraciones pendientes")
 	} else {
-		fmt.Printf("✅ %d migración(es) aplicada(s) exitosamente\n", pendingCount)
+		logger.Info("migraciones aplicadas exitosamente", "count", pendingCount)
 	}
 
 	return nil
@@ -194,7 +212,7 @@ func migrateDown(db *sql.DB) error {
 	}
 
 	if len(applied) == 0 {
-		fmt.Println("No hay migraciones para revertir")
+		logger.Info("no hay migraciones para revertir")
 		return nil
 	}
 
@@ -222,7 +240,7 @@ func migrateDown(db *sql.DB) error {
 		return fmt.Errorf("migración %d no encontrada", lastVersion)
 	}
 
-	fmt.Printf("Revirtiendo migración %03d: %s\n", targetMigration.Version, targetMigration.Name)
+	logger.Info("revirtiendo migración", "version", targetMigration.Version, "name", targetMigration.Name)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -244,7 +262,7 @@ func migrateDown(db *sql.DB) error {
 		return err
 	}
 
-	fmt.Printf("✅ Migración %03d revertida exitosamente\n", targetMigration.Version)
+	logger.Info("migración revertida exitosamente", "version", targetMigration.Version)
 	return nil
 }
 
@@ -320,7 +338,7 @@ func createMigration(description string) error {
 }
 
 func forceMigration(db *sql.DB, versionStr string) error {
-	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", versionStr)
+	logger.Warn("forzando versión de migración", "version", versionStr)
 
 	version, err := strconv.Atoi(versionStr)
 	if err != nil {
@@ -349,7 +367,7 @@ func forceMigration(db *sql.DB, versionStr string) error {
 		return err
 	}
 
-	fmt.Println("✅ Versión forzada exitosamente")
+	logger.Info("versión forzada exitosamente", "version", version)
 	return nil
 }
 
