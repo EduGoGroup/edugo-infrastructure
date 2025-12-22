@@ -4,151 +4,273 @@ Funcionalidades marcadas como TODO que requieren implementación.
 
 ---
 
-## TODO-001: ApplySeeds() No Implementada
+## ~~TODO-001: ApplySeeds() No Implementada~~ ✅ RESUELTO
 
-### Ubicación
+### Estado: ✅ **RESUELTO** (2025-12-20)
+
+### Ubicación Original
 
 ```
-mongodb/migrations/embed.go:100-103
+mongodb/migrations/embed.go:95-103
 ```
 
-### Código Actual
+### Problema Original
+
+- Función pública que no hacía nada (retornaba nil)
+- Confundía a usuarios del módulo
+- Seeds existían en `mongodb/seeds/` (9 archivos JavaScript) pero no se cargaban
+
+### Solución Implementada
+
+**Archivos creados:**
+- `mongodb/migrations/seeds.go` (1,053 líneas) - Contiene todos los datos de seeds en Go
+
+**Archivos modificados:**
+- `mongodb/migrations/embed.go` - Función `ApplySeeds()` ahora invoca `applySeedsInternal()`
+- `mongodb/migrations/migrations_integration_test.go` - Agregado test `testApplySeeds()`
+
+### Implementación
+
+**1. Conversión JavaScript → Go:**
+Los 9 archivos JavaScript fueron convertidos a estructuras Go usando `bson.D` y `bson.A`:
 
 ```go
-// ApplySeeds ejecuta seeds (datos iniciales del ecosistema)
-// Por ahora no implementado - agregar cuando se definan seeds necesarios
-//
-// Uso típico: Inicializar datos mínimos en ambiente de producción/staging
-func ApplySeeds(ctx context.Context, db *mongo.Database) error {
-	// TODO: Implementar cuando se definan seeds
-	return nil
+func analyticsEventsSeeds() seedDocument {
+    return seedDocument{
+        collection: "analytics_events",
+        documents: []interface{}{
+            bson.D{
+                {Key: "event_name", Value: "page.view"},
+                {Key: "user_id", Value: "33333333-3333-3333-3333-333333333333"},
+                // ... 6 eventos completos
+            },
+        },
+    }
 }
 ```
 
-### Problema
-
-- Función pública que no hace nada
-- Puede confundir a usuarios del módulo
-- Seeds existen en `mongodb/seeds/` pero no se cargan
-
-### Solución Propuesta
-
+**2. Función principal:**
 ```go
 func ApplySeeds(ctx context.Context, db *mongo.Database) error {
-	seedFiles := []struct {
-		collection string
-		filename   string
-	}{
-		{"material_assessment_worker", "material_assessment_worker.js"},
-		{"material_summary", "material_summary.js"},
-		{"material_event", "material_event.js"},
-	}
-
-	for _, sf := range seedFiles {
-		content, err := seedsFS.ReadFile("seeds/" + sf.filename)
-		if err != nil {
-			return fmt.Errorf("error reading seed %s: %w", sf.filename, err)
-		}
-		
-		if err := executeSeedScript(ctx, db, sf.collection, string(content)); err != nil {
-			return fmt.Errorf("error applying seed %s: %w", sf.filename, err)
-		}
-	}
-	
-	return nil
+    inserted, err := applySeedsInternal(ctx, db)
+    if err != nil {
+        return fmt.Errorf("error aplicando seeds: %w", err)
+    }
+    return nil
 }
 ```
 
-### Esfuerzo Estimado
+**3. Idempotencia:**
+- Usa `InsertMany` con `ordered: false`
+- Ignora errores de clave duplicada
+- Permite ejecutar múltiples veces sin duplicar datos (para colecciones con `_id` explícito)
+
+### Collections Pobladas
+
+| Collection | Documentos | Descripción |
+|------------|-----------|-------------|
+| `analytics_events` | 6 | Eventos de ejemplo (page.view, material.view, assessment.start/complete, search.performed) |
+| `material_assessment` | 2 | Assessments de Física y Matemáticas con ObjectID explícito |
+| `audit_logs` | 5 | Registros de auditoría (login, material uploaded, failed login, system backup) |
+| `material_assessment_worker` | 2 | Workers con preguntas generadas por IA (POO Java, React Hooks) |
+| `material_summary` | 3 | Resúmenes en español, inglés y portugués |
+| `notifications` | 4 | Notificaciones de ejemplo (assessment ready/graded, material uploaded, system announcement) |
+
+**Total:** 22 documentos de ejemplo
+
+### Tests Agregados
+
+```go
+func testApplySeeds(ctx context.Context, db *mongo.Database) func(*testing.T) {
+    // 1. Aplica seeds
+    // 2. Verifica conteo de documentos por colección
+    // 3. Test de idempotencia (ejecuta seeds 2 veces)
+    // 4. Verifica que NO se duplican documentos con _id explícito
+}
+```
+
+### Beneficios
+
+- ✅ **Type-safe**: Go verifica tipos en tiempo de compilación
+- ✅ **Sin dependencias externas**: No necesita intérprete JavaScript
+- ✅ **Idempotente**: Se puede ejecutar múltiples veces
+- ✅ **Testeable**: Tests de integración incluidos
+- ✅ **Consistente**: Sigue el patrón de PostgreSQL
+- ✅ **Documentado**: GoDoc completo con ejemplos
+
+### Uso
+
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+
+// Inicializar base de datos completa
+migrations.ApplyAll(ctx, db)
+migrations.ApplySeeds(ctx, db)  // ← Ahora funcional
+```
+
+### Impacto en Proyectos
+
+- **edugo-worker**: Ahora puede usar `ApplySeeds()` en tests de integración
+- **edugo-api-mobile**: Consistencia con el patrón ya usado en PostgreSQL
+
+### Archivos JavaScript Originales
+
+Los archivos en `mongodb/seeds/*.js` se mantienen como **documentación de referencia** pero ya no son necesarios para la ejecución. La implementación en Go es la fuente de verdad.
+
+### Esfuerzo Real
 
 - **Complejidad:** Media
-- **Tiempo:** 2-4 horas
-- **Dependencias:** Definir formato de seeds
+- **Tiempo:** ~2 horas (conversión manual de JavaScript a Go)
+- **Líneas agregadas:** +1,053 líneas en seeds.go
+- **Líneas modificadas:** ~30 líneas en embed.go + test
 
 ---
 
-## TODO-002: ApplyMockData() No Implementada
+## ~~TODO-002: ApplyMockData() No Implementada~~ ✅ RESUELTO
 
-### Ubicación
+### Estado: ✅ **RESUELTO** (2025-12-20)
+
+### Ubicación Original
 
 ```
 mongodb/migrations/embed.go:105-112
 ```
 
-### Código Actual
+### Problema Original
 
+- Función pública que no hacía nada (retornaba nil)
+- Tests de integración no tenían datos mock centralizados
+- Similar a TODO-001 pero con más variedad de datos
+
+### Solución Implementada
+
+**Archivos creados:**
+- `mongodb/migrations/mock_data.go` (1,089 líneas) - Contiene todos los datos mock en Go
+
+**Archivos modificados:**
+- `mongodb/migrations/embed.go` - Función `ApplyMockData()` ahora invoca `applyMockDataInternal()`
+- `mongodb/migrations/migrations_integration_test.go` - Agregado test `testApplyMockData()`
+
+### Implementación
+
+**1. Estructura similar a seeds.go:**
 ```go
-// ApplyMockData ejecuta datos mock para testing
-// Por ahora no implementado - agregar cuando se definan datos de prueba
-//
-// Uso típico: Tests de integración, ambiente de desarrollo
-func ApplyMockData(ctx context.Context, db *mongo.Database) error {
-	// TODO: Implementar cuando se definan datos mock
-	return nil
+func analyticsEventsMockData() mockDocument {
+    return mockDocument{
+        collection: "analytics_events",
+        documents: []interface{}{
+            // 10 eventos con diferentes plataformas, países, roles
+            bson.D{
+                {Key: "event_name", Value: "user.login"},
+                {Key: "device", Value: bson.D{
+                    {Key: "platform", Value: "mobile"},
+                    {Key: "os", Value: "iOS"},
+                    // ... más variedad
+                }},
+            },
+        },
+    }
 }
 ```
 
-### Problema
+**2. Función principal:**
+```go
+func ApplyMockData(ctx context.Context, db *mongo.Database) error {
+    inserted, err := applyMockDataInternal(ctx, db)
+    if err != nil {
+        return fmt.Errorf("error aplicando mock data: %w", err)
+    }
+    return nil
+}
+```
 
-- Similar a TODO-001
-- Tests de integración no tienen datos mock centralizados
+**3. Idempotencia:**
+- Igual que ApplySeeds(), usa `InsertMany` con `ordered: false`
+- Ignora errores de clave duplicada
+- Permite ejecutar múltiples veces
 
-### Solución Propuesta
+### Collections Pobladas
 
-Implementar carga de datos mock desde archivos JSON/JS en directorio `testing/`.
+| Collection | Documentos | Descripción |
+|------------|-----------|-------------|
+| `analytics_events` | 10 | Eventos variados (mobile/tablet/web, diferentes países y plataformas) |
+| `material_assessment` | 3 | Assessments de Química (hard), Historia (easy), Cálculo (medium) |
+| `audit_logs` | 8 | Registros extendidos (material deleted, user created, password changed, brute force, etc.) |
+| `material_assessment_worker` | 3 | Workers en español, inglés y portugués con diferentes subjects |
+| `material_summary` | 5 | Resúmenes en español, inglés, portugués, francés y alemán |
+| `notifications` | 6 | Notificaciones variadas (material ready, system update, deadline, comment, achievement, security alert) |
 
-### Esfuerzo Estimado
+**Total:** 35 documentos mock
+
+### Diferencias vs ApplySeeds()
+
+| Aspecto | Seeds (22 docs) | MockData (35 docs) |
+|---------|----------------|-------------------|
+| **Propósito** | Datos mínimos funcionales | Datos variados para testing |
+| **Variedad** | Casos básicos | Múltiples escenarios |
+| **Plataformas** | Principalmente web | Web, mobile, tablet |
+| **Países** | Chile | 10+ países latinoamericanos |
+| **Idiomas** | 3 (es, en, pt) | 5 (es, en, pt, fr, de) |
+| **Dificultades** | easy, medium | easy, medium, hard |
+| **Tipos evento** | 6 tipos | 10 tipos |
+
+### Tests Agregados
+
+```go
+func testApplyMockData(ctx context.Context, db *mongo.Database) func(*testing.T) {
+    // 1. Aplica mock data
+    // 2. Verifica conteo: 10 + 3 + 8 + 3 + 5 + 6 = 35 documentos
+    // 3. Test de idempotencia (ejecuta 2 veces)
+    // 4. Verifica que NO se duplican documentos con _id explícito
+}
+```
+
+### Beneficios
+
+- ✅ **Type-safe**: Go verifica tipos en tiempo de compilación
+- ✅ **Mayor cobertura**: 35 documentos vs 22 en seeds
+- ✅ **Más variedad**: Diferentes plataformas, países, idiomas
+- ✅ **Idempotente**: Se puede ejecutar múltiples veces
+- ✅ **Testeable**: Tests de integración incluidos
+- ✅ **Consistente**: Sigue mismo patrón que ApplySeeds()
+- ✅ **Documentado**: GoDoc completo con comparación vs seeds
+
+### Uso
+
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+
+// Ambiente de desarrollo con datos de prueba
+migrations.ApplyAll(ctx, db)
+migrations.ApplySeeds(ctx, db)      // Datos mínimos
+migrations.ApplyMockData(ctx, db)   // Datos variados para testing
+```
+
+### Casos de Uso
+
+**ApplySeeds()**: Ideal para inicialización mínima
+- Datos esenciales del ecosistema
+- Ambientes productivos
+- CI/CD básico
+
+**ApplyMockData()**: Ideal para desarrollo y demos
+- Tests de integración complejos
+- Demostración de features
+- Desarrollo local
+- QA/Staging con datos variados
+
+### Impacto en Proyectos
+
+- **edugo-worker**: Ahora puede usar `ApplyMockData()` para tests con más variedad
+- **edugo-api-mobile**: Datos mock con eventos mobile/tablet para testing realista
+- **Todos**: Consistencia con patrón PostgreSQL (que tiene `testing/*.sql`)
+
+### Esfuerzo Real
 
 - **Complejidad:** Media
-- **Tiempo:** 2-4 horas
-
----
-
-## TODO-003: Entities Sin Migraciones SQL
-
-### Descripción
-
-Existen 6 entities Go definidas pero cuyas migraciones SQL no están activas o son incompletas.
-
-### Entities Afectadas
-
-| Entity | Archivo | Tabla Esperada | Estado |
-|--------|---------|----------------|--------|
-| `MaterialVersion` | `postgres/entities/material_version.go` | `material_versions` | Migración existe (012) |
-| `Subject` | `postgres/entities/subject.go` | `subjects` | Migración existe (013) |
-| `Unit` | `postgres/entities/unit.go` | `units` | Migración existe (014) |
-| `GuardianRelation` | `postgres/entities/guardian_relation.go` | `guardian_relations` | Migración existe (015) |
-| `Progress` | `postgres/entities/progress.go` | `progress` | Migración existe (016) |
-
-### Código Actual
-
-```go
-// postgres/entities/material_version.go
-type MaterialVersion struct {
-	ID           uuid.UUID  `db:"id"`
-	MaterialID   uuid.UUID  `db:"material_id"`
-	VersionNumber int       `db:"version_number"`
-	FileURL      string     `db:"file_url"`
-	// ...
-}
-```
-
-### Problema
-
-- README indica que están "bloqueadas" pero migraciones existen
-- Posible desincronización entre documentación y código
-- Usuarios no saben qué entities pueden usar
-
-### Solución Propuesta
-
-1. Verificar que migraciones 012-016 funcionan correctamente
-2. Actualizar README de entities indicando que están disponibles
-3. Agregar tests de integración
-
-### Esfuerzo Estimado
-
-- **Complejidad:** Baja-Media
-- **Tiempo:** 2-3 horas (verificación y documentación)
+- **Tiempo:** ~2.5 horas (creación de 35 documentos variados)
+- **Líneas agregadas:** +1,089 líneas en mock_data.go
+- **Líneas modificadas:** ~35 líneas en embed.go + test
 
 ---
 
@@ -157,55 +279,35 @@ type MaterialVersion struct {
 ### Ubicación
 
 ```
-mongodb/testing/  (directorio vacío)
+mongodb/migrations/migrations_integration_test.go
 ```
 
-### Problema
+### Estado Actual
 
-- Directorio `testing/` existe pero está vacío
-- No hay tests de integración para entities MongoDB
-- No hay tests para migraciones MongoDB
+🟡 **Parcialmente implementado**
 
-### Solución Propuesta
+✅ **Existe y funciona:**
+- Archivo `migrations_integration_test.go` creado
+- 5 tests implementados:
+  - `TestIntegration` - Suite principal
+  - `testApplyAll` - Verifica aplicación de migraciones
+  - `testCRUDMaterialAssessment` - Prueba CRUD completo
+  - `testCRUDNotifications` - Prueba CRUD de notificaciones
+  - `testIndexesValidation` - Verifica creación de índices
 
-Crear tests similares a `postgres/migrations/migrations_integration_test.go`:
+❌ **Faltante:**
+- Tests para `ApplySeeds()` (depende de TODO-001)
+- Tests para `ApplyMockData()` (depende de TODO-002)
+- Directorio `testing/` con archivos de prueba
 
-```go
-// mongodb/migrations/migrations_integration_test.go
-package migrations_test
+### Conclusión
 
-import (
-	"context"
-	"testing"
-	
-	"go.mongodb.org/mongo-driver/mongo"
-)
-
-func TestApplyAllMigrations(t *testing.T) {
-	ctx := context.Background()
-	db := setupTestDB(t)
-	defer teardownTestDB(t, db)
-	
-	// Test migrations
-	if err := migrations.ApplyAll(ctx, db); err != nil {
-		t.Fatalf("ApplyAll failed: %v", err)
-	}
-	
-	// Verify collections exist
-	collections, _ := db.ListCollectionNames(ctx, bson.M{})
-	expected := []string{
-		"material_assessment_worker",
-		"material_summary",
-		"material_event",
-	}
-	// Assert collections exist
-}
-```
+El framework de tests existe y funciona, pero está incompleto porque depende de funcionalidades no implementadas.
 
 ### Esfuerzo Estimado
 
-- **Complejidad:** Media
-- **Tiempo:** 4-6 horas
+- **Complejidad:** Baja (ya existe base)
+- **Tiempo:** 2-3 horas (cuando TODO-001/002 estén listos)
 
 ---
 
@@ -230,6 +332,13 @@ func NewEventValidator() (*EventValidator, error) {
 - Si falta un schema, el error ocurre al validar (runtime)
 - No hay lista definida de schemas requeridos
 - Difícil detectar schemas faltantes en CI
+
+### Schemas Actuales
+
+- `assessment.generated:1.0`
+- `material.deleted:1.0`
+- `material.uploaded:1.0`
+- `student.enrolled:1.0`
 
 ### Solución Propuesta
 
@@ -266,23 +375,15 @@ func NewEventValidator() (*EventValidator, error) {
 
 ## 📊 Resumen de TODOs
 
-| ID | Descripción | Prioridad | Esfuerzo |
-|----|-------------|-----------|----------|
-| TODO-001 | ApplySeeds() vacía | 🟡 Media | 2-4h |
-| TODO-002 | ApplyMockData() vacía | 🟡 Media | 2-4h |
-| TODO-003 | Entities sin doc actualizada | 🟡 Media | 2-3h |
-| TODO-004 | Tests MongoDB faltantes | 🟠 Media-Alta | 4-6h |
-| TODO-005 | Validación schemas | 🟢 Baja | 1h |
+| ID | Descripción | Prioridad | Estado | Esfuerzo |
+|----|-------------|-----------|--------|----------|
+| ~~TODO-001~~ | ~~ApplySeeds() vacía~~ | 🟡 Media | ✅ Resuelto | 2h |
+| ~~TODO-002~~ | ~~ApplyMockData() vacía~~ | 🟡 Media | ✅ Resuelto | 2.5h |
+| TODO-004 | Tests MongoDB | 🟠 Media-Alta | Parcial | 2-3h |
+| TODO-005 | Validación schemas | 🟢 Baja | Pendiente | 1h |
 
-### Total Estimado: 11-18 horas
-
----
-
-## ✅ Completados
-
-| Fecha | ID | Descripción | PR |
-|-------|-----|-------------|-----|
-| - | - | - | - |
+### Total Completado: 4.5h
+### Total Pendiente: 3-4h
 
 ---
 

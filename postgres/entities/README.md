@@ -4,7 +4,7 @@ Entities base que reflejan el schema de PostgreSQL para el ecosistema EduGo.
 
 ---
 
-## 📋 Entities Disponibles (8 de 14 planificadas)
+## 📋 Entities Disponibles (13 de 14 planificadas)
 
 | # | Entity | Tabla | Migración | Status |
 |---|--------|-------|-----------|--------|
@@ -16,24 +16,19 @@ Entities base que reflejan el schema de PostgreSQL para el ecosistema EduGo.
 | 6 | `Assessment` | `assessment` | `006_create_assessments.up.sql` | ✅ Disponible |
 | 7 | `AssessmentAttempt` | `assessment_attempt` | `007_create_assessment_attempts.up.sql` | ✅ Disponible |
 | 8 | `AssessmentAttemptAnswer` | `assessment_attempt_answer` | `008_create_assessment_answers.up.sql` | ✅ Disponible |
+| 9 | `MaterialVersion` | `material_versions` | `012_create_material_versions.up.sql` | ✅ Disponible |
+| 10 | `Subject` | `subjects` | `013_create_subjects.up.sql` | ✅ Disponible |
+| 11 | `Unit` | `units` | `014_create_units.up.sql` | ✅ Disponible |
+| 12 | `GuardianRelation` | `guardian_relations` | `015_create_guardian_relations.up.sql` | ✅ Disponible |
+| 13 | `Progress` | `progress` | `016_create_progress.up.sql` | ✅ Disponible |
 
 ---
 
-## 🚫 Entities Pendientes (6 bloqueadas)
-
-Las siguientes entities **no están disponibles** porque no existen migraciones SQL:
+## 🚫 Entities Pendientes (1 bloqueada)
 
 | # | Entity | Tabla Esperada | Razón |
 |---|--------|----------------|-------|
-| 1 | `MaterialVersion` | `material_versions` | Sin migración |
-| 2 | `Subject` | `subjects` | Sin migración |
-| 3 | `Unit` | `units` | Sin migración |
-| 4 | `GuardianRelation` | `guardian_relations` | Sin migración |
-| 5 | `AssessmentQuestion` | `assessment_questions` | Sin migración |
-| 6 | `AssessmentAnswer` | `assessment_answers` | Sin migración |
-| 7 | `Progress` | `progress` | Sin migración |
-
-**Ver:** `../../tracking/decisions/ENTITIES-BLOCKED-FASE1.md` para más detalles.
+| 1 | `AssessmentQuestion` | `assessment_questions` | Migración aún no creada |
 
 ---
 
@@ -114,6 +109,82 @@ answer := &pgentities.AssessmentAttemptAnswer{
     AnsweredAt:    time.Now(),
     CreatedAt:     time.Now(),
     UpdatedAt:     time.Now(),
+}
+```
+
+### Nuevas Entities Disponibles
+
+#### MaterialVersion
+
+```go
+version := &pgentities.MaterialVersion{
+    ID:            uuid.New(),
+    MaterialID:    material.ID,
+    VersionNumber: 2,
+    FileURL:       "s3://bucket/file-v2.pdf",
+    FileSize:      1024000,
+    UploadedBy:    userID,
+    Metadata:      []byte(`{"comment": "Fixed typos"}`),
+    CreatedAt:     time.Now(),
+}
+```
+
+#### Subject
+
+```go
+subject := &pgentities.Subject{
+    ID:          uuid.New(),
+    SchoolID:    school.ID,
+    Name:        "Matemáticas",
+    Code:        "MAT101",
+    Description: "Matemáticas nivel básico",
+    IsActive:    true,
+    CreatedAt:   time.Now(),
+    UpdatedAt:   time.Now(),
+}
+```
+
+#### Unit
+
+```go
+unit := &pgentities.Unit{
+    ID:          uuid.New(),
+    SubjectID:   subject.ID,
+    Name:        "Álgebra",
+    OrderIndex:  1,
+    Description: "Fundamentos de álgebra",
+    IsActive:    true,
+    CreatedAt:   time.Now(),
+    UpdatedAt:   time.Now(),
+}
+```
+
+#### GuardianRelation
+
+```go
+relation := &pgentities.GuardianRelation{
+    ID:           uuid.New(),
+    GuardianID:   guardianUser.ID,
+    StudentID:    studentUser.ID,
+    RelationType: "parent",
+    IsActive:     true,
+    CreatedAt:    time.Now(),
+    UpdatedAt:    time.Now(),
+}
+```
+
+#### Progress
+
+```go
+progress := &pgentities.Progress{
+    ID:               uuid.New(),
+    StudentID:        student.ID,
+    MaterialID:       material.ID,
+    Status:           "in_progress",
+    CompletionPercent: 45,
+    LastAccessedAt:   time.Now(),
+    CreatedAt:        time.Now(),
+    UpdatedAt:        time.Now(),
 }
 ```
 
@@ -255,6 +326,28 @@ attempt := &AssessmentAttempt{
     AssessmentID: assessment.ID,
     StudentID:    user.ID,
 }
+
+// Subject → School (FK)
+subject := &Subject{
+    SchoolID: school.ID,
+}
+
+// Unit → Subject (FK)
+unit := &Unit{
+    SubjectID: subject.ID,
+}
+
+// Progress → Student + Material (FKs)
+progress := &Progress{
+    StudentID:  student.ID,
+    MaterialID: material.ID,
+}
+
+// GuardianRelation → Guardian + Student (FKs)
+relation := &GuardianRelation{
+    GuardianID: guardian.ID,
+    StudentID:  student.ID,
+}
 ```
 
 **Nota:** Las entities **NO incluyen** joins automáticos. Hacer queries con joins en tu aplicación.
@@ -284,24 +377,21 @@ git push origin postgres/entities/v0.1.0
 
 | Proyecto | Entities Disponibles | Status |
 |----------|---------------------|--------|
-| **api-mobile** | User, School, AcademicUnit, Membership, Material, Assessment, AssessmentAttempt, AssessmentAttemptAnswer | ✅ Listo para migración |
-| **api-administracion** | User, School, AcademicUnit, Membership | ✅ Listo para migración |
-| **worker** | Todas las entities disponibles | ✅ Listo para migración |
-
-**Bloqueadas por:** MaterialVersion, Subject, Unit, GuardianRelation, Progress (sin migraciones)
+| **api-mobile** | Todas excepto AssessmentQuestion | ✅ Listo para migración |
+| **api-administracion** | Todas excepto AssessmentQuestion | ✅ Listo para migración |
+| **worker** | Todas excepto AssessmentQuestion | ✅ Listo para migración |
 
 ---
 
 ## 📝 Próximos Pasos
 
-1. **Fase 2:** Crear migraciones SQL para entities faltantes
+1. **Fase 2:** Crear migración para `AssessmentQuestion`
 2. **Fase 2:** Validar compilación con Go 1.25
 3. **Fase 2:** Ejecutar tests de integración
-4. **Fase 3:** Release de `postgres/entities/v0.1.0`
+4. **Fase 3:** Release de `postgres/entities/v1.0.0`
 5. **Proyectos:** Migrar api-mobile, api-administracion, worker
 
 ---
 
-**Generado por:** Claude Code - Sprint Entities Fase 1
-**Fecha:** 2025-11-22
-**Versión:** 1.0
+**Última actualización:** Diciembre 2024  
+**Versión:** 2.0

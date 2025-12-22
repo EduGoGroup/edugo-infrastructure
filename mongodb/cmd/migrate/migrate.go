@@ -3,11 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
-	"path/filepath"
-	"sort"
-	"strings"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,9 +13,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var logger *slog.Logger
+
+func init() {
+	logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+}
+
 const (
 	migrationsCollection = "schema_migrations"
-	migrationsDir        = "migrations"
 
 	// Timeouts configurables
 	DefaultConnectTimeout   = 10 * time.Second
@@ -25,11 +30,9 @@ const (
 )
 
 type Migration struct {
-	Version    int
-	Name       string
-	UpScript   string
-	DownScript string
-	AppliedAt  *time.Time
+	Version   int
+	Name      string
+	AppliedAt *time.Time
 }
 
 func main() {
@@ -46,53 +49,44 @@ func main() {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatalf("Error conectando a MongoDB: %v", err)
+		logger.Error("error conectando a MongoDB", "error", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := client.Disconnect(context.Background()); err != nil {
-			log.Printf("Error desconectando MongoDB: %v", err)
+			logger.Error("error desconectando MongoDB", "error", err)
 		}
 	}()
 
 	// Ping para validar conexión
 	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("Error validando conexión: %v", err)
+		logger.Error("error validando conexión", "error", err)
+		os.Exit(1)
 	}
 
 	db := client.Database(dbName)
 
 	if err := ensureMigrationsCollection(db); err != nil {
-		log.Fatalf("Error creando colección de migraciones: %v", err)
+		logger.Error("error creando colección de migraciones", "error", err)
+		os.Exit(1)
 	}
 
 	command := os.Args[1]
 
 	switch command {
-	case "up":
-		if err := migrateUp(db); err != nil {
-			log.Fatalf("Error ejecutando migraciones: %v", err)
-		}
-	case "down":
-		if err := migrateDown(db); err != nil {
-			log.Fatalf("Error revirtiendo migración: %v", err)
-		}
 	case "status":
 		if err := showStatus(db); err != nil {
-			log.Fatalf("Error mostrando estado: %v", err)
-		}
-	case "create":
-		if len(os.Args) < 3 {
-			log.Fatal("Uso: go run migrate.go create \"descripcion_migracion\"")
-		}
-		if err := createMigration(os.Args[2]); err != nil {
-			log.Fatalf("Error creando migración: %v", err)
+			logger.Error("error mostrando estado", "error", err)
+			os.Exit(1)
 		}
 	case "force":
 		if len(os.Args) < 3 {
-			log.Fatal("Uso: go run migrate.go force VERSION")
+			logger.Error("uso incorrecto", "mensaje", "Uso: go run migrate.go force VERSION")
+			os.Exit(1)
 		}
 		if err := forceMigration(db, os.Args[2]); err != nil {
-			log.Fatalf("Error forzando versión: %v", err)
+			logger.Error("error forzando versión", "error", err)
+			os.Exit(1)
 		}
 	default:
 		printHelp()
@@ -103,11 +97,14 @@ func main() {
 func printHelp() {
 	fmt.Println("CLI de Migraciones MongoDB - edugo-infrastructure")
 	fmt.Println("")
+	fmt.Println("📢 NOTA: Este CLI solo gestiona el estado de migraciones.")
+	fmt.Println("   Las migraciones reales se ejecutan desde código Go usando:")
+	fmt.Println("   - migrations.ApplyAll(ctx, db)")
+	fmt.Println("   - migrations.ApplyStructure(ctx, db)")
+	fmt.Println("   - migrations.ApplyConstraints(ctx, db)")
+	fmt.Println("")
 	fmt.Println("Uso:")
-	fmt.Println("  go run migrate.go up                    Ejecutar migraciones pendientes")
-	fmt.Println("  go run migrate.go down                  Revertir última migración")
 	fmt.Println("  go run migrate.go status                Ver estado de migraciones")
-	fmt.Println("  go run migrate.go create \"nombre\"       Crear nueva migración")
 	fmt.Println("  go run migrate.go force VERSION         Forzar versión (¡cuidado!)")
 	fmt.Println("")
 	fmt.Println("Variables de entorno:")
@@ -116,6 +113,10 @@ func printHelp() {
 	fmt.Println("  MONGO_DB_NAME  (default: edugo)")
 	fmt.Println("  MONGO_USER     (opcional)")
 	fmt.Println("  MONGO_PASSWORD (opcional)")
+	fmt.Println("")
+	fmt.Println("Para ejecutar migraciones, usar el paquete migrations desde Go:")
+	fmt.Println("  import \"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations\"")
+	fmt.Println("  migrations.ApplyAll(ctx, db)")
 }
 
 func getMongoURI() string {
@@ -168,119 +169,7 @@ func ensureMigrationsCollection(db *mongo.Database) error {
 	return nil
 }
 
-func migrateUp(db *mongo.Database) error {
-	migrations, err := loadMigrations()
-	if err != nil {
-		return err
-	}
-
-	applied, err := getAppliedMigrations(db)
-	if err != nil {
-		return err
-	}
-
-	pendingCount := 0
-	for _, m := range migrations {
-		if _, exists := applied[m.Version]; exists {
-			continue
-		}
-
-		fmt.Printf("Ejecutando migración %03d: %s\n", m.Version, m.Name)
-
-		if err := executeMigrationScript(db, m.UpScript); err != nil {
-			return fmt.Errorf("error en migración %d: %w", m.Version, err)
-		}
-
-		// Registrar migración aplicada
-		ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
-		defer cancel()
-
-		collection := db.Collection(migrationsCollection)
-		now := time.Now()
-		_, err := collection.InsertOne(ctx, bson.M{
-			"version":    m.Version,
-			"name":       m.Name,
-			"applied_at": now,
-		})
-		if err != nil {
-			return err
-		}
-
-		pendingCount++
-		fmt.Printf("✅ Migración %03d aplicada exitosamente\n", m.Version)
-	}
-
-	if pendingCount == 0 {
-		fmt.Println("✅ No hay migraciones pendientes")
-	} else {
-		fmt.Printf("✅ %d migración(es) aplicada(s) exitosamente\n", pendingCount)
-	}
-
-	return nil
-}
-
-func migrateDown(db *mongo.Database) error {
-	applied, err := getAppliedMigrations(db)
-	if err != nil {
-		return err
-	}
-
-	if len(applied) == 0 {
-		fmt.Println("No hay migraciones para revertir")
-		return nil
-	}
-
-	migrations, err := loadMigrations()
-	if err != nil {
-		return err
-	}
-
-	// Encontrar la última versión aplicada
-	lastVersion := 0
-	for v := range applied {
-		if v > lastVersion {
-			lastVersion = v
-		}
-	}
-
-	var targetMigration *Migration
-	for i := range migrations {
-		if migrations[i].Version == lastVersion {
-			targetMigration = &migrations[i]
-			break
-		}
-	}
-
-	if targetMigration == nil {
-		return fmt.Errorf("migración %d no encontrada", lastVersion)
-	}
-
-	fmt.Printf("Revirtiendo migración %03d: %s\n", targetMigration.Version, targetMigration.Name)
-
-	if err := executeMigrationScript(db, targetMigration.DownScript); err != nil {
-		return fmt.Errorf("error revirtiendo migración: %w", err)
-	}
-
-	// Eliminar registro de migración
-	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
-	defer cancel()
-
-	collection := db.Collection(migrationsCollection)
-	_, err = collection.DeleteOne(ctx, bson.M{"version": targetMigration.Version})
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("✅ Migración %03d revertida exitosamente\n", targetMigration.Version)
-	return nil
-}
-
 func showStatus(db *mongo.Database) error {
-	migrations, err := loadMigrations()
-	if err != nil {
-		return err
-	}
-
 	applied, err := getAppliedMigrations(db)
 	if err != nil {
 		return err
@@ -290,93 +179,43 @@ func showStatus(db *mongo.Database) error {
 	fmt.Println("==============================")
 	fmt.Println("")
 
-	for _, m := range migrations {
-		if appliedAt, exists := applied[m.Version]; exists {
-			fmt.Printf("✅ %03d: %s (aplicada: %s)\n",
-				m.Version, m.Name, appliedAt.Format("2006-01-02 15:04"))
-		} else {
-			fmt.Printf("⬜ %03d: %s (pendiente)\n", m.Version, m.Name)
+	if len(applied) == 0 {
+		fmt.Println("⬜ No hay migraciones registradas")
+		fmt.Println("")
+		fmt.Println("Para aplicar migraciones, usar desde Go:")
+		fmt.Println("  migrations.ApplyAll(ctx, db)")
+		return nil
+	}
+
+	// Mostrar migraciones aplicadas ordenadas
+	versions := make([]int, 0, len(applied))
+	for v := range applied {
+		versions = append(versions, v)
+	}
+
+	// Ordenar versiones
+	for i := 0; i < len(versions); i++ {
+		for j := i + 1; j < len(versions); j++ {
+			if versions[i] > versions[j] {
+				versions[i], versions[j] = versions[j], versions[i]
+			}
 		}
 	}
 
+	for _, v := range versions {
+		appliedAt := applied[v]
+		fmt.Printf("✅ Versión %03d (aplicada: %s)\n",
+			v, appliedAt.Format("2006-01-02 15:04"))
+	}
+
 	fmt.Println("")
-	fmt.Printf("Total: %d migraciones, %d aplicadas, %d pendientes\n",
-		len(migrations), len(applied), len(migrations)-len(applied))
-
-	return nil
-}
-
-func createMigration(description string) error {
-	migrations, err := loadMigrations()
-	if err != nil {
-		return err
-	}
-
-	nextVersion := 1
-	if len(migrations) > 0 {
-		lastMigration := migrations[len(migrations)-1]
-		nextVersion = lastMigration.Version + 1
-	}
-
-	filename := fmt.Sprintf("%03d_%s", nextVersion, sanitizeName(description))
-
-	upFile := filepath.Join(migrationsDir, filename+".up.js")
-	downFile := filepath.Join(migrationsDir, filename+".down.js")
-
-	upContent := fmt.Sprintf(`// Migration: %s
-// Created: %s
-
-// TODO: Escribir código JavaScript para migración UP
-// Ejemplo:
-// db.createCollection("new_collection", {
-//   validator: {
-//     $jsonSchema: {
-//       bsonType: "object",
-//       required: ["field1", "field2"],
-//       properties: {
-//         field1: { bsonType: "string" },
-//         field2: { bsonType: "int" }
-//       }
-//     }
-//   }
-// });
-//
-// db.collection("new_collection").createIndex({ field1: 1 }, { unique: true });
-
-print("✅ Migration %s UP completed");
-`,
-		description, time.Now().Format("2006-01-02 15:04"), description)
-
-	downContent := fmt.Sprintf(`// Migration DOWN: %s
-// Created: %s
-
-// TODO: Escribir código JavaScript para revertir migración
-// Ejemplo:
-// db.collection("new_collection").drop();
-
-print("✅ Migration %s DOWN completed");
-`,
-		description, time.Now().Format("2006-01-02 15:04"), description)
-
-	if err := os.WriteFile(upFile, []byte(upContent), 0644); err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(downFile, []byte(downContent), 0644); err != nil {
-		return err
-	}
-
-	fmt.Printf("✅ Migración creada:\n")
-	fmt.Printf("   UP:   %s\n", upFile)
-	fmt.Printf("   DOWN: %s\n", downFile)
-	fmt.Println("")
-	fmt.Println("Editar los archivos JavaScript y luego ejecutar: go run migrate.go up")
+	fmt.Printf("Total: %d migración(es) aplicada(s)\n", len(applied))
 
 	return nil
 }
 
 func forceMigration(db *mongo.Database, version string) error {
-	fmt.Printf("⚠️  Forzando versión de migración a: %s\n", version)
+	logger.Warn("forzando versión de migración", "version", version)
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultOperationTimeout)
 	defer cancel()
@@ -384,91 +223,27 @@ func forceMigration(db *mongo.Database, version string) error {
 	collection := db.Collection(migrationsCollection)
 
 	// Eliminar todos los registros
-	_, err := collection.DeleteMany(ctx, bson.M{})
-	if err != nil {
+	if _, err := collection.DeleteMany(ctx, bson.M{}); err != nil {
 		return err
 	}
 
 	// Insertar versión forzada
-	var versionNum int
-	if _, err := fmt.Sscanf(version, "%d", &versionNum); err != nil {
+	versionNum, err := strconv.Atoi(version)
+	if err != nil {
 		return fmt.Errorf("versión inválida: %s", version)
 	}
 
 	now := time.Now()
-	_, err = collection.InsertOne(ctx, bson.M{
+	if _, err := collection.InsertOne(ctx, bson.M{
 		"version":    versionNum,
 		"name":       "forced",
 		"applied_at": now,
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
 
-	fmt.Println("✅ Versión forzada exitosamente")
+	logger.Info("versión forzada exitosamente", "version", versionNum)
 	return nil
-}
-
-func loadMigrations() ([]Migration, error) {
-	files, err := os.ReadDir(migrationsDir)
-	if err != nil {
-		return nil, err
-	}
-
-	migrationsMap := make(map[int]*Migration)
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		name := file.Name()
-		if !strings.HasSuffix(name, ".js") {
-			continue
-		}
-
-		parts := strings.SplitN(name, "_", 2)
-		if len(parts) < 2 {
-			continue
-		}
-
-		var version int
-		if _, err := fmt.Sscanf(parts[0], "%d", &version); err != nil {
-			continue
-		}
-
-		if migrationsMap[version] == nil {
-			migrationsMap[version] = &Migration{
-				Version: version,
-			}
-		}
-
-		content, err := os.ReadFile(filepath.Join(migrationsDir, name))
-		if err != nil {
-			return nil, err
-		}
-
-		if strings.HasSuffix(name, ".up.js") {
-			migrationsMap[version].UpScript = string(content)
-			migrationsMap[version].Name = strings.TrimSuffix(strings.TrimSuffix(parts[1], ".up.js"), ".down.js")
-		} else if strings.HasSuffix(name, ".down.js") {
-			migrationsMap[version].DownScript = string(content)
-		}
-	}
-
-	var migrations []Migration
-	for _, m := range migrationsMap {
-		if m.UpScript != "" && m.DownScript != "" {
-			migrations = append(migrations, *m)
-		}
-	}
-
-	// Ordenar por versión
-	sort.Slice(migrations, func(i, j int) bool {
-		return migrations[i].Version < migrations[j].Version
-	})
-
-	return migrations, nil
 }
 
 func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
@@ -495,31 +270,4 @@ func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
 	}
 
 	return applied, nil
-}
-
-func executeMigrationScript(db *mongo.Database, script string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
-
-	runner := newScriptRunner(ctx, db)
-	if err := runner.Run(script); err != nil {
-		return fmt.Errorf("error ejecutando script de migración: %w", err)
-	}
-
-	return nil
-}
-
-func sanitizeName(name string) string {
-	name = strings.ToLower(name)
-	name = strings.ReplaceAll(name, " ", "_")
-	name = strings.ReplaceAll(name, "-", "_")
-
-	var result strings.Builder
-	for _, r := range name {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' {
-			result.WriteRune(r)
-		}
-	}
-
-	return result.String()
 }
