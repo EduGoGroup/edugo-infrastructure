@@ -14,7 +14,8 @@ jobs:
     steps:
       - name: Checkout código
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+          git clone --depth=1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+          git fetch --depth=1 origin ${{ github.sha }}
           git checkout ${{ github.sha }}
 
       - name: Instalar Go 1.25
@@ -61,7 +62,8 @@ jobs:
     steps:
       - name: Checkout código
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+          git clone --depth=1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+          git fetch --depth=1 origin ${{ github.sha }}
           git checkout ${{ github.sha }}
 
       - name: Instalar Go 1.25
