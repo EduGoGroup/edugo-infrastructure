@@ -57,13 +57,13 @@ func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 // getSeedDocuments retorna todos los seeds organizados por colección
 func getSeedDocuments() []seedDocument {
 	return []seedDocument{
-		analyticsEventsSeeds(),
-		assessmentsSeeds(),
-		auditLogsSeeds(),
 		materialAssessmentWorkerSeeds(),
 		materialSummarySeeds(),
-		notificationsSeeds(),
-		// assessment_attempt_result, material_content, material_event se agregarán después
+		// Las siguientes colecciones fueron eliminadas por no uso:
+		// - analytics_events (analytics usa servicio externo)
+		// - material_assessment (duplicada por material_assessment_worker)
+		// - audit_logs (usará SaaS externo)
+		// - notifications (push notifications no implementado)
 	}
 }
 

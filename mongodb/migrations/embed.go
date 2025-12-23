@@ -42,12 +42,6 @@ func ApplyAll(ctx context.Context, db *mongo.Database) error {
 //	migrations.ApplyStructure(ctx, db)
 func ApplyStructure(ctx context.Context, db *mongo.Database) error {
 	structureFuncs := []func(context.Context, *mongo.Database) error{
-		structure.CreateMaterialAssessment,
-		structure.CreateMaterialContent,
-		structure.CreateAssessmentAttemptResult,
-		structure.CreateAuditLogs,
-		structure.CreateNotifications,
-		structure.CreateAnalyticsEvents,
 		structure.CreateMaterialSummary,
 		structure.CreateMaterialAssessmentWorker,
 		structure.CreateMaterialEvent,
@@ -73,12 +67,6 @@ func ApplyStructure(ctx context.Context, db *mongo.Database) error {
 //	migrations.ApplyConstraints(ctx, db)
 func ApplyConstraints(ctx context.Context, db *mongo.Database) error {
 	constraintsFuncs := []func(context.Context, *mongo.Database) error{
-		constraints.CreateMaterialAssessmentIndexes,
-		constraints.CreateMaterialContentIndexes,
-		constraints.CreateAssessmentAttemptResultIndexes,
-		constraints.CreateAuditLogsIndexes,
-		constraints.CreateNotificationsIndexes,
-		constraints.CreateAnalyticsEventsIndexes,
 		constraints.CreateMaterialSummaryIndexes,
 		constraints.CreateMaterialAssessmentWorkerIndexes,
 		constraints.CreateMaterialEventIndexes,
@@ -180,23 +168,11 @@ func ApplyMockData(ctx context.Context, db *mongo.Database) error {
 func ListFunctions() map[string][]string {
 	return map[string][]string{
 		"structure": {
-			"CreateMaterialAssessment",
-			"CreateMaterialContent",
-			"CreateAssessmentAttemptResult",
-			"CreateAuditLogs",
-			"CreateNotifications",
-			"CreateAnalyticsEvents",
 			"CreateMaterialSummary",
 			"CreateMaterialAssessmentWorker",
 			"CreateMaterialEvent",
 		},
 		"constraints": {
-			"CreateMaterialAssessmentIndexes",
-			"CreateMaterialContentIndexes",
-			"CreateAssessmentAttemptResultIndexes",
-			"CreateAuditLogsIndexes",
-			"CreateNotificationsIndexes",
-			"CreateAnalyticsEventsIndexes",
 			"CreateMaterialSummaryIndexes",
 			"CreateMaterialAssessmentWorkerIndexes",
 			"CreateMaterialEventIndexes",
