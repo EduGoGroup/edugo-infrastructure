@@ -56,12 +56,13 @@ func applyMockDataInternal(ctx context.Context, db *mongo.Database) (int, error)
 // getMockDocuments retorna todos los mocks organizados por colección
 func getMockDocuments() []mockDocument {
 	return []mockDocument{
-		analyticsEventsMockData(),
-		assessmentsMockData(),
-		auditLogsMockData(),
 		materialAssessmentWorkerMockData(),
 		materialSummaryMockData(),
-		notificationsMockData(),
+		// Las siguientes colecciones fueron eliminadas por no uso:
+		// - analyticsEventsMockData (analytics usa servicio externo)
+		// - assessmentsMockData (duplicada por material_assessment_worker)
+		// - auditLogsMockData (usará SaaS externo)
+		// - notificationsMockData (push notifications no implementado)
 	}
 }
 
