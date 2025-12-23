@@ -62,36 +62,7 @@ func main() {
 func runStructure(ctx context.Context, db *mongo.Database) error {
 	fmt.Println("🏗️  Ejecutando Structure...")
 
-	if err := structure.CreateMaterialAssessment(ctx, db); err != nil {
-		return fmt.Errorf("001_material_assessment: %w", err)
-	}
-	fmt.Println("✅ 001_material_assessment")
-
-	if err := structure.CreateMaterialContent(ctx, db); err != nil {
-		return fmt.Errorf("002_material_content: %w", err)
-	}
-	fmt.Println("✅ 002_material_content")
-
-	if err := structure.CreateAssessmentAttemptResult(ctx, db); err != nil {
-		return fmt.Errorf("003_assessment_attempt_result: %w", err)
-	}
-	fmt.Println("✅ 003_assessment_attempt_result")
-
-	if err := structure.CreateAuditLogs(ctx, db); err != nil {
-		return fmt.Errorf("004_audit_logs: %w", err)
-	}
-	fmt.Println("✅ 004_audit_logs")
-
-	if err := structure.CreateNotifications(ctx, db); err != nil {
-		return fmt.Errorf("005_notifications: %w", err)
-	}
-	fmt.Println("✅ 005_notifications")
-
-	if err := structure.CreateAnalyticsEvents(ctx, db); err != nil {
-		return fmt.Errorf("006_analytics_events: %w", err)
-	}
-	fmt.Println("✅ 006_analytics_events")
-
+	// Colecciones activas:
 	if err := structure.CreateMaterialSummary(ctx, db); err != nil {
 		return fmt.Errorf("007_material_summary: %w", err)
 	}
@@ -107,42 +78,21 @@ func runStructure(ctx context.Context, db *mongo.Database) error {
 	}
 	fmt.Println("✅ 009_material_event")
 
+	// Colecciones eliminadas:
+	// - 001_material_assessment (duplicada por 008)
+	// - 002_material_content (sin uso)
+	// - 003_assessment_attempt_result (sin uso)
+	// - 004_audit_logs (sin uso)
+	// - 005_notifications (sin uso)
+	// - 006_analytics_events (sin uso)
+
 	return nil
 }
 
 func runConstraints(ctx context.Context, db *mongo.Database) error {
 	fmt.Println("🔗 Ejecutando Constraints...")
 
-	if err := constraints.CreateMaterialAssessmentIndexes(ctx, db); err != nil {
-		return fmt.Errorf("001_material_assessment_indexes: %w", err)
-	}
-	fmt.Println("✅ 001_material_assessment_indexes")
-
-	if err := constraints.CreateMaterialContentIndexes(ctx, db); err != nil {
-		return fmt.Errorf("002_material_content_indexes: %w", err)
-	}
-	fmt.Println("✅ 002_material_content_indexes")
-
-	if err := constraints.CreateAssessmentAttemptResultIndexes(ctx, db); err != nil {
-		return fmt.Errorf("003_assessment_attempt_result_indexes: %w", err)
-	}
-	fmt.Println("✅ 003_assessment_attempt_result_indexes")
-
-	if err := constraints.CreateAuditLogsIndexes(ctx, db); err != nil {
-		return fmt.Errorf("004_audit_logs_indexes: %w", err)
-	}
-	fmt.Println("✅ 004_audit_logs_indexes")
-
-	if err := constraints.CreateNotificationsIndexes(ctx, db); err != nil {
-		return fmt.Errorf("005_notifications_indexes: %w", err)
-	}
-	fmt.Println("✅ 005_notifications_indexes")
-
-	if err := constraints.CreateAnalyticsEventsIndexes(ctx, db); err != nil {
-		return fmt.Errorf("006_analytics_events_indexes: %w", err)
-	}
-	fmt.Println("✅ 006_analytics_events_indexes")
-
+	// Colecciones activas:
 	if err := constraints.CreateMaterialSummaryIndexes(ctx, db); err != nil {
 		return fmt.Errorf("007_material_summary_indexes: %w", err)
 	}
@@ -157,6 +107,14 @@ func runConstraints(ctx context.Context, db *mongo.Database) error {
 		return fmt.Errorf("009_material_event_indexes: %w", err)
 	}
 	fmt.Println("✅ 009_material_event_indexes")
+
+	// Colecciones eliminadas:
+	// - 001_material_assessment_indexes (duplicada)
+	// - 002_material_content_indexes (sin uso)
+	// - 003_assessment_attempt_result_indexes (sin uso)
+	// - 004_audit_logs_indexes (sin uso)
+	// - 005_notifications_indexes (sin uso)
+	// - 006_analytics_events_indexes (sin uso)
 
 	return nil
 }
