@@ -41,7 +41,7 @@ runs:
   steps:
     - name: Setup Go
       id: setup
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: ${{ inputs.go-version }}
         cache: ${{ inputs.cache }}
