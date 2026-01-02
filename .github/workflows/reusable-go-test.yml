@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Go Environment
         uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
@@ -109,7 +109,7 @@ jobs:
 
       - name: Upload coverage report
         if: inputs.upload-coverage && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: |
