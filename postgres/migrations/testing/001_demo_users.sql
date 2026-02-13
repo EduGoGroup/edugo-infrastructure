@@ -1,22 +1,21 @@
 -- ====================================================================
--- DATOS DE PRUEBA: Usuarios y Roles de demostración para testing
+-- DATOS DE PRUEBA: Usuarios y asignaciones de roles para testing
 -- ====================================================================
 -- Contraseña para TODOS los usuarios: edugo2024
 -- Hash bcrypt: $2a$10$x0lpvYBLh8dCiMYskYzD1.y2TfeXcQh7QbBXIO5Xepi3SIgC2FtY6
--- VERSIÓN: postgres/v0.16.3
+-- VERSIÓN: postgres/v0.16.5
+-- ====================================================================
+-- NOTA: Los roles se insertan desde seeds/002_seed_roles.sql
+-- Este archivo SOLO crea usuarios y asigna roles existentes.
+-- IDs de referencia de seeds:
+--   super_admin:  10000000-0000-0000-0000-000000000001
+--   teacher:      10000000-0000-0000-0000-000000000007
+--   student:      10000000-0000-0000-0000-000000000009
+--   guardian:     10000000-0000-0000-0000-000000000010
 -- ====================================================================
 
 -- ====================================================================
--- 1. INSERTAR ROLES BÁSICOS
--- ====================================================================
-INSERT INTO roles (id, name, display_name, description, scope, is_active) VALUES
-('11111111-1111-4111-a111-111111111111', 'admin', 'Administrador', 'Administrador del sistema con acceso completo', 'system', true),
-('22222222-2222-4222-a222-222222222222', 'teacher', 'Docente', 'Profesor con acceso a gestión de cursos y evaluaciones', 'school', true),
-('33333333-3333-4333-a333-333333333333', 'student', 'Estudiante', 'Estudiante con acceso a materiales y evaluaciones', 'school', true),
-('44444444-4444-4444-a444-444444444444', 'guardian', 'Apoderado', 'Apoderado con acceso a información de sus hijos', 'school', true);
-
--- ====================================================================
--- 2. INSERTAR USUARIOS DE PRUEBA
+-- 1. INSERTAR USUARIOS DE PRUEBA
 -- ====================================================================
 INSERT INTO users (id, email, password_hash, first_name, last_name, is_active, created_at, updated_at) VALUES
 -- Admin (email: admin@edugo.test, password: edugo2024)
@@ -36,29 +35,29 @@ INSERT INTO users (id, email, password_hash, first_name, last_name, is_active, c
 ('a8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', 'guardian2@edugo.test', '$2a$10$x0lpvYBLh8dCiMYskYzD1.y2TfeXcQh7QbBXIO5Xepi3SIgC2FtY6', 'Patricia', 'López', true, NOW(), NOW());
 
 -- ====================================================================
--- 3. ASIGNAR ROLES A USUARIOS (RBAC)
+-- 2. ASIGNAR ROLES A USUARIOS (RBAC)
+--    Referencia: IDs de roles definidos en seeds/002_seed_roles.sql
 -- ====================================================================
 INSERT INTO user_roles (id, user_id, role_id, school_id, academic_unit_id, is_active, granted_at) VALUES
--- Admin (rol a nivel sistema)
-('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '11111111-1111-4111-a111-111111111111', NULL, NULL, true, NOW()),
+-- Admin (rol super_admin a nivel sistema)
+('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '10000000-0000-0000-0000-000000000001', NULL, NULL, true, NOW()),
 
--- Teachers (roles a nivel escuela - sin school_id específico por ahora)
-('b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'a2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', '22222222-2222-4222-a222-222222222222', NULL, NULL, true, NOW()),
-('b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'a3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', '22222222-2222-4222-a222-222222222222', NULL, NULL, true, NOW()),
+-- Teachers (rol teacher a nivel unit)
+('b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'a2eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', '10000000-0000-0000-0000-000000000007', NULL, NULL, true, NOW()),
+('b3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'a3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', '10000000-0000-0000-0000-000000000007', NULL, NULL, true, NOW()),
 
--- Students (roles a nivel escuela - sin school_id específico por ahora)
-('b4eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', 'a4eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', '33333333-3333-4333-a333-333333333333', NULL, NULL, true, NOW()),
-('b5eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', '33333333-3333-4333-a333-333333333333', NULL, NULL, true, NOW()),
-('b6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', 'a6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', '33333333-3333-4333-a333-333333333333', NULL, NULL, true, NOW()),
+-- Students (rol student a nivel unit)
+('b4eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', 'a4eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', '10000000-0000-0000-0000-000000000009', NULL, NULL, true, NOW()),
+('b5eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', '10000000-0000-0000-0000-000000000009', NULL, NULL, true, NOW()),
+('b6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', 'a6eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', '10000000-0000-0000-0000-000000000009', NULL, NULL, true, NOW()),
 
--- Guardians (roles a nivel escuela - sin school_id específico por ahora)
-('b7eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', 'a7eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', '44444444-4444-4444-a444-444444444444', NULL, NULL, true, NOW()),
-('b8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', 'a8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', '44444444-4444-4444-a444-444444444444', NULL, NULL, true, NOW());
+-- Guardians (rol guardian a nivel unit)
+('b7eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', 'a7eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', '10000000-0000-0000-0000-000000000010', NULL, NULL, true, NOW()),
+('b8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', 'a8eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', '10000000-0000-0000-0000-000000000010', NULL, NULL, true, NOW());
 
 -- ====================================================================
 -- VERIFICACIÓN (Para logs)
 -- ====================================================================
 -- Se han creado:
--- - 4 roles: admin, teacher, student, guardian
 -- - 8 usuarios con contraseña: edugo2024
--- - 8 asignaciones de roles (user_roles)
+-- - 8 asignaciones de roles (user_roles) usando roles de seeds
