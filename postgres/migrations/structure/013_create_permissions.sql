@@ -3,7 +3,7 @@
 -- DESCRIPCION: Catalogo maestro de permisos del sistema RBAC
 -- VERSION: postgres/v0.17.0
 -- ====================================================================
--- NOTA: El tipo permission_scope se define en 000_create_types.sql
+-- NOTA: El tipo permission_scope se define en 000_base_types.sql
 -- NOTA: Requiere tabla resources (011_create_resources.sql)
 
 CREATE TABLE permissions (

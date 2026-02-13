@@ -6,7 +6,7 @@
 -- Permisos sobre USUARIOS
 INSERT INTO permissions (name, display_name, description, resource_id, action, scope) VALUES
 ('users:create', 'Crear Usuarios', 'Crear nuevos usuarios en el sistema', (SELECT id FROM resources WHERE key = 'users'), 'create', 'system'),
-('users:read', 'Ver Usuarios', 'Ver informacion de usuarios', (SELECT id FROM resources WHERE key = 'users'), 'read', 'school'),
+('users:read', 'Ver Usuarios', 'Ver información de usuarios', (SELECT id FROM resources WHERE key = 'users'), 'read', 'school'),
 ('users:update', 'Editar Usuarios', 'Modificar datos de usuarios', (SELECT id FROM resources WHERE key = 'users'), 'update', 'school'),
 ('users:delete', 'Eliminar Usuarios', 'Eliminar usuarios del sistema', (SELECT id FROM resources WHERE key = 'users'), 'delete', 'system'),
 ('users:read:own', 'Ver Perfil Propio', 'Ver propio perfil de usuario', (SELECT id FROM resources WHERE key = 'users'), 'read:own', 'system'),
@@ -14,16 +14,16 @@ INSERT INTO permissions (name, display_name, description, resource_id, action, s
 
 -- Permisos sobre ESCUELAS
 ('schools:create', 'Crear Escuelas', 'Crear nuevas instituciones educativas', (SELECT id FROM resources WHERE key = 'schools'), 'create', 'system'),
-('schools:read', 'Ver Escuelas', 'Ver informacion de escuelas', (SELECT id FROM resources WHERE key = 'schools'), 'read', 'system'),
+('schools:read', 'Ver Escuelas', 'Ver información de escuelas', (SELECT id FROM resources WHERE key = 'schools'), 'read', 'system'),
 ('schools:update', 'Editar Escuelas', 'Modificar datos de escuelas', (SELECT id FROM resources WHERE key = 'schools'), 'update', 'school'),
 ('schools:delete', 'Eliminar Escuelas', 'Eliminar escuelas del sistema', (SELECT id FROM resources WHERE key = 'schools'), 'delete', 'system'),
 ('schools:manage', 'Gestionar Escuela', 'Control total de la escuela', (SELECT id FROM resources WHERE key = 'schools'), 'manage', 'school'),
 
--- Permisos sobre UNIDADES ACADEMICAS
-('units:create', 'Crear Unidades', 'Crear unidades academicas (clases, grados)', (SELECT id FROM resources WHERE key = 'units'), 'create', 'school'),
-('units:read', 'Ver Unidades', 'Ver unidades academicas', (SELECT id FROM resources WHERE key = 'units'), 'read', 'school'),
-('units:update', 'Editar Unidades', 'Modificar unidades academicas', (SELECT id FROM resources WHERE key = 'units'), 'update', 'school'),
-('units:delete', 'Eliminar Unidades', 'Eliminar unidades academicas', (SELECT id FROM resources WHERE key = 'units'), 'delete', 'school'),
+-- Permisos sobre UNIDADES ACADÉMICAS
+('units:create', 'Crear Unidades', 'Crear unidades académicas (clases, grados)', (SELECT id FROM resources WHERE key = 'units'), 'create', 'school'),
+('units:read', 'Ver Unidades', 'Ver unidades académicas', (SELECT id FROM resources WHERE key = 'units'), 'read', 'school'),
+('units:update', 'Editar Unidades', 'Modificar unidades académicas', (SELECT id FROM resources WHERE key = 'units'), 'update', 'school'),
+('units:delete', 'Eliminar Unidades', 'Eliminar unidades académicas', (SELECT id FROM resources WHERE key = 'units'), 'delete', 'school'),
 
 -- Permisos sobre MATERIALES
 ('materials:create', 'Crear Materiales', 'Crear materiales educativos', (SELECT id FROM resources WHERE key = 'materials'), 'create', 'unit'),
@@ -34,7 +34,7 @@ INSERT INTO permissions (name, display_name, description, resource_id, action, s
 ('materials:download', 'Descargar Materiales', 'Descargar materiales educativos', (SELECT id FROM resources WHERE key = 'materials'), 'download', 'unit'),
 
 -- Permisos sobre EVALUACIONES
-('assessments:create', 'Crear Evaluaciones', 'Crear evaluaciones y examenes', (SELECT id FROM resources WHERE key = 'assessments'), 'create', 'unit'),
+('assessments:create', 'Crear Evaluaciones', 'Crear evaluaciones y exámenes', (SELECT id FROM resources WHERE key = 'assessments'), 'create', 'unit'),
 ('assessments:read', 'Ver Evaluaciones', 'Ver evaluaciones', (SELECT id FROM resources WHERE key = 'assessments'), 'read', 'unit'),
 ('assessments:update', 'Editar Evaluaciones', 'Modificar evaluaciones', (SELECT id FROM resources WHERE key = 'assessments'), 'update', 'unit'),
 ('assessments:delete', 'Eliminar Evaluaciones', 'Eliminar evaluaciones', (SELECT id FROM resources WHERE key = 'assessments'), 'delete', 'unit'),
@@ -44,15 +44,15 @@ INSERT INTO permissions (name, display_name, description, resource_id, action, s
 ('assessments:view_results', 'Ver Resultados', 'Ver resultados propios', (SELECT id FROM resources WHERE key = 'assessments'), 'view_results', 'unit'),
 
 -- Permisos sobre PROGRESO
-('progress:read', 'Ver Progreso', 'Ver progreso academico', (SELECT id FROM resources WHERE key = 'progress'), 'read', 'unit'),
+('progress:read', 'Ver Progreso', 'Ver progreso académico', (SELECT id FROM resources WHERE key = 'progress'), 'read', 'unit'),
 ('progress:update', 'Actualizar Progreso', 'Actualizar progreso de estudiantes', (SELECT id FROM resources WHERE key = 'progress'), 'update', 'unit'),
 ('progress:read:own', 'Ver Progreso Propio', 'Ver propio progreso', (SELECT id FROM resources WHERE key = 'progress'), 'read:own', 'unit'),
 
--- Permisos sobre ESTADISTICAS
-('stats:global', 'Estadisticas Globales', 'Ver estadisticas de toda la plataforma', (SELECT id FROM resources WHERE key = 'stats'), 'global', 'system'),
-('stats:school', 'Estadisticas de Escuela', 'Ver estadisticas de la institucion', (SELECT id FROM resources WHERE key = 'stats'), 'school', 'school'),
-('stats:unit', 'Estadisticas de Unidad', 'Ver estadisticas de la clase', (SELECT id FROM resources WHERE key = 'stats'), 'unit', 'unit'),
+-- Permisos sobre ESTADÍSTICAS
+('stats:global', 'Estadísticas Globales', 'Ver estadísticas de toda la plataforma', (SELECT id FROM resources WHERE key = 'stats'), 'global', 'system'),
+('stats:school', 'Estadísticas de Escuela', 'Ver estadísticas de la institución', (SELECT id FROM resources WHERE key = 'stats'), 'school', 'school'),
+('stats:unit', 'Estadísticas de Unidad', 'Ver estadísticas de la clase', (SELECT id FROM resources WHERE key = 'stats'), 'unit', 'unit'),
 
--- Permisos sobre GESTION DE PERMISOS/RESOURCES
-('permissions_mgmt:read', 'Ver Configuracion de Permisos', 'Ver recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'read', 'system'),
-('permissions_mgmt:update', 'Editar Configuracion de Permisos', 'Modificar recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'update', 'system');
+-- Permisos sobre GESTIÓN DE PERMISOS/RESOURCES
+('permissions_mgmt:read', 'Ver Configuración de Permisos', 'Ver recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'read', 'system'),
+('permissions_mgmt:update', 'Editar Configuración de Permisos', 'Modificar recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'update', 'system');

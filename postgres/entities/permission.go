@@ -13,7 +13,7 @@ type Permission struct {
 	DisplayName string    `db:"display_name"`
 	Description *string   `db:"description"`
 	ResourceID  uuid.UUID `db:"resource_id"`
-	ResourceKey string    `db:"-"` // Populated from JOIN with resources, not a DB column
+	ResourceKey string    `db:"resource_key"` // Populated from JOIN with resources
 	Action      string    `db:"action"`
 	Scope       string    `db:"scope"` // 'system', 'school', 'unit'
 	IsActive    bool      `db:"is_active"`
