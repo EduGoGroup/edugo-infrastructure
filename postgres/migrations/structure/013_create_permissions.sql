@@ -1,12 +1,10 @@
 -- ====================================================================
 -- TABLA: permissions
 -- DESCRIPCIÓN: Catálogo maestro de permisos del sistema RBAC
--- VERSIÓN: postgres/v0.15.0
+-- VERSIÓN: postgres/v0.16.0
 -- FECHA: 2026-02-13
 -- ====================================================================
-
--- Tipo ENUM para scope de permisos
-CREATE TYPE permission_scope AS ENUM ('system', 'school', 'unit');
+-- NOTA: El tipo permission_scope se define en 000_create_types.sql
 
 -- Tabla de permisos
 CREATE TABLE permissions (

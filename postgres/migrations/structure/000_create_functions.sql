@@ -35,7 +35,7 @@ COMMENT ON FUNCTION update_updated_at_column() IS
 -- ====================================================================
 -- FUNCIÓN: get_user_permissions
 -- DESCRIPCIÓN: Obtiene permisos de un usuario en un contexto específico
--- VERSIÓN: postgres/v0.15.0
+-- VERSIÓN: postgres/v0.16.0
 -- ====================================================================
 
 CREATE OR REPLACE FUNCTION get_user_permissions(
@@ -76,7 +76,7 @@ COMMENT ON FUNCTION get_user_permissions IS 'Obtiene lista de permisos de un usu
 -- ====================================================================
 -- FUNCIÓN: user_has_permission
 -- DESCRIPCIÓN: Verifica si un usuario tiene un permiso específico
--- VERSIÓN: postgres/v0.15.0
+-- VERSIÓN: postgres/v0.16.0
 -- ====================================================================
 
 CREATE OR REPLACE FUNCTION user_has_permission(
