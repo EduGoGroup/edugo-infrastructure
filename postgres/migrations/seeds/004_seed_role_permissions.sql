@@ -1,6 +1,6 @@
 -- ====================================================================
--- SEEDS: Asignación de permisos a roles
--- VERSIÓN: postgres/v0.15.0
+-- SEEDS: Asignacion de permisos a roles
+-- VERSION: postgres/v0.17.0
 -- ====================================================================
 
 -- SUPER_ADMIN: Todos los permisos
@@ -10,7 +10,7 @@ SELECT
     id
 FROM permissions;
 
--- PLATFORM_ADMIN: Gestión de escuelas y usuarios
+-- PLATFORM_ADMIN: Gestion de escuelas y usuarios + permisos mgmt
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT
     (SELECT id FROM roles WHERE name = 'platform_admin'),
@@ -19,7 +19,8 @@ FROM permissions
 WHERE name IN (
     'users:create', 'users:read', 'users:update',
     'schools:create', 'schools:read', 'schools:update', 'schools:delete',
-    'stats:global'
+    'stats:global',
+    'permissions_mgmt:read', 'permissions_mgmt:update'
 );
 
 -- SCHOOL_ADMIN: Control total de escuela
@@ -38,7 +39,7 @@ WHERE name IN (
     'stats:school'
 );
 
--- TEACHER: Gestión de clase
+-- TEACHER: Gestion de clase
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT
     (SELECT id FROM roles WHERE name = 'teacher'),
