@@ -1,12 +1,18 @@
 -- ====================================================================
--- TIPOS PERSONALIZADOS PARA POSTGRESQL
+-- TIPOS PERSONALIZADOS Y EXTENSIONES PARA POSTGRESQL
 -- ====================================================================
--- Este archivo contiene las definiciones de tipos ENUM y tipos personalizados
--- utilizados por múltiples tablas en el sistema EduGo.
+-- Este archivo contiene las extensiones necesarias, definiciones de tipos ENUM
+-- y tipos personalizados utilizados por múltiples tablas en el sistema EduGo.
 -- Debe ejecutarse ANTES que cualquier otra migración.
--- VERSIÓN: postgres/v0.16.0
+-- VERSIÓN: postgres/v0.16.1
 -- FECHA: 2026-02-13
 -- ====================================================================
+
+-- ====================================================================
+-- EXTENSIÓN: uuid-ossp
+-- DESCRIPCIÓN: Habilita funciones para generar UUIDs (uuid_generate_v4())
+-- ====================================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ====================================================================
 -- TIPO: permission_scope
