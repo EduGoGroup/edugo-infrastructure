@@ -35,7 +35,7 @@ COMMENT ON FUNCTION update_updated_at_column() IS
 -- ====================================================================
 -- FUNCIÓN: get_user_permissions
 -- DESCRIPCIÓN: Obtiene permisos de un usuario en un contexto específico
--- VERSIÓN: postgres/v0.16.0
+-- VERSIÓN: postgres/v0.17.0
 -- ====================================================================
 
 CREATE OR REPLACE FUNCTION get_user_permissions(
@@ -47,13 +47,15 @@ BEGIN
     RETURN QUERY
     SELECT DISTINCT p.name::VARCHAR, p.scope
     FROM user_roles ur
-    JOIN roles r ON ur.role_id = r.id
-    JOIN role_permissions rp ON r.id = rp.role_id
+    JOIN roles ro ON ur.role_id = ro.id
+    JOIN role_permissions rp ON ro.id = rp.role_id
     JOIN permissions p ON rp.permission_id = p.id
+    JOIN resources r ON p.resource_id = r.id
     WHERE ur.user_id = p_user_id
       AND ur.is_active = true
-      AND r.is_active = true
+      AND ro.is_active = true
       AND p.is_active = true
+      AND r.is_active = true
       AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
       AND (
           -- Permisos a nivel sistema (sin contexto)
@@ -76,7 +78,7 @@ COMMENT ON FUNCTION get_user_permissions IS 'Obtiene lista de permisos de un usu
 -- ====================================================================
 -- FUNCIÓN: user_has_permission
 -- DESCRIPCIÓN: Verifica si un usuario tiene un permiso específico
--- VERSIÓN: postgres/v0.16.0
+-- VERSIÓN: postgres/v0.17.0
 -- ====================================================================
 
 CREATE OR REPLACE FUNCTION user_has_permission(
@@ -91,14 +93,16 @@ BEGIN
     SELECT EXISTS(
         SELECT 1
         FROM user_roles ur
-        JOIN roles r ON ur.role_id = r.id
-        JOIN role_permissions rp ON r.id = rp.role_id
+        JOIN roles ro ON ur.role_id = ro.id
+        JOIN role_permissions rp ON ro.id = rp.role_id
         JOIN permissions p ON rp.permission_id = p.id
+        JOIN resources r ON p.resource_id = r.id
         WHERE ur.user_id = p_user_id
           AND p.name = p_permission_name
           AND ur.is_active = true
-          AND r.is_active = true
+          AND ro.is_active = true
           AND p.is_active = true
+          AND r.is_active = true
           AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
           AND (
               (ur.school_id IS NULL)
@@ -112,3 +116,39 @@ END;
 $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION user_has_permission IS 'Verifica si un usuario tiene un permiso específico en un contexto dado';
+
+-- ====================================================================
+-- FUNCIÓN: get_user_resources
+-- DESCRIPCIÓN: Obtiene los resources visibles en menu para un usuario
+-- VERSIÓN: postgres/v0.17.0
+-- ====================================================================
+
+CREATE OR REPLACE FUNCTION get_user_resources(
+    p_user_id UUID,
+    p_school_id UUID DEFAULT NULL,
+    p_unit_id UUID DEFAULT NULL
+)
+RETURNS TABLE(resource_key VARCHAR, resource_display_name VARCHAR, resource_icon VARCHAR, resource_scope permission_scope)
+LANGUAGE plpgsql AS $$
+BEGIN
+    RETURN QUERY
+    SELECT DISTINCT r.key::VARCHAR, r.display_name::VARCHAR, r.icon::VARCHAR, r.scope
+    FROM resources r
+    JOIN permissions p ON p.resource_id = r.id
+    JOIN role_permissions rp ON rp.permission_id = p.id
+    JOIN user_roles ur ON ur.role_id = rp.role_id
+    WHERE ur.user_id = p_user_id
+      AND ur.is_active = true
+      AND r.is_active = true
+      AND r.is_menu_visible = true
+      AND p.is_active = true
+      AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
+      AND (
+          (r.scope = 'system')
+          OR (r.scope = 'school' AND (p_school_id IS NULL OR ur.school_id = p_school_id))
+          OR (r.scope = 'unit' AND (p_unit_id IS NULL OR ur.academic_unit_id = p_unit_id))
+      );
+END;
+$$;
+
+COMMENT ON FUNCTION get_user_resources IS 'Obtiene los resources visibles en menu para un usuario según sus permisos';
