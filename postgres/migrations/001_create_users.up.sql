@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'teacher', 'student', 'guardian')),
     is_active BOOLEAN NOT NULL DEFAULT true,
     email_verified BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -17,9 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_active ON users(is_active);
 CREATE INDEX idx_users_created_at ON users(created_at DESC);
 
-COMMENT ON TABLE users IS 'Usuarios del sistema (admin, docentes, estudiantes, apoderados)';
-COMMENT ON COLUMN users.role IS 'Roles: admin, teacher, student, guardian';
+COMMENT ON TABLE users IS 'Usuarios del sistema. Los roles se gestionan a través de user_roles (RBAC)';
