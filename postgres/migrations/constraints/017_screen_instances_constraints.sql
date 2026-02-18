@@ -13,6 +13,8 @@ CREATE INDEX idx_screen_instances_scope ON ui_config.screen_instances(scope);
 CREATE INDEX idx_screen_instances_active ON ui_config.screen_instances(is_active) WHERE is_active = true;
 CREATE INDEX idx_screen_instances_slot_data ON ui_config.screen_instances USING GIN (slot_data);
 
+CREATE INDEX idx_screen_instances_handler_key ON ui_config.screen_instances(handler_key) WHERE handler_key IS NOT NULL;
+
 -- Trigger updated_at
 CREATE TRIGGER update_screen_instances_updated_at
     BEFORE UPDATE ON ui_config.screen_instances

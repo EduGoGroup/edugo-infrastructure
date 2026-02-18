@@ -18,7 +18,7 @@
 --   settings-basic-v1:  a0000000-0000-0000-0000-000000000005
 
 -- Instancia 1: Login
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000001', 'app-login',
  'a0000000-0000-0000-0000-000000000001', 'Login', 'Pantalla de inicio de sesion',
  '{
@@ -47,11 +47,11 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
      }
    }
  ]'::jsonb,
- NULL, '{}'::jsonb, 'system', NULL)
+ NULL, '{}'::jsonb, 'system', NULL, 'login')
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 2: Dashboard Profesor
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000002', 'dashboard-teacher',
  'a0000000-0000-0000-0000-000000000002', 'Dashboard Profesor', 'Panel principal del profesor',
  '{
@@ -72,11 +72,11 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  ]'::jsonb,
  '/v1/stats/global',
  '{"method": "GET", "fieldMapping": {"total_students": "total_students", "total_materials": "total_materials", "avg_score": "avg_score", "completion_rate": "completion_rate"}}'::jsonb,
- 'school', NULL)
+ 'school', NULL, NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 3: Dashboard Estudiante
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000003', 'dashboard-student',
  'a0000000-0000-0000-0000-000000000002', 'Dashboard Estudiante', 'Panel principal del estudiante',
  '{
@@ -97,11 +97,11 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  ]'::jsonb,
  '/v1/stats/student',
  '{"method": "GET", "fieldMapping": {"total_students": "enrolled_courses", "total_materials": "available_materials", "avg_score": "my_avg_score", "completion_rate": "my_completion_rate"}}'::jsonb,
- 'unit', NULL)
+ 'unit', NULL, NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 4: Lista de Materiales
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000004', 'materials-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Materiales', 'Lista de materiales educativos',
  '{
@@ -127,11 +127,11 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
    "defaultParams": {"sort": "created_at", "order": "desc"},
    "fieldMapping": {"title": "title", "subtitle": "subject", "status": "status", "file_type_icon": "file_type", "created_at": "created_at", "id": "id"}
  }'::jsonb,
- 'unit', 'materials:read')
+ 'unit', 'materials:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 5: Detalle de Material
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000005', 'material-detail',
  'a0000000-0000-0000-0000-000000000004', 'Detalle de Material', 'Detalle de un material educativo',
  '{
@@ -151,11 +151,11 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  ]'::jsonb,
  '/v1/materials/{id}',
  '{"method": "GET", "fieldMapping": {"title": "title", "subject": "subject", "grade": "grade", "status": "status", "file_type": "file_type", "file_size_display": "file_size_display", "description": "description", "created_at": "created_at", "summary": "summary"}}'::jsonb,
- 'unit', 'materials:read')
+ 'unit', 'materials:read', 'material-detail')
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 6: Configuracion
-INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission) VALUES
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, actions, data_endpoint, data_config, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000006', 'app-settings',
  'a0000000-0000-0000-0000-000000000005', 'Configuracion', 'Pantalla de configuracion de la aplicacion',
  '{
@@ -179,5 +179,5 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
    {"id": "toggle-dark-mode", "trigger": "button_click", "triggerSlotId": "dark_mode", "type": "API_CALL", "config": {"handler": "theme_toggle", "local": true}},
    {"id": "logout", "trigger": "button_click", "triggerSlotId": "logout_btn", "type": "CONFIRM", "config": {"title": "Sign Out", "message": "Are you sure you want to sign out?", "confirmLabel": "Sign Out", "onConfirm": {"type": "LOGOUT"}}}
  ]'::jsonb,
- NULL, '{}'::jsonb, 'system', NULL)
+ NULL, '{}'::jsonb, 'system', NULL, 'settings')
 ON CONFLICT (screen_key) DO NOTHING;

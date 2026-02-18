@@ -20,6 +20,7 @@ type ScreenInstance struct {
 	DataConfig         json.RawMessage `db:"data_config"`
 	Scope              string          `db:"scope"`
 	RequiredPermission *string         `db:"required_permission"`
+	HandlerKey         *string         `db:"handler_key"`
 	IsActive           bool            `db:"is_active"`
 	CreatedAt          time.Time       `db:"created_at"`
 	UpdatedAt          time.Time       `db:"updated_at"`
