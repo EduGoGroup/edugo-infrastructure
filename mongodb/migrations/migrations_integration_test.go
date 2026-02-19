@@ -9,9 +9,9 @@ import (
 	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // TestIntegration tests de integración con MongoDB en testcontainer
@@ -55,7 +55,7 @@ func TestIntegration(t *testing.T) {
 
 	// Conectar a MongoDB
 	uri := "mongodb://" + host + ":" + port.Port()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
 	if err != nil {
 		t.Fatalf("Error conectando: %v", err)
 	}

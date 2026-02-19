@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // MaterialSummary representa la collection 'material_summary' en MongoDB.
@@ -14,7 +14,7 @@ import (
 //
 // Nota: Contiene el resumen del material generado por IA.
 type MaterialSummary struct {
-	ID               primitive.ObjectID `bson:"_id,omitempty"`
+	ID               bson.ObjectID `bson:"_id,omitempty"`
 	MaterialID       string             `bson:"material_id"`        // UUID del material en PostgreSQL
 	Summary          string             `bson:"summary"`            // Resumen principal
 	KeyPoints        []string           `bson:"key_points"`         // Puntos clave

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // seedDocument representa un conjunto de documentos para insertar en una colección
@@ -860,8 +860,8 @@ func mustParseTime(s string) time.Time {
 }
 
 // mustParseObjectID parsea un ObjectID hex o entra en pánico (solo para seeds)
-func mustParseObjectID(s string) primitive.ObjectID {
-	oid, err := primitive.ObjectIDFromHex(s)
+func mustParseObjectID(s string) bson.ObjectID {
+	oid, err := bson.ObjectIDFromHex(s)
 	if err != nil {
 		panic(fmt.Sprintf("invalid ObjectID: %s", s))
 	}
