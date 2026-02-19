@@ -1,5 +1,5 @@
-# Makefile para mongodb
-MODULE_NAME = github.com/EduGoGroup/edugo-infrastructure/mongodb
+# Makefile para schemas
+MODULE_NAME = github.com/EduGoGroup/edugo-infrastructure/schemas
 BUILD_DIR = build
 
 RED = \033[0;31m
@@ -12,11 +12,7 @@ NC = \033[0m
 help: ## Mostrar ayuda
 	@echo "$(BLUE)$(MODULE_NAME) - Comandos disponibles:$(NC)"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
-
-# ============================================================================
-# Desarrollo
-# ============================================================================
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-15s$(NC) %s\n", $$1, $$2}'
 
 .PHONY: build
 build: ## Compilar el modulo
@@ -32,7 +28,7 @@ test: ## Ejecutar tests unitarios
 	@echo "$(GREEN)Tests completados$(NC)"
 
 .PHONY: test-all
-test-all: ## Ejecutar todos los tests (incluye integracion, requiere Docker)
+test-all: ## Ejecutar todos los tests
 	@echo "$(BLUE)Ejecutando todos los tests...$(NC)"
 	@go test -v ./...
 	@echo "$(GREEN)Tests completados$(NC)"
@@ -82,44 +78,5 @@ clean: ## Limpiar archivos generados
 	@rm -rf $(BUILD_DIR)
 	@go clean -testcache
 	@echo "$(GREEN)Limpieza completada$(NC)"
-
-# ============================================================================
-# Migraciones
-# ============================================================================
-
-.PHONY: migrate-up
-migrate-up: ## Ejecutar migraciones pendientes
-	@echo "$(BLUE)Ejecutando migraciones MongoDB...$(NC)"
-	@go run migrate.go up
-
-.PHONY: migrate-down
-migrate-down: ## Revertir ultima migracion
-	@echo "$(BLUE)Revirtiendo ultima migracion...$(NC)"
-	@go run migrate.go down
-
-.PHONY: migrate-status
-migrate-status: ## Ver estado de migraciones
-	@echo "$(BLUE)Estado de migraciones:$(NC)"
-	@go run migrate.go status
-
-.PHONY: migrate-create
-migrate-create: ## Crear nueva migracion (uso: make migrate-create name=descripcion)
-	@if [ -z "$(name)" ]; then \
-		echo "$(RED)Error: Debe especificar name=descripcion$(NC)"; \
-		exit 1; \
-	fi
-	@go run migrate.go create "$(name)"
-
-.PHONY: seed
-seed: ## Cargar datos de prueba
-	@echo "$(BLUE)Cargando seeds MongoDB...$(NC)"
-	@if [ -d "seeds" ]; then \
-		for file in seeds/*.js; do \
-			echo "$(YELLOW)Ejecutando $$file...$(NC)"; \
-			mongosh "$(MONGO_URI)/$(MONGO_DB_NAME)" --file $$file --quiet; \
-		done; \
-	else \
-		echo "$(RED)No se encontro el directorio seeds/$(NC)"; \
-	fi
 
 .DEFAULT_GOAL := help

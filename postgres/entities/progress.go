@@ -15,9 +15,9 @@ import (
 type Progress struct {
 	MaterialID     uuid.UUID `db:"material_id"`
 	UserID         uuid.UUID `db:"user_id"`
-	Percentage     int       `db:"percentage"`      // 0-100
-	LastPage       int       `db:"last_page"`       // >= 0
-	Status         string    `db:"status"`          // not_started, in_progress, completed
+	Percentage     int       `db:"percentage"` // 0-100
+	LastPage       int       `db:"last_page"`  // >= 0
+	Status         string    `db:"status"`     // not_started, in_progress, completed
 	LastAccessedAt time.Time `db:"last_accessed_at"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
