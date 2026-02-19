@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // MaterialAssessment representa la collection 'material_assessment' (o 'material_assessment_worker') en MongoDB.
@@ -15,7 +15,7 @@ import (
 // Nota: Contiene las preguntas completas del assessment generado por IA.
 // La tabla PostgreSQL 'assessment' solo tiene metadata y referencia (mongo_document_id).
 type MaterialAssessment struct {
-	ID               primitive.ObjectID `bson:"_id,omitempty"`
+	ID               bson.ObjectID `bson:"_id,omitempty"`
 	MaterialID       string             `bson:"material_id"`        // UUID del material en PostgreSQL
 	Questions        []Question         `bson:"questions"`          // Array de preguntas
 	TotalQuestions   int                `bson:"total_questions"`    // Total de preguntas

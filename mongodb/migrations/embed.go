@@ -6,7 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/constraints"
 	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/structure"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // Nota: structure y constraints son subpaquetes del módulo migrations

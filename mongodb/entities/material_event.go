@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // MaterialEvent representa la collection 'material_event' en MongoDB.
@@ -14,11 +14,11 @@ import (
 //
 // Nota: Eventos de auditoría del procesamiento de materiales.
 type MaterialEvent struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	ID          bson.ObjectID `bson:"_id,omitempty"`
 	EventType   string             `bson:"event_type"`   // material_uploaded, material_reprocess, assessment_attempt
 	MaterialID  string             `bson:"material_id"`  // UUID del material en PostgreSQL
 	UserID      string             `bson:"user_id"`      // UUID del usuario en PostgreSQL
-	Payload     primitive.M        `bson:"payload"`      // Datos del evento (flexible)
+	Payload     bson.M        `bson:"payload"`      // Datos del evento (flexible)
 	Status      string             `bson:"status"`       // completed, processing, failed
 	ErrorMsg    *string            `bson:"error_msg,omitempty"`
 	StackTrace  *string            `bson:"stack_trace,omitempty"`
