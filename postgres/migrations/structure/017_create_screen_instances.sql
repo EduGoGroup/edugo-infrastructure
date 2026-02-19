@@ -10,6 +10,7 @@ CREATE TABLE ui_config.screen_instances (
     data_config JSONB DEFAULT '{}',
     scope VARCHAR(20) DEFAULT 'school',
     required_permission VARCHAR(100),
+    handler_key VARCHAR(100) DEFAULT NULL,
     is_active BOOLEAN DEFAULT true,
     created_by UUID,
     created_at TIMESTAMPTZ DEFAULT NOW(),
