@@ -1,6 +1,7 @@
 -- ====================================================================
--- SEEDS: Templates base para los 5 patterns de la Fase 1
--- VERSION: postgres/v0.18.0
+-- SEEDS: Templates base para los 6 patterns de la Fase 1
+-- VERSION: postgres/v0.19.0
+-- PLATFORMS: desktop, web, ios (via platformOverrides en definition JSONB)
 -- ====================================================================
 -- UUIDs fijos para referenciar desde instancias (007):
 --   login-basic-v1:     a0000000-0000-0000-0000-000000000001
@@ -8,6 +9,7 @@
 --   list-basic-v1:      a0000000-0000-0000-0000-000000000003
 --   detail-basic-v1:    a0000000-0000-0000-0000-000000000004
 --   settings-basic-v1:  a0000000-0000-0000-0000-000000000005
+--   form-basic-v1:      a0000000-0000-0000-0000-000000000006
 
 -- Template 1: Login
 INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
@@ -58,6 +60,13 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
     "web": {
       "distribution": "centered-card",
       "maxWidth": 480
+    },
+    "ios": {
+      "distribution": "stacked",
+      "zones": {
+        "brand": {"alignment": "center"},
+        "social": {"visible": false}
+      }
     }
   }
 }'::jsonb)
@@ -124,6 +133,12 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
         "kpis": {"panel": "center"},
         "recent_activity": {"panel": "right"},
         "quick_actions": {"panel": "right"}
+      }
+    },
+    "ios": {
+      "zones": {
+        "kpis": {"distribution": "grid", "columns": 2},
+        "quick_actions": {"distribution": "stacked"}
       }
     }
   }
@@ -192,6 +207,12 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
     "web": {
       "zones": {
         "list_content": {"distribution": "grid", "columns": {"compact": 1, "medium": 2, "expanded": 3}}
+      }
+    },
+    "ios": {
+      "zones": {
+        "search_zone": {"useNativeSearchable": true},
+        "filters": {"distribution": "flow-row", "scrollable": true}
       }
     }
   }
@@ -272,6 +293,11 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
         "description": {"panel": "right"},
         "summary": {"panel": "right"},
         "actions": {"panel": "right"}
+      }
+    },
+    "ios": {
+      "zones": {
+        "actions": {"placement": "toolbar"}
       }
     }
   }
@@ -354,6 +380,63 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
         "section_account": {"panel": "right"},
         "section_about": {"panel": "right"},
         "logout": {"panel": "right"}
+      }
+    },
+    "ios": {
+      "zones": {
+        "user_card": {"style": "inline-header"},
+        "logout": {"style": "destructive-bottom"}
+      }
+    }
+  }
+}'::jsonb)
+ON CONFLICT (name, version) DO NOTHING;
+
+-- Template 6: Form
+INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
+('a0000000-0000-0000-0000-000000000006', 'form', 'form-basic-v1', 'Formulario generico con campos dinamicos, validacion, submit/cancel', 1, '{
+  "navigation": {
+    "topBar": {
+      "title": "slot:page_title",
+      "showBack": true
+    }
+  },
+  "zones": [
+    {
+      "id": "form_header",
+      "type": "container",
+      "slots": [
+        {"id": "form_title", "controlType": "label", "style": "headline-medium", "bind": "slot:form_title"},
+        {"id": "form_description", "controlType": "label", "style": "body", "bind": "slot:form_description"}
+      ]
+    },
+    {
+      "id": "form_fields",
+      "type": "form-section",
+      "slots": []
+    },
+    {
+      "id": "form_actions",
+      "type": "action-group",
+      "distribution": "flow-row",
+      "slots": [
+        {"id": "cancel_btn", "controlType": "outlined-button", "bind": "slot:cancel_label"},
+        {"id": "submit_btn", "controlType": "filled-button", "bind": "slot:submit_label"}
+      ]
+    }
+  ],
+  "platformOverrides": {
+    "desktop": {
+      "distribution": "centered-card",
+      "maxWidth": 700
+    },
+    "web": {
+      "distribution": "centered-card",
+      "maxWidth": 600
+    },
+    "ios": {
+      "zones": {
+        "form_actions": {"placement": "toolbar"}
       }
     }
   }

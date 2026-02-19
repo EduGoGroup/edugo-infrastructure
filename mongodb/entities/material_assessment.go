@@ -15,31 +15,31 @@ import (
 // Nota: Contiene las preguntas completas del assessment generado por IA.
 // La tabla PostgreSQL 'assessment' solo tiene metadata y referencia (mongo_document_id).
 type MaterialAssessment struct {
-	ID               bson.ObjectID `bson:"_id,omitempty"`
-	MaterialID       string             `bson:"material_id"`        // UUID del material en PostgreSQL
-	Questions        []Question         `bson:"questions"`          // Array de preguntas
-	TotalQuestions   int                `bson:"total_questions"`    // Total de preguntas
-	TotalPoints      int                `bson:"total_points"`       // Puntos totales posibles
-	Version          int                `bson:"version"`            // Versión del assessment
-	AIModel          string             `bson:"ai_model"`           // Modelo IA usado (gpt-4, gpt-4-turbo, etc)
-	ProcessingTimeMs int                `bson:"processing_time_ms"` // Tiempo de procesamiento en ms
-	TokenUsage       *TokenUsage        `bson:"token_usage,omitempty"`
+	ID               bson.ObjectID       `bson:"_id,omitempty"`
+	MaterialID       string              `bson:"material_id"`        // UUID del material en PostgreSQL
+	Questions        []Question          `bson:"questions"`          // Array de preguntas
+	TotalQuestions   int                 `bson:"total_questions"`    // Total de preguntas
+	TotalPoints      int                 `bson:"total_points"`       // Puntos totales posibles
+	Version          int                 `bson:"version"`            // Versión del assessment
+	AIModel          string              `bson:"ai_model"`           // Modelo IA usado (gpt-4, gpt-4-turbo, etc)
+	ProcessingTimeMs int                 `bson:"processing_time_ms"` // Tiempo de procesamiento en ms
+	TokenUsage       *TokenUsage         `bson:"token_usage,omitempty"`
 	Metadata         *AssessmentMetadata `bson:"metadata,omitempty"` // Metadata adicional (opcional)
-	CreatedAt        time.Time          `bson:"created_at"`
-	UpdatedAt        time.Time          `bson:"updated_at"`
+	CreatedAt        time.Time           `bson:"created_at"`
+	UpdatedAt        time.Time           `bson:"updated_at"`
 }
 
 // Question representa una pregunta embebida en el assessment
 type Question struct {
-	QuestionID   string   `bson:"question_id"`
-	QuestionText string   `bson:"question_text"`
-	QuestionType string   `bson:"question_type"` // multiple_choice, true_false, open
-	Options      []Option `bson:"options,omitempty"`
+	QuestionID    string   `bson:"question_id"`
+	QuestionText  string   `bson:"question_text"`
+	QuestionType  string   `bson:"question_type"` // multiple_choice, true_false, open
+	Options       []Option `bson:"options,omitempty"`
 	CorrectAnswer string   `bson:"correct_answer"`
-	Explanation  string   `bson:"explanation"`
-	Points       int      `bson:"points"`
-	Difficulty   string   `bson:"difficulty"` // easy, medium, hard
-	Tags         []string `bson:"tags,omitempty"`
+	Explanation   string   `bson:"explanation"`
+	Points        int      `bson:"points"`
+	Difficulty    string   `bson:"difficulty"` // easy, medium, hard
+	Tags          []string `bson:"tags,omitempty"`
 }
 
 // Option representa una opción de respuesta

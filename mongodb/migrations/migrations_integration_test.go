@@ -270,12 +270,12 @@ func testApplySeeds(ctx context.Context, db *mongo.Database) func(*testing.T) {
 
 		// Verificar que se insertaron documentos en las colecciones esperadas
 		expectedCounts := map[string]int64{
-			"analytics_events":            6,
-			"material_assessment":         2,
-			"audit_logs":                  5,
-			"material_assessment_worker":  2,
-			"material_summary":            3,
-			"notifications":               4,
+			"analytics_events":           6,
+			"material_assessment":        2,
+			"audit_logs":                 5,
+			"material_assessment_worker": 2,
+			"material_summary":           3,
+			"notifications":              4,
 		}
 
 		for collection, expectedCount := range expectedCounts {
@@ -328,12 +328,12 @@ func testApplyMockData(ctx context.Context, db *mongo.Database) func(*testing.T)
 
 		// Verificar que se insertaron documentos en las colecciones esperadas
 		expectedCounts := map[string]int64{
-			"analytics_events":            10,
-			"material_assessment":         3,
-			"audit_logs":                  8,
-			"material_assessment_worker":  3,
-			"material_summary":            5,
-			"notifications":               6,
+			"analytics_events":           10,
+			"material_assessment":        3,
+			"audit_logs":                 8,
+			"material_assessment_worker": 3,
+			"material_summary":           5,
+			"notifications":              6,
 		}
 
 		for collection, expectedCount := range expectedCounts {
