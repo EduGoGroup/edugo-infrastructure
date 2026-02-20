@@ -150,7 +150,7 @@ build-all: ## Compilar todos los modulos
 	@echo "$(BLUE)Compilando todos los modulos...$(NC)"
 	@for module in $(MODULES); do \
 		echo "$(YELLOW)Building $$module...$(NC)"; \
-		(cd $$module && mkdir -p build && go build -o build/ ./...) || exit 1; \
+		(cd $$module && go build ./...) || exit 1; \
 		echo "$(GREEN)  $$module compilado$(NC)"; \
 	done
 	@echo "$(GREEN)Todos los modulos compilados$(NC)"
