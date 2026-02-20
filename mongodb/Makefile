@@ -19,10 +19,11 @@ help: ## Mostrar ayuda
 # ============================================================================
 
 .PHONY: build
-build: ## Compilar el modulo
+build: ## Compilar binarios (migrate y runner)
 	@echo "$(BLUE)Compilando $(MODULE_NAME)...$(NC)"
 	@mkdir -p $(BUILD_DIR)
-	@go build -o $(BUILD_DIR)/ ./...
+	@go build -o $(BUILD_DIR)/migrate ./cmd/migrate/migrate.go
+	@go build -o $(BUILD_DIR)/runner ./migrations/cmd/runner.go
 	@echo "$(GREEN)Compilacion exitosa$(NC)"
 
 .PHONY: test
