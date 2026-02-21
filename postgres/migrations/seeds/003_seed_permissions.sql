@@ -55,4 +55,14 @@ INSERT INTO permissions (name, display_name, description, resource_id, action, s
 
 -- Permisos sobre GESTIÓN DE PERMISOS/RESOURCES
 ('permissions_mgmt:read', 'Ver Configuración de Permisos', 'Ver recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'read', 'system'),
-('permissions_mgmt:update', 'Editar Configuración de Permisos', 'Modificar recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'update', 'system');
+('permissions_mgmt:update', 'Editar Configuración de Permisos', 'Modificar recursos y permisos del sistema', (SELECT id FROM resources WHERE key = 'permissions_mgmt'), 'update', 'system'),
+
+-- Permisos sobre MEMBRESÍAS
+('memberships:create', 'Crear Membresías', 'Asignar usuarios a unidades académicas', (SELECT id FROM resources WHERE key = 'memberships'), 'create', 'school'),
+('memberships:read', 'Ver Membresías', 'Ver membresías de unidades académicas', (SELECT id FROM resources WHERE key = 'memberships'), 'read', 'school'),
+('memberships:update', 'Editar Membresías', 'Modificar membresías', (SELECT id FROM resources WHERE key = 'memberships'), 'update', 'school'),
+('memberships:delete', 'Eliminar Membresías', 'Eliminar membresías de unidades', (SELECT id FROM resources WHERE key = 'memberships'), 'delete', 'school'),
+
+-- Permisos sobre ROLES
+('roles:read', 'Ver Roles', 'Ver roles del sistema', (SELECT id FROM resources WHERE key = 'roles'), 'read', 'system'),
+('roles:update', 'Editar Roles', 'Modificar configuración de roles', (SELECT id FROM resources WHERE key = 'roles'), 'update', 'system');
