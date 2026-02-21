@@ -63,7 +63,7 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Materials -> material-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000030', 'materials', 'material-detail', 'detail', true, 2)
+('20000000-0000-0000-0000-000000000030', 'materials', 'material-detail', 'detail', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Dashboard -> dashboard-teacher (dashboard, default)
@@ -88,7 +88,7 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Materials -> material-create (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000030', 'materials', 'material-create', 'form', true, 3)
+('20000000-0000-0000-0000-000000000030', 'materials', 'material-create', 'form', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Materials -> material-edit (form-edit)
@@ -103,12 +103,12 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Assessments -> assessment-take (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-take', 'form', true, 2)
+('20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-take', 'form', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Assessments -> assessment-result (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-result', 'detail', true, 3)
+('20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-result', 'detail', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Assessments -> attempts-history (history)
@@ -123,12 +123,12 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Progress -> progress-unit-list (list)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000040', 'progress', 'progress-unit-list', 'list', true, 2)
+('20000000-0000-0000-0000-000000000040', 'progress', 'progress-unit-list', 'list', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Progress -> progress-student-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000040', 'progress', 'progress-student-detail', 'detail', true, 3)
+('20000000-0000-0000-0000-000000000040', 'progress', 'progress-student-detail', 'detail', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Users -> users-list (list)
@@ -138,12 +138,12 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Users -> user-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000010', 'users', 'user-detail', 'detail', true, 2)
+('20000000-0000-0000-0000-000000000010', 'users', 'user-detail', 'detail', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Users -> user-create (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000010', 'users', 'user-create', 'form', true, 3)
+('20000000-0000-0000-0000-000000000010', 'users', 'user-create', 'form', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Users -> user-edit (form-edit)
@@ -158,12 +158,12 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Schools -> school-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000011', 'schools', 'school-detail', 'detail', true, 2)
+('20000000-0000-0000-0000-000000000011', 'schools', 'school-detail', 'detail', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Schools -> school-create (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000011', 'schools', 'school-create', 'form', true, 3)
+('20000000-0000-0000-0000-000000000011', 'schools', 'school-create', 'form', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Schools -> school-edit (form-edit)
@@ -178,12 +178,12 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Units -> unit-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000020', 'units', 'unit-detail', 'detail', true, 2)
+('20000000-0000-0000-0000-000000000020', 'units', 'unit-detail', 'detail', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Units -> unit-create (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000020', 'units', 'unit-create', 'form', true, 3)
+('20000000-0000-0000-0000-000000000020', 'units', 'unit-create', 'form', false, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Units -> unit-edit (form-edit)
@@ -198,7 +198,7 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Memberships -> membership-add (form)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000021', 'memberships', 'membership-add', 'form', true, 2)
+('20000000-0000-0000-0000-000000000021', 'memberships', 'membership-add', 'form', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Dashboard -> dashboard-guardian
@@ -213,7 +213,7 @@ ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Roles -> role-detail (detail)
 INSERT INTO ui_config.resource_screens (resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
-('20000000-0000-0000-0000-000000000012', 'roles', 'role-detail', 'detail', true, 2)
+('20000000-0000-0000-0000-000000000012', 'roles', 'role-detail', 'detail', false, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 -- Permissions -> resources-list (list)
