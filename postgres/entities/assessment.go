@@ -18,8 +18,7 @@ type Assessment struct {
 	ID               uuid.UUID  `db:"id"`
 	MaterialID       uuid.UUID  `db:"material_id"`
 	MongoDocumentID  string     `db:"mongo_document_id"` // ObjectId de MongoDB
-	QuestionsCount   int        `db:"questions_count"`   // Total de preguntas
-	TotalQuestions   *int       `db:"total_questions"`   // Sincronizado con questions_count
+	QuestionsCount   int        `db:"questions_count"`   // Total de preguntas (columna canónica)
 	Title            *string    `db:"title"`
 	PassThreshold    *int       `db:"pass_threshold"`     // Porcentaje 0-100
 	MaxAttempts      *int       `db:"max_attempts"`       // NULL = ilimitado

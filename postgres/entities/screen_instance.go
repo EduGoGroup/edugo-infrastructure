@@ -22,6 +22,7 @@ type ScreenInstance struct {
 	RequiredPermission *string         `db:"required_permission"`
 	HandlerKey         *string         `db:"handler_key"`
 	IsActive           bool            `db:"is_active"`
+	CreatedBy          *uuid.UUID      `db:"created_by"`
 	CreatedAt          time.Time       `db:"created_at"`
 	UpdatedAt          time.Time       `db:"updated_at"`
 }

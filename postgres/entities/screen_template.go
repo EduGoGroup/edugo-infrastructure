@@ -16,6 +16,7 @@ type ScreenTemplate struct {
 	Version     int             `db:"version"`
 	Definition  json.RawMessage `db:"definition"`
 	IsActive    bool            `db:"is_active"`
+	CreatedBy   *uuid.UUID      `db:"created_by"`
 	CreatedAt   time.Time       `db:"created_at"`
 	UpdatedAt   time.Time       `db:"updated_at"`
 }
