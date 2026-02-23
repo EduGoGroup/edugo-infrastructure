@@ -31,7 +31,7 @@ BEGIN;
 -- -------------------------------------------------------------------------
 -- Super Admin — sin scope de escuela (acceso global)
 -- -------------------------------------------------------------------------
-INSERT INTO public.user_roles (
+INSERT INTO iam.user_roles (
     id,
     user_id,
     role_id,
@@ -58,7 +58,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- Roles con scope de escuela (school_id definido)
 -- La constraint unique funciona correctamente cuando school_id != NULL.
 -- -------------------------------------------------------------------------
-INSERT INTO public.user_roles (
+INSERT INTO iam.user_roles (
     id,
     user_id,
     role_id,

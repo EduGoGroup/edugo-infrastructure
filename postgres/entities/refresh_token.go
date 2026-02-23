@@ -17,19 +17,19 @@ import (
 // revoked_at es NULL si el token sigue vigente.
 // replaced_by apunta al nuevo token cuando éste es rotado (refresh token rotation).
 type RefreshToken struct {
-	ID          uuid.UUID       `db:"id"`
-	TokenHash   string          `db:"token_hash"`   // Hash del refresh token (nunca texto claro)
-	UserID      uuid.UUID       `db:"user_id"`      // Usuario propietario del token
-	ClientInfo  json.RawMessage `db:"client_info"`  // Metadata del cliente (JSONB, nullable)
-	ExpiresAt   time.Time       `db:"expires_at"`   // Fecha de expiración del token
-	CreatedAt   time.Time       `db:"created_at"`   // Fecha de creación
-	RevokedAt   *time.Time      `db:"revoked_at"`   // NULL si el token sigue vigente
-	ReplacedBy  *uuid.UUID      `db:"replaced_by"`  // UUID del nuevo token si fue rotado (nullable)
+	ID          uuid.UUID       `db:"id" gorm:"type:uuid;primaryKey"`
+	TokenHash   string          `db:"token_hash" gorm:"uniqueIndex;not null"`
+	UserID      uuid.UUID       `db:"user_id" gorm:"type:uuid;index;not null"`
+	ClientInfo  json.RawMessage `db:"client_info" gorm:"type:jsonb"`
+	ExpiresAt   time.Time       `db:"expires_at" gorm:"not null"`
+	CreatedAt   time.Time       `db:"created_at" gorm:"not null;autoCreateTime"`
+	RevokedAt   *time.Time      `db:"revoked_at" gorm:"default:null"`
+	ReplacedBy  *uuid.UUID      `db:"replaced_by" gorm:"type:uuid"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (RefreshToken) TableName() string {
-	return "refresh_tokens"
+	return "auth.refresh_tokens"
 }
 
 // IsValid retorna true si el token no ha expirado ni ha sido revocado

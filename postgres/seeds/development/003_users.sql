@@ -4,7 +4,7 @@
 -- Crea 13 usuarios de prueba con contraseña unificada: "EduGoTest123!"
 --
 -- Hash bcrypt (cost=10) de "EduGoTest123!":
---   $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a
+--   $2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2
 --
 -- Usuarios por categoría:
 --   Sistema  : u001 → super@edugo.test (Super Admin de plataforma)
@@ -24,7 +24,7 @@
 
 BEGIN;
 
-INSERT INTO public.users (
+INSERT INTO auth.users (
     id,
     email,
     password_hash,
@@ -39,7 +39,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000001',
     'super@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Super',
     'Admin',
     true
@@ -51,7 +51,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000002',
     'admin.primaria@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Admin',
     'Primaria',
     true
@@ -59,7 +59,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000003',
     'admin.secundario@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Admin',
     'Secundario',
     true
@@ -71,7 +71,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000004',
     'coord.primaria@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Coordinador',
     'Primaria',
     true
@@ -83,7 +83,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000005',
     'teacher.math@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'María',
     'García',
     true
@@ -91,7 +91,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000006',
     'teacher.science@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Juan',
     'Martínez',
     true
@@ -99,7 +99,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000007',
     'teacher.history@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Ana',
     'López',
     true
@@ -111,7 +111,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000008',
     'student.carlos@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Carlos',
     'González',
     true
@@ -119,7 +119,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000009',
     'student.sofia@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Sofía',
     'Rodríguez',
     true
@@ -127,7 +127,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000010',
     'student.miguel@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Miguel',
     'Torres',
     true
@@ -135,7 +135,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000011',
     'student.laura@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Laura',
     'Martínez',
     true
@@ -147,7 +147,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000012',
     'guardian.roberto@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Roberto',
     'González',
     true
@@ -155,7 +155,7 @@ INSERT INTO public.users (
 (
     '00000000-0000-0000-0000-000000000013',
     'guardian.patricia@edugo.test',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVyKmqMY.a',
+    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
     'Patricia',
     'Torres',
     true

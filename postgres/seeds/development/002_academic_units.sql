@@ -26,7 +26,7 @@ BEGIN;
 -- -------------------------------------------------------------------------
 -- Nivel 0: Unidades raíz (type=school, parent=NULL)
 -- -------------------------------------------------------------------------
-INSERT INTO public.academic_units (
+INSERT INTO academic.academic_units (
     id,
     parent_unit_id,
     school_id,
@@ -77,7 +77,7 @@ ON CONFLICT (school_id, code, academic_year) DO UPDATE SET
 -- -------------------------------------------------------------------------
 -- Nivel 1: Grados (type=grade, parent=school)
 -- -------------------------------------------------------------------------
-INSERT INTO public.academic_units (
+INSERT INTO academic.academic_units (
     id,
     parent_unit_id,
     school_id,
@@ -141,7 +141,7 @@ ON CONFLICT (school_id, code, academic_year) DO UPDATE SET
 -- -------------------------------------------------------------------------
 -- Nivel 2: Clases (type=class, parent=grade)
 -- -------------------------------------------------------------------------
-INSERT INTO public.academic_units (
+INSERT INTO academic.academic_units (
     id,
     parent_unit_id,
     school_id,

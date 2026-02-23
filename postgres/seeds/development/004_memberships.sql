@@ -31,7 +31,7 @@ BEGIN;
 -- Memberships con academic_unit_id definido
 -- (conflict detectable por la constraint unique compuesta)
 -- -------------------------------------------------------------------------
-INSERT INTO public.memberships (
+INSERT INTO academic.memberships (
     id,
     user_id,
     school_id,
@@ -168,7 +168,7 @@ ON CONFLICT (user_id, school_id, academic_unit_id, role) DO UPDATE SET
 -- NULL no satisface la constraint unique, por eso se usa INSERT separado
 -- con ON CONFLICT DO NOTHING (idempotente por id).
 -- -------------------------------------------------------------------------
-INSERT INTO public.memberships (
+INSERT INTO academic.memberships (
     id,
     user_id,
     school_id,

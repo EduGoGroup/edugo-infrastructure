@@ -12,7 +12,7 @@
 
 BEGIN;
 
-INSERT INTO public.schools (
+INSERT INTO academic.schools (
     id,
     name,
     code,

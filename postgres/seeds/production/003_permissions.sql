@@ -5,7 +5,7 @@
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
 
-INSERT INTO permissions (id, resource_id, name, display_name, description, action, scope, is_active)
+INSERT INTO iam.permissions (id, resource_id, name, display_name, description, action, scope, is_active)
 VALUES
   -- assessments (resource: 20000000-0000-0000-0000-000000000031)
   ('8c8d7a5b-2688-4646-9888-bc53600dbbc0', '20000000-0000-0000-0000-000000000031', 'assessments:attempt',      'Rendir Evaluaciones',               'Intentar evaluaciones como estudiante',       'attempt',      'unit',   TRUE),

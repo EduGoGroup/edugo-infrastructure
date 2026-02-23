@@ -5,7 +5,7 @@
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
 
-INSERT INTO roles (id, name, display_name, description, scope, is_active)
+INSERT INTO iam.roles (id, name, display_name, description, scope, is_active)
 VALUES
   -- Roles de sistema
   ('10000000-0000-0000-0000-000000000001', 'super_admin',        'Super Administrador',         'Administrador con acceso total al sistema',                  'system', TRUE),

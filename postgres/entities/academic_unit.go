@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // AcademicUnit representa la tabla 'academic_units' en PostgreSQL.
@@ -12,23 +13,23 @@ import (
 // Migración: 003_create_academic_units.up.sql
 // Usada por: api-administracion (jerarquía), api-mobile (plano), worker
 type AcademicUnit struct {
-	ID           uuid.UUID  `db:"id"`
-	ParentUnitID *uuid.UUID `db:"parent_unit_id"` // NULL = raíz, soporta jerarquía
-	SchoolID     uuid.UUID  `db:"school_id"`
-	Name         string     `db:"name"`
-	Code         string     `db:"code"`
-	Type         string     `db:"type"` // school, grade, class, section, club, department
-	Description  *string    `db:"description"`
-	Level        *string    `db:"level"`
-	AcademicYear int        `db:"academic_year"` // 0 = sin año específico
-	Metadata     []byte     `db:"metadata"`      // JSONB stored as []byte
-	IsActive     bool       `db:"is_active"`
-	CreatedAt    time.Time  `db:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"`
-	DeletedAt    *time.Time `db:"deleted_at"`
+	ID           uuid.UUID      `db:"id" gorm:"type:uuid;primaryKey"`
+	ParentUnitID *uuid.UUID     `db:"parent_unit_id" gorm:"type:uuid;index"`
+	SchoolID     uuid.UUID      `db:"school_id" gorm:"type:uuid;index;not null"`
+	Name         string         `db:"name" gorm:"not null"`
+	Code         string         `db:"code" gorm:"not null"`
+	Type         string         `db:"type" gorm:"not null;type:varchar(50)"`
+	Description  *string        `db:"description" gorm:"default:null"`
+	Level        *string        `db:"level" gorm:"default:null"`
+	AcademicYear int            `db:"academic_year" gorm:"not null;default:0"`
+	Metadata     []byte         `db:"metadata" gorm:"type:jsonb;default:'{}'"`
+	IsActive     bool           `db:"is_active" gorm:"not null;default:true"`
+	CreatedAt    time.Time      `db:"created_at" gorm:"not null;autoCreateTime"`
+	UpdatedAt    time.Time      `db:"updated_at" gorm:"not null;autoUpdateTime"`
+	DeletedAt    gorm.DeletedAt `db:"deleted_at" gorm:"index"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (AcademicUnit) TableName() string {
-	return "academic_units"
+	return "academic.academic_units"
 }

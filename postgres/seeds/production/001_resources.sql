@@ -5,7 +5,7 @@
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
 
-INSERT INTO resources (id, key, display_name, description, icon, scope, parent_id, sort_order, is_menu_visible, is_active)
+INSERT INTO iam.resources (id, key, display_name, description, icon, scope, parent_id, sort_order, is_menu_visible, is_active)
 VALUES
   -- Recursos raíz (sin parent)
   ('20000000-0000-0000-0000-000000000001', 'dashboard',        'Dashboard',              'Panel principal',                               'dashboard',             'system', NULL,                                   1, TRUE,  TRUE),

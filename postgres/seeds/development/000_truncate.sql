@@ -22,27 +22,36 @@
 
 BEGIN;
 
--- Nivel 5 — tablas sin dependientes (hojas)
-TRUNCATE TABLE public.assessment_attempt_answer CASCADE;
+-- Nivel 5 — hojas
+TRUNCATE TABLE assessment.assessment_attempt_answer CASCADE;
 
 -- Nivel 4
-TRUNCATE TABLE public.assessment_attempt CASCADE;
+TRUNCATE TABLE assessment.assessment_attempt CASCADE;
 
 -- Nivel 3
-TRUNCATE TABLE public.assessment CASCADE;
+TRUNCATE TABLE assessment.assessment CASCADE;
 
 -- Nivel 2
-TRUNCATE TABLE public.materials CASCADE;
-TRUNCATE TABLE public.memberships CASCADE;
-TRUNCATE TABLE public.user_roles CASCADE;
+TRUNCATE TABLE content.materials CASCADE;
+TRUNCATE TABLE academic.memberships CASCADE;
+TRUNCATE TABLE iam.user_roles CASCADE;
 
 -- Nivel 1
-TRUNCATE TABLE public.academic_units CASCADE;
+TRUNCATE TABLE academic.academic_units CASCADE;
 
--- Nivel 0 — raíces (schools y users no tienen dependencias entre sí excepto a través de las tablas ya truncadas)
-TRUNCATE TABLE public.refresh_tokens CASCADE;
-TRUNCATE TABLE public.login_attempts CASCADE;
-TRUNCATE TABLE public.schools CASCADE;
-TRUNCATE TABLE public.users CASCADE;
+-- Desacoplar ui_config de auth.users para evitar que CASCADE destruya datos de produccion
+UPDATE ui_config.screen_templates SET created_by = NULL WHERE created_by IS NOT NULL;
+UPDATE ui_config.screen_instances SET created_by = NULL WHERE created_by IS NOT NULL;
+
+-- Nivel 0 — raíces (usar DELETE para auth.users para no cascadear a ui_config)
+TRUNCATE TABLE auth.refresh_tokens CASCADE;
+TRUNCATE TABLE auth.login_attempts CASCADE;
+TRUNCATE TABLE academic.schools CASCADE;
+DELETE FROM auth.users;
+
+-- Tablas adicionales de desarrollo
+TRUNCATE TABLE academic.subjects CASCADE;
+TRUNCATE TABLE academic.guardian_relations CASCADE;
+TRUNCATE TABLE ui_config.screen_user_preferences CASCADE;
 
 COMMIT;

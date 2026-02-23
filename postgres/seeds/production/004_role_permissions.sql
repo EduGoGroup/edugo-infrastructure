@@ -15,7 +15,7 @@
 --   school_assistant, observer:           0 permisos explícitos
 -- ============================================================
 
-INSERT INTO role_permissions (id, role_id, permission_id, created_at)
+INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
 VALUES
 
   -- ── super_admin (52 permisos — acceso total al sistema) ──────────────────
