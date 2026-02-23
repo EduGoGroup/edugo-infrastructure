@@ -13,16 +13,16 @@ import (
 // Almacena versiones históricas de materiales educativos.
 // Cada vez que se realiza un cambio significativo al material, se crea una nueva versión.
 type MaterialVersion struct {
-	ID            uuid.UUID `db:"id"`
-	MaterialID    uuid.UUID `db:"material_id"`
-	VersionNumber int       `db:"version_number"`
-	Title         string    `db:"title"`
-	ContentURL    string    `db:"content_url"`
-	ChangedBy     uuid.UUID `db:"changed_by"`
-	CreatedAt     time.Time `db:"created_at"`
+	ID            uuid.UUID `db:"id" gorm:"type:uuid;primaryKey"`
+	MaterialID    uuid.UUID `db:"material_id" gorm:"type:uuid;index;not null"`
+	VersionNumber int       `db:"version_number" gorm:"not null"`
+	Title         string    `db:"title" gorm:"not null"`
+	ContentURL    string    `db:"content_url" gorm:"not null"`
+	ChangedBy     uuid.UUID `db:"changed_by" gorm:"type:uuid;not null"`
+	CreatedAt     time.Time `db:"created_at" gorm:"not null;autoCreateTime"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (MaterialVersion) TableName() string {
-	return "material_versions"
+	return "content.material_versions"
 }

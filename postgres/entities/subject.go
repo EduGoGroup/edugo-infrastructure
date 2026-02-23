@@ -12,16 +12,16 @@ import (
 //
 // Representa una materia o asignatura del sistema educativo.
 type Subject struct {
-	ID          uuid.UUID `db:"id"`
-	Name        string    `db:"name"`
-	Description *string   `db:"description"` // NULL permitido
-	Metadata    *string   `db:"metadata"`    // JSONB, NULL permitido
-	IsActive    bool      `db:"is_active"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          uuid.UUID `db:"id" gorm:"type:uuid;primaryKey"`
+	Name        string    `db:"name" gorm:"not null"`
+	Description *string   `db:"description" gorm:"default:null"`
+	Metadata    *string   `db:"metadata" gorm:"type:jsonb"`
+	IsActive    bool      `db:"is_active" gorm:"not null;default:true"`
+	CreatedAt   time.Time `db:"created_at" gorm:"not null;autoCreateTime"`
+	UpdatedAt   time.Time `db:"updated_at" gorm:"not null;autoUpdateTime"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (Subject) TableName() string {
-	return "subjects"
+	return "academic.subjects"
 }

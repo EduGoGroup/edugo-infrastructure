@@ -71,14 +71,13 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("Error verificando conexión: %v", err)
 	}
 
-	t.Log("✅ Container PostgreSQL creado y conectado")
+	t.Log("Container PostgreSQL creado y conectado")
 
 	// Ejecutar tests
 	t.Run("ApplyAll", testApplyAll(db))
 	t.Run("CRUD_Users", testCRUDUsers(db))
 	t.Run("CRUD_Schools", testCRUDSchools(db))
 	t.Run("CRUD_Materials", testCRUDMaterials(db))
-	t.Run("ApplyMockData", testApplyMockData(db))
 }
 
 func testApplyAll(db *sql.DB) func(*testing.T) {
@@ -88,86 +87,111 @@ func testApplyAll(db *sql.DB) func(*testing.T) {
 			t.Fatalf("Error aplicando migraciones: %v", err)
 		}
 
-		// Verificar que las tablas existen
-		tables := []string{
-			"users", "schools", "academic_units", "memberships",
-			"materials", "assessment", "assessment_attempt", "assessment_attempt_answer",
-		}
-
-		for _, table := range tables {
+		// Verificar que los schemas existen
+		schemas := []string{"auth", "iam", "academic", "content", "assessment", "ui_config"}
+		for _, schema := range schemas {
 			var exists bool
 			query := `SELECT EXISTS (
-				SELECT FROM information_schema.tables
-				WHERE table_schema = 'public'
-				AND table_name = $1
+				SELECT FROM information_schema.schemata
+				WHERE schema_name = $1
 			)`
-			if err := db.QueryRow(query, table).Scan(&exists); err != nil {
-				t.Errorf("Error verificando tabla %s: %v", table, err)
+			if err := db.QueryRow(query, schema).Scan(&exists); err != nil {
+				t.Errorf("Error verificando schema %s: %v", schema, err)
 			}
 			if !exists {
-				t.Errorf("Tabla %s no fue creada", table)
+				t.Errorf("Schema %s no fue creado", schema)
 			}
 		}
 
-		t.Logf("✅ Todas las %d tablas creadas correctamente", len(tables))
+		// Verificar que las tablas existen en sus schemas correctos
+		tables := map[string][]string{
+			"auth":       {"users", "refresh_tokens", "login_attempts"},
+			"iam":        {"resources", "roles", "permissions", "role_permissions", "user_roles"},
+			"academic":   {"schools", "academic_units", "memberships", "subjects", "guardian_relations"},
+			"content":    {"materials", "material_versions", "progress"},
+			"assessment": {"assessment", "assessment_attempt", "assessment_attempt_answer"},
+			"ui_config":  {"screen_templates", "screen_instances", "resource_screens", "screen_user_preferences"},
+		}
+
+		totalTables := 0
+		for schema, tableList := range tables {
+			for _, table := range tableList {
+				var exists bool
+				query := `SELECT EXISTS (
+					SELECT FROM information_schema.tables
+					WHERE table_schema = $1
+					AND table_name = $2
+				)`
+				if err := db.QueryRow(query, schema, table).Scan(&exists); err != nil {
+					t.Errorf("Error verificando tabla %s.%s: %v", schema, table, err)
+				}
+				if !exists {
+					t.Errorf("Tabla %s.%s no fue creada", schema, table)
+				}
+				totalTables++
+			}
+		}
+
+		t.Logf("Todos los %d schemas y %d tablas creados correctamente", len(schemas), totalTables)
 	}
 }
 
 func testCRUDUsers(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// CREATE - Usar UUIDs válidos
+		// CREATE
 		userID := "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
 		_, err := db.Exec(`
-			INSERT INTO users (id, email, password_hash, role, first_name, last_name)
-			VALUES ($1, $2, $3, $4, $5, $6)
-		`, userID, "test@edugo.com", "hash123", "student", "Test", "User")
+			INSERT INTO auth.users (id, email, password_hash, first_name, last_name)
+			VALUES ($1, $2, $3, $4, $5)
+		`, userID, "test@edugo.com", "hash123", "Test", "User")
 		if err != nil {
 			t.Fatalf("Error insertando usuario: %v", err)
 		}
 
 		// READ
-		var email, role string
-		err = db.QueryRow(`SELECT email, role FROM users WHERE id = $1`, userID).Scan(&email, &role)
+		var email string
+		err = db.QueryRow(`SELECT email FROM auth.users WHERE id = $1`, userID).Scan(&email)
 		if err != nil {
 			t.Fatalf("Error leyendo usuario: %v", err)
 		}
-		if email != "test@edugo.com" || role != "student" {
-			t.Errorf("Datos incorrectos: email=%s, role=%s", email, role)
+		if email != "test@edugo.com" {
+			t.Errorf("Datos incorrectos: email=%s", email)
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE users SET role = $1 WHERE id = $2`, "teacher", userID)
+		_, err = db.Exec(`UPDATE auth.users SET first_name = $1 WHERE id = $2`, "Updated", userID)
 		if err != nil {
 			t.Fatalf("Error actualizando usuario: %v", err)
 		}
 
-		err = db.QueryRow(`SELECT role FROM users WHERE id = $1`, userID).Scan(&role)
-		if err != nil || role != "teacher" {
-			t.Errorf("Update falló: role=%s", role)
+		var firstName string
+		err = db.QueryRow(`SELECT first_name FROM auth.users WHERE id = $1`, userID).Scan(&firstName)
+		if err != nil || firstName != "Updated" {
+			t.Errorf("Update falló: first_name=%s", firstName)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM users WHERE id = $1`, userID)
+		_, err = db.Exec(`DELETE FROM auth.users WHERE id = $1`, userID)
 		if err != nil {
 			t.Fatalf("Error eliminando usuario: %v", err)
 		}
 
 		var count int
-		db.QueryRow(`SELECT COUNT(*) FROM users WHERE id = $1`, userID).Scan(&count)
+		db.QueryRow(`SELECT COUNT(*) FROM auth.users WHERE id = $1`, userID).Scan(&count)
 		if count != 0 {
 			t.Errorf("Usuario no fue eliminado")
 		}
 
-		t.Log("✅ CRUD users OK")
+		t.Log("CRUD users OK")
 	}
 }
 
 func testCRUDSchools(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// CREATE - Usar UUID válido e incluir code (NOT NULL)
+		// CREATE
 		schoolID := "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22"
 		_, err := db.Exec(`
-			INSERT INTO schools (id, name, code, address, city, country)
+			INSERT INTO academic.schools (id, name, code, address, city, country)
 			VALUES ($1, $2, $3, $4, $5, $6)
 		`, schoolID, "Escuela Test", "SCH_TEST_001", "Calle 123", "Buenos Aires", "Argentina")
 		if err != nil {
@@ -176,7 +200,7 @@ func testCRUDSchools(db *sql.DB) func(*testing.T) {
 
 		// READ
 		var name, city string
-		err = db.QueryRow(`SELECT name, city FROM schools WHERE id = $1`, schoolID).Scan(&name, &city)
+		err = db.QueryRow(`SELECT name, city FROM academic.schools WHERE id = $1`, schoolID).Scan(&name, &city)
 		if err != nil {
 			t.Fatalf("Error leyendo escuela: %v", err)
 		}
@@ -185,35 +209,35 @@ func testCRUDSchools(db *sql.DB) func(*testing.T) {
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE schools SET city = $1 WHERE id = $2`, "Córdoba", schoolID)
+		_, err = db.Exec(`UPDATE academic.schools SET city = $1 WHERE id = $2`, "Córdoba", schoolID)
 		if err != nil {
 			t.Fatalf("Error actualizando: %v", err)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM schools WHERE id = $1`, schoolID)
+		_, err = db.Exec(`DELETE FROM academic.schools WHERE id = $1`, schoolID)
 		if err != nil {
 			t.Fatalf("Error eliminando: %v", err)
 		}
 
-		t.Log("✅ CRUD schools OK")
+		t.Log("CRUD schools OK")
 	}
 }
 
 func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 	return func(t *testing.T) {
-		// Primero crear user y school (FK dependencies) - Nuevos IDs para no interferir con test anterior
+		// Primero crear user y school (FK dependencies)
 		userID := "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33"
 		schoolID := "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44"
 		materialID := "e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55"
 
-		_, err := db.Exec(`INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES ($1, $2, $3, $4, $5, $6)`,
-			userID, "teacher.mat@test.com", "hash", "teacher", "Teacher", "Material")
+		_, err := db.Exec(`INSERT INTO auth.users (id, email, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5)`,
+			userID, "teacher.mat@test.com", "hash", "Teacher", "Material")
 		if err != nil {
 			t.Fatalf("Error creando user FK: %v", err)
 		}
 
-		_, err = db.Exec(`INSERT INTO schools (id, name, code, address, city, country) VALUES ($1, $2, $3, $4, $5, $6)`,
+		_, err = db.Exec(`INSERT INTO academic.schools (id, name, code, address, city, country) VALUES ($1, $2, $3, $4, $5, $6)`,
 			schoolID, "School FK", "SCH002", "Address", "City", "Country")
 		if err != nil {
 			t.Fatalf("Error creando school FK: %v", err)
@@ -221,7 +245,7 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 
 		// CREATE material
 		_, err = db.Exec(`
-			INSERT INTO materials (id, school_id, uploaded_by_teacher_id, title, file_url, file_type, file_size_bytes)
+			INSERT INTO content.materials (id, school_id, uploaded_by_teacher_id, title, file_url, file_type, file_size_bytes)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`, materialID, schoolID, userID, "Material Test", "https://example.com/file.pdf", "application/pdf", 1024)
 		if err != nil {
@@ -230,7 +254,7 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 
 		// READ
 		var title string
-		err = db.QueryRow(`SELECT title FROM materials WHERE id = $1`, materialID).Scan(&title)
+		err = db.QueryRow(`SELECT title FROM content.materials WHERE id = $1`, materialID).Scan(&title)
 		if err != nil {
 			t.Fatalf("Error leyendo material: %v", err)
 		}
@@ -239,44 +263,21 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 		}
 
 		// UPDATE
-		_, err = db.Exec(`UPDATE materials SET title = $1 WHERE id = $2`, "Material Updated", materialID)
+		_, err = db.Exec(`UPDATE content.materials SET title = $1 WHERE id = $2`, "Material Updated", materialID)
 		if err != nil {
 			t.Fatalf("Error actualizando: %v", err)
 		}
 
 		// DELETE
-		_, err = db.Exec(`DELETE FROM materials WHERE id = $1`, materialID)
+		_, err = db.Exec(`DELETE FROM content.materials WHERE id = $1`, materialID)
 		if err != nil {
 			t.Fatalf("Error eliminando: %v", err)
 		}
 
 		// Cleanup FK
-		db.Exec(`DELETE FROM schools WHERE id = $1`, schoolID)
-		db.Exec(`DELETE FROM users WHERE id = $1`, userID)
+		db.Exec(`DELETE FROM academic.schools WHERE id = $1`, schoolID)
+		db.Exec(`DELETE FROM auth.users WHERE id = $1`, userID)
 
-		t.Log("✅ CRUD materials OK")
-	}
-}
-
-func testApplyMockData(db *sql.DB) func(*testing.T) {
-	return func(t *testing.T) {
-		// Aplicar mock data
-		if err := migrations.ApplyMockData(db); err != nil {
-			t.Fatalf("Error aplicando mock data: %v", err)
-		}
-
-		// Verificar que se insertaron datos
-		var count int
-		db.QueryRow(`SELECT COUNT(*) FROM users`).Scan(&count)
-		if count == 0 {
-			t.Error("Mock data no insertó usuarios")
-		}
-
-		db.QueryRow(`SELECT COUNT(*) FROM schools`).Scan(&count)
-		if count == 0 {
-			t.Error("Mock data no insertó escuelas")
-		}
-
-		t.Logf("✅ Mock data aplicado correctamente")
+		t.Log("CRUD materials OK")
 	}
 }

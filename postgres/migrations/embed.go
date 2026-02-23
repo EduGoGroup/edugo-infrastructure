@@ -10,15 +10,15 @@ import (
 	"strings"
 )
 
-// Files contiene todos los archivos SQL embebidos (estructura, constraints, seeds, testing)
+// Files contiene todos los archivos SQL embebidos (estructura completa con domain schemas)
 //
-//go:embed structure/*.sql constraints/*.sql seeds/*.sql testing/*.sql
+//go:embed structure/*.sql
 var Files embed.FS
 
-// ApplyAll ejecuta structure + constraints (base de datos limpia lista para usar)
-// Equivalente a: ApplyStructure() + ApplyConstraints()
+// ApplyAll ejecuta todos los scripts de structure/ en orden alfabético.
+// Crea schemas, funciones, tablas, foreign keys, funciones IAM y vistas.
 //
-// Uso típico: Inicializar base de datos en ambiente de desarrollo o testing
+// Uso típico: Inicializar base de datos desde cero
 //
 // Ejemplo:
 //
@@ -27,71 +27,14 @@ var Files embed.FS
 //	    log.Fatal(err)
 //	}
 func ApplyAll(db *sql.DB) error {
-	if err := ApplyStructure(db); err != nil {
-		return fmt.Errorf("error aplicando structure: %w", err)
-	}
-	if err := ApplyConstraints(db); err != nil {
-		return fmt.Errorf("error aplicando constraints: %w", err)
-	}
-	return nil
-}
-
-// ApplyStructure ejecuta solo los scripts de structure/ (CREATE TABLE sin FK)
-// Crea las tablas base sin foreign keys, índices adicionales, ni triggers
-//
-// Uso típico: Cuando necesitas crear tablas en orden específico sin dependencias
-//
-// Ejemplo:
-//
-//	migrations.ApplyStructure(db)
-func ApplyStructure(db *sql.DB) error {
 	return applyLayer(db, "structure")
-}
-
-// ApplyConstraints ejecuta solo los scripts de constraints/ (FK, índices, triggers, views)
-// DEBE ejecutarse DESPUÉS de ApplyStructure()
-//
-// Uso típico: Agregar constraints después de haber creado las tablas
-//
-// Ejemplo:
-//
-//	migrations.ApplyStructure(db)
-//	migrations.ApplyConstraints(db)
-func ApplyConstraints(db *sql.DB) error {
-	return applyLayer(db, "constraints")
-}
-
-// ApplySeeds ejecuta scripts de seeds/ (datos iniciales del ecosistema)
-// Datos básicos necesarios para que el sistema funcione (ej: regiones, configuración)
-//
-// Uso típico: Inicializar datos mínimos en ambiente de producción/staging
-//
-// Ejemplo:
-//
-//	migrations.ApplyAll(db)
-//	migrations.ApplySeeds(db)  // Datos iniciales
-func ApplySeeds(db *sql.DB) error {
-	return applyLayer(db, "seeds")
-}
-
-// ApplyMockData ejecuta scripts de testing/ (datos mock para tests)
-// Datos de prueba para desarrollo y testing
-//
-// Uso típico: Tests de integración, ambiente de desarrollo
-//
-// Ejemplo:
-//
-//	migrations.ApplyAll(db)
-//	migrations.ApplyMockData(db)  // Datos de prueba
-func ApplyMockData(db *sql.DB) error {
-	return applyLayer(db, "testing")
 }
 
 // GetScript obtiene el contenido de un script específico como string
 // Permite al cliente ejecutar scripts individuales con flexibilidad
 //
 // Parámetros:
-//   - name: Ruta relativa al script, ej: "structure/001_users.sql"
+//   - name: Ruta relativa al script, ej: "structure/010_auth_users.sql"
 //
 // Retorna:
 //   - string: Contenido del script
@@ -99,7 +42,7 @@ func ApplyMockData(db *sql.DB) error {
 //
 // Ejemplo:
 //
-//	script, err := migrations.GetScript("structure/001_users.sql")
+//	script, err := migrations.GetScript("structure/010_auth_users.sql")
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
@@ -118,10 +61,7 @@ func GetScript(name string) (string, error) {
 // Retorna map con estructura:
 //
 //	{
-//	  "structure": ["001_users.sql", "002_schools.sql", ...],
-//	  "constraints": ["001_users.sql", ...],
-//	  "seeds": [...],
-//	  "testing": [...]
+//	  "structure": ["000_schemas_and_extensions.sql", "001_shared_functions.sql", ...],
 //	}
 //
 // Ejemplo:
@@ -132,7 +72,7 @@ func GetScript(name string) (string, error) {
 //	}
 func ListScripts() map[string][]string {
 	result := make(map[string][]string)
-	layers := []string{"structure", "constraints", "seeds", "testing"}
+	layers := []string{"structure"}
 
 	for _, layer := range layers {
 		files, err := fs.ReadDir(Files, layer)
@@ -157,7 +97,7 @@ func ListScripts() map[string][]string {
 // Útil cuando necesitas acceso a todos los scripts de una capa
 //
 // Parámetros:
-//   - layer: "structure", "constraints", "seeds", o "testing"
+//   - layer: "structure"
 //
 // Retorna:
 //   - map[string]string: Mapa de nombre_archivo -> contenido
@@ -171,14 +111,11 @@ func ListScripts() map[string][]string {
 //	}
 func GetScriptsByLayer(layer string) (map[string]string, error) {
 	validLayers := map[string]bool{
-		"structure":   true,
-		"constraints": true,
-		"seeds":       true,
-		"testing":     true,
+		"structure": true,
 	}
 
 	if !validLayers[layer] {
-		return nil, fmt.Errorf("capa inválida: %s (debe ser: structure, constraints, seeds, testing)", layer)
+		return nil, fmt.Errorf("capa inválida: %s (debe ser: structure)", layer)
 	}
 
 	files, err := fs.ReadDir(Files, layer)

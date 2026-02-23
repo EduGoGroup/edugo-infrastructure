@@ -13,17 +13,17 @@ import (
 // Representa la relación entre un apoderado (guardian) y un estudiante.
 // Define el tipo de relación familiar o legal entre ellos.
 type GuardianRelation struct {
-	ID               uuid.UUID `db:"id"`
-	GuardianID       uuid.UUID `db:"guardian_id"`
-	StudentID        uuid.UUID `db:"student_id"`
-	RelationshipType string    `db:"relationship_type"` // father, mother, grandfather, etc.
-	IsActive         bool      `db:"is_active"`
-	CreatedAt        time.Time `db:"created_at"`
-	UpdatedAt        time.Time `db:"updated_at"`
-	CreatedBy        string    `db:"created_by"`
+	ID               uuid.UUID `db:"id" gorm:"type:uuid;primaryKey"`
+	GuardianID       uuid.UUID `db:"guardian_id" gorm:"type:uuid;index;not null"`
+	StudentID        uuid.UUID `db:"student_id" gorm:"type:uuid;index;not null"`
+	RelationshipType string    `db:"relationship_type" gorm:"not null;type:varchar(50)"`
+	IsActive         bool      `db:"is_active" gorm:"not null;default:true"`
+	CreatedAt        time.Time `db:"created_at" gorm:"not null;autoCreateTime"`
+	UpdatedAt        time.Time `db:"updated_at" gorm:"not null;autoUpdateTime"`
+	CreatedBy        string    `db:"created_by" gorm:"not null"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (GuardianRelation) TableName() string {
-	return "guardian_relations"
+	return "academic.guardian_relations"
 }
