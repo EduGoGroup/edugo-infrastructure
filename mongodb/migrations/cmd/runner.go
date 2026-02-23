@@ -7,8 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/constraints"
-	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations/structure"
+	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -38,85 +37,26 @@ func main() {
 
 	switch command {
 	case "structure":
-		if err := runStructure(ctx, db); err != nil {
+		fmt.Println("🏗️  Ejecutando Structure...")
+		if err := migrations.ApplyStructure(ctx, db); err != nil {
 			log.Fatalf("Error ejecutando structure: %v", err)
 		}
+		fmt.Println("✅ Structure completada")
 	case "constraints":
-		if err := runConstraints(ctx, db); err != nil {
+		fmt.Println("🔗 Ejecutando Constraints...")
+		if err := migrations.ApplyConstraints(ctx, db); err != nil {
 			log.Fatalf("Error ejecutando constraints: %v", err)
 		}
+		fmt.Println("✅ Constraints completadas")
 	case "all":
-		if err := runStructure(ctx, db); err != nil {
-			log.Fatalf("Error ejecutando structure: %v", err)
-		}
-		if err := runConstraints(ctx, db); err != nil {
-			log.Fatalf("Error ejecutando constraints: %v", err)
+		if err := migrations.ApplyAll(ctx, db); err != nil {
+			log.Fatalf("Error ejecutando migraciones: %v", err)
 		}
 		fmt.Println("✅ Todas las migraciones completadas")
 	default:
 		printHelp()
 		os.Exit(1)
 	}
-}
-
-func runStructure(ctx context.Context, db *mongo.Database) error {
-	fmt.Println("🏗️  Ejecutando Structure...")
-
-	// Colecciones activas:
-	if err := structure.CreateMaterialSummary(ctx, db); err != nil {
-		return fmt.Errorf("007_material_summary: %w", err)
-	}
-	fmt.Println("✅ 007_material_summary")
-
-	if err := structure.CreateMaterialAssessmentWorker(ctx, db); err != nil {
-		return fmt.Errorf("008_material_assessment_worker: %w", err)
-	}
-	fmt.Println("✅ 008_material_assessment_worker")
-
-	if err := structure.CreateMaterialEvent(ctx, db); err != nil {
-		return fmt.Errorf("009_material_event: %w", err)
-	}
-	fmt.Println("✅ 009_material_event")
-
-	// Colecciones eliminadas:
-	// - 001_material_assessment (duplicada por 008)
-	// - 002_material_content (sin uso)
-	// - 003_assessment_attempt_result (sin uso)
-	// - 004_audit_logs (sin uso)
-	// - 005_notifications (sin uso)
-	// - 006_analytics_events (sin uso)
-
-	return nil
-}
-
-func runConstraints(ctx context.Context, db *mongo.Database) error {
-	fmt.Println("🔗 Ejecutando Constraints...")
-
-	// Colecciones activas:
-	if err := constraints.CreateMaterialSummaryIndexes(ctx, db); err != nil {
-		return fmt.Errorf("007_material_summary_indexes: %w", err)
-	}
-	fmt.Println("✅ 007_material_summary_indexes")
-
-	if err := constraints.CreateMaterialAssessmentWorkerIndexes(ctx, db); err != nil {
-		return fmt.Errorf("008_material_assessment_worker_indexes: %w", err)
-	}
-	fmt.Println("✅ 008_material_assessment_worker_indexes")
-
-	if err := constraints.CreateMaterialEventIndexes(ctx, db); err != nil {
-		return fmt.Errorf("009_material_event_indexes: %w", err)
-	}
-	fmt.Println("✅ 009_material_event_indexes")
-
-	// Colecciones eliminadas:
-	// - 001_material_assessment_indexes (duplicada)
-	// - 002_material_content_indexes (sin uso)
-	// - 003_assessment_attempt_result_indexes (sin uso)
-	// - 004_audit_logs_indexes (sin uso)
-	// - 005_notifications_indexes (sin uso)
-	// - 006_analytics_events_indexes (sin uso)
-
-	return nil
 }
 
 func printHelp() {
