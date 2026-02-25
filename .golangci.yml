@@ -4,11 +4,6 @@ linters:
   enable:
     - errcheck
 
-formatters:
-  enable:
-    - goimports
-    - gofmt
-
 linters-settings:
   errcheck:
     exclude-functions:
