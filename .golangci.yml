@@ -1,3 +1,9 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+
 linters-settings:
   errcheck:
     exclude-functions:
@@ -9,12 +15,6 @@ linters-settings:
       - (*database/sql.Row).Scan
       - (*github.com/dop251/goja.Object).Set
       - (*github.com/dop251/goja.Runtime).Set
-
-linters:
-  enable:
-    - errcheck
-    - goimports
-    - gofmt
 
 issues:
   exclude-rules:

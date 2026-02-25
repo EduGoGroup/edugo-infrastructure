@@ -44,7 +44,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creando container: %v", err)
 	}
-	defer container.Terminate(ctx)
+	defer func() { _ = container.Terminate(ctx) }()
 
 	// Obtener host y puerto
 	host, err := container.Host(ctx)
@@ -65,7 +65,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error conectando: %v", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if err := db.Ping(); err != nil {
 		t.Fatalf("Error verificando conexión: %v", err)
@@ -177,7 +177,7 @@ func testCRUDUsers(db *sql.DB) func(*testing.T) {
 		}
 
 		var count int
-		db.QueryRow(`SELECT COUNT(*) FROM auth.users WHERE id = $1`, userID).Scan(&count)
+		_ = db.QueryRow(`SELECT COUNT(*) FROM auth.users WHERE id = $1`, userID).Scan(&count)
 		if count != 0 {
 			t.Errorf("Usuario no fue eliminado")
 		}
@@ -275,8 +275,8 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 		}
 
 		// Cleanup FK
-		db.Exec(`DELETE FROM academic.schools WHERE id = $1`, schoolID)
-		db.Exec(`DELETE FROM auth.users WHERE id = $1`, userID)
+		_, _ = db.Exec(`DELETE FROM academic.schools WHERE id = $1`, schoolID)
+		_, _ = db.Exec(`DELETE FROM auth.users WHERE id = $1`, userID)
 
 		t.Log("CRUD materials OK")
 	}

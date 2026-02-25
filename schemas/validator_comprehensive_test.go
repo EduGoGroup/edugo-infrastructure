@@ -615,7 +615,7 @@ func BenchmarkValidation(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		validator.Validate(event)
+		_ = validator.Validate(event)
 	}
 }
 
@@ -645,7 +645,7 @@ func BenchmarkValidationJSON(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		validator.ValidateJSON(jsonBytes, "material.uploaded", "1.0")
+		_ = validator.ValidateJSON(jsonBytes, "material.uploaded", "1.0")
 	}
 }
 
@@ -673,7 +673,7 @@ func BenchmarkValidation10000(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < 10000; i++ {
-		validator.Validate(event)
+		_ = validator.Validate(event)
 	}
 }
 
