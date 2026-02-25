@@ -134,6 +134,17 @@ INSERT INTO iam.user_roles (
     '00000000-0000-0000-0000-000000000003',   -- granted_by admin.secundario
     '2024-02-10 09:00:00'
 ),
+-- teacher.math ALSO as coordinator at Colegio Secundario (dual-school role test)
+(
+    'cc000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
+    '10000000-0000-0000-0000-000000000005',   -- school_coordinator
+    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
+    NULL,
+    true,
+    '00000000-0000-0000-0000-000000000003',   -- granted_by admin.secundario
+    '2024-02-15 09:00:00'
+),
 
 -- Estudiantes
 (

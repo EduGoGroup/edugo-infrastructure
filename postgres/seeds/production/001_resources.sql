@@ -1,6 +1,6 @@
 -- ============================================================
--- SEED: resources (18 registros)
--- Fecha: 2026-02-22
+-- SEED: resources (19 registros)
+-- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
@@ -25,6 +25,7 @@ VALUES
   -- Hijos de academic (20000000-0000-0000-0000-000000000003)
   ('20000000-0000-0000-0000-000000000020', 'units',            'Unidades Académicas',    'Gestión de clases',                             'layers',                'school', '20000000-0000-0000-0000-000000000003',  1, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000021', 'memberships',      'Miembros',               'Asignación de miembros',                        'user-plus',             'school', '20000000-0000-0000-0000-000000000003',  2, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000032', 'subjects',         'Materias',               'Gestión de materias',                           'book',                  'school', '20000000-0000-0000-0000-000000000003',  3, TRUE,  TRUE),
 
   -- Hijos de content (20000000-0000-0000-0000-000000000004)
   ('20000000-0000-0000-0000-000000000030', 'materials',        'Materiales',             'Materiales educativos',                         'file-text',             'unit',   '20000000-0000-0000-0000-000000000004',  1, TRUE,  TRUE),
