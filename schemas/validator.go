@@ -128,10 +128,10 @@ func (v *EventValidator) ValidateJSON(jsonBytes []byte, eventType, eventVersion 
 // formatValidationErrors formats validation errors into a single error message.
 func (v *EventValidator) formatValidationErrors(schemaKey string, validationErrors []gojsonschema.ResultError) error {
 	var errorMessages strings.Builder
-	errorMessages.WriteString(fmt.Sprintf("validation failed for %s:", schemaKey))
+	fmt.Fprintf(&errorMessages, "validation failed for %s:", schemaKey)
 
 	for _, desc := range validationErrors {
-		errorMessages.WriteString(fmt.Sprintf("\n  - %s", desc))
+		fmt.Fprintf(&errorMessages, "\n  - %s", desc)
 	}
 
 	return errors.New(errorMessages.String())

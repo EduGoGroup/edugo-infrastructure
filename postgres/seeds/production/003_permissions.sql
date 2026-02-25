@@ -1,6 +1,6 @@
 -- ============================================================
--- SEED: permissions (52 registros)
--- Fecha: 2026-02-22
+-- SEED: permissions (56 registros)
+-- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
@@ -65,6 +65,12 @@ VALUES
 
   -- screens / mobile (resource: 20000000-0000-0000-0000-000000000052)
   ('2b31df13-4c54-43fc-8bcd-8a9265fba1a0', '20000000-0000-0000-0000-000000000052', 'screens:read',             'Leer Pantallas (Mobile)',             'Leer configuracion de pantallas desde mobile', 'read',         'system', TRUE),
+
+  -- subjects (resource: 20000000-0000-0000-0000-000000000032)
+  ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000032', 'subjects:create',          'Crear Materia',                      'Crear materias en el plan de estudios',         'create',       'school', TRUE),
+  ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000032', 'subjects:read',            'Ver Materias',                       'Ver materias del plan de estudios',             'read',         'school', TRUE),
+  ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000032', 'subjects:update',          'Editar Materia',                     'Modificar datos de materias',                  'update',       'school', TRUE),
+  ('30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000032', 'subjects:delete',          'Eliminar Materia',                   'Eliminar materias del plan de estudios',        'delete',       'school', TRUE),
 
   -- stats (resource: 20000000-0000-0000-0000-000000000041)
   ('8a9fbae4-1b64-4870-ad14-41c436348bcc', '20000000-0000-0000-0000-000000000041', 'stats:global',             'Estadísticas Globales',               'Ver estadísticas de toda la plataforma',       'global',       'system', TRUE),

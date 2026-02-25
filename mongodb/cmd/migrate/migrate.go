@@ -255,7 +255,7 @@ func getAppliedMigrations(db *mongo.Database) (map[int]*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer func() { _ = cursor.Close(ctx) }()
 
 	applied := make(map[int]*time.Time)
 	for cursor.Next(ctx) {

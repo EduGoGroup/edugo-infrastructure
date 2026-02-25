@@ -15,9 +15,6 @@ type ScreenInstance struct {
 	Name               string          `db:"name" gorm:"not null"`
 	Description        *string         `db:"description" gorm:"default:null"`
 	SlotData           json.RawMessage `db:"slot_data" gorm:"type:jsonb;default:'{}'"`
-	Actions            json.RawMessage `db:"actions" gorm:"type:jsonb;default:'[]'"`
-	DataEndpoint       *string         `db:"data_endpoint" gorm:"default:null"`
-	DataConfig         json.RawMessage `db:"data_config" gorm:"type:jsonb;default:'{}'"`
 	Scope              string          `db:"scope" gorm:"not null;type:varchar(50)"`
 	RequiredPermission *string         `db:"required_permission" gorm:"default:null"`
 	HandlerKey         *string         `db:"handler_key" gorm:"default:null"`

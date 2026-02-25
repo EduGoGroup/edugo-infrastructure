@@ -124,6 +124,18 @@ INSERT INTO academic.memberships (
     '2024-02-15 09:00:00+00'
 ),
 
+-- teacher.math ALSO as coordinator at Colegio Secundario (dual-school role test)
+(
+    'bb000000-0000-0000-0000-000000000008',
+    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
+    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
+    NULL,                                      -- school-level coordinator
+    'coordinator',
+    '{"scope": "school"}'::jsonb,
+    true,
+    '2024-02-15 09:00:00+00'
+),
+
 -- Coordinadora → Primer Grado (Escuela Primaria)
 (
     'bb000000-0000-0000-0000-000000000010',
