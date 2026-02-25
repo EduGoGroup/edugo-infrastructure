@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("%s✗ Error conectando a PostgreSQL: %v%s\n", colorRed, err, colorReset)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Verificar conexión
 	if err := db.Ping(); err != nil {
