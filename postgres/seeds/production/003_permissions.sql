@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: permissions (60 registros)
+-- SEED: permissions (63 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -93,5 +93,10 @@ VALUES
   ('1ae1ad50-857c-4601-8378-5fd25128f11d', '20000000-0000-0000-0000-000000000010', 'users:read',               'Ver Usuarios',                       'Ver información de usuarios',                  'read',         'school', TRUE),
   ('8098577f-e5d8-4e07-aee7-4c1521cbe88b', '20000000-0000-0000-0000-000000000010', 'users:read:own',           'Ver Perfil Propio',                  'Ver propio perfil de usuario',                 'read:own',     'system', TRUE),
   ('813077d4-4624-4817-b3f2-69d60f6cb7a9', '20000000-0000-0000-0000-000000000010', 'users:update',             'Editar Usuarios',                    'Modificar datos de usuarios',                  'update',       'school', TRUE),
-  ('668b0d86-f4cb-45cd-a8c4-afa8f6cfe9b6', '20000000-0000-0000-0000-000000000010', 'users:update:own',         'Editar Perfil Propio',               'Modificar propio perfil',                      'update:own',   'system', TRUE)
+  ('668b0d86-f4cb-45cd-a8c4-afa8f6cfe9b6', '20000000-0000-0000-0000-000000000010', 'users:update:own',         'Editar Perfil Propio',               'Modificar propio perfil',                      'update:own',   'system', TRUE),
+
+  -- guardian_relations (resource: 20000000-0000-0000-0000-000000000060)
+  ('60000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000060', 'guardian_relations:read',    'Ver Solicitudes de Vinculación',      'Ver solicitudes de vinculación guardian',       'read',    'school', TRUE),
+  ('60000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000060', 'guardian_relations:approve', 'Aprobar Vinculación',                 'Aprobar/rechazar solicitudes de vinculación',   'approve', 'school', TRUE),
+  ('60000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000060', 'guardian_relations:request', 'Solicitar Vínculo',                   'Solicitar vínculo guardian-estudiante',         'request', 'school', TRUE)
 ON CONFLICT (id) DO NOTHING;

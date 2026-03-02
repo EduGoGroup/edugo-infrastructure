@@ -67,3 +67,7 @@ ALTER TABLE ui_config.resource_screens ADD CONSTRAINT fk_resource_screens_resour
 -- ui_config.screen_user_preferences -> auth.users
 ALTER TABLE ui_config.screen_user_preferences ADD CONSTRAINT fk_screen_user_prefs_user
     FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+-- academic.guardian_relations -> auth.users (created_by)
+ALTER TABLE academic.guardian_relations ADD CONSTRAINT guardian_relations_created_by_fkey
+    FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
