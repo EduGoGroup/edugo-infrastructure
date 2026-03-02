@@ -53,6 +53,21 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000028', '20000000-0000-0000-0000-000000000041', 'stats', 'stats-dashboard', 'dashboard', TRUE),
 ('c0000000-0000-0000-0000-000000000029', '20000000-0000-0000-0000-000000000032', 'subjects', 'subjects-list', 'list', TRUE),
 ('c0000000-0000-0000-0000-000000000030', '20000000-0000-0000-0000-000000000032', 'subjects', 'subjects-form', 'form', FALSE)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Users -> users-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000031', '20000000-0000-0000-0000-000000000010', 'users', 'users-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Roles -> roles-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000032', '20000000-0000-0000-0000-000000000012', 'roles', 'roles-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Permissions -> permissions-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000033', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt', 'permissions-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
 COMMIT;

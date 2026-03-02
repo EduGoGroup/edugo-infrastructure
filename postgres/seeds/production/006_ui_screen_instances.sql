@@ -173,4 +173,28 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'system', 'schools:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 22: Formulario de Usuario
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000032', 'users-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Usuario', 'Crear o editar un usuario',
+ '{"page_title": "Nuevo Usuario", "edit_title": "Editar Usuario", "submit_label": "Guardar", "cancel_label": "Cancelar", "fields": [{"key": "first_name", "type": "text", "label": "Nombre", "placeholder": "Nombre del usuario", "required": true}, {"key": "last_name", "type": "text", "label": "Apellido", "placeholder": "Apellido del usuario", "required": true}, {"key": "email", "type": "email", "label": "Email", "placeholder": "email@ejemplo.com", "required": true}, {"key": "password", "type": "password", "label": "Contraseña", "placeholder": "Mínimo 8 caracteres", "required": true}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true, "required": false}]}'::jsonb,
+ 'school', 'users:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 23: Formulario de Rol
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000033', 'roles-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Rol', 'Crear o editar un rol del sistema',
+ '{"page_title": "Nuevo Rol", "edit_title": "Editar Rol", "submit_label": "Guardar", "cancel_label": "Cancelar", "fields": [{"key": "name", "type": "text", "label": "Nombre clave", "placeholder": "ej: school_coordinator", "required": true}, {"key": "display_name", "type": "text", "label": "Nombre visible", "placeholder": "Nombre para mostrar", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del rol"}, {"key": "scope", "type": "select", "label": "Alcance", "required": true, "options": [{"value": "system", "label": "Sistema"}, {"value": "school", "label": "Escuela"}, {"value": "unit", "label": "Unidad"}]}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true}]}'::jsonb,
+ 'system', 'roles:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 24: Formulario de Permiso
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000034', 'permissions-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Permiso', 'Crear o editar un permiso del sistema',
+ '{"page_title": "Nuevo Permiso", "edit_title": "Editar Permiso", "submit_label": "Guardar", "cancel_label": "Cancelar", "fields": [{"key": "name", "type": "text", "label": "Nombre (resource:action)", "placeholder": "ej: users:create", "required": true}, {"key": "display_name", "type": "text", "label": "Nombre visible", "placeholder": "Nombre para mostrar", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción"}, {"key": "resource_id", "type": "remote_select", "label": "Recurso", "required": true, "remote_endpoint": "/api/v1/resources", "display_field": "display_name", "value_field": "id"}, {"key": "action", "type": "text", "label": "Acción", "placeholder": "ej: create, read, update, delete", "required": true}, {"key": "scope", "type": "select", "label": "Alcance", "required": true, "options": [{"value": "system", "label": "Sistema"}, {"value": "school", "label": "Escuela"}, {"value": "unit", "label": "Unidad"}]}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true}]}'::jsonb,
+ 'system', 'permissions_mgmt:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;
