@@ -19,8 +19,8 @@ VALUES
   ('20000000-0000-0000-0000-000000000011', 'schools',          'Escuelas',               'Gestión de escuelas',                           'school',                'system', '20000000-0000-0000-0000-000000000002',  2, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000012', 'roles',            'Roles',                  'Gestión de roles',                              'shield',                'system', '20000000-0000-0000-0000-000000000002',  3, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000013', 'permissions_mgmt', 'Permisos',               'Gestión de permisos',                           'key',                   'system', '20000000-0000-0000-0000-000000000002',  4, TRUE,  TRUE),
-  ('20000000-0000-0000-0000-000000000050', 'screen_templates', 'Templates de Pantalla',  'Templates base para configuracion de pantallas', 'settings_applications', 'system', '20000000-0000-0000-0000-000000000002',  5, FALSE, TRUE),
-  ('20000000-0000-0000-0000-000000000051', 'screen_instances', 'Instancias de Pantalla', 'Instancias configuradas de pantalla por escuela','devices',               'system', '20000000-0000-0000-0000-000000000002',  6, FALSE, TRUE),
+  ('20000000-0000-0000-0000-000000000050', 'screen_templates', 'Templates de Pantalla',  'Templates base para configuracion de pantallas', 'settings_applications', 'system', '20000000-0000-0000-0000-000000000002',  5, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000051', 'screen_instances', 'Instancias de Pantalla', 'Instancias configuradas de pantalla por escuela','devices',               'system', '20000000-0000-0000-0000-000000000002',  6, TRUE,  TRUE),
 
   -- Hijos de academic (20000000-0000-0000-0000-000000000003)
   ('20000000-0000-0000-0000-000000000020', 'units',            'Unidades Académicas',    'Gestión de clases',                             'layers',                'school', '20000000-0000-0000-0000-000000000003',  1, TRUE,  TRUE),

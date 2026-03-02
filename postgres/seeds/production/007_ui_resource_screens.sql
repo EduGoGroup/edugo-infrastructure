@@ -70,4 +70,34 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000033', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt', 'permissions-form', 'form', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Units -> units-form (form) [Fase 2.1]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000040', '20000000-0000-0000-0000-000000000020', 'units', 'units-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Memberships -> memberships-form (form) [Fase 2.2]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000041', '20000000-0000-0000-0000-000000000021', 'memberships', 'memberships-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Materials -> material-create (form) [Fase 2.3]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000042', '20000000-0000-0000-0000-000000000030', 'materials', 'material-create', 'form', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Screen Templates -> screen-templates-list (list) [Fase 5.5]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000050', '20000000-0000-0000-0000-000000000050', 'screen_templates', 'screen-templates-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Screen Instances -> screen-instances-list (list) [Fase 5.5]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000051', '20000000-0000-0000-0000-000000000051', 'screen_instances', 'screen-instances-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Screen Instances -> screen-instances-form (form) [Fase 5.5]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000052', '20000000-0000-0000-0000-000000000051', 'screen_instances', 'screen-instances-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
