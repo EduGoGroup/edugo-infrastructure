@@ -277,4 +277,20 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'school', 'guardian_relations:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 35: Formulario de Evaluación (Fase 3 - Assessment CRUD)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000070', 'assessments-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Evaluación', 'Crear o editar una evaluación',
+ '{"page_title": "Nueva Evaluación", "edit_title": "Editar Evaluación", "submit_label": "Guardar", "cancel_label": "Cancelar", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Nombre de la evaluación", "required": true}, {"key": "material_id", "type": "remote_select", "label": "Material", "required": false, "remote_endpoint": "/api/v1/materials", "display_field": "title", "value_field": "id"}, {"key": "pass_threshold", "type": "number", "label": "Umbral aprobación (%)", "required": true, "default": 60, "min": 0, "max": 100}, {"key": "max_attempts", "type": "number", "label": "Intentos máximos", "required": false, "placeholder": "Sin límite"}, {"key": "time_limit_minutes", "type": "number", "label": "Tiempo límite (min)", "required": false, "placeholder": "Sin límite"}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "draft", "label": "Borrador"}, {"value": "published", "label": "Publicado"}]}]}'::jsonb,
+ 'unit', 'assessments:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 36: Tomar Evaluación (Fase 3 - Assessment Take)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000071', 'assessment-take',
+ 'a0000000-0000-0000-0000-000000000004', 'Tomar Evaluación', 'Pantalla para rendir una evaluación',
+ '{"page_title": "Evaluación"}'::jsonb,
+ 'unit', 'assessments:attempt', 'assessment-take')
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;

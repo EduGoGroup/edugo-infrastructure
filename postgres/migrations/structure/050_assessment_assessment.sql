@@ -8,8 +8,10 @@
 
 CREATE TABLE assessment.assessment (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    material_id uuid NOT NULL,
+    material_id uuid,
     mongo_document_id character varying(24) NOT NULL,
+    school_id uuid,
+    created_by_user_id uuid,
     questions_count integer DEFAULT 0 NOT NULL,
     status character varying(50) DEFAULT 'generated' NOT NULL,
     title character varying(255),
