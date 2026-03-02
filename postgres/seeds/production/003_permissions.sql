@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: permissions (56 registros)
+-- SEED: permissions (60 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING

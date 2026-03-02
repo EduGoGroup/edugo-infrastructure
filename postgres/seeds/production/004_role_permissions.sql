@@ -1,24 +1,27 @@
 -- ============================================================
--- SEED: role_permissions (113 registros)
--- Fecha: 2026-02-24
+-- SEED: role_permissions (176 registros)
+-- Fecha: 2026-03-01
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
 --
 -- Resumen de permisos por rol:
---   super_admin    (10000000-...000001): 52 permisos (todos)
---   platform_admin (10000000-...000002): 10 permisos
---   school_admin   (10000000-...000003): 19 permisos (+screens:read)
---   teacher        (10000000-...000007): 17 permisos (+screens:read)
---   student        (10000000-...000009):  9 permisos (+screens:read)
---   guardian       (10000000-...000010):  6 permisos (+screens:read)
---   assistant_teacher, school_director, school_coordinator,
---   school_assistant, observer:           0 permisos explícitos
+--   super_admin        (10000000-...000001): 60 permisos (todos)
+--   platform_admin     (10000000-...000002): 10 permisos
+--   school_admin       (10000000-...000003): 23 permisos (+screens:read, +subjects CRUD)
+--   school_director    (10000000-...000004): 10 permisos (+screens:read)
+--   school_coordinator (10000000-...000005): 25 permisos (+screens:read)
+--   school_assistant   (10000000-...000006):  6 permisos (+screens:read)
+--   teacher            (10000000-...000007): 18 permisos (+screens:read, +subjects:read)
+--   assistant_teacher  (10000000-...000008):  5 permisos (+screens:read)
+--   student            (10000000-...000009):  9 permisos (+screens:read)
+--   guardian           (10000000-...000010):  6 permisos (+screens:read)
+--   observer           (10000000-...000011):  4 permisos (+screens:read)
 -- ============================================================
 
 INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
 VALUES
 
-  -- ── super_admin (52 permisos — acceso total al sistema) ──────────────────
+  -- ── super_admin (60 permisos — acceso total al sistema) ──────────────────
   ('f6de19dc-1f39-4965-9a94-9765266b7af3', '10000000-0000-0000-0000-000000000001', '0e72f5de-e2df-4bc6-b6ec-68266855d1e8', '2026-02-21 02:41:20.433312'),
   ('9f3e0a8d-b241-4ca2-bf3d-d54b2108ae80', '10000000-0000-0000-0000-000000000001', '0f53cce3-0133-4f93-9b8c-7c62b3a8eb3c', '2026-02-21 02:41:20.433312'),
   ('8b1b8dc7-7201-42b4-8ace-6be675e26306', '10000000-0000-0000-0000-000000000001', '19d017d1-ee5b-4fc3-828a-2d12056631b4', '2026-02-21 02:41:20.433312'),
@@ -89,8 +92,13 @@ VALUES
   ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', '2026-02-24 00:00:00.000000'),  -- subjects:read
   ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', '2026-02-24 00:00:00.000000'),  -- subjects:update
   ('40000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000004', '2026-02-24 00:00:00.000000'),  -- subjects:delete
+  -- roles & permissions_mgmt create/delete for super_admin
+  ('50000000-0000-0000-0000-000000000101', '10000000-0000-0000-0000-000000000001', '31000000-0000-0000-0000-000000000001', '2026-03-01 00:00:00.000000'),  -- roles:create
+  ('50000000-0000-0000-0000-000000000102', '10000000-0000-0000-0000-000000000001', '31000000-0000-0000-0000-000000000002', '2026-03-01 00:00:00.000000'),  -- roles:delete
+  ('50000000-0000-0000-0000-000000000103', '10000000-0000-0000-0000-000000000001', '31000000-0000-0000-0000-000000000003', '2026-03-01 00:00:00.000000'),  -- permissions_mgmt:create
+  ('50000000-0000-0000-0000-000000000104', '10000000-0000-0000-0000-000000000001', '31000000-0000-0000-0000-000000000004', '2026-03-01 00:00:00.000000'),  -- permissions_mgmt:delete
 
-  -- ── school_admin (22 permisos) ───────────────────────────────────────────
+  -- ── school_admin (23 permisos) ───────────────────────────────────────────
   ('6707572a-4188-4275-a3fe-2f4e2abbf67c', '10000000-0000-0000-0000-000000000003', '19d017d1-ee5b-4fc3-828a-2d12056631b4', '2026-02-21 02:41:20.433312'),
   ('b696cb0a-4852-42f1-b369-d56a6bd2d318', '10000000-0000-0000-0000-000000000003', '1ae1ad50-857c-4601-8378-5fd25128f11d', '2026-02-21 02:41:20.433312'),
   ('13de5632-d99b-4684-a055-3c5ff06be8a0', '10000000-0000-0000-0000-000000000003', '2606efba-8615-48ef-bc2a-6bf576a9158c', '2026-02-21 02:41:20.433312'),
