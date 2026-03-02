@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: permissions (56 registros)
+-- SEED: permissions (60 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -32,6 +32,8 @@ VALUES
   ('0f53cce3-0133-4f93-9b8c-7c62b3a8eb3c', '20000000-0000-0000-0000-000000000021', 'memberships:update',       'Editar Membresías',                  'Modificar membresías',                        'update',       'school', TRUE),
 
   -- permissions_mgmt (resource: 20000000-0000-0000-0000-000000000013)
+  ('31000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt:create',  'Crear Permisos',                      'Crear nuevos permisos en el sistema',           'create',       'system', TRUE),
+  ('31000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt:delete',  'Eliminar Permisos',                   'Eliminar permisos del sistema',                 'delete',       'system', TRUE),
   ('6cfd0e01-6834-4fde-94e9-536b663b5be4', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt:read',    'Ver Configuración de Permisos',       'Ver recursos y permisos del sistema',          'read',         'system', TRUE),
   ('59da389c-a246-4d43-a6ce-f316584b2be7', '20000000-0000-0000-0000-000000000013', 'permissions_mgmt:update',  'Editar Configuración de Permisos',    'Modificar recursos y permisos del sistema',    'update',       'system', TRUE),
 
@@ -42,6 +44,8 @@ VALUES
 
   -- roles (resource: 20000000-0000-0000-0000-000000000012)
   ('a28c2133-9d49-46ae-8cb7-fe59ff0246df', '20000000-0000-0000-0000-000000000012', 'roles:read',               'Ver Roles',                          'Ver roles del sistema',                        'read',         'system', TRUE),
+  ('31000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000012', 'roles:create',             'Crear Roles',                        'Crear nuevos roles en el sistema',              'create',       'system', TRUE),
+  ('31000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000012', 'roles:delete',             'Eliminar Roles',                     'Eliminar roles del sistema',                   'delete',       'system', TRUE),
   ('dfcc999e-fd49-4611-9d52-a2baf8b95851', '20000000-0000-0000-0000-000000000012', 'roles:update',             'Editar Roles',                       'Modificar configuración de roles',             'update',       'system', TRUE),
 
   -- schools (resource: 20000000-0000-0000-0000-000000000011)
