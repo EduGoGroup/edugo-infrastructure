@@ -17,8 +17,10 @@ import (
 // Esta tabla solo mantiene metadata y referencia al documento MongoDB.
 type Assessment struct {
 	ID               uuid.UUID      `db:"id" gorm:"type:uuid;primaryKey"`
-	MaterialID       uuid.UUID      `db:"material_id" gorm:"type:uuid;index;not null"`
+	MaterialID       *uuid.UUID     `db:"material_id" gorm:"type:uuid;index"`
 	MongoDocumentID  string         `db:"mongo_document_id" gorm:"not null"`
+	SchoolID         *uuid.UUID     `db:"school_id" gorm:"type:uuid;index"`
+	CreatedByUserID  *uuid.UUID     `db:"created_by_user_id" gorm:"type:uuid"`
 	QuestionsCount   int            `db:"questions_count" gorm:"not null;default:0"`
 	Title            *string        `db:"title" gorm:"default:null"`
 	PassThreshold    *int           `db:"pass_threshold" gorm:"default:null"`
