@@ -1,13 +1,14 @@
 -- =============================================================================
 -- EduGo Development Seeds — 010_guardian_relations.sql
 -- =============================================================================
--- Crea 4 relaciones tutor-estudiante de prueba.
+-- Crea 5 relaciones tutor-estudiante de prueba.
 --
 -- Mapa de relaciones:
---   gr001 → Roberto Gonzalez (u012) → Carlos Gonzalez (u008) — parent, primary
---   gr002 → Roberto Gonzalez (u012) → Sofia Rodriguez (u009) — guardian, secondary
---   gr003 → Patricia Torres  (u013) → Miguel Torres   (u010) — parent, primary
---   gr004 → Patricia Torres  (u013) → Laura Martinez  (u011) — guardian, secondary
+--   gr001 → Roberto Gonzalez (u012) → Carlos Gonzalez (u008) — parent, primary, active
+--   gr002 → Roberto Gonzalez (u012) → Sofia Rodriguez (u009) — guardian, secondary, active
+--   gr003 → Patricia Torres  (u013) → Miguel Torres   (u010) — parent, primary, active
+--   gr004 → Patricia Torres  (u013) → Laura Martinez  (u011) — guardian, secondary, active
+--   gr005 → Roberto Gonzalez (u012) → Laura Martinez  (u011) — tutor, secondary, pending
 -- =============================================================================
 
 BEGIN;

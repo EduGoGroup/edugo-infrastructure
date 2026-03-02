@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: resources (19 registros)
+-- SEED: resources (20 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING

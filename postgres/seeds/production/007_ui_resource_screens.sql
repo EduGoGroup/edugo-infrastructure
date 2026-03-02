@@ -105,4 +105,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000060', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'guardian-requests-list', 'list', TRUE, 1)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Guardian Relations -> children-list (detail-children) [Fase 4.1]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000061', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'children-list', 'detail-children', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Guardian Relations -> child-progress (detail) [Fase 4.1]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000062', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'child-progress', 'detail', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
