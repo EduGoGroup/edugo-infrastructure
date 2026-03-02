@@ -234,7 +234,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000050', 'screen-templates-list',
  'a0000000-0000-0000-0000-000000000003', 'Templates de Pantalla', 'Lista de templates base del sistema SDUI',
  '{"page_title": "Templates de Pantalla", "search_placeholder": "Buscar template...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "settings_applications", "empty_state_title": "No hay templates", "empty_state_description": "No se encontraron templates de pantalla", "empty_action_label": ""}'::jsonb,
- 'system', 'screens:read', NULL)
+ 'system', 'screen_templates:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 30: Lista de Instancias de Pantalla (Fase 5.5)
@@ -242,7 +242,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000051', 'screen-instances-list',
  'a0000000-0000-0000-0000-000000000003', 'Instancias de Pantalla', 'Lista de instancias configuradas de pantalla',
  '{"page_title": "Instancias de Pantalla", "search_placeholder": "Buscar instancia...", "filter_all_label": "Todas", "filter_ready_label": "Activas", "filter_processing_label": "Inactivas", "empty_icon": "devices", "empty_state_title": "No hay instancias", "empty_state_description": "No se encontraron instancias de pantalla", "empty_action_label": "Crear Instancia"}'::jsonb,
- 'system', 'screens:read', NULL)
+ 'system', 'screen_instances:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 31: Formulario de Instancia de Pantalla (Fase 5.5)
@@ -250,7 +250,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000052', 'screen-instances-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Instancia', 'Editar configuracion de instancia de pantalla',
  '{"page_title": "Nueva Instancia", "edit_title": "Editar Instancia", "submit_label": "Guardar", "cancel_label": "Cancelar", "fields": [{"key": "screen_key", "type": "text", "label": "Screen Key", "placeholder": "ej: my-screen-list", "required": true}, {"key": "template_id", "type": "remote_select", "label": "Template", "required": true, "remote_endpoint": "/api/v1/screen-config/templates", "display_field": "name", "value_field": "id"}, {"key": "name", "type": "text", "label": "Nombre", "placeholder": "Nombre de la instancia", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción"}, {"key": "scope", "type": "select", "label": "Alcance", "required": true, "options": [{"value": "system", "label": "Sistema"}, {"value": "school", "label": "Escuela"}, {"value": "unit", "label": "Unidad"}]}, {"key": "required_permission", "type": "text", "label": "Permiso requerido", "placeholder": "ej: screens:read"}, {"key": "handler_key", "type": "text", "label": "Handler Key", "placeholder": "Clave del handler"}, {"key": "is_active", "type": "toggle", "label": "Activa", "default": true}]}'::jsonb,
- 'system', 'screens:create', NULL)
+ 'system', 'screen_instances:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 COMMIT;
