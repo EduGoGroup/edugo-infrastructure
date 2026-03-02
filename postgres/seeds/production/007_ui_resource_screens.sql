@@ -115,4 +115,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000062', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'child-progress', 'detail', FALSE, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Assessments -> assessments-form (form) [Fase 3]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000070', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessments-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Assessments -> assessment-take (detail) [Fase 3]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000071', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-take', 'detail', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
