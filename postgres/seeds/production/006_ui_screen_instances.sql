@@ -290,7 +290,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000071', 'assessment-take',
  'a0000000-0000-0000-0000-000000000004', 'Tomar Evaluación', 'Pantalla para rendir una evaluación',
  '{"page_title": "Evaluación"}'::jsonb,
- 'unit', 'assessments:read', 'assessment-take')
+ 'unit', 'assessments:attempt', 'assessment-take')
 ON CONFLICT (screen_key) DO NOTHING;
 
 COMMIT;
