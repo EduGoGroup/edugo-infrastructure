@@ -100,4 +100,9 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000052', '20000000-0000-0000-0000-000000000051', 'screen_instances', 'screen-instances-form', 'form', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Guardian Relations -> guardian-requests-list (list, default) [Fase 4.1]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000060', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'guardian-requests-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;

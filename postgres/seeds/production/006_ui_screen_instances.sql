@@ -253,4 +253,28 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'system', 'screen_instances:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 32: Lista de Hijos (Guardian - Fase 4.1)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000060', 'children-list',
+ 'a0000000-0000-0000-0000-000000000003', 'Mis Hijos', 'Lista de hijos vinculados al guardian',
+ '{"page_title": "Mis Hijos", "search_placeholder": "Buscar hijo...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Pendientes", "empty_icon": "users", "empty_state_title": "No hay hijos vinculados", "empty_state_description": "Aún no tienes estudiantes vinculados", "empty_action_label": "Solicitar Vínculo"}'::jsonb,
+ 'school', NULL, NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 33: Progreso del Hijo (Guardian - Fase 4.1)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000061', 'child-progress',
+ 'a0000000-0000-0000-0000-000000000004', 'Progreso del Hijo', 'Detalle de progreso academico del hijo',
+ '{"page_title": "Progreso", "file_size_label": "Promedio", "uploaded_label": "Última actividad", "status_label": "Estado", "description_title": "Resumen", "summary_title": "Progreso Detallado", "download_label": "Ver Materiales", "quiz_label": "Ver Evaluaciones"}'::jsonb,
+ 'school', NULL, 'child-progress')
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 34: Lista de Solicitudes de Vinculación Guardian (Fase 4.1)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000062', 'guardian-requests-list',
+ 'a0000000-0000-0000-0000-000000000003', 'Solicitudes de Vinculación', 'Lista de solicitudes de vinculación guardian-estudiante',
+ '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación", "empty_action_label": ""}'::jsonb,
+ 'school', 'guardian_relations:read', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;
