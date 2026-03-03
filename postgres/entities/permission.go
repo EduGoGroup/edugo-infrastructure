@@ -13,7 +13,6 @@ type Permission struct {
 	DisplayName string    `db:"display_name" gorm:"not null"`
 	Description *string   `db:"description" gorm:"default:null"`
 	ResourceID  uuid.UUID `db:"resource_id" gorm:"type:uuid;index;not null"`
-	ResourceKey string    `db:"resource_key" gorm:"not null"`
 	Action      string    `db:"action" gorm:"not null;type:varchar(50)"`
 	Scope       string    `db:"scope" gorm:"not null;type:varchar(50)"`
 	IsActive    bool      `db:"is_active" gorm:"not null;default:true"`
