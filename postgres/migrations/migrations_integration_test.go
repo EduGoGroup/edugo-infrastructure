@@ -78,6 +78,7 @@ func TestIntegration(t *testing.T) {
 	t.Run("CRUD_Users", testCRUDUsers(db))
 	t.Run("CRUD_Schools", testCRUDSchools(db))
 	t.Run("CRUD_Materials", testCRUDMaterials(db))
+	t.Run("CRUD_AuditEvents", testCRUDAuditEvents(db))
 }
 
 func testApplyAll(db *sql.DB) func(*testing.T) {
@@ -88,7 +89,7 @@ func testApplyAll(db *sql.DB) func(*testing.T) {
 		}
 
 		// Verificar que los schemas existen
-		schemas := []string{"auth", "iam", "academic", "content", "assessment", "ui_config"}
+		schemas := []string{"auth", "iam", "academic", "content", "assessment", "ui_config", "audit"}
 		for _, schema := range schemas {
 			var exists bool
 			query := `SELECT EXISTS (
@@ -111,6 +112,7 @@ func testApplyAll(db *sql.DB) func(*testing.T) {
 			"content":    {"materials", "material_versions", "progress"},
 			"assessment": {"assessment", "assessment_attempt", "assessment_attempt_answer"},
 			"ui_config":  {"screen_templates", "screen_instances", "resource_screens", "screen_user_preferences"},
+			"audit":      {"events"},
 		}
 
 		totalTables := 0
@@ -133,6 +135,33 @@ func testApplyAll(db *sql.DB) func(*testing.T) {
 		}
 
 		t.Logf("Todos los %d schemas y %d tablas creados correctamente", len(schemas), totalTables)
+
+		// Verificar índices de audit.events
+		auditIndexes := []string{
+			"idx_audit_events_actor",
+			"idx_audit_events_resource",
+			"idx_audit_events_action",
+			"idx_audit_events_school",
+			"idx_audit_events_created",
+			"idx_audit_events_severity",
+			"idx_audit_events_category",
+		}
+		for _, idx := range auditIndexes {
+			var exists bool
+			query := `SELECT EXISTS (
+				SELECT FROM pg_indexes
+				WHERE schemaname = 'audit'
+				AND tablename = 'events'
+				AND indexname = $1
+			)`
+			if err := db.QueryRow(query, idx).Scan(&exists); err != nil {
+				t.Errorf("Error verificando índice %s: %v", idx, err)
+			}
+			if !exists {
+				t.Errorf("Índice audit.events.%s no fue creado", idx)
+			}
+		}
+		t.Logf("Todos los %d índices de audit.events creados correctamente", len(auditIndexes))
 	}
 }
 
@@ -279,5 +308,45 @@ func testCRUDMaterials(db *sql.DB) func(*testing.T) {
 		_, _ = db.Exec(`DELETE FROM auth.users WHERE id = $1`, userID)
 
 		t.Log("CRUD materials OK")
+	}
+}
+
+func testCRUDAuditEvents(db *sql.DB) func(*testing.T) {
+	return func(t *testing.T) {
+		eventID := "f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66"
+		actorID := "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+
+		// CREATE
+		_, err := db.Exec(`
+			INSERT INTO audit.events (
+				id, actor_id, actor_email, actor_role, service_name,
+				action, resource_type, severity, category
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		`, eventID, actorID, "admin@edugo.com", "super_admin", "iam-platform",
+			"user.login", "auth", "info", "auth")
+		if err != nil {
+			t.Fatalf("Error insertando audit.event: %v", err)
+		}
+
+		// READ
+		var action, severity string
+		err = db.QueryRow(`SELECT action, severity FROM audit.events WHERE id = $1`, eventID).Scan(&action, &severity)
+		if err != nil {
+			t.Fatalf("Error leyendo audit.event: %v", err)
+		}
+		if action != "user.login" {
+			t.Errorf("Action incorrecto: %s", action)
+		}
+		if severity != "info" {
+			t.Errorf("Severity incorrecto: %s", severity)
+		}
+
+		// DELETE
+		_, err = db.Exec(`DELETE FROM audit.events WHERE id = $1`, eventID)
+		if err != nil {
+			t.Fatalf("Error eliminando audit.event: %v", err)
+		}
+
+		t.Log("CRUD audit.events OK")
 	}
 }

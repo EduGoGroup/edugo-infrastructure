@@ -1,20 +1,20 @@
 -- ============================================================
--- SEED: role_permissions (186 registros)
+-- SEED: role_permissions (192 registros)
 -- Fecha: 2026-03-01
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
 --
 -- Resumen de permisos por rol:
---   super_admin        (10000000-...000001): 63 permisos (todos)
---   platform_admin     (10000000-...000002): 11 permisos (+guardian_relations:read)
---   school_admin       (10000000-...000003): 25 permisos (+guardian_relations:read/approve)
+--   super_admin        (10000000-...000001): 65 permisos (todos) (+audit:read/export)
+--   platform_admin     (10000000-...000002): 12 permisos (+audit:read)
+--   school_admin       (10000000-...000003): 26 permisos (+memberships:read)
 --   school_director    (10000000-...000004): 10 permisos (+screens:read)
---   school_coordinator (10000000-...000005): 27 permisos (+guardian_relations:read/approve)
+--   school_coordinator (10000000-...000005): 28 permisos (+subjects:read)
 --   school_assistant   (10000000-...000006):  6 permisos (+screens:read)
 --   teacher            (10000000-...000007): 18 permisos (+screens:read, +subjects:read)
 --   assistant_teacher  (10000000-...000008):  5 permisos (+screens:read)
 --   student            (10000000-...000009):  9 permisos (+screens:read)
---   guardian           (10000000-...000010):  7 permisos (+guardian_relations:request)
+--   guardian           (10000000-...000010):  8 permisos (+assessments:read)
 --   observer           (10000000-...000011):  4 permisos (+screens:read)
 -- ============================================================
 
@@ -258,6 +258,21 @@ VALUES
   ('70000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', '2606efba-8615-48ef-bc2a-6bf576a9158c', '2026-03-02 00:00:00.000000'),  -- assessments:read
   ('70000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000002', '91c8ae21-a955-4d59-b52e-6cf74bd6532b', '2026-03-02 00:00:00.000000'),  -- assessments:update
   ('70000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000002', '8b39f083-c630-4d1c-92ec-58afabb3376b', '2026-03-02 00:00:00.000000'),  -- assessments:delete
-  ('70000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000002', '1b69ea9a-1e15-4c38-a5e1-68c408bb1b97', '2026-03-02 00:00:00.000000')   -- assessments:publish
+  ('70000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000002', '1b69ea9a-1e15-4c38-a5e1-68c408bb1b97', '2026-03-02 00:00:00.000000'),  -- assessments:publish
+
+  -- ── Audit permissions (Fase 4) ──────────────────────────────────────────────
+  -- super_admin: audit:read + audit:export
+  ('80000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', '2026-03-04 00:00:00.000000'),  -- audit:read
+  ('80000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000002', '2026-03-04 00:00:00.000000'),  -- audit:export
+  -- platform_admin: audit:read
+  ('80000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001', '2026-03-04 00:00:00.000000'),  -- audit:read
+
+  -- ── Gaps: permisos faltantes detectados ─────────────────────────────────────
+  -- school_admin: memberships:read
+  ('80000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000003', '28dfb6b5-c680-4442-8530-73b67199fbcb', '2026-03-04 00:00:00.000000'),  -- memberships:read
+  -- guardian: assessments:read
+  ('80000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000010', '2606efba-8615-48ef-bc2a-6bf576a9158c', '2026-03-04 00:00:00.000000'),  -- assessments:read
+  -- school_coordinator: subjects:read
+  ('80000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000002', '2026-03-04 00:00:00.000000')   -- subjects:read
 
 ON CONFLICT (role_id, permission_id) DO NOTHING;

@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: resources (20 registros)
+-- SEED: resources (21 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -37,5 +37,8 @@ VALUES
   ('20000000-0000-0000-0000-000000000041', 'stats',            'Estadísticas',           'Estadísticas del sistema',                      'pie-chart',             'school', '20000000-0000-0000-0000-000000000005',  2, TRUE,  TRUE),
 
   -- Recurso mobile (sin parent)
-  ('20000000-0000-0000-0000-000000000052', 'screens',          'Pantallas (Mobile)',      'Lectura de pantallas desde aplicacion mobile',  'smartphone',            'system', NULL,                                   0, FALSE, TRUE)
+  ('20000000-0000-0000-0000-000000000052', 'screens',          'Pantallas (Mobile)',      'Lectura de pantallas desde aplicacion mobile',  'smartphone',            'system', NULL,                                   0, FALSE, TRUE),
+
+  -- Hijo de admin (20000000-0000-0000-0000-000000000002)
+  ('20000000-0000-0000-0000-000000000070', 'audit',            'Auditoría',               'Registro de auditoría del sistema',             'file-search',           'system', '20000000-0000-0000-0000-000000000002',  7, TRUE,  TRUE)
 ON CONFLICT (id) DO NOTHING;
