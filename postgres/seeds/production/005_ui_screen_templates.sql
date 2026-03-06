@@ -73,6 +73,9 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
     {"id": "search_zone", "type": "container", "slots": [
       {"id": "search_bar", "controlType": "search-bar", "bind": "slot:search_placeholder"}
     ]},
+    {"id": "list_actions", "type": "action-group", "slots": [
+      {"id": "create_btn", "controlType": "icon-button", "bind": "slot:create_label", "event_id": "create", "icon": "add", "style": "icon", "condition": "always"}
+    ]},
     {"id": "filters", "type": "container", "distribution": "flow-row", "slots": [
       {"id": "filter_all", "controlType": "chip", "bind": "slot:filter_all_label", "selected": true},
       {"id": "filter_ready", "controlType": "chip", "bind": "slot:filter_ready_label"},
@@ -82,7 +85,7 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
       {"id": "empty_icon", "controlType": "icon", "bind": "slot:empty_icon"},
       {"id": "empty_title", "controlType": "label", "style": "headline", "bind": "slot:empty_state_title"},
       {"id": "empty_desc", "controlType": "label", "style": "body", "bind": "slot:empty_state_description"},
-      {"id": "empty_action", "controlType": "filled-button", "bind": "slot:empty_action_label"}
+      {"id": "empty_action", "controlType": "filled-button", "bind": "slot:empty_action_label", "event_id": "create"}
     ]},
     {"id": "list_content", "type": "simple-list", "condition": "!data.isEmpty", "itemLayout": {"slots": [
       {"id": "item_icon", "controlType": "icon", "field": "file_type_icon"},
@@ -168,9 +171,9 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
       {"id": "form_description", "controlType": "label", "style": "body", "bind": "slot:form_description"}
     ]},
     {"id": "form_fields", "type": "form-section", "slots": []},
-    {"id": "form_actions", "type": "action-group", "distribution": "flow-row", "slots": [
-      {"id": "cancel_btn", "controlType": "outlined-button", "bind": "slot:cancel_label"},
-      {"id": "submit_btn", "controlType": "filled-button", "bind": "slot:submit_label"}
+    {"id": "form_actions", "type": "action-group", "slots": [
+      {"id": "delete_btn", "controlType": "text-button", "bind": "slot:delete_label", "event_id": "delete", "style": "destructive", "condition": "edit-only"},
+      {"id": "submit_btn", "controlType": "filled-button", "bind": "slot:submit_label", "event_id": "submit-form", "style": "filled", "condition": "always"}
     ]}
   ]
 }'::jsonb)
