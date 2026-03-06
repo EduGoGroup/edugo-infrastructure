@@ -52,6 +52,7 @@ DELETE FROM auth.users;
 -- Tablas adicionales de desarrollo
 TRUNCATE TABLE academic.subjects CASCADE;
 TRUNCATE TABLE academic.guardian_relations CASCADE;
+TRUNCATE TABLE academic.school_concepts CASCADE;
 TRUNCATE TABLE ui_config.screen_user_preferences CASCADE;
 
 COMMIT;
