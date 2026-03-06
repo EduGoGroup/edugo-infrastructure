@@ -105,7 +105,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000023', 'permissions-list',
  'a0000000-0000-0000-0000-000000000003', 'Gestion de Permisos', 'Lista de permisos del sistema',
- '{"page_title": "Permisos", "search_placeholder": "Buscar permiso...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "key", "empty_state_title": "No hay permisos", "empty_state_description": "No se encontraron permisos", "empty_action_label": ""}'::jsonb,
+ '{"page_title": "Permisos", "search_placeholder": "Buscar permiso...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "key", "empty_state_title": "No hay permisos", "empty_state_description": "No se encontraron permisos"}'::jsonb,
  'system', 'permissions_mgmt:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
@@ -233,7 +233,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000050', 'screen-templates-list',
  'a0000000-0000-0000-0000-000000000003', 'Templates de Pantalla', 'Lista de templates base del sistema SDUI',
- '{"page_title": "Templates de Pantalla", "search_placeholder": "Buscar template...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "settings_applications", "empty_state_title": "No hay templates", "empty_state_description": "No se encontraron templates de pantalla", "empty_action_label": ""}'::jsonb,
+ '{"page_title": "Templates de Pantalla", "search_placeholder": "Buscar template...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "settings_applications", "empty_state_title": "No hay templates", "empty_state_description": "No se encontraron templates de pantalla"}'::jsonb,
  'system', 'screen_templates:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
@@ -273,7 +273,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000062', 'guardian-requests-list',
  'a0000000-0000-0000-0000-000000000003', 'Solicitudes de Vinculación', 'Lista de solicitudes de vinculación guardian-estudiante',
- '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación", "empty_action_label": ""}'::jsonb,
+ '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación"}'::jsonb,
  'school', 'guardian_relations:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
@@ -297,7 +297,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000072', 'audit-events-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Eventos de Auditoría', 'Lista de eventos de auditoría del sistema',
- '{"page_title": "Auditoría", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Normales", "filter_processing_label": "Críticos", "empty_icon": "file-search", "empty_state_title": "No hay eventos de auditoría", "empty_state_description": "No se encontraron eventos de auditoría", "empty_action_label": ""}'::jsonb,
+ '{"page_title": "Auditoría", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Normales", "filter_processing_label": "Críticos", "empty_icon": "file-search", "empty_state_title": "No hay eventos de auditoría", "empty_state_description": "No se encontraron eventos de auditoría"}'::jsonb,
  'system', 'audit:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 

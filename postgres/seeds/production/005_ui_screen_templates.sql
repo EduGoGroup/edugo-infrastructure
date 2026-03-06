@@ -67,7 +67,7 @@ ON CONFLICT (name, version) DO NOTHING;
 
 -- Template 3: List
 INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
-('a0000000-0000-0000-0000-000000000003', 'list', 'list-basic-v1', 'Lista con busqueda, filtros, estado vacio, elementos', 2, '{
+('a0000000-0000-0000-0000-000000000003', 'list', 'list-basic-v1', 'Lista con busqueda, filtros, estado vacio, elementos', 1, '{
   "navigation": {"topBar": {"title": "slot:page_title", "showBack": false}},
   "zones": [
     {"id": "search_zone", "type": "container", "slots": [
@@ -163,7 +163,7 @@ ON CONFLICT (name, version) DO NOTHING;
 
 -- Template 6: Form
 INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
-('a0000000-0000-0000-0000-000000000006', 'form', 'form-basic-v1', 'Formulario generico con campos dinamicos, validacion, submit/cancel', 2, '{
+('a0000000-0000-0000-0000-000000000006', 'form', 'form-basic-v1', 'Formulario generico con campos dinamicos, validacion, submit/cancel', 1, '{
   "navigation": {"topBar": {"title": "slot:page_title", "showBack": true}},
   "zones": [
     {"id": "form_header", "type": "container", "slots": [
