@@ -99,8 +99,12 @@ VALUES
   ('60000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000060', 'guardian_relations:read',    'Ver Solicitudes de Vinculación',      'Ver solicitudes de vinculación guardian',       'read',    'school', TRUE),
   ('60000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000060', 'guardian_relations:approve', 'Aprobar Vinculación',                 'Aprobar/rechazar solicitudes de vinculación',   'approve', 'school', TRUE),
   ('60000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000060', 'guardian_relations:request', 'Solicitar Vínculo',                   'Solicitar vínculo guardian-estudiante',         'request', 'school', TRUE),
+  ('60000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000060', 'guardian_relations:manage',  'Gestionar Relaciones de Apoderado',   'Gestionar relaciones guardian-estudiante',      'manage',  'school', TRUE),
 
   -- audit (resource: 20000000-0000-0000-0000-000000000070)
   ('a1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000070', 'audit:read',   'Ver Auditoría',      'Ver registros de auditoría del sistema',  'read',   'system', TRUE),
-  ('a1000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000070', 'audit:export', 'Exportar Auditoría', 'Exportar registros de auditoría',         'export', 'system', TRUE)
+  ('a1000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000070', 'audit:export', 'Exportar Auditoría', 'Exportar registros de auditoría',         'export', 'system', TRUE),
+
+  -- dashboard (resource: 20000000-0000-0000-0000-000000000001)
+  ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE)
 ON CONFLICT (id) DO NOTHING;
