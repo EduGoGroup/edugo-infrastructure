@@ -18,8 +18,8 @@
 
 // Switch to the correct database
 const dbName = "edugo";
-const db = db.getSiblingDB ? db.getSiblingDB(dbName) : use(dbName);
-const collection = db.getCollection("material_assessment_worker");
+const targetDb = db.getSiblingDB(dbName);
+const collection = targetDb.getCollection("material_assessment_worker");
 
 // Clean existing seed documents
 collection.deleteMany({
@@ -40,7 +40,8 @@ collection.deleteMany({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000001"),
-  material_id: "mat-fracciones-001",
+  // material_id matches PostgreSQL content.materials.id (007_materials.sql mat001)
+  material_id: "aa100000-0000-0000-0000-000000000001",
   total_points: NumberInt(100),
   total_questions: NumberInt(5),
   version: NumberInt(1),
@@ -131,7 +132,8 @@ collection.insertOne({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000002"),
-  material_id: "mat-sistema-solar-001",
+  // material_id matches PostgreSQL content.materials.id (007_materials.sql mat002)
+  material_id: "aa100000-0000-0000-0000-000000000002",
   total_points: NumberInt(80),
   total_questions: NumberInt(4),
   version: NumberInt(1),
@@ -207,7 +209,8 @@ collection.insertOne({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000003"),
-  material_id: "mat-color-forma-001",
+  // material_id matches PostgreSQL content.materials.id (007_materials.sql mat004)
+  material_id: "aa100000-0000-0000-0000-000000000004",
   total_points: NumberInt(100),
   total_questions: NumberInt(3),
   version: NumberInt(1),
@@ -268,7 +271,8 @@ collection.insertOne({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000004"),
-  material_id: "mat-english-grammar-001",
+  // material_id matches PostgreSQL content.materials.id (007_materials.sql mat005)
+  material_id: "aa100000-0000-0000-0000-000000000005",
   total_points: NumberInt(100),
   total_questions: NumberInt(4),
   version: NumberInt(1),
@@ -344,7 +348,8 @@ collection.insertOne({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000005"),
-  material_id: "mat-historia-chile-001",
+  // material_id matches PostgreSQL content.materials.id (007_materials.sql mat003)
+  material_id: "aa100000-0000-0000-0000-000000000003",
   total_points: NumberInt(100),
   total_questions: NumberInt(3),
   version: NumberInt(1),
@@ -405,7 +410,8 @@ collection.insertOne({
 // =========================================================================
 collection.insertOne({
   _id: ObjectId("aaaaaa000000000000000006"),
-  material_id: "mat-escultura-001",
+  // material_id: no corresponding PostgreSQL material (ass006 has no material link)
+  material_id: null,
   total_points: NumberInt(0),
   total_questions: NumberInt(0),
   version: NumberInt(1),

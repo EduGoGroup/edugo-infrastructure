@@ -16,8 +16,8 @@
 --   Subjects        dd000000-...-001 a 007
 --   Materials       aa100000-...-001 a 005
 --   Assessments     aa200000-...-001 a 006
---   Ass. Materials  ab100000-...-001 a 005
---   Attempts        aa300000-...-001 a 007
+--   Ass. Materials  (gen_random_uuid, sin IDs fijos)
+--   Attempts        aa300000-...-001 a 007, 010
 --   Guardian rels   ee000000-...-001 a 003
 -- =============================================================================
 

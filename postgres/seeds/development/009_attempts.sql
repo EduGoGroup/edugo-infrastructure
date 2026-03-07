@@ -199,13 +199,13 @@ INSERT INTO assessment.assessment_attempt_answer (
     time_spent_seconds, answered_at
 ) VALUES
 (
-    'an000000-0000-0000-0000-000000000020',
+    'aa000000-0000-0000-0000-000000000020',
     'aa300000-0000-0000-0000-000000000010', 0,
     'A', NULL, NULL, NULL, 5,
     NOW() - INTERVAL '4 minutes'
 ),
 (
-    'an000000-0000-0000-0000-000000000021',
+    'aa000000-0000-0000-0000-000000000021',
     'aa300000-0000-0000-0000-000000000010', 1,
     'B', NULL, NULL, NULL, 8,
     NOW() - INTERVAL '3 minutes'
