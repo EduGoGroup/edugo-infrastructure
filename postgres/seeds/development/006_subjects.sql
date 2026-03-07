@@ -1,26 +1,31 @@
 -- =============================================================================
--- EduGo Development Seeds — 006_subjects.sql
+-- EduGo Development Seeds v2 — 006_subjects.sql
 -- =============================================================================
--- Crea 5 materias de prueba vinculadas a las escuelas demo.
+-- 7 materias/talleres/courses vinculados a las 3 escuelas.
 --
--- Mapa de subjects:
---   sub001 → Matematicas        — Primaria, Clase 1-A (au004)
---   sub002 → Ciencias Naturales — Primaria, Clase 1-A (au004)
---   sub003 → Matematicas        — Primaria, Clase 1-B (au005)
---   sub004 → Historia           — Secundario, Decimo Grado (au007)
---   sub005 → Fisica             — Secundario, Decimo Grado (au007)
+-- Mapa:
+--   sub001 → Matematicas            → San Ignacio → 5to A (au003)
+--   sub002 → Ciencias Naturales     → San Ignacio → 5to A (au003)
+--   sub003 → Matematicas            → San Ignacio → 5to B (au004)
+--   sub004 → Historia               → San Ignacio → 6to A (au006)
+--   sub005 → Tecnicas de Pintura    → CreArte     → Grupo Manana (au009)
+--   sub006 → Fundamentos Escultura  → CreArte     → Grupo Tarde (au011)
+--   sub007 → English Basics A2      → Academia    → Class Monday (au014)
 -- =============================================================================
 
 BEGIN;
 
 INSERT INTO academic.subjects (id, school_id, academic_unit_id, name, code, description, is_active) VALUES
--- Escuela Primaria (b1000000-...-001)
-('dd000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000004', 'Matematicas', 'MAT-1A', 'Matematicas basicas para primer grado', true),
-('dd000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000004', 'Ciencias Naturales', 'SCI-1A', 'Ciencias naturales para primer grado', true),
-('dd000000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000005', 'Matematicas', 'MAT-2A', 'Matematicas para segundo grado', true),
--- Escuela Secundaria (b2000000-...-002)
-('dd000000-0000-0000-0000-000000000004', 'b2000000-0000-0000-0000-000000000002', 'ac000000-0000-0000-0000-000000000007', 'Historia', 'HIS-1', 'Historia universal', true),
-('dd000000-0000-0000-0000-000000000005', 'b2000000-0000-0000-0000-000000000002', 'ac000000-0000-0000-0000-000000000007', 'Fisica', 'FIS-1', 'Fisica basica', true)
+-- San Ignacio
+('dd000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000003', 'Matematicas', 'MAT-5A', 'Matematicas para 5to A', true),
+('dd000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000003', 'Ciencias Naturales', 'SCI-5A', 'Ciencias Naturales para 5to A', true),
+('dd000000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000004', 'Matematicas', 'MAT-5B', 'Matematicas para 5to B', true),
+('dd000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000006', 'Historia', 'HIS-6A', 'Historia de Chile para 6to A', true),
+-- CreArte
+('dd000000-0000-0000-0000-000000000005', 'b2000000-0000-0000-0000-000000000002', 'ac000000-0000-0000-0000-000000000009', 'Tecnicas de Pintura', 'PINT-GM', 'Taller de tecnicas de pintura', true),
+('dd000000-0000-0000-0000-000000000006', 'b2000000-0000-0000-0000-000000000002', 'ac000000-0000-0000-0000-000000000011', 'Fundamentos de Escultura', 'ESCL-GT', 'Taller de fundamentos de escultura', true),
+-- Academia
+('dd000000-0000-0000-0000-000000000007', 'b3000000-0000-0000-0000-000000000003', 'ac000000-0000-0000-0000-000000000014', 'English Basics A2', 'ENG-A2', 'English course for level A2', true)
 ON CONFLICT (id) DO NOTHING;
 
 COMMIT;

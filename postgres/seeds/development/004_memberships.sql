@@ -1,35 +1,41 @@
 -- =============================================================================
--- EduGo Development Seeds — 004_memberships.sql
+-- EduGo Development Seeds v2 — 004_memberships.sql
 -- =============================================================================
--- Crea 12 memberships que vinculan usuarios a escuelas y unidades académicas.
+-- 21 memberships vinculando usuarios a escuelas y unidades academicas.
 --
--- La constraint unique es: (user_id, school_id, academic_unit_id, role)
--- Para admins y coordinadores con academic_unit_id=NULL se debe tener cuidado:
--- PostgreSQL trata NULL como distinto en constraints unique, por eso los
--- memberships de admin sin unidad usan ON CONFLICT DO NOTHING (el conflict
--- se dispararía solo si existe un registro idéntico incluyendo NULL=NULL,
--- que en Postgres no ocurre). Se usa DO NOTHING como comportamiento seguro.
+-- Escuelas:
+--   b1 = Colegio San Ignacio
+--   b2 = Taller CreArte
+--   b3 = Academia Global English
 --
 -- Mapa de memberships:
---   m001 → carlos  (u008) → primaria (b1) → Clase 1-A (au003) → student
---   m002 → sofia   (u009) → primaria (b1) → Clase 1-A (au003) → student
---   m003 → miguel  (u010) → primaria (b1) → Clase 1-B (au004) → student
---   m004 → math    (u005) → primaria (b1) → Clase 1-A (au003) → teacher
---   m005 → science (u006) → primaria (b1) → Clase 1-B (au004) → teacher
---   m006 → laura   (u011) → secundario (b2) → Clase 10-A (au009) → student
---   m007 → history (u007) → secundario (b2) → Clase 10-A (au009) → teacher
---   m008 → admin.primaria (u002) → primaria (b1) → NULL → admin
---   m009 → admin.secundario (u003) → secundario (b2) → NULL → admin
---   m010 → coord.primaria (u004) → primaria (b1) → Primer Grado (au002) → coordinator
---   m011 → guardian.roberto (u012) → primaria (b1) → Clase 1-A (au003) → guardian
---   m012 → guardian.patricia (u013) → primaria (b1) → Clase 1-B (au004) → guardian
+--   m001 → Carlos (U-08)    → San Ignacio → 5to A (au003)        → student
+--   m002 → Carlos (U-08)    → CreArte     → Grupo Manana (au009) → student
+--   m003 → Sofia (U-09)     → San Ignacio → 5to A (au003)        → student
+--   m004 → Diego (U-10)     → San Ignacio → 5to B (au004)        → student
+--   m005 → Valentina (U-11) → San Ignacio → 6to A (au006)        → student
+--   m006 → Valentina (U-11) → Academia    → Class Monday (au014) → student
+--   m007 → Mateo (U-12)     → CreArte     → Grupo Manana (au009) → student
+--   m008 → Maria (U-05)     → San Ignacio → 5to A (au003)        → teacher
+--   m009 → Maria (U-05)     → Academia    → Class Monday (au014) → teacher
+--   m010 → Pedro (U-06)     → San Ignacio → 5to B (au004)        → teacher
+--   m011 → Pedro (U-06)     → San Ignacio → 6to A (au006)        → teacher
+--   m012 → Ana (U-07)       → CreArte     → Grupo Manana (au009) → teacher
+--   m013 → Ana (U-07)       → CreArte     → Grupo Tarde (au011)  → teacher
+--   m014 → Carmen (U-02)    → San Ignacio → NULL                 → admin
+--   m015 → Roberto S (U-03) → CreArte     → NULL                 → admin
+--   m016 → Lucia (U-04)     → San Ignacio → NULL                 → coordinator
+--   m017 → Lucia (U-04)     → CreArte     → NULL                 → coordinator
+--   m018 → Ricardo (U-13)   → San Ignacio → 5to A (au003)        → guardian
+--   m019 → Ricardo (U-13)   → CreArte     → Grupo Manana (au009) → guardian
+--   m020 → Patricia (U-14)  → San Ignacio → 5to A (au003)        → guardian
+--   m021 → Patricia (U-14)  → San Ignacio → 5to B (au004)        → guardian
 -- =============================================================================
 
 BEGIN;
 
 -- -------------------------------------------------------------------------
 -- Memberships con academic_unit_id definido
--- (conflict detectable por la constraint unique compuesta)
 -- -------------------------------------------------------------------------
 INSERT INTO academic.memberships (
     id,
@@ -42,132 +48,182 @@ INSERT INTO academic.memberships (
     enrolled_at
 ) VALUES
 
--- Estudiantes Clase 1-A (Escuela Primaria)
+-- Estudiantes San Ignacio
 (
     'bb000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000008',   -- carlos
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    'ac000000-0000-0000-0000-000000000003',   -- Clase 1-A
+    '00000000-0000-0000-0000-000000000008',   -- Carlos Mendoza
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'student',
     '{"enrollment_type": "regular"}'::jsonb,
     true,
-    '2024-03-01 08:00:00+00'
+    '2026-03-01 08:00:00+00'
 ),
-(
-    'bb000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000009',   -- sofia
-    'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000003',   -- Clase 1-A
-    'student',
-    '{"enrollment_type": "regular"}'::jsonb,
-    true,
-    '2024-03-01 08:00:00+00'
-),
-
--- Estudiante Clase 1-B (Escuela Primaria)
 (
     'bb000000-0000-0000-0000-000000000003',
-    '00000000-0000-0000-0000-000000000010',   -- miguel
+    '00000000-0000-0000-0000-000000000009',   -- Sofia Herrera
     'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000004',   -- Clase 1-B
+    'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'student',
     '{"enrollment_type": "regular"}'::jsonb,
     true,
-    '2024-03-01 08:00:00+00'
+    '2026-03-01 08:00:00+00'
 ),
-
--- Docente Matemáticas → Clase 1-A
 (
     'bb000000-0000-0000-0000-000000000004',
-    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
+    '00000000-0000-0000-0000-000000000010',   -- Diego Vargas
     'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000003',   -- Clase 1-A
-    'teacher',
-    '{"subjects": ["Matemáticas"]}'::jsonb,
-    true,
-    '2024-02-15 09:00:00+00'
-),
-
--- Docente Ciencias → Clase 1-B
-(
-    'bb000000-0000-0000-0000-000000000005',
-    '00000000-0000-0000-0000-000000000006',   -- teacher.science (Juan Martínez)
-    'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000004',   -- Clase 1-B
-    'teacher',
-    '{"subjects": ["Ciencias Naturales"]}'::jsonb,
-    true,
-    '2024-02-15 09:00:00+00'
-),
-
--- Estudiante Clase 10-A (Colegio Secundario)
-(
-    'bb000000-0000-0000-0000-000000000006',
-    '00000000-0000-0000-0000-000000000011',   -- laura
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    'ac000000-0000-0000-0000-000000000009',   -- Clase 10-A
+    'ac000000-0000-0000-0000-000000000004',   -- 5to B
     'student',
     '{"enrollment_type": "regular"}'::jsonb,
     true,
-    '2024-03-01 08:00:00+00'
+    '2026-03-01 08:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000005',
+    '00000000-0000-0000-0000-000000000011',   -- Valentina Rojas
+    'b1000000-0000-0000-0000-000000000001',
+    'ac000000-0000-0000-0000-000000000006',   -- 6to A
+    'student',
+    '{"enrollment_type": "regular"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
 ),
 
--- Docente Historia → Clase 10-A
+-- Estudiantes multi-escuela
+(
+    'bb000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000008',   -- Carlos Mendoza
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
+    'student',
+    '{"enrollment_type": "regular"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000006',
+    '00000000-0000-0000-0000-000000000011',   -- Valentina Rojas
+    'b3000000-0000-0000-0000-000000000003',   -- Academia
+    'ac000000-0000-0000-0000-000000000014',   -- Class Monday
+    'student',
+    '{"enrollment_type": "regular"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
 (
     'bb000000-0000-0000-0000-000000000007',
-    '00000000-0000-0000-0000-000000000007',   -- teacher.history (Ana López)
-    'b2000000-0000-0000-0000-000000000002',
-    'ac000000-0000-0000-0000-000000000009',   -- Clase 10-A
+    '00000000-0000-0000-0000-000000000012',   -- Mateo Fuentes
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
+    'student',
+    '{"enrollment_type": "regular"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
+
+-- Docentes
+(
+    'bb000000-0000-0000-0000-000000000008',
+    '00000000-0000-0000-0000-000000000005',   -- Maria Martinez
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000003',   -- 5to A
+    'teacher',
+    '{"subjects": ["Matematicas"]}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000009',
+    '00000000-0000-0000-0000-000000000005',   -- Maria Martinez
+    'b3000000-0000-0000-0000-000000000003',   -- Academia
+    'ac000000-0000-0000-0000-000000000014',   -- Class Monday
+    'teacher',
+    '{"subjects": ["English Basics A2"]}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000010',
+    '00000000-0000-0000-0000-000000000006',   -- Pedro Gonzalez
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000004',   -- 5to B
+    'teacher',
+    '{"subjects": ["Matematicas", "Ciencias Naturales"]}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000011',
+    '00000000-0000-0000-0000-000000000006',   -- Pedro Gonzalez
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000006',   -- 6to A
     'teacher',
     '{"subjects": ["Historia"]}'::jsonb,
     true,
-    '2024-02-15 09:00:00+00'
-),
-
--- teacher.math ALSO as coordinator at Colegio Secundario (dual-school role test)
-(
-    'bb000000-0000-0000-0000-000000000008',
-    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    NULL,                                      -- school-level coordinator
-    'coordinator',
-    '{"scope": "school"}'::jsonb,
-    true,
-    '2024-02-15 09:00:00+00'
-),
-
--- Coordinadora → Primer Grado (Escuela Primaria)
-(
-    'bb000000-0000-0000-0000-000000000010',
-    '00000000-0000-0000-0000-000000000004',   -- coord.primaria
-    'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000002',   -- Primer Grado
-    'coordinator',
-    '{"scope": "grade"}'::jsonb,
-    true,
-    '2024-02-10 09:00:00+00'
-),
-
--- Tutores → Clase 1-A y 1-B
-(
-    'bb000000-0000-0000-0000-000000000011',
-    '00000000-0000-0000-0000-000000000012',   -- guardian.roberto (padre de Carlos)
-    'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000003',   -- Clase 1-A
-    'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "padre"}'::jsonb,
-    true,
-    '2024-03-01 08:00:00+00'
+    '2026-02-10 09:00:00+00'
 ),
 (
     'bb000000-0000-0000-0000-000000000012',
-    '00000000-0000-0000-0000-000000000013',   -- guardian.patricia (madre de Miguel)
-    'b1000000-0000-0000-0000-000000000001',
-    'ac000000-0000-0000-0000-000000000004',   -- Clase 1-B
-    'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000010", "relationship": "madre"}'::jsonb,
+    '00000000-0000-0000-0000-000000000007',   -- Ana Ruiz
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
+    'teacher',
+    '{"subjects": ["Tecnicas de Pintura"]}'::jsonb,
     true,
-    '2024-03-01 08:00:00+00'
+    '2026-02-10 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000013',
+    '00000000-0000-0000-0000-000000000007',   -- Ana Ruiz
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    'ac000000-0000-0000-0000-000000000011',   -- Grupo Tarde
+    'teacher',
+    '{"subjects": ["Fundamentos de Escultura"]}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
+),
+
+-- Guardians
+(
+    'bb000000-0000-0000-0000-000000000018',
+    '00000000-0000-0000-0000-000000000013',   -- Ricardo Mendoza
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000003',   -- 5to A
+    'guardian',
+    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "padre"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000019',
+    '00000000-0000-0000-0000-000000000013',   -- Ricardo Mendoza
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
+    'guardian',
+    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "padre"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000014',   -- Patricia Herrera
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000003',   -- 5to A
+    'guardian',
+    '{"ward_student_id": "00000000-0000-0000-0000-000000000009", "relationship": "madre"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000021',
+    '00000000-0000-0000-0000-000000000014',   -- Patricia Herrera
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    'ac000000-0000-0000-0000-000000000004',   -- 5to B
+    'guardian',
+    '{"ward_student_id": "00000000-0000-0000-0000-000000000010", "relationship": "tutora"}'::jsonb,
+    true,
+    '2026-03-01 08:00:00+00'
 )
 
 ON CONFLICT (user_id, school_id, academic_unit_id, role) DO UPDATE SET
@@ -176,9 +232,7 @@ ON CONFLICT (user_id, school_id, academic_unit_id, role) DO UPDATE SET
     updated_at = now();
 
 -- -------------------------------------------------------------------------
--- Memberships de admin a nivel de escuela completa (academic_unit_id = NULL)
--- NULL no satisface la constraint unique, por eso se usa INSERT separado
--- con ON CONFLICT DO NOTHING (idempotente por id).
+-- Memberships de admin/coordinator a nivel escuela (academic_unit_id = NULL)
 -- -------------------------------------------------------------------------
 INSERT INTO academic.memberships (
     id,
@@ -191,24 +245,44 @@ INSERT INTO academic.memberships (
     enrolled_at
 ) VALUES
 (
-    'bb000000-0000-0000-0000-000000000008',
-    '00000000-0000-0000-0000-000000000002',   -- admin.primaria
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,                                      -- scope: toda la escuela
-    'admin',
-    '{"scope": "school"}'::jsonb,
-    true,
-    '2024-01-15 09:00:00+00'
-),
-(
-    'bb000000-0000-0000-0000-000000000009',
-    '00000000-0000-0000-0000-000000000003',   -- admin.secundario
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
+    'bb000000-0000-0000-0000-000000000014',
+    '00000000-0000-0000-0000-000000000002',   -- Carmen Valdes
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
     'admin',
     '{"scope": "school"}'::jsonb,
     true,
-    '2024-01-15 09:00:00+00'
+    '2026-01-15 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000015',
+    '00000000-0000-0000-0000-000000000003',   -- Roberto Silva
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL,
+    'admin',
+    '{"scope": "school"}'::jsonb,
+    true,
+    '2026-01-15 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000016',
+    '00000000-0000-0000-0000-000000000004',   -- Lucia Fernandez
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL,
+    'coordinator',
+    '{"scope": "school"}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000017',
+    '00000000-0000-0000-0000-000000000004',   -- Lucia Fernandez
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL,
+    'coordinator',
+    '{"scope": "school"}'::jsonb,
+    true,
+    '2026-02-10 09:00:00+00'
 )
 ON CONFLICT (id) DO UPDATE SET
     metadata   = EXCLUDED.metadata,

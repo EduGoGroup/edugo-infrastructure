@@ -1,25 +1,23 @@
 -- =============================================================================
--- EduGo Development Seeds — 003_users.sql
+-- EduGo Development Seeds v2 — 003_users.sql
 -- =============================================================================
--- Crea 13 usuarios de prueba con contraseña unificada: "EduGoTest123!"
+-- 14 usuarios de prueba con contrasena unificada: "12345678"
+-- Hash bcrypt (cost=10): $2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau
 --
--- Hash bcrypt (cost=10) de "EduGoTest123!":
---   $2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2
---
--- Usuarios por categoría:
---   Sistema  : u001 → super@edugo.test (Super Admin de plataforma)
---   Admins   : u002 → admin.primaria@edugo.test
---              u003 → admin.secundario@edugo.test
---   Coord.   : u004 → coord.primaria@edugo.test
---   Docentes : u005 → teacher.math@edugo.test     (María García)
---              u006 → teacher.science@edugo.test   (Juan Martínez)
---              u007 → teacher.history@edugo.test   (Ana López)
---   Alumnos  : u008 → student.carlos@edugo.test   (Carlos González)
---              u009 → student.sofia@edugo.test     (Sofía Rodríguez)
---              u010 → student.miguel@edugo.test    (Miguel Torres)
---              u011 → student.laura@edugo.test     (Laura Martínez)
---   Tutores  : u012 → guardian.roberto@edugo.test (Roberto González)
---              u013 → guardian.patricia@edugo.test (Patricia Torres)
+-- U-01: super@edugo.test         — Santiago Ramirez   — Super Admin
+-- U-02: admin.sanignacio@...     — Carmen Valdes      — School Admin (San Ignacio)
+-- U-03: admin.crearte@...        — Roberto Silva      — School Admin (CreArte)
+-- U-04: coord.academico@...      — Lucia Fernandez    — Coordinator (San Ignacio + CreArte)
+-- U-05: prof.martinez@...        — Maria Martinez     — Teacher (San Ignacio + Academia)
+-- U-06: prof.gonzalez@...        — Pedro Gonzalez     — Teacher (San Ignacio)
+-- U-07: facilitador.ruiz@...     — Ana Ruiz           — Teacher (CreArte)
+-- U-08: est.carlos@...           — Carlos Mendoza     — Student (San Ignacio + CreArte)
+-- U-09: est.sofia@...            — Sofia Herrera      — Student (San Ignacio)
+-- U-10: est.diego@...            — Diego Vargas       — Student (San Ignacio)
+-- U-11: est.valentina@...        — Valentina Rojas    — Student (San Ignacio + Academia)
+-- U-12: est.mateo@...            — Mateo Fuentes      — Student (CreArte)
+-- U-13: tutor.mendoza@...        — Ricardo Mendoza    — Guardian (San Ignacio + CreArte)
+-- U-14: tutora.herrera@...       — Patricia Herrera   — Guardian (San Ignacio)
 -- =============================================================================
 
 BEGIN;
@@ -33,131 +31,127 @@ INSERT INTO auth.users (
     is_active
 ) VALUES
 
--- -------------------------------------------------------------------------
--- Sistema / Plataforma
--- -------------------------------------------------------------------------
+-- Sistema
 (
     '00000000-0000-0000-0000-000000000001',
     'super@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Super',
-    'Admin',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Santiago',
+    'Ramirez',
     true
 ),
 
--- -------------------------------------------------------------------------
--- Administradores de escuela
--- -------------------------------------------------------------------------
+-- Administradores
 (
     '00000000-0000-0000-0000-000000000002',
-    'admin.primaria@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Admin',
-    'Primaria',
+    'admin.sanignacio@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Carmen',
+    'Valdes',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000003',
-    'admin.secundario@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Admin',
-    'Secundario',
+    'admin.crearte@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Roberto',
+    'Silva',
     true
 ),
 
--- -------------------------------------------------------------------------
--- Coordinadores
--- -------------------------------------------------------------------------
+-- Coordinadora multi-escuela
 (
     '00000000-0000-0000-0000-000000000004',
-    'coord.primaria@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Coordinador',
-    'Primaria',
+    'coord.academico@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Lucia',
+    'Fernandez',
     true
 ),
 
--- -------------------------------------------------------------------------
 -- Docentes
--- -------------------------------------------------------------------------
 (
     '00000000-0000-0000-0000-000000000005',
-    'teacher.math@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'María',
-    'García',
+    'prof.martinez@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Maria',
+    'Martinez',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000006',
-    'teacher.science@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Juan',
-    'Martínez',
+    'prof.gonzalez@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Pedro',
+    'Gonzalez',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000007',
-    'teacher.history@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
+    'facilitador.ruiz@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
     'Ana',
-    'López',
+    'Ruiz',
     true
 ),
 
--- -------------------------------------------------------------------------
 -- Estudiantes
--- -------------------------------------------------------------------------
 (
     '00000000-0000-0000-0000-000000000008',
-    'student.carlos@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
+    'est.carlos@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
     'Carlos',
-    'González',
+    'Mendoza',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000009',
-    'student.sofia@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Sofía',
-    'Rodríguez',
+    'est.sofia@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Sofia',
+    'Herrera',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000010',
-    'student.miguel@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Miguel',
-    'Torres',
+    'est.diego@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Diego',
+    'Vargas',
     true
 ),
 (
     '00000000-0000-0000-0000-000000000011',
-    'student.laura@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Laura',
-    'Martínez',
+    'est.valentina@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Valentina',
+    'Rojas',
+    true
+),
+(
+    '00000000-0000-0000-0000-000000000012',
+    'est.mateo@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Mateo',
+    'Fuentes',
     true
 ),
 
--- -------------------------------------------------------------------------
--- Tutores / Apoderados
--- -------------------------------------------------------------------------
+-- Tutores
 (
-    '00000000-0000-0000-0000-000000000012',
-    'guardian.roberto@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
-    'Roberto',
-    'González',
+    '00000000-0000-0000-0000-000000000013',
+    'tutor.mendoza@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Ricardo',
+    'Mendoza',
     true
 ),
 (
-    '00000000-0000-0000-0000-000000000013',
-    'guardian.patricia@edugo.test',
-    '$2a$10$RLhncmeAOH9UEOxANu9.fe3Ep6NNue1UhSqwKt5P.U3Rf1jEa4cJ2',
+    '00000000-0000-0000-0000-000000000014',
+    'tutora.herrera@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
     'Patricia',
-    'Torres',
+    'Herrera',
     true
 )
 
