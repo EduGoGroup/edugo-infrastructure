@@ -105,6 +105,12 @@ VALUES
   ('a1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000070', 'audit:read',   'Ver Auditoría',      'Ver registros de auditoría del sistema',  'read',   'system', TRUE),
   ('a1000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000070', 'audit:export', 'Exportar Auditoría', 'Exportar registros de auditoría',         'export', 'system', TRUE),
 
+  -- concept_types (resource: 20000000-0000-0000-0000-000000000080)
+  ('c2000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000080', 'concept_types:create', 'Crear Tipo de Concepto',    'Crear nuevos tipos de institucion',          'create', 'system', TRUE),
+  ('c2000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000080', 'concept_types:read',   'Ver Tipos de Concepto',     'Listar tipos de institucion',                'read',   'system', TRUE),
+  ('c2000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000080', 'concept_types:update', 'Editar Tipo de Concepto',   'Modificar tipos y sus definiciones',          'update', 'system', TRUE),
+  ('c2000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000080', 'concept_types:delete', 'Eliminar Tipo de Concepto', 'Desactivar tipos de concepto',               'delete', 'system', TRUE),
+
   -- dashboard (resource: 20000000-0000-0000-0000-000000000001)
   ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE)
 ON CONFLICT (id) DO NOTHING;

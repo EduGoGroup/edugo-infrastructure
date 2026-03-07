@@ -21,6 +21,7 @@ type School struct {
 	Country          string         `db:"country" gorm:"not null"`
 	Phone            *string        `db:"phone" gorm:"default:null"`
 	Email            *string        `db:"email" gorm:"default:null"`
+	ConceptTypeID    *uuid.UUID     `db:"concept_type_id" gorm:"type:uuid"`
 	Metadata         []byte         `db:"metadata" gorm:"type:jsonb;default:'{}'"`
 	IsActive         bool           `db:"is_active" gorm:"not null;default:true"`
 	SubscriptionTier string         `db:"subscription_tier" gorm:"not null;type:varchar(50)"`
