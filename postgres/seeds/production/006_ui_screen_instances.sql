@@ -281,8 +281,8 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000070', 'assessments-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Evaluación', 'Crear o editar una evaluación',
- '{"page_title": "Nueva Evaluación", "edit_title": "Editar Evaluación", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Nombre de la evaluación", "required": true}, {"key": "material_id", "type": "remote_select", "label": "Material", "required": false, "remote_endpoint": "/api/v1/materials", "display_field": "title", "value_field": "id"}, {"key": "pass_threshold", "type": "number", "label": "Umbral aprobación (%)", "required": true, "default": 60, "min": 0, "max": 100}, {"key": "max_attempts", "type": "number", "label": "Intentos máximos", "required": false, "placeholder": "Sin límite"}, {"key": "time_limit_minutes", "type": "number", "label": "Tiempo límite (min)", "required": false, "placeholder": "Sin límite"}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "draft", "label": "Borrador"}, {"value": "published", "label": "Publicado"}]}]}'::jsonb,
- 'unit', 'assessments:create', NULL)
+ '{"page_title": "Nueva Evaluación", "edit_title": "Editar Evaluación", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Nombre de la evaluación", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción de la evaluación"}, {"key": "material_ids", "type": "multi-chip-select", "label": "Materiales", "options_endpoint": "mobile:/api/v1/materials", "option_label": "title", "option_value": "id"}, {"key": "pass_threshold", "type": "number", "label": "Umbral aprobación (%)", "default": 70, "min": 0, "max": 100}, {"key": "max_attempts", "type": "number", "label": "Intentos máximos", "placeholder": "Sin límite"}, {"key": "is_timed", "type": "toggle", "label": "Con cronómetro", "default": false}, {"key": "time_limit_minutes", "type": "number", "label": "Tiempo límite (min)", "placeholder": "Sin límite"}, {"key": "shuffle_questions", "type": "toggle", "label": "Aleatorizar preguntas", "default": false}, {"key": "show_correct_answers", "type": "toggle", "label": "Mostrar respuestas correctas", "default": true}, {"key": "available_from", "type": "date", "label": "Disponible desde"}, {"key": "available_until", "type": "date", "label": "Disponible hasta"}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "draft", "label": "Borrador"}, {"value": "published", "label": "Publicado"}]}]}'::jsonb,
+ 'unit', 'assessments:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 36: Tomar Evaluación (Fase 3 - Assessment Take)
@@ -299,6 +299,22 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'a0000000-0000-0000-0000-000000000003', 'Lista de Eventos de Auditoría', 'Lista de eventos de auditoría del sistema',
  '{"page_title": "Auditoría", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Normales", "filter_processing_label": "Críticos", "empty_icon": "file-search", "empty_state_title": "No hay eventos de auditoría", "empty_state_description": "No se encontraron eventos de auditoría"}'::jsonb,
  'system', 'audit:read', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 38: Lista de Preguntas de Evaluación (Assessment CRUD)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000075', 'assessment-questions-list',
+ 'a0000000-0000-0000-0000-000000000003', 'Preguntas de Evaluación', 'Lista de preguntas de una evaluación',
+ '{"page_title": "Preguntas", "search_placeholder": "Buscar pregunta...", "filter_all_label": "Todas", "filter_ready_label": "Fácil", "filter_processing_label": "Difícil", "empty_icon": "help_outline", "empty_state_title": "Sin preguntas", "empty_state_description": "Agrega la primera pregunta a esta evaluación", "empty_action_label": "Agregar Pregunta"}'::jsonb,
+ 'unit', 'assessments:read', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 39: Formulario de Pregunta de Evaluación (Assessment CRUD)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000076', 'assessment-question-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Pregunta', 'Crear o editar una pregunta de evaluación',
+ '{"page_title": "Nueva Pregunta", "edit_title": "Editar Pregunta", "submit_label": "Guardar Pregunta", "delete_label": "Eliminar", "fields": [{"key": "question_text", "type": "textarea", "label": "Texto de la pregunta", "placeholder": "Escribe la pregunta...", "required": true}, {"key": "question_type", "type": "select", "label": "Tipo de pregunta", "required": true, "options": [{"value": "multiple_choice", "label": "Opción múltiple"}, {"value": "true_false", "label": "Verdadero/Falso"}, {"value": "open", "label": "Respuesta abierta"}]}, {"key": "difficulty", "type": "select", "label": "Dificultad", "required": true, "options": [{"value": "easy", "label": "Fácil"}, {"value": "medium", "label": "Media"}, {"value": "hard", "label": "Difícil"}]}, {"key": "points", "type": "number", "label": "Puntos", "placeholder": "10", "required": true}, {"key": "correct_answer", "type": "text", "label": "Respuesta correcta", "placeholder": "Respuesta esperada", "required": true}, {"key": "explanation", "type": "textarea", "label": "Explicación (feedback)", "placeholder": "Por qué esta es la respuesta correcta..."}]}'::jsonb,
+ 'unit', 'assessments:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 COMMIT;
