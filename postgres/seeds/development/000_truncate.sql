@@ -43,15 +43,16 @@ TRUNCATE TABLE academic.academic_units CASCADE;
 UPDATE ui_config.screen_templates SET created_by = NULL WHERE created_by IS NOT NULL;
 UPDATE ui_config.screen_instances SET created_by = NULL WHERE created_by IS NOT NULL;
 
+-- Tablas adicionales de desarrollo (hojas)
+TRUNCATE TABLE academic.subjects CASCADE;
+TRUNCATE TABLE academic.guardian_relations CASCADE;
+TRUNCATE TABLE academic.school_concepts CASCADE;
+TRUNCATE TABLE ui_config.screen_user_preferences CASCADE;
+
 -- Nivel 0 — raíces (usar DELETE para auth.users para no cascadear a ui_config)
 TRUNCATE TABLE auth.refresh_tokens CASCADE;
 TRUNCATE TABLE auth.login_attempts CASCADE;
 TRUNCATE TABLE academic.schools CASCADE;
 DELETE FROM auth.users;
-
--- Tablas adicionales de desarrollo
-TRUNCATE TABLE academic.subjects CASCADE;
-TRUNCATE TABLE academic.guardian_relations CASCADE;
-TRUNCATE TABLE ui_config.screen_user_preferences CASCADE;
 
 COMMIT;

@@ -132,18 +132,18 @@ func createMaterialAssessmentWorker(ctx context.Context, db *mongo.Database) err
 	validator := bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
-			"required": []string{"material_id", "questions", "total_questions", "total_points", "version", "ai_model", "processing_time_ms", "created_at", "updated_at"},
+			"required": []string{"questions", "total_questions", "total_points", "version", "ai_model", "created_at", "updated_at"},
 			"properties": bson.M{
-				"material_id": bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"},
+				"material_id": bson.M{"bsonType": "string"},
 				"questions": bson.M{
-					"bsonType": "array", "minItems": 3, "maxItems": 20,
+					"bsonType": "array", "maxItems": 50,
 					"items": bson.M{
 						"bsonType": "object",
 						"required": []string{"question_id", "question_text", "question_type", "correct_answer", "points", "difficulty"},
 						"properties": bson.M{
 							"question_id":    bson.M{"bsonType": "string"},
 							"question_text":  bson.M{"bsonType": "string"},
-							"question_type":  bson.M{"bsonType": "string", "enum": []string{"multiple_choice", "true_false", "open"}},
+							"question_type":  bson.M{"bsonType": "string", "enum": []string{"multiple_choice", "true_false", "open", "short_answer"}},
 							"options":        bson.M{"bsonType": "array"},
 							"correct_answer": bson.M{"bsonType": "string"},
 							"points":         bson.M{"bsonType": "int"},
@@ -152,10 +152,10 @@ func createMaterialAssessmentWorker(ctx context.Context, db *mongo.Database) err
 						},
 					},
 				},
-				"total_questions":    bson.M{"bsonType": "int", "minimum": 3, "maximum": 20},
+				"total_questions":    bson.M{"bsonType": "int", "minimum": 0},
 				"total_points":       bson.M{"bsonType": "int"},
 				"version":            bson.M{"bsonType": "int", "minimum": 1},
-				"ai_model":           bson.M{"bsonType": "string", "enum": []string{"gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"}},
+				"ai_model":           bson.M{"bsonType": "string", "enum": []string{"gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o", "manual"}},
 				"processing_time_ms": bson.M{"bsonType": "int", "minimum": 0},
 				"metadata":           bson.M{"bsonType": "object"},
 				"created_at":         bson.M{"bsonType": "date"},

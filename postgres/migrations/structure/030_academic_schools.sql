@@ -13,6 +13,7 @@ CREATE TABLE academic.schools (
     country character varying(100) DEFAULT 'Chile' NOT NULL,
     phone character varying(50),
     email character varying(255),
+    concept_type_id uuid,
     metadata jsonb DEFAULT '{}'::jsonb,
     is_active boolean DEFAULT true NOT NULL,
     subscription_tier character varying(50) DEFAULT 'free' NOT NULL,

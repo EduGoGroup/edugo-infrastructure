@@ -130,4 +130,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000072', '20000000-0000-0000-0000-000000000070', 'audit', 'audit-events-list', 'list', TRUE, 1)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Assessments -> assessment-questions-list (questions) [Assessment CRUD]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000073', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-questions-list', 'questions', FALSE, 4)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Assessments -> assessment-question-form (question-form) [Assessment CRUD]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000074', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-question-form', 'question-form', FALSE, 5)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;

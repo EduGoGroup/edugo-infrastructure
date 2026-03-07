@@ -4,6 +4,10 @@
 -- Se ejecuta después de que todas las tablas existen
 -- ============================================================
 
+-- academic.schools -> academic.concept_types (concept_types se crea en 035, después de schools en 030)
+ALTER TABLE academic.schools ADD CONSTRAINT fk_schools_concept_type
+    FOREIGN KEY (concept_type_id) REFERENCES academic.concept_types(id) ON DELETE SET NULL;
+
 -- auth.refresh_tokens -> auth.users
 ALTER TABLE auth.refresh_tokens ADD CONSTRAINT fk_refresh_tokens_user
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
@@ -34,9 +38,7 @@ ALTER TABLE content.material_versions ADD CONSTRAINT material_versions_created_b
 ALTER TABLE content.progress ADD CONSTRAINT progress_user_fkey
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
--- assessment.assessment -> content.materials, academic.schools, auth.users
-ALTER TABLE assessment.assessment ADD CONSTRAINT assessment_material_fkey
-    FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+-- assessment.assessment -> academic.schools, auth.users
 ALTER TABLE assessment.assessment ADD CONSTRAINT assessment_school_fk
     FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE SET NULL;
 ALTER TABLE assessment.assessment ADD CONSTRAINT assessment_created_by_fk
