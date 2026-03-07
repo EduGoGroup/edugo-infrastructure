@@ -1,18 +1,9 @@
 -- =============================================================================
--- EduGo Development Seeds — 005_user_roles.sql
+-- EduGo Development Seeds v2 — 005_user_roles.sql
 -- =============================================================================
--- Asigna roles RBAC a los 13 usuarios de desarrollo.
--- Implementa R4: school_id en user_roles para aislar permisos por escuela.
+-- 19 asignaciones de roles RBAC para los 14 usuarios.
 --
--- Reglas de scoping:
---   - super_admin    → school_id=NULL  (acceso global a la plataforma)
---   - school_admin   → school_id=bX   (acceso solo a su escuela)
---   - coordinator    → school_id=bX   (acceso a su escuela)
---   - teacher        → school_id=bX   (acceso a su escuela)
---   - student        → school_id=bX   (acceso a su escuela)
---   - guardian       → school_id=bX   (acceso a su escuela)
---
--- IDs de roles (fijos, seeds de producción):
+-- Role IDs (produccion):
 --   10000000-...0001 → super_admin
 --   10000000-...0003 → school_admin
 --   10000000-...0005 → school_coordinator
@@ -20,194 +11,220 @@
 --   10000000-...0009 → student
 --   10000000-...0010 → guardian
 --
--- La constraint unique es: (user_id, role_id, school_id, academic_unit_id)
--- NULL en school_id/academic_unit_id se trata como valor único en Postgres
--- para constraints unique compuestas (NULL != NULL), por eso el super_admin
--- usa INSERT separado con ON CONFLICT por id.
+-- Mapa:
+--   ur01: U-01 → super_admin    → NULL (global)
+--   ur02: U-02 → school_admin   → San Ignacio
+--   ur03: U-03 → school_admin   → CreArte
+--   ur04: U-04 → school_coordinator → San Ignacio
+--   ur05: U-04 → school_coordinator → CreArte
+--   ur06: U-05 → teacher        → San Ignacio
+--   ur07: U-05 → teacher        → Academia
+--   ur08: U-06 → teacher        → San Ignacio
+--   ur09: U-07 → teacher        → CreArte
+--   ur10: U-08 → student        → San Ignacio
+--   ur11: U-08 → student        → CreArte
+--   ur12: U-09 → student        → San Ignacio
+--   ur13: U-10 → student        → San Ignacio
+--   ur14: U-11 → student        → San Ignacio
+--   ur15: U-11 → student        → Academia
+--   ur16: U-12 → student        → CreArte
+--   ur17: U-13 → guardian       → San Ignacio
+--   ur18: U-13 → guardian       → CreArte
+--   ur19: U-14 → guardian       → San Ignacio
 -- =============================================================================
 
 BEGIN;
 
--- -------------------------------------------------------------------------
--- Super Admin — sin scope de escuela (acceso global)
--- -------------------------------------------------------------------------
+-- Super Admin — sin scope de escuela
 INSERT INTO iam.user_roles (
-    id,
-    user_id,
-    role_id,
-    school_id,
-    academic_unit_id,
-    is_active,
-    granted_by,
-    granted_at
+    id, user_id, role_id, school_id, academic_unit_id, is_active, granted_by, granted_at
 ) VALUES (
     'cc000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000001',   -- super@edugo.test
     '10000000-0000-0000-0000-000000000001',   -- super_admin
-    NULL,
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000001',   -- auto-asignado
-    '2024-01-01 00:00:00'
+    NULL, NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-01-01 00:00:00'
 )
 ON CONFLICT (id) DO UPDATE SET
     is_active  = EXCLUDED.is_active,
     updated_at = CURRENT_TIMESTAMP;
 
--- -------------------------------------------------------------------------
--- Roles con scope de escuela (school_id definido)
--- La constraint unique funciona correctamente cuando school_id != NULL.
--- -------------------------------------------------------------------------
+-- Roles con scope de escuela
 INSERT INTO iam.user_roles (
-    id,
-    user_id,
-    role_id,
-    school_id,
-    academic_unit_id,
-    is_active,
-    granted_by,
-    granted_at
+    id, user_id, role_id, school_id, academic_unit_id, is_active, granted_by, granted_at
 ) VALUES
 
--- Administradores de escuela
+-- School Admins
 (
     'cc000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000002',   -- admin.primaria
+    '00000000-0000-0000-0000-000000000002',   -- Carmen Valdes
     '10000000-0000-0000-0000-000000000003',   -- school_admin
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000001',   -- granted_by super
-    '2024-01-15 09:00:00'
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-01-15 09:00:00'
 ),
 (
     'cc000000-0000-0000-0000-000000000003',
-    '00000000-0000-0000-0000-000000000003',   -- admin.secundario
+    '00000000-0000-0000-0000-000000000003',   -- Roberto Silva
     '10000000-0000-0000-0000-000000000003',   -- school_admin
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000001',   -- granted_by super
-    '2024-01-15 09:00:00'
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-01-15 09:00:00'
 ),
 
--- Coordinadora de grado
+-- Coordinadora multi-escuela
 (
     'cc000000-0000-0000-0000-000000000004',
-    '00000000-0000-0000-0000-000000000004',   -- coord.primaria
+    '00000000-0000-0000-0000-000000000004',   -- Lucia Fernandez
     '10000000-0000-0000-0000-000000000005',   -- school_coordinator
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000002',   -- granted_by admin.primaria
-    '2024-02-01 09:00:00'
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-02-01 09:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000005',
+    '00000000-0000-0000-0000-000000000004',   -- Lucia Fernandez
+    '10000000-0000-0000-0000-000000000005',   -- school_coordinator
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000003',
+    '2026-02-01 09:00:00'
 ),
 
 -- Docentes
 (
-    'cc000000-0000-0000-0000-000000000005',
-    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
-    '10000000-0000-0000-0000-000000000007',   -- teacher
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000002',   -- granted_by admin.primaria
-    '2024-02-10 09:00:00'
-),
-(
     'cc000000-0000-0000-0000-000000000006',
-    '00000000-0000-0000-0000-000000000006',   -- teacher.science (Juan Martínez)
+    '00000000-0000-0000-0000-000000000005',   -- Maria Martinez
     '10000000-0000-0000-0000-000000000007',   -- teacher
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
     '00000000-0000-0000-0000-000000000002',
-    '2024-02-10 09:00:00'
+    '2026-02-10 09:00:00'
 ),
 (
     'cc000000-0000-0000-0000-000000000007',
-    '00000000-0000-0000-0000-000000000007',   -- teacher.history (Ana López)
+    '00000000-0000-0000-0000-000000000005',   -- Maria Martinez
     '10000000-0000-0000-0000-000000000007',   -- teacher
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000003',   -- granted_by admin.secundario
-    '2024-02-10 09:00:00'
+    'b3000000-0000-0000-0000-000000000003',   -- Academia
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-02-10 09:00:00'
 ),
--- teacher.math ALSO as coordinator at Colegio Secundario (dual-school role test)
 (
-    'cc000000-0000-0000-0000-000000000020',
-    '00000000-0000-0000-0000-000000000005',   -- teacher.math (María García)
-    '10000000-0000-0000-0000-000000000005',   -- school_coordinator
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000003',   -- granted_by admin.secundario
-    '2024-02-15 09:00:00'
+    'cc000000-0000-0000-0000-000000000008',
+    '00000000-0000-0000-0000-000000000006',   -- Pedro Gonzalez
+    '10000000-0000-0000-0000-000000000007',   -- teacher
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-02-10 09:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000009',
+    '00000000-0000-0000-0000-000000000007',   -- Ana Ruiz
+    '10000000-0000-0000-0000-000000000007',   -- teacher
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000003',
+    '2026-02-10 09:00:00'
 ),
 
 -- Estudiantes
 (
-    'cc000000-0000-0000-0000-000000000008',
-    '00000000-0000-0000-0000-000000000008',   -- carlos
-    '10000000-0000-0000-0000-000000000009',   -- student
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000002',
-    '2024-03-01 08:00:00'
-),
-(
-    'cc000000-0000-0000-0000-000000000009',
-    '00000000-0000-0000-0000-000000000009',   -- sofia
-    '10000000-0000-0000-0000-000000000009',   -- student
-    'b1000000-0000-0000-0000-000000000001',
-    NULL,
-    true,
-    '00000000-0000-0000-0000-000000000002',
-    '2024-03-01 08:00:00'
-),
-(
     'cc000000-0000-0000-0000-000000000010',
-    '00000000-0000-0000-0000-000000000010',   -- miguel
+    '00000000-0000-0000-0000-000000000008',   -- Carlos Mendoza
     '10000000-0000-0000-0000-000000000009',   -- student
-    'b1000000-0000-0000-0000-000000000001',
-    NULL,
-    true,
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
     '00000000-0000-0000-0000-000000000002',
-    '2024-03-01 08:00:00'
+    '2026-03-01 08:00:00'
 ),
 (
     'cc000000-0000-0000-0000-000000000011',
-    '00000000-0000-0000-0000-000000000011',   -- laura
+    '00000000-0000-0000-0000-000000000008',   -- Carlos Mendoza
     '10000000-0000-0000-0000-000000000009',   -- student
-    'b2000000-0000-0000-0000-000000000002',   -- Colegio Secundario Demo
-    NULL,
-    true,
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
     '00000000-0000-0000-0000-000000000003',
-    '2024-03-01 08:00:00'
+    '2026-03-01 08:00:00'
 ),
-
--- Tutores / Apoderados
 (
     'cc000000-0000-0000-0000-000000000012',
-    '00000000-0000-0000-0000-000000000012',   -- guardian.roberto
-    '10000000-0000-0000-0000-000000000010',   -- guardian
-    'b1000000-0000-0000-0000-000000000001',   -- Escuela Primaria Demo
-    NULL,
-    true,
+    '00000000-0000-0000-0000-000000000009',   -- Sofia Herrera
+    '10000000-0000-0000-0000-000000000009',   -- student
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
     '00000000-0000-0000-0000-000000000002',
-    '2024-03-01 08:00:00'
+    '2026-03-01 08:00:00'
 ),
 (
     'cc000000-0000-0000-0000-000000000013',
-    '00000000-0000-0000-0000-000000000013',   -- guardian.patricia
-    '10000000-0000-0000-0000-000000000010',   -- guardian
-    'b1000000-0000-0000-0000-000000000001',
-    NULL,
-    true,
+    '00000000-0000-0000-0000-000000000010',   -- Diego Vargas
+    '10000000-0000-0000-0000-000000000009',   -- student
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
     '00000000-0000-0000-0000-000000000002',
-    '2024-03-01 08:00:00'
+    '2026-03-01 08:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000014',
+    '00000000-0000-0000-0000-000000000011',   -- Valentina Rojas
+    '10000000-0000-0000-0000-000000000009',   -- student
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-03-01 08:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000015',
+    '00000000-0000-0000-0000-000000000011',   -- Valentina Rojas
+    '10000000-0000-0000-0000-000000000009',   -- student
+    'b3000000-0000-0000-0000-000000000003',   -- Academia
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-03-01 08:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000016',
+    '00000000-0000-0000-0000-000000000012',   -- Mateo Fuentes
+    '10000000-0000-0000-0000-000000000009',   -- student
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000003',
+    '2026-03-01 08:00:00'
+),
+
+-- Guardians
+(
+    'cc000000-0000-0000-0000-000000000017',
+    '00000000-0000-0000-0000-000000000013',   -- Ricardo Mendoza
+    '10000000-0000-0000-0000-000000000010',   -- guardian
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-03-01 08:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000018',
+    '00000000-0000-0000-0000-000000000013',   -- Ricardo Mendoza
+    '10000000-0000-0000-0000-000000000010',   -- guardian
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000003',
+    '2026-03-01 08:00:00'
+),
+(
+    'cc000000-0000-0000-0000-000000000019',
+    '00000000-0000-0000-0000-000000000014',   -- Patricia Herrera
+    '10000000-0000-0000-0000-000000000010',   -- guardian
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-03-01 08:00:00'
 )
 
 ON CONFLICT (user_id, role_id, school_id, academic_unit_id) DO UPDATE SET

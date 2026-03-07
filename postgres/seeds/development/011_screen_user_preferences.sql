@@ -1,8 +1,7 @@
 -- =============================================================================
--- EduGo Development Seeds — 011_screen_user_preferences.sql
+-- EduGo Development Seeds v2 — 011_screen_user_preferences.sql
 -- =============================================================================
 -- Preferencias de pantalla para usuarios de prueba.
--- Usa subquery con SELECT para tolerancia si screen_instances no tiene el registro.
 -- =============================================================================
 
 DO $$

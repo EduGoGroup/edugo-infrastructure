@@ -140,4 +140,9 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000074', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-question-form', 'question-form', FALSE, 5)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Assessments -> assessment-result (result) [Fase 3]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000090', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-result', 'result', FALSE, 6)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
