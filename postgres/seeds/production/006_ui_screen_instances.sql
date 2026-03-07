@@ -317,4 +317,12 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'unit', 'assessments:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 40: Resultado de Evaluación (Fase 3 - Assessment Result)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000090', 'assessment-result',
+ 'a0000000-0000-0000-0000-000000000004', 'Resultado de Evaluacion', 'Pantalla de resultados de evaluación',
+ '{"page_title": "Resultado de Evaluación", "sections": [{"key": "score_hero", "title": "Puntuación"}, {"key": "answers_detail", "title": "Detalle de Respuestas"}]}'::jsonb,
+ 'unit', 'assessments:view_results', 'assessment-result')
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;

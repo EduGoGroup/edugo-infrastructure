@@ -1,53 +1,48 @@
 -- =============================================================================
--- EduGo Development Seeds — 002_academic_units.sql
+-- EduGo Development Seeds v2 — 002_academic_units.sql
 -- =============================================================================
--- Crea 9 unidades académicas en jerarquía correcta (padres antes que hijos).
+-- 16 unidades academicas en jerarquia (padres antes que hijos).
 --
--- Jerarquía Escuela Primaria (b1000...001):
---   au001 school  → "Escuela Primaria Demo"      (raíz, parent=NULL)
---   au002 grade   → "Primer Grado"               (parent=au001)
---   au003 class   → "Clase 1-A"                  (parent=au002)
---   au004 class   → "Clase 1-B"                  (parent=au002)
---   au005 grade   → "Segundo Grado"              (parent=au001)
---   au006 class   → "Clase 2-A"                  (parent=au005)
+-- Colegio San Ignacio (b1000...001):
+--   au001 school  → "Colegio San Ignacio"     (raiz)
+--   au002 grade   → "5to Basico"              (parent=au001)
+--   au003 class   → "5to A"                   (parent=au002)
+--   au004 class   → "5to B"                   (parent=au002)
+--   au005 grade   → "6to Basico"              (parent=au001)
+--   au006 class   → "6to A"                   (parent=au005)
 --
--- Jerarquía Colegio Secundario (b2000...002):
---   au007 school  → "Colegio Secundario Demo"    (raíz, parent=NULL)
---   au008 grade   → "Décimo Grado"               (parent=au007)
---   au009 class   → "Clase 10-A"                 (parent=au008)
+-- Taller CreArte (b2000...002):
+--   au007 school  → "Taller CreArte"          (raiz)
+--   au008 grade   → "Modulo Pintura"          (parent=au007)
+--   au009 class   → "Grupo Manana"            (parent=au008)
+--   au010 grade   → "Modulo Escultura"        (parent=au007)
+--   au011 class   → "Grupo Tarde"             (parent=au010)
 --
--- NOTA sobre la constraint unique (school_id, code, academic_year):
---   Las unidades tipo 'school' usan academic_year=0 (valor por defecto).
---   Los grados y clases usan academic_year=2024.
+-- Academia Global English (b3000...003):
+--   au012 school  → "Academia Global English" (raiz)
+--   au013 grade   → "Level A2"                (parent=au012)
+--   au014 class   → "Class Monday"            (parent=au013)
+--   au015 grade   → "Level B1"                (parent=au012)
+--   au016 class   → "Class Tuesday"           (parent=au015)
 -- =============================================================================
 
 BEGIN;
 
 -- -------------------------------------------------------------------------
--- Nivel 0: Unidades raíz (type=school, parent=NULL)
+-- Nivel 0: Unidades raiz (type=school, parent=NULL)
 -- -------------------------------------------------------------------------
 INSERT INTO academic.academic_units (
-    id,
-    parent_unit_id,
-    school_id,
-    name,
-    code,
-    type,
-    description,
-    level,
-    academic_year,
-    metadata,
-    is_active
+    id, parent_unit_id, school_id, name, code, type, description, level, academic_year, metadata, is_active
 ) VALUES
 (
     'ac000000-0000-0000-0000-000000000001',
     NULL,
     'b1000000-0000-0000-0000-000000000001',
-    'Escuela Primaria Demo',
-    'EPD-ROOT',
+    'Colegio San Ignacio',
+    'CSI-ROOT',
     'school',
-    'Unidad raíz de la Escuela Primaria Demo',
-    'primary',
+    'Unidad raiz del Colegio San Ignacio',
+    'secondary',
     0,
     '{"is_root": true}'::jsonb,
     true
@@ -56,11 +51,24 @@ INSERT INTO academic.academic_units (
     'ac000000-0000-0000-0000-000000000007',
     NULL,
     'b2000000-0000-0000-0000-000000000002',
-    'Colegio Secundario Demo',
-    'CSD-ROOT',
+    'Taller CreArte',
+    'TCA-ROOT',
     'school',
-    'Unidad raíz del Colegio Secundario Demo',
-    'secondary',
+    'Unidad raiz del Taller CreArte',
+    'workshop',
+    0,
+    '{"is_root": true}'::jsonb,
+    true
+),
+(
+    'ac000000-0000-0000-0000-000000000012',
+    NULL,
+    'b3000000-0000-0000-0000-000000000003',
+    'Academia Global English',
+    'AGE-ROOT',
+    'school',
+    'Unidad raiz de la Academia Global English',
+    'language',
     0,
     '{"is_root": true}'::jsonb,
     true
@@ -75,58 +83,90 @@ ON CONFLICT (school_id, code, academic_year) DO UPDATE SET
     updated_at     = now();
 
 -- -------------------------------------------------------------------------
--- Nivel 1: Grados (type=grade, parent=school)
+-- Nivel 1: Grados / Modulos / Levels (type=grade, parent=school)
 -- -------------------------------------------------------------------------
 INSERT INTO academic.academic_units (
-    id,
-    parent_unit_id,
-    school_id,
-    name,
-    code,
-    type,
-    description,
-    level,
-    academic_year,
-    metadata,
-    is_active
+    id, parent_unit_id, school_id, name, code, type, description, level, academic_year, metadata, is_active
 ) VALUES
+-- San Ignacio
 (
     'ac000000-0000-0000-0000-000000000002',
     'ac000000-0000-0000-0000-000000000001',
     'b1000000-0000-0000-0000-000000000001',
-    'Primer Grado',
-    'GRADE-01',
+    '5to Basico',
+    'GRADE-05',
     'grade',
-    'Primer grado de educación primaria, año 2024',
-    'primary',
-    2024,
-    '{"grade_number": 1}'::jsonb,
+    'Quinto ano de educacion basica, 2026',
+    'secondary',
+    2026,
+    '{"grade_number": 5}'::jsonb,
     true
 ),
 (
     'ac000000-0000-0000-0000-000000000005',
     'ac000000-0000-0000-0000-000000000001',
     'b1000000-0000-0000-0000-000000000001',
-    'Segundo Grado',
-    'GRADE-02',
+    '6to Basico',
+    'GRADE-06',
     'grade',
-    'Segundo grado de educación primaria, año 2024',
-    'primary',
-    2024,
-    '{"grade_number": 2}'::jsonb,
+    'Sexto ano de educacion basica, 2026',
+    'secondary',
+    2026,
+    '{"grade_number": 6}'::jsonb,
     true
 ),
+-- CreArte
 (
     'ac000000-0000-0000-0000-000000000008',
     'ac000000-0000-0000-0000-000000000007',
     'b2000000-0000-0000-0000-000000000002',
-    'Décimo Grado',
-    'GRADE-10',
+    'Modulo Pintura',
+    'MOD-PINT',
     'grade',
-    'Décimo grado de educación secundaria, año 2024',
-    'secondary',
-    2024,
-    '{"grade_number": 10}'::jsonb,
+    'Modulo de tecnicas de pintura',
+    'workshop',
+    2026,
+    '{"module_type": "pintura"}'::jsonb,
+    true
+),
+(
+    'ac000000-0000-0000-0000-000000000010',
+    'ac000000-0000-0000-0000-000000000007',
+    'b2000000-0000-0000-0000-000000000002',
+    'Modulo Escultura',
+    'MOD-ESCL',
+    'grade',
+    'Modulo de fundamentos de escultura',
+    'workshop',
+    2026,
+    '{"module_type": "escultura"}'::jsonb,
+    true
+),
+-- Academia
+(
+    'ac000000-0000-0000-0000-000000000013',
+    'ac000000-0000-0000-0000-000000000012',
+    'b3000000-0000-0000-0000-000000000003',
+    'Level A2',
+    'LVL-A2',
+    'grade',
+    'Elementary level A2',
+    'language',
+    2026,
+    '{"cefr_level": "A2"}'::jsonb,
+    true
+),
+(
+    'ac000000-0000-0000-0000-000000000015',
+    'ac000000-0000-0000-0000-000000000012',
+    'b3000000-0000-0000-0000-000000000003',
+    'Level B1',
+    'LVL-B1',
+    'grade',
+    'Intermediate level B1',
+    'language',
+    2026,
+    '{"cefr_level": "B1"}'::jsonb,
     true
 )
 ON CONFLICT (school_id, code, academic_year) DO UPDATE SET
@@ -139,71 +179,103 @@ ON CONFLICT (school_id, code, academic_year) DO UPDATE SET
     updated_at     = now();
 
 -- -------------------------------------------------------------------------
--- Nivel 2: Clases (type=class, parent=grade)
+-- Nivel 2: Clases / Grupos / Classes (type=class, parent=grade)
 -- -------------------------------------------------------------------------
 INSERT INTO academic.academic_units (
-    id,
-    parent_unit_id,
-    school_id,
-    name,
-    code,
-    type,
-    description,
-    level,
-    academic_year,
-    metadata,
-    is_active
+    id, parent_unit_id, school_id, name, code, type, description, level, academic_year, metadata, is_active
 ) VALUES
+-- San Ignacio
 (
     'ac000000-0000-0000-0000-000000000003',
     'ac000000-0000-0000-0000-000000000002',
     'b1000000-0000-0000-0000-000000000001',
-    'Clase 1-A',
-    '1A',
+    '5to A',
+    '5A',
     'class',
-    'Clase 1-A del Primer Grado, año 2024',
-    'primary',
-    2024,
-    '{"section": "A", "grade_number": 1}'::jsonb,
+    'Seccion A del 5to Basico, 2026',
+    'secondary',
+    2026,
+    '{"section": "A", "grade_number": 5}'::jsonb,
     true
 ),
 (
     'ac000000-0000-0000-0000-000000000004',
     'ac000000-0000-0000-0000-000000000002',
     'b1000000-0000-0000-0000-000000000001',
-    'Clase 1-B',
-    '1B',
+    '5to B',
+    '5B',
     'class',
-    'Clase 1-B del Primer Grado, año 2024',
-    'primary',
-    2024,
-    '{"section": "B", "grade_number": 1}'::jsonb,
+    'Seccion B del 5to Basico, 2026',
+    'secondary',
+    2026,
+    '{"section": "B", "grade_number": 5}'::jsonb,
     true
 ),
 (
     'ac000000-0000-0000-0000-000000000006',
     'ac000000-0000-0000-0000-000000000005',
     'b1000000-0000-0000-0000-000000000001',
-    'Clase 2-A',
-    '2A',
+    '6to A',
+    '6A',
     'class',
-    'Clase 2-A del Segundo Grado, año 2024',
-    'primary',
-    2024,
-    '{"section": "A", "grade_number": 2}'::jsonb,
+    'Seccion A del 6to Basico, 2026',
+    'secondary',
+    2026,
+    '{"section": "A", "grade_number": 6}'::jsonb,
     true
 ),
+-- CreArte
 (
     'ac000000-0000-0000-0000-000000000009',
     'ac000000-0000-0000-0000-000000000008',
     'b2000000-0000-0000-0000-000000000002',
-    'Clase 10-A',
-    '10A',
+    'Grupo Manana',
+    'GRP-MAN',
     'class',
-    'Clase 10-A del Décimo Grado, año 2024',
-    'secondary',
-    2024,
-    '{"section": "A", "grade_number": 10}'::jsonb,
+    'Grupo de la manana - Modulo Pintura',
+    'workshop',
+    2026,
+    '{"schedule": "morning"}'::jsonb,
+    true
+),
+(
+    'ac000000-0000-0000-0000-000000000011',
+    'ac000000-0000-0000-0000-000000000010',
+    'b2000000-0000-0000-0000-000000000002',
+    'Grupo Tarde',
+    'GRP-TAR',
+    'class',
+    'Grupo de la tarde - Modulo Escultura',
+    'workshop',
+    2026,
+    '{"schedule": "afternoon"}'::jsonb,
+    true
+),
+-- Academia
+(
+    'ac000000-0000-0000-0000-000000000014',
+    'ac000000-0000-0000-0000-000000000013',
+    'b3000000-0000-0000-0000-000000000003',
+    'Class Monday',
+    'CLS-MON',
+    'class',
+    'Monday class - Level A2',
+    'language',
+    2026,
+    '{"day": "monday"}'::jsonb,
+    true
+),
+(
+    'ac000000-0000-0000-0000-000000000016',
+    'ac000000-0000-0000-0000-000000000015',
+    'b3000000-0000-0000-0000-000000000003',
+    'Class Tuesday',
+    'CLS-TUE',
+    'class',
+    'Tuesday class - Level B1',
+    'language',
+    2026,
+    '{"day": "tuesday"}'::jsonb,
     true
 )
 ON CONFLICT (school_id, code, academic_year) DO UPDATE SET

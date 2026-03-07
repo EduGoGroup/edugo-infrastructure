@@ -1,23 +1,24 @@
 -- =============================================================================
--- EduGo Development Seeds — 000_truncate.sql
+-- EduGo Development Seeds v2 — 000_truncate.sql
 -- =============================================================================
 -- Limpia todas las tablas de datos de desarrollo en orden correcto
--- respetando las foreign keys (de hojas hacia raíces).
+-- respetando las foreign keys (de hojas hacia raices).
 --
 -- ADVERTENCIA: No truncar roles, permissions, resources ni role_permissions
--- ya que esos son seeds de producción que deben persistir.
+-- ya que esos son seeds de produccion que deben persistir.
 --
--- Ejecutar antes de re-aplicar los seeds de desarrollo.
---
--- MAPA DE IDs FIJOS (solo hex válido para tipo UUID):
---   Escuelas        b1000000-...-001/002/003
---   Academic units  ac000000-...-001 a 009
---   Users           00000000-...-001 a 013
---   Memberships     bb000000-...-001 a 012
---   User roles      cc000000-...-001 a 013
---   Materials       aa100000-...-001 a 004
---   Assessments     aa200000-...-001 a 002
---   Attempts        aa300000-...-001 a 004
+-- MAPA DE IDs FIJOS (v2):
+--   Escuelas        b1000000-...-001 (San Ignacio) / b2000000-...-002 (CreArte) / b3000000-...-003 (Academia)
+--   Academic units  ac000000-...-001 a 016
+--   Users           00000000-...-001 a 014
+--   Memberships     bb000000-...-001 a 021
+--   User roles      cc000000-...-001 a 019
+--   Subjects        dd000000-...-001 a 007
+--   Materials       aa100000-...-001 a 005
+--   Assessments     aa200000-...-001 a 006
+--   Ass. Materials  (gen_random_uuid, sin IDs fijos)
+--   Attempts        aa300000-...-001 a 007, 010
+--   Guardian rels   ee000000-...-001 a 003
 -- =============================================================================
 
 BEGIN;
@@ -27,6 +28,9 @@ TRUNCATE TABLE assessment.assessment_attempt_answer CASCADE;
 
 -- Nivel 4
 TRUNCATE TABLE assessment.assessment_attempt CASCADE;
+
+-- Nivel 3.5
+TRUNCATE TABLE assessment.assessment_materials CASCADE;
 
 -- Nivel 3
 TRUNCATE TABLE assessment.assessment CASCADE;
@@ -49,7 +53,7 @@ TRUNCATE TABLE academic.guardian_relations CASCADE;
 TRUNCATE TABLE academic.school_concepts CASCADE;
 TRUNCATE TABLE ui_config.screen_user_preferences CASCADE;
 
--- Nivel 0 — raíces (usar DELETE para auth.users para no cascadear a ui_config)
+-- Nivel 0 — raices (usar DELETE para auth.users para no cascadear a ui_config)
 TRUNCATE TABLE auth.refresh_tokens CASCADE;
 TRUNCATE TABLE auth.login_attempts CASCADE;
 TRUNCATE TABLE academic.schools CASCADE;
