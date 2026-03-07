@@ -1,7 +1,7 @@
 -- ============================================================
 -- 037: academic.school_concepts
 -- Schema: academic
--- Terminos activos por institucion (copia de definitions al crear)
+-- Términos activos por institución
 -- ============================================================
 
 CREATE TABLE academic.school_concepts (

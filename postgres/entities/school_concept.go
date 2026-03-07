@@ -10,7 +10,7 @@ import (
 // Esta entity es el reflejo exacto del schema de BD definido en:
 // - postgres/migrations/structure/037_academic_school_concepts.sql
 //
-// Representa los terminos activos por institucion (copia de definitions al crear).
+// Representa los términos activos configurados por institución.
 type SchoolConcept struct {
 	ID        uuid.UUID `db:"id" gorm:"type:uuid;primaryKey"`
 	SchoolID  uuid.UUID `db:"school_id" gorm:"type:uuid;not null"`
