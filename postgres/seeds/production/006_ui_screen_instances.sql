@@ -290,7 +290,15 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000071', 'assessment-take',
  'a0000000-0000-0000-0000-000000000004', 'Tomar Evaluación', 'Pantalla para rendir una evaluación',
  '{"page_title": "Evaluación"}'::jsonb,
- 'unit', 'assessments:attempt', 'assessment-take')
+ 'unit', 'assessments:read', 'assessment-take')
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 41: Lista de Gestión de Evaluaciones (pantalla para profesores/admins)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000091', 'assessments-management-list',
+ 'a0000000-0000-0000-0000-000000000003', 'Gestión de Evaluaciones', 'Lista de evaluaciones para gestión (crear, editar, publicar)',
+ '{"page_title": "Gestión de Evaluaciones", "search_placeholder": "Buscar evaluación...", "filter_all_label": "Todas", "filter_ready_label": "Publicadas", "filter_processing_label": "Borradores", "empty_icon": "clipboard", "empty_state_title": "No hay evaluaciones", "empty_state_description": "Crea la primera evaluación para tu unidad", "empty_action_label": "Crear Evaluación"}'::jsonb,
+ 'unit', 'assessments:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 37: Lista de Eventos de Auditoría (Fase 6 - Audit)

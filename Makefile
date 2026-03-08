@@ -1,246 +1,244 @@
-# EduGo Infrastructure - Makefile raiz
-# Orquesta desarrollo local, migraciones y operaciones multi-modulo
+SHELL := /bin/bash
 
-# Modulos Go
-MODULES = mongodb postgres schemas tools/mock-generator
+GO_MODULES = postgres mongodb schemas tools/mock-generator
+RELEASE_MODULES = postgres mongodb schemas tools/mock-generator docker
 
-# Colores para output
 RED = \033[0;31m
 GREEN = \033[0;32m
 YELLOW = \033[0;33m
 BLUE = \033[0;34m
 NC = \033[0m
 
-# Variables por defecto (pueden sobreescribirse con .env)
 DB_HOST ?= localhost
 DB_PORT ?= 5432
 DB_NAME ?= edugo_dev
 DB_USER ?= edugo
 DB_PASSWORD ?= changeme
+DB_SSL_MODE ?= disable
+MONGO_HOST ?= localhost
+MONGO_PORT ?= 27017
+MONGO_DB ?= edugo
 
-.PHONY: help
+.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
+
 help: ## Mostrar ayuda
 	@echo "$(BLUE)EduGo Infrastructure - Comandos disponibles:$(NC)"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-25s$(NC) %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-25s$(NC) %s\n", $$1, $$2}'
 	@echo ""
-	@echo "$(YELLOW)Modulos: $(MODULES)$(NC)"
+	@echo "$(YELLOW)Módulos Go: $(GO_MODULES)$(NC)"
+	@echo "$(YELLOW)Módulos release: $(RELEASE_MODULES)$(NC)"
+
+require-module:
+	@if [ -z "$(MODULE)" ]; then \
+		echo "$(RED)Debe especificar MODULE=<ruta-del-modulo>$(NC)"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(MODULE)" ]; then \
+		echo "$(RED)No existe el módulo $(MODULE)$(NC)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(MODULE)/Makefile" ]; then \
+		echo "$(RED)El módulo $(MODULE) no tiene Makefile$(NC)"; \
+		exit 1; \
+	fi
 
 # ===================
 # DESARROLLO LOCAL
 # ===================
 
-.PHONY: dev-setup
-dev-setup: ## Setup completo (primera vez)
-	@echo "Iniciando setup completo de EduGo..."
+dev-setup: ## Setup local del repo (Docker + bootstrap de datos)
 	@./scripts/dev-setup.sh
 
-.PHONY: dev-up-core
-dev-up-core: ## Levantar solo PostgreSQL + MongoDB
-	@echo "Levantando servicios core (PostgreSQL + MongoDB)..."
-	@cd docker && docker-compose up -d postgres mongodb
-	@echo "Servicios core corriendo"
-	@echo "   PostgreSQL: localhost:5432"
-	@echo "   MongoDB: localhost:27017"
+dev-up-core: ## Levantar PostgreSQL + MongoDB
+	@$(MAKE) -C docker up-core
 
-.PHONY: dev-up-messaging
 dev-up-messaging: ## Levantar core + RabbitMQ
-	@echo "Levantando servicios core + messaging..."
-	@cd docker && docker-compose --profile messaging up -d
-	@echo "Servicios corriendo"
-	@echo "   PostgreSQL: localhost:5432"
-	@echo "   MongoDB: localhost:27017"
-	@echo "   RabbitMQ: localhost:5672"
-	@echo "   RabbitMQ UI: http://localhost:15672"
+	@$(MAKE) -C docker up-messaging
 
-.PHONY: dev-up-full
-dev-up-full: ## Levantar todos los servicios + tools
-	@echo "Levantando todos los servicios..."
-	@cd docker && docker-compose --profile messaging --profile cache --profile tools up -d
-	@echo "Todos los servicios corriendo"
-	@echo "   PostgreSQL: localhost:5432"
-	@echo "   MongoDB: localhost:27017"
-	@echo "   RabbitMQ: localhost:5672 (UI: http://localhost:15672)"
-	@echo "   Redis: localhost:6379"
-	@echo "   PgAdmin: http://localhost:5050"
-	@echo "   Mongo Express: http://localhost:8082"
+dev-up-full: ## Levantar core + RabbitMQ + Redis + tools
+	@$(MAKE) -C docker up-full
 
-.PHONY: dev-logs
-dev-logs: ## Ver logs de servicios
-	@cd docker && docker-compose logs -f
+dev-logs: ## Ver logs del stack local
+	@$(MAKE) -C docker logs
 
-.PHONY: dev-ps
-dev-ps: ## Ver estado de servicios
-	@cd docker && docker-compose ps
+dev-ps: ## Ver estado del stack local
+	@$(MAKE) -C docker ps
 
-.PHONY: dev-down
-dev-down: ## Detener servicios (mantener datos)
-	@cd docker && docker-compose down
+dev-down: ## Detener servicios locales
+	@$(MAKE) -C docker down
 
-.PHONY: dev-teardown
-dev-teardown: ## Detener y eliminar todo (incluye volumenes)
-	@echo "Eliminando servicios y datos..."
-	@cd docker && docker-compose down -v
-	@echo "Ambiente limpio"
+dev-teardown: ## Detener y eliminar servicios/volúmenes locales
+	@$(MAKE) -C docker teardown
 
-.PHONY: dev-reset
-dev-reset: dev-teardown dev-setup ## Reset completo (teardown + setup)
-	@echo "Ambiente reseteado completamente"
+dev-reset: dev-teardown dev-setup ## Reiniciar completamente el stack local
+	@echo "$(GREEN)Ambiente local reiniciado$(NC)"
+
+db-bootstrap: ## Aplicar estructura y datos base usando los runners del repo
+	@echo "$(BLUE)Aplicando bootstrap PostgreSQL...$(NC)"
+	@$(MAKE) -C postgres runner-up
+	@echo "$(BLUE)Aplicando bootstrap MongoDB...$(NC)"
+	@$(MAKE) -C mongodb runner-up
+	@$(MAKE) -C mongodb seed-all
+	@echo "$(GREEN)Bootstrap completado$(NC)"
 
 # ===================
-# MIGRACIONES
+# MIGRACIONES Y SEEDS
 # ===================
 
-.PHONY: migrate-up
-migrate-up: ## Ejecutar migraciones pendientes
-	@echo "$(BLUE)Ejecutando migraciones PostgreSQL...$(NC)"
-	@cd postgres && go run cmd/migrate/migrate.go up
+migrate-up: ## Ejecutar migraciones legacy pendientes de PostgreSQL
+	@$(MAKE) -C postgres migrate-up
 
-.PHONY: migrate-down
-migrate-down: ## Revertir ultima migracion
-	@echo "$(BLUE)Revirtiendo migracion PostgreSQL...$(NC)"
-	@cd postgres && go run cmd/migrate/migrate.go down
+migrate-down: ## Revertir última migración legacy de PostgreSQL
+	@$(MAKE) -C postgres migrate-down
 
-.PHONY: migrate-status
-migrate-status: ## Ver estado de migraciones
-	@cd postgres && go run cmd/migrate/migrate.go status
+migrate-status: ## Ver estado de migraciones legacy de PostgreSQL
+	@$(MAKE) -C postgres migrate-status
 
-.PHONY: migrate-create
-migrate-create: ## Crear nueva migracion (uso: make migrate-create NAME="add_column")
-	@cd postgres && go run cmd/migrate/migrate.go create "$(NAME)"
+migrate-create: ## Crear nueva migración legacy de PostgreSQL (uso: make migrate-create NAME=nombre)
+	@$(MAKE) -C postgres migrate-create NAME="$(NAME)"
 
-.PHONY: runner-up
-runner-up: ## Ejecutar runner de 4 capas
-	@echo "$(BLUE)Ejecutando runner de 4 capas...$(NC)"
-	@cd postgres && go run cmd/runner/runner.go
+runner-up: ## Ejecutar runners embebidos de PostgreSQL y MongoDB
+	@$(MAKE) -C postgres runner-up
+	@$(MAKE) -C mongodb runner-up
 
-# ===================
-# SEEDS
-# ===================
-
-.PHONY: seed
-seed: ## Cargar datos de prueba
-	@echo "$(BLUE)Cargando seeds...$(NC)"
+seed: ## Aplicar seeds de PostgreSQL y MongoDB
 	@./scripts/seed-data.sh
 
-.PHONY: seed-minimal
-seed-minimal: ## Cargar solo datos minimos
-	@echo "$(BLUE)Cargando seeds minimos...$(NC)"
-	@PGPASSWORD=$(DB_PASSWORD) psql -h localhost -U $(DB_USER) -d $(DB_NAME) -f seeds/postgres/users.sql
-	@PGPASSWORD=$(DB_PASSWORD) psql -h localhost -U $(DB_USER) -d $(DB_NAME) -f seeds/postgres/schools.sql
+seed-production: ## Aplicar solo datos canónicos de PostgreSQL y MongoDB
+	@$(MAKE) -C postgres seed-production
+	@$(MAKE) -C mongodb seed-canonical
+
+seed-development: ## Aplicar datos de desarrollo completos
+	@$(MAKE) -C postgres seed-all
+	@$(MAKE) -C mongodb seed-all
+
+seed-minimal: seed-production ## Alias de datos mínimos/canónicos
+	@true
 
 # ===================
-# VALIDACION
+# VALIDACIÓN
 # ===================
 
-.PHONY: validate-env
-validate-env: ## Validar variables de entorno
+validate-env: ## Validar variables de entorno locales
 	@./scripts/validate-env.sh
 
-.PHONY: validate-schemas
-validate-schemas: ## Validar JSON schemas
-	@cd schemas && go test -v ./...
+validate-schemas: ## Ejecutar tests del módulo schemas
+	@$(MAKE) -C schemas test
 
 # ===================
-# MULTI-MODULO
+# MULTI-MÓDULO
 # ===================
 
-.PHONY: build-all
-build-all: ## Compilar todos los modulos
-	@echo "$(BLUE)Compilando todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
+build-all: ## Compilar todos los módulos Go
+	@for module in $(GO_MODULES); do \
 		echo "$(YELLOW)Building $$module...$(NC)"; \
-		(cd $$module && go build ./...) || exit 1; \
-		echo "$(GREEN)  $$module compilado$(NC)"; \
-	done
-	@echo "$(GREEN)Todos los modulos compilados$(NC)"
-
-.PHONY: test-all
-test-all: ## Ejecutar tests unitarios en todos los modulos
-	@echo "$(BLUE)Ejecutando tests en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
-		echo "$(YELLOW)Testing $$module...$(NC)"; \
-		(cd $$module && go test -short -v ./...) || exit 1; \
-		echo "$(GREEN)  $$module tests passed$(NC)"; \
+		$(MAKE) -C $$module build || exit 1; \
 		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos pasaron los tests$(NC)"
+	@echo "$(GREEN)Build completado para todos los módulos$(NC)"
 
-.PHONY: lint-all
-lint-all: ## Ejecutar linter en todos los modulos
-	@echo "$(BLUE)Ejecutando linter en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
+test-all: ## Ejecutar tests en todos los módulos Go
+	@for module in $(GO_MODULES); do \
+		echo "$(YELLOW)Testing $$module...$(NC)"; \
+		$(MAKE) -C $$module test || exit 1; \
+		echo ""; \
+	done
+	@echo "$(GREEN)Tests completados para todos los módulos$(NC)"
+
+lint-all: ## Ejecutar linter en todos los módulos Go
+	@for module in $(GO_MODULES); do \
 		echo "$(YELLOW)Linting $$module...$(NC)"; \
-		(cd $$module && golangci-lint run ./...) || exit 1; \
-		echo "$(GREEN)  $$module linted$(NC)"; \
+		$(MAKE) -C $$module lint || exit 1; \
+		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos pasaron el linter$(NC)"
+	@echo "$(GREEN)Lint completado para todos los módulos$(NC)"
 
-.PHONY: fmt-all
-fmt-all: ## Formatear codigo en todos los modulos
-	@echo "$(BLUE)Formateando codigo en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
+fmt-all: ## Formatear código en todos los módulos Go
+	@for module in $(GO_MODULES); do \
 		echo "$(YELLOW)Formatting $$module...$(NC)"; \
-		(cd $$module && go fmt ./...); \
-		echo "$(GREEN)  $$module formatted$(NC)"; \
+		$(MAKE) -C $$module fmt || exit 1; \
+		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos formateados$(NC)"
+	@echo "$(GREEN)Formato aplicado a todos los módulos$(NC)"
 
-.PHONY: vet-all
-vet-all: ## Ejecutar go vet en todos los modulos
-	@echo "$(BLUE)Ejecutando go vet en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
+fmt-check-all: ## Validar formato en todos los módulos Go
+	@for module in $(GO_MODULES); do \
+		echo "$(YELLOW)Checking fmt $$module...$(NC)"; \
+		$(MAKE) -C $$module fmt-check || exit 1; \
+		echo ""; \
+	done
+	@echo "$(GREEN)Formato validado en todos los módulos$(NC)"
+
+vet-all: ## Ejecutar go vet en todos los módulos Go
+	@for module in $(GO_MODULES); do \
 		echo "$(YELLOW)Vetting $$module...$(NC)"; \
-		(cd $$module && go vet ./...) || exit 1; \
-		echo "$(GREEN)  $$module vetted$(NC)"; \
+		$(MAKE) -C $$module vet || exit 1; \
+		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos pasaron go vet$(NC)"
+	@echo "$(GREEN)go vet completado en todos los módulos$(NC)"
 
-.PHONY: tidy-all
-tidy-all: ## Ejecutar go mod tidy en todos los modulos
-	@echo "$(BLUE)Ejecutando go mod tidy en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
+tidy-all: ## Ejecutar go mod tidy en todos los módulos Go
+	@for module in $(GO_MODULES); do \
 		echo "$(YELLOW)Tidying $$module...$(NC)"; \
-		(cd $$module && go mod tidy); \
-		echo "$(GREEN)  $$module tidied$(NC)"; \
+		$(MAKE) -C $$module tidy || exit 1; \
+		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos tidied$(NC)"
+	@echo "$(GREEN)go mod tidy completado en todos los módulos$(NC)"
 
-.PHONY: deps-all
-deps-all: ## Actualizar dependencias en todos los modulos
-	@echo "$(BLUE)Actualizando dependencias en todos los modulos...$(NC)"
-	@for module in $(MODULES); do \
-		echo "$(YELLOW)Updating $$module...$(NC)"; \
-		(cd $$module && go get -u ./... && go mod tidy); \
-		echo "$(GREEN)  $$module updated$(NC)"; \
+deps-all: ## Actualizar dependencias en todos los módulos Go
+	@for module in $(GO_MODULES); do \
+		echo "$(YELLOW)Updating deps $$module...$(NC)"; \
+		$(MAKE) -C $$module deps || exit 1; \
+		echo ""; \
 	done
-	@echo "$(GREEN)Todos los modulos actualizados$(NC)"
+	@echo "$(GREEN)Dependencias actualizadas en todos los módulos$(NC)"
 
-.PHONY: check-all
-check-all: fmt-all vet-all lint-all test-all ## Validacion completa de todos los modulos
-	@echo "$(GREEN)Validacion completa exitosa$(NC)"
+check-all: fmt-all vet-all lint-all test-all build-all ## Validación completa con formateo
+	@echo "$(GREEN)Validación completa exitosa$(NC)"
+
+release-check-all: ## Validar todos los módulos listos para release
+	@for module in $(RELEASE_MODULES); do \
+		echo "$(YELLOW)Release check $$module...$(NC)"; \
+		$(MAKE) -C $$module release-check || exit 1; \
+		echo ""; \
+	done
+	@echo "$(GREEN)Todos los módulos están validados para release$(NC)"
+
+release-check: require-module ## Ejecutar release-check en un módulo (MODULE=postgres)
+	@$(MAKE) -C "$(MODULE)" release-check
+
+release-prepare: require-module ## Actualizar CHANGELOG para VERSION en un módulo
+	@$(MAKE) -C "$(MODULE)" release-prepare VERSION="$(VERSION)"
+
+release-notes: require-module ## Mostrar notas de release de un módulo
+	@$(MAKE) -C "$(MODULE)" release-notes VERSION="$(VERSION)"
+
+release-tag: require-module ## Crear tag local de un módulo
+	@$(MAKE) -C "$(MODULE)" release-tag VERSION="$(VERSION)"
+
+release-push-tag: require-module ## Publicar tag de un módulo
+	@$(MAKE) -C "$(MODULE)" release-push-tag VERSION="$(VERSION)"
+
+release-github: require-module ## Crear GitHub Release de un módulo
+	@$(MAKE) -C "$(MODULE)" release-github VERSION="$(VERSION)"
 
 # ===================
 # UTILIDADES
 # ===================
 
-.PHONY: clean
-clean: ## Limpiar archivos temporales
-	@echo "$(BLUE)Limpiando...$(NC)"
-	@rm -rf tmp/ temp/ *.log
-	@for module in $(MODULES); do \
-		(cd $$module && rm -rf build && go clean -testcache); \
+clean: ## Limpiar artefactos temporales del repo y módulos
+	@rm -rf tmp temp *.log logs/*.log
+	@for module in $(GO_MODULES); do \
+		$(MAKE) -C $$module clean || exit 1; \
 	done
 	@echo "$(GREEN)Limpieza completada$(NC)"
 
-.PHONY: status
-status: ## Ver estado general del ambiente
-	@echo "$(BLUE)Estado del Ambiente EduGo$(NC)"
+status: ## Ver estado general del repo local
+	@echo "$(BLUE)Estado del stack local$(NC)"
+	@$(MAKE) -C docker ps || true
 	@echo ""
-	@echo "Docker:"
-	@cd docker && docker-compose ps || echo "  Servicios no corriendo"
-	@echo ""
-	@echo "Migraciones PostgreSQL:"
-	@cd postgres && go run cmd/migrate/migrate.go status 2>/dev/null || echo "  No ejecutadas aun"
+	@echo "$(BLUE)Estado migraciones PostgreSQL$(NC)"
+	@$(MAKE) -C postgres migrate-status || true
 
 .DEFAULT_GOAL := help

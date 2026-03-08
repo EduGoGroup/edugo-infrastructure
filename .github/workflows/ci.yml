@@ -6,104 +6,90 @@ on:
   pull_request:
     branches: [main, dev]
 
+env:
+  GO_VERSION: "1.25"
+
 jobs:
-  validate-migrations:
-    name: Validar Compilación de CLIs
+  quality-modules:
+    name: Quality ${{ matrix.module }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        module:
+          - postgres
+          - mongodb
+          - schemas
+          - tools/mock-generator
 
     steps:
       - name: Checkout código
-        run: |
-          git clone --depth=1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
-          git fetch --depth=1 origin ${{ github.sha }}
-          git checkout ${{ github.sha }}
+        uses: actions/checkout@v6
 
-      - name: Instalar Go 1.25
-        run: |
-          wget -q https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
-          sudo rm -rf /usr/local/go
-          sudo tar -C /usr/local -xzf go1.25.0.linux-amd64.tar.gz
-          echo "/usr/local/go/bin" >> $GITHUB_PATH
-          export PATH=$PATH:/usr/local/go/bin
-          go version
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
-      - name: Configurar Git para repos privados
+      - name: Instalar golangci-lint
+        shell: bash
         run: |
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-        env:
-          GOPRIVATE: github.com/EduGoGroup/*
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.7
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
-      - name: Validar compilación - PostgreSQL
+      - name: Calidad del módulo
         run: |
-          cd postgres
-          export PATH=$PATH:/usr/local/go/bin
-          go mod download
-          go build ./cmd/migrate
-          go build ./cmd/runner
-          echo "✅ PostgreSQL CLIs compilan correctamente"
+          make -C "${{ matrix.module }}" fmt-check
+          make -C "${{ matrix.module }}" vet
+          make -C "${{ matrix.module }}" lint
 
-      - name: Validar compilación - MongoDB
-        run: |
-          cd mongodb
-          export PATH=$PATH:/usr/local/go/bin
-          go mod download
-          go build ./cmd/migrate
-          echo "✅ MongoDB CLIs compilan correctamente"
+  build-modules:
+    name: Build ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        module:
+          - postgres
+          - mongodb
+          - schemas
+          - tools/mock-generator
 
-      - name: Validar sintaxis SQL
-        run: |
-          echo "ℹ️ Validación de sintaxis SQL - revisar manualmente archivos .sql"
-          echo "ℹ️ Tests de integración se ejecutan localmente con ENABLE_INTEGRATION_TESTS=true"
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Build módulo
+        run: make -C "${{ matrix.module }}" build
 
   test-modules:
-    name: Tests Unitarios
+    name: Test ${{ matrix.module }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        module:
+          - postgres
+          - mongodb
+          - schemas
+          - tools/mock-generator
 
     steps:
       - name: Checkout código
-        run: |
-          git clone --depth=1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
-          git fetch --depth=1 origin ${{ github.sha }}
-          git checkout ${{ github.sha }}
+        uses: actions/checkout@v6
 
-      - name: Instalar Go 1.25
-        run: |
-          wget -q https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
-          sudo rm -rf /usr/local/go
-          sudo tar -C /usr/local -xzf go1.25.0.linux-amd64.tar.gz
-          echo "/usr/local/go/bin" >> $GITHUB_PATH
-          export PATH=$PATH:/usr/local/go/bin
-          go version
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
 
-      - name: Configurar Git para repos privados
-        run: |
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-        env:
-          GOPRIVATE: github.com/EduGoGroup/*
-
-      - name: Tests - PostgreSQL
-        run: |
-          cd postgres
-          export PATH=$PATH:/usr/local/go/bin
-          go mod download
-          go test -short -race -v ./...
-          echo "✅ Tests PostgreSQL completados"
-
-      - name: Tests - MongoDB
-        run: |
-          cd mongodb
-          export PATH=$PATH:/usr/local/go/bin
-          go mod download
-          go test -short -race -v ./...
-          echo "✅ Tests MongoDB completados"
-
-      - name: Tests - Schemas
-        run: |
-          cd schemas
-          export PATH=$PATH:/usr/local/go/bin
-          go mod download
-          go test -short -race -v ./...
-          echo "✅ Tests Schemas completados"
-
-# Nota: Lint se ejecuta localmente con 'golangci-lint run'
-# No requiere configuración en CI durante fase de desarrollo
+      - name: Tests del módulo
+        run: make -C "${{ matrix.module }}" test

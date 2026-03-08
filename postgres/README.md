@@ -1,148 +1,40 @@
-# PostgreSQL - Estructura de 4 Capas
+# postgres
 
-## 📁 Estructura
+Modulo responsable del activo relacional de `edugo-infrastructure`.
 
-```
-postgres/
-├── structure/          # Capa 1: Definición de tablas (sin FK, sin CHECK)
-│   ├── 001_users.sql
-│   ├── 002_schools.sql
-│   ├── 003_academic_units.sql
-│   ├── 004_memberships.sql
-│   ├── 005_materials.sql
-│   ├── 006_assessment.sql
-│   ├── 007_assessment_attempt.sql
-│   ├── 008_assessment_attempt_answer.sql
-│   ├── 009_extend_assessment.sql
-│   ├── 010_extend_attempt.sql
-│   └── 011_extend_answer.sql
-│
-├── constraints/        # Capa 2: Foreign Keys, UNIQUE, CHECK, Triggers, Views
-│   ├── 001_users.sql
-│   ├── 002_schools.sql
-│   ├── 003_academic_units.sql
-│   ├── 004_memberships.sql
-│   ├── 005_materials.sql
-│   ├── 006_assessment.sql
-│   ├── 007_assessment_attempt.sql
-│   ├── 008_assessment_attempt_answer.sql
-│   ├── 009_extend_assessment.sql
-│   ├── 010_extend_attempt.sql
-│   └── 011_extend_answer.sql
-│
-├── seeds/              # Capa 3: Datos iniciales/demo
-│   └── (vacío por ahora)
-│
-├── testing/            # Capa 4: Tests SQL
-│   └── (vacío por ahora)
-│
-├── cmd/
-│   ├── migrate/        # CLI de migraciones tradicionales (legacy)
-│   │   └── migrate.go
-│   └── runner/         # Runner de 4 capas (nuevo)
-│       └── runner.go
-│
-├── go.mod              # Módulo Go
-└── migrations/         # Migraciones originales (legacy)
-```
+## Rol actual
 
-## 🚀 Uso
+- Define el schema SQL principal del dominio.
+- Embebe scripts de estructura para inicializar una base desde cero.
+- Embebe seeds de produccion y desarrollo.
+- Publica entities Go alineadas con tablas y schemas actuales.
+- Expone CLIs para migracion legacy y ejecucion por capas.
 
-### Ejecutar con runner (nueva arquitectura de 4 capas)
+## Estado observado
 
-```bash
-# Configurar variables de entorno (opcional)
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-export POSTGRES_USER=edugo
-export POSTGRES_PASSWORD=edugo_dev_2024
-export POSTGRES_DB=edugo_db
+- Tests cortos pasan.
+- El paquete `migrations` y el paquete `seeds` son la superficie programatica mas confiable del modulo hoy.
+- El modulo tiene tags historicos; el ultimo tag observado en Git es `postgres/v0.61.0`.
 
-# Opción 1: Ejecutar directamente
-cd cmd/runner
-go run .
+## Documentacion del modulo
 
-# Opción 2: Compilar y ejecutar
-cd cmd/runner
-go build -o runner .
-./runner
+- [docs/README.md](docs/README.md)
+- [docs/processes.md](docs/processes.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/ecosystem-integration.md](docs/ecosystem-integration.md)
+- [../docs/releasing.md](../docs/releasing.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
-# Opción 3: Desde el directorio postgres/
-go run ./cmd/runner
-```
+## Entrada rapida
 
-### Ejecutar migraciones tradicionales (legacy)
+Comandos utiles observados:
 
-```bash
-# Ver ayuda
-cd cmd/migrate
-go run . --help
+- `make -C postgres build test fmt-check`
+- `make -C postgres release-check`
+- `make -C postgres migrate-status`
+- `make -C postgres runner-up`
+- `make -C postgres seed-all`
 
-# Aplicar migraciones
-go run . up
+## Nota operativa
 
-# Revertir última migración
-go run . down
-```
-
-### Salida esperada
-
-```
-✓ Conectado a PostgreSQL: edugo@localhost:5432/edugo_db
-
-═══════════════════════════════════════════════════════════════
-  CAPA: STRUCTURE
-═══════════════════════════════════════════════════════════════
-
-▸ Ejecutando: 001_users.sql
-  ✓ Éxito
-▸ Ejecutando: 002_schools.sql
-  ✓ Éxito
-...
-
-═══════════════════════════════════════════════════════════════
-  CAPA: CONSTRAINTS
-═══════════════════════════════════════════════════════════════
-
-▸ Ejecutando: 001_users.sql
-  ✓ Éxito
-...
-
-═══════════════════════════════════════════════════════════════
-  RESUMEN FINAL
-═══════════════════════════════════════════════════════════════
-✓ Archivos ejecutados: 22
-⊘ Archivos omitidos: 0
-✓ Todas las capas procesadas exitosamente
-```
-
-## 📋 Orden de ejecución
-
-1. **STRUCTURE** (azul): Crea tablas, índices, comentarios
-2. **CONSTRAINTS** (púrpura): Agrega FK, UNIQUE, CHECK, triggers, views
-3. **SEEDS** (verde): Inserta datos iniciales
-4. **TESTING** (cyan): Ejecuta tests SQL
-
-## 🔧 Características
-
-- ✅ Separa estructura de constraints para evitar dependencias circulares
-- ✅ Preserva TODO: CHECK constraints, COMMENTS, UNIQUE, triggers, views
-- ✅ Nombres cortos: `001_users.sql` en lugar de `001_create_users.sql`
-- ✅ Mantiene orden 001-011 de migraciones originales
-- ✅ Runner Go con colores y resumen detallado
-- ✅ Idempotente: se puede ejecutar múltiples veces
-- ✅ Archivos 009-011 vacíos (extensiones ya incluidas en 006-008)
-
-## 🎯 Ventajas sobre migraciones
-
-- **Atómico**: Se ejecuta todo o nada
-- **Rápido**: No hay control de versiones, ideal para dev
-- **Simple**: Un comando ejecuta todo
-- **Flexible**: Fácil agregar seeds y tests
-- **Visual**: Colores por capa para seguimiento claro
-
-## 📝 Notas
-
-- Los archivos 009, 010, 011 existen solo para compatibilidad
-- Las extensiones ya están incluidas en 006, 007, 008
-- Los directorios `seeds/` y `testing/` están preparados para uso futuro
+La integracion con otros repositorios ya esta documentada en `docs/ecosystem-integration.md`. El flujo de release se comparte a nivel repo en `../docs/releasing.md` para no duplicar reglas.
