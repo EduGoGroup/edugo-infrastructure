@@ -11,14 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// seedDocument representa un conjunto de documentos para insertar en una colección
+// seedDocument representa un conjunto de documentos para insertar en una coleccion
 type seedDocument struct {
 	collection string
 	documents  []interface{}
 }
 
 // applySeedsInternal ejecuta todos los seeds en la base de datos MongoDB
-// Retorna el número de documentos insertados y cualquier error
+// Retorna el numero de documentos insertados y cualquier error
 func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 	seeds := getSeedDocuments()
 	totalInserted := 0
@@ -30,19 +30,18 @@ func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 
 		collection := db.Collection(seed.collection)
 
-		// Usar ordered: false para que si un documento ya existe, continúe con los demás
+		// Usar ordered: false para que si un documento ya existe, continue con los demas
 		opts := options.InsertMany().SetOrdered(false)
 
 		result, err := collection.InsertMany(ctx, seed.documents, opts)
 		if err != nil {
-			// Si es error de duplicados, solo reportamos cuántos se insertaron
+			// Si es error de duplicados, solo reportamos cuantos se insertaron
 			if mongo.IsDuplicateKeyError(err) {
 				inserted := 0
 				if result != nil {
 					inserted = len(result.InsertedIDs)
 				}
 				totalInserted += inserted
-				// Continuamos con la siguiente colección
 				continue
 			}
 			return totalInserted, fmt.Errorf("error insertando seeds en %s: %w", seed.collection, err)
@@ -54,67 +53,68 @@ func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 	return totalInserted, nil
 }
 
-// getSeedDocuments retorna todos los seeds organizados por colección
+// getSeedDocuments retorna todos los seeds organizados por coleccion
+// IDs alineados con PostgreSQL v2 seeds (007_materials.sql):
+//   - mat001: aa100000-0000-0000-0000-000000000001 (Fracciones)
+//   - mat002: aa100000-0000-0000-0000-000000000002 (Sistema Solar)
+//   - mat003: aa100000-0000-0000-0000-000000000003 (Historia Chile)
+//   - mat004: aa100000-0000-0000-0000-000000000004 (Teoria del Color)
+//   - mat005: aa100000-0000-0000-0000-000000000005 (English Grammar)
 func getSeedDocuments() []seedDocument {
 	return []seedDocument{
 		materialAssessmentWorkerSeeds(),
 		materialSummarySeeds(),
-		// Las siguientes colecciones fueron eliminadas por no uso:
-		// - analytics_events (analytics usa servicio externo)
-		// - material_assessment (duplicada por material_assessment_worker)
-		// - audit_logs (usará SaaS externo)
-		// - notifications (push notifications no implementado)
 	}
 }
 
-// materialAssessmentWorkerSeeds retorna los seeds de la colección material_assessment_worker
+// materialAssessmentWorkerSeeds retorna los seeds de la coleccion material_assessment_worker
 func materialAssessmentWorkerSeeds() seedDocument {
 	return seedDocument{
 		collection: "material_assessment_worker",
 		documents: []interface{}{
-			// Worker 1 - POO Java
+			// Worker 1 - Fracciones (mat001)
 			bson.D{
-				{Key: "material_id", Value: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000001"},
 				{Key: "questions", Value: bson.A{
 					bson.D{
 						{Key: "question_id", Value: "q1111111-1111-1111-1111-111111111111"},
-						{Key: "question_text", Value: "¿Cuál es el principio fundamental de la Programación Orientada a Objetos que permite ocultar los detalles de implementación?"},
+						{Key: "question_text", Value: "Cual es la fraccion equivalente a 2/4?"},
 						{Key: "question_type", Value: "multiple_choice"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "Herencia"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "Polimorfismo"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "Encapsulación"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Abstracción"}},
+							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "3/6"}},
+							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "1/2"}},
+							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "4/8"}},
+							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Todas las anteriores"}},
 						}},
-						{Key: "correct_answer", Value: "opt3"},
-						{Key: "explanation", Value: "La encapsulación es el principio que permite ocultar los detalles internos de implementación y exponer solo lo necesario mediante interfaces públicas."},
+						{Key: "correct_answer", Value: "opt4"},
+						{Key: "explanation", Value: "Todas son equivalentes a 2/4 ya que al simplificar dan 1/2."},
 						{Key: "points", Value: 10},
-						{Key: "difficulty", Value: "medium"},
-						{Key: "tags", Value: bson.A{"POO", "conceptos"}},
+						{Key: "difficulty", Value: "easy"},
+						{Key: "tags", Value: bson.A{"fracciones", "equivalentes"}},
 					},
 					bson.D{
 						{Key: "question_id", Value: "q2222222-2222-2222-2222-222222222222"},
-						{Key: "question_text", Value: "En Java, ¿una clase puede heredar de múltiples clases?"},
+						{Key: "question_text", Value: "3/5 + 1/5 es igual a 4/10?"},
 						{Key: "question_type", Value: "true_false"},
 						{Key: "options", Value: bson.A{
 							bson.D{{Key: "option_id", Value: "true"}, {Key: "option_text", Value: "Verdadero"}},
 							bson.D{{Key: "option_id", Value: "false"}, {Key: "option_text", Value: "Falso"}},
 						}},
 						{Key: "correct_answer", Value: "false"},
-						{Key: "explanation", Value: "Java no soporta herencia múltiple de clases para evitar el problema del diamante. Sin embargo, una clase puede implementar múltiples interfaces."},
+						{Key: "explanation", Value: "3/5 + 1/5 = 4/5, no 4/10. Cuando los denominadores son iguales, se suman los numeradores."},
 						{Key: "points", Value: 5},
 						{Key: "difficulty", Value: "easy"},
 					},
 					bson.D{
 						{Key: "question_id", Value: "q3333333-3333-3333-3333-333333333333"},
-						{Key: "question_text", Value: "Explica brevemente qué es el polimorfismo y da un ejemplo en Java."},
+						{Key: "question_text", Value: "Explica como se multiplican dos fracciones y da un ejemplo."},
 						{Key: "question_type", Value: "open"},
 						{Key: "options", Value: bson.A{}},
-						{Key: "correct_answer", Value: "El polimorfismo permite que objetos de diferentes clases sean tratados como objetos de una clase común. Ejemplo: Animal animal = new Perro(); donde Perro extiende Animal."},
-						{Key: "explanation", Value: "El polimorfismo permite escribir código más flexible y reutilizable al trabajar con abstracciones en lugar de implementaciones concretas."},
+						{Key: "correct_answer", Value: "Se multiplican los numeradores entre si y los denominadores entre si. Ejemplo: 2/3 x 4/5 = 8/15."},
+						{Key: "explanation", Value: "La multiplicacion de fracciones es directa: numerador por numerador y denominador por denominador."},
 						{Key: "points", Value: 15},
-						{Key: "difficulty", Value: "hard"},
-						{Key: "tags", Value: bson.A{"POO", "polimorfismo"}},
+						{Key: "difficulty", Value: "medium"},
+						{Key: "tags", Value: bson.A{"fracciones", "operaciones"}},
 					},
 				}},
 				{Key: "total_questions", Value: 3},
@@ -127,60 +127,52 @@ func materialAssessmentWorkerSeeds() seedDocument {
 					{Key: "completion_tokens", Value: 450},
 					{Key: "total_tokens", Value: 1650},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-15T10:35:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-15T10:35:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
 			},
-			// Worker 2 - React Hooks
+			// Worker 2 - Sistema Solar (mat002)
 			bson.D{
-				{Key: "material_id", Value: "f1a2b3c4-d5e6-4f5a-9b8c-7d6e5f4a3b2c"},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000002"},
 				{Key: "questions", Value: bson.A{
 					bson.D{
 						{Key: "question_id", Value: "q4444444-4444-4444-4444-444444444444"},
-						{Key: "question_text", Value: "Which React Hook is used to perform side effects in functional components?"},
+						{Key: "question_text", Value: "Cual es el planeta mas grande del Sistema Solar?"},
 						{Key: "question_type", Value: "multiple_choice"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "useState"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "useEffect"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "useContext"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "useReducer"}},
+							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "Saturno"}},
+							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "Jupiter"}},
+							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "Urano"}},
+							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Neptuno"}},
 						}},
 						{Key: "correct_answer", Value: "opt2"},
-						{Key: "explanation", Value: "useEffect is the Hook used to perform side effects such as data fetching, subscriptions, or manually changing the DOM."},
+						{Key: "explanation", Value: "Jupiter es el planeta mas grande del Sistema Solar, con un diametro de aproximadamente 139.820 km."},
 						{Key: "points", Value: 10},
 						{Key: "difficulty", Value: "easy"},
-						{Key: "tags", Value: bson.A{"React", "Hooks"}},
+						{Key: "tags", Value: bson.A{"planetas", "sistema solar"}},
 					},
 					bson.D{
 						{Key: "question_id", Value: "q5555555-5555-5555-5555-555555555555"},
-						{Key: "question_text", Value: "What is the correct syntax for creating a custom Hook in React?"},
-						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "question_text", Value: "La Tierra es el tercer planeta mas cercano al Sol?"},
+						{Key: "question_type", Value: "true_false"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "function myHook() {}"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "const myHook = () => {}"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "function useMyHook() {}"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "hook myHook() {}"}},
+							bson.D{{Key: "option_id", Value: "true"}, {Key: "option_text", Value: "Verdadero"}},
+							bson.D{{Key: "option_id", Value: "false"}, {Key: "option_text", Value: "Falso"}},
 						}},
-						{Key: "correct_answer", Value: "opt3"},
-						{Key: "explanation", Value: "Custom Hooks must start with 'use' prefix to follow React conventions and enable linting rules."},
+						{Key: "correct_answer", Value: "true"},
+						{Key: "explanation", Value: "La Tierra es el tercer planeta en distancia al Sol, despues de Mercurio y Venus."},
 						{Key: "points", Value: 10},
-						{Key: "difficulty", Value: "medium"},
-						{Key: "tags", Value: bson.A{"React", "Hooks", "custom"}},
+						{Key: "difficulty", Value: "easy"},
 					},
 					bson.D{
 						{Key: "question_id", Value: "q6666666-6666-4666-8666-666666666666"},
-						{Key: "question_text", Value: "What does the useCallback Hook do in React?"},
-						{Key: "question_type", Value: "multiple_choice"},
-						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "Manages component state"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "Memoizes a callback function"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "Fetches data from an API"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Creates a ref to a DOM element"}},
-						}},
-						{Key: "correct_answer", Value: "opt2"},
-						{Key: "explanation", Value: "useCallback returns a memoized callback that only changes if one of the dependencies has changed."},
+						{Key: "question_text", Value: "Nombra los 4 planetas rocosos del Sistema Solar y explica por que se llaman asi."},
+						{Key: "question_type", Value: "open"},
+						{Key: "options", Value: bson.A{}},
+						{Key: "correct_answer", Value: "Mercurio, Venus, Tierra y Marte. Se llaman rocosos porque tienen una superficie solida compuesta principalmente de silicatos y metales."},
+						{Key: "explanation", Value: "Los planetas rocosos o terrestres se distinguen de los gaseosos por tener una corteza solida."},
 						{Key: "points", Value: 10},
-						{Key: "difficulty", Value: "hard"},
-						{Key: "tags", Value: bson.A{"React", "Hooks", "performance"}},
+						{Key: "difficulty", Value: "medium"},
+						{Key: "tags", Value: bson.A{"planetas", "clasificacion"}},
 					},
 				}},
 				{Key: "total_questions", Value: 3},
@@ -188,28 +180,28 @@ func materialAssessmentWorkerSeeds() seedDocument {
 				{Key: "version", Value: 1},
 				{Key: "ai_model", Value: "gpt-4-turbo"},
 				{Key: "processing_time_ms", Value: 4100},
-				{Key: "created_at", Value: mustParseTime("2025-11-16T14:25:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-16T14:25:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
 			},
 		},
 	}
 }
 
-// materialSummarySeeds retorna los seeds de la colección material_summary
+// materialSummarySeeds retorna los seeds de la coleccion material_summary
 func materialSummarySeeds() seedDocument {
 	return seedDocument{
 		collection: "material_summary",
 		documents: []interface{}{
-			// Summary 1 - POO Java (español)
+			// Summary 1 - Fracciones (mat001)
 			bson.D{
-				{Key: "material_id", Value: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"},
-				{Key: "summary", Value: "Este material cubre los fundamentos de la programación orientada a objetos en Java. Se explican conceptos clave como clases, objetos, herencia, polimorfismo y encapsulación con ejemplos prácticos."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000001"},
+				{Key: "summary", Value: "Material introductorio sobre fracciones simples, equivalentes y operaciones basicas. Cubre suma, resta, multiplicacion y division de fracciones con ejemplos practicos."},
 				{Key: "key_points", Value: bson.A{
-					"Introducción a POO y sus principios fundamentales",
-					"Clases y objetos: definición y uso",
-					"Herencia y polimorfismo en Java",
-					"Encapsulación y modificadores de acceso",
-					"Ejemplos prácticos con código",
+					"Concepto de fraccion: numerador y denominador",
+					"Fracciones equivalentes y simplificacion",
+					"Suma y resta de fracciones con igual y distinto denominador",
+					"Multiplicacion y division de fracciones",
+					"Problemas de aplicacion con fracciones",
 				}},
 				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 42},
@@ -225,21 +217,21 @@ func materialSummarySeeds() seedDocument {
 					{Key: "source_length", Value: 5420},
 					{Key: "has_images", Value: false},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-15T10:30:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-15T10:30:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
 			},
-			// Summary 2 - React Hooks (inglés)
+			// Summary 2 - Sistema Solar (mat002)
 			bson.D{
-				{Key: "material_id", Value: "f1a2b3c4-d5e6-4f5a-9b8c-7d6e5f4a3b2c"},
-				{Key: "summary", Value: "A comprehensive guide to React Hooks covering useState, useEffect, useContext, and custom hooks. Learn how to manage state and side effects in functional components effectively."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000002"},
+				{Key: "summary", Value: "Descripcion completa de los planetas del Sistema Solar, el Sol y sus caracteristicas principales. Incluye datos como tamano, distancia al Sol y composicion."},
 				{Key: "key_points", Value: bson.A{
-					"Introduction to React Hooks and their benefits",
-					"useState for state management",
-					"useEffect for side effects and lifecycle",
-					"useContext for global state sharing",
-					"Creating custom hooks for reusable logic",
+					"El Sol como estrella central del sistema",
+					"Planetas rocosos: Mercurio, Venus, Tierra, Marte",
+					"Planetas gaseosos: Jupiter, Saturno, Urano, Neptuno",
+					"Cinturon de asteroides y otros cuerpos",
+					"Comparacion de tamanos y distancias",
 				}},
-				{Key: "language", Value: "en"},
+				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 38},
 				{Key: "version", Value: 1},
 				{Key: "ai_model", Value: "gpt-4-turbo"},
@@ -249,21 +241,21 @@ func materialSummarySeeds() seedDocument {
 					{Key: "completion_tokens", Value: 165},
 					{Key: "total_tokens", Value: 1085},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-16T14:20:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-16T14:20:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
 			},
-			// Summary 3 - Estruturas de dados (portugués)
+			// Summary 3 - Historia de Chile (mat003)
 			bson.D{
-				{Key: "material_id", Value: "b2c3d4e5-f6a7-4b5c-8d9e-0f1a2b3c4d5e"},
-				{Key: "summary", Value: "Material sobre estruturas de dados fundamentais: arrays, listas encadeadas, pilhas e filas. Inclui análise de complexidade e implementações práticas em Python."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000003"},
+				{Key: "summary", Value: "Resumen de los principales procesos de la independencia de Chile, desde la Primera Junta de Gobierno hasta la consolidacion de la republica."},
 				{Key: "key_points", Value: bson.A{
-					"Arrays e suas operações básicas",
-					"Listas encadeadas: simples e duplas",
-					"Pilhas (LIFO) e suas aplicações",
-					"Filas (FIFO) e variantes",
-					"Análise de complexidade temporal e espacial",
+					"Contexto historico: invasion napoleonica a Espana",
+					"Primera Junta de Gobierno (1810)",
+					"Patria Vieja y Reconquista",
+					"Batalla de Chacabuco y Maipu",
+					"Proclamacion de la independencia",
 				}},
-				{Key: "language", Value: "pt"},
+				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 35},
 				{Key: "version", Value: 1},
 				{Key: "ai_model", Value: "gpt-4o"},
@@ -273,14 +265,14 @@ func materialSummarySeeds() seedDocument {
 					{Key: "completion_tokens", Value: 155},
 					{Key: "total_tokens", Value: 935},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-17T09:45:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-17T09:45:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
 			},
 		},
 	}
 }
 
-// mustParseTime parsea una fecha RFC3339 o entra en pánico (solo para seeds)
+// mustParseTime parsea una fecha RFC3339 o entra en panico (solo para seeds)
 func mustParseTime(s string) time.Time {
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {

@@ -76,8 +76,8 @@ fi
 
 # 8. Cargar seeds
 echo ""
-echo "🌱 Cargando datos de prueba..."
-./scripts/seed-data.sh || echo "⚠️  Seeds no cargados (verificar script)"
+echo "🌱 Para cargar datos de prueba, usar el migrator de edugo-dev-environment"
+echo "   cd ../edugo-dev-environment && go run ./migrator/"
 
 # 9. Resumen final
 echo ""
