@@ -111,6 +111,9 @@ VALUES
   ('c2000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000080', 'concept_types:update', 'Editar Tipo de Concepto',   'Modificar tipos y sus definiciones',          'update', 'system', TRUE),
   ('c2000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000080', 'concept_types:delete', 'Eliminar Tipo de Concepto', 'Desactivar tipos de concepto',               'delete', 'system', TRUE),
 
+  -- assessments_student (resource: 20000000-0000-0000-0000-000000000033)
+  ('30000000-0000-0000-0000-000000000033', '20000000-0000-0000-0000-000000000033', 'assessments_student:read', 'Ver evaluaciones como estudiante', 'Permite ver y tomar evaluaciones desde la perspectiva del estudiante', 'read', 'unit', TRUE),
+
   -- dashboard (resource: 20000000-0000-0000-0000-000000000001)
   ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE)
 ON CONFLICT (id) DO NOTHING;

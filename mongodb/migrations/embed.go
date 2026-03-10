@@ -106,7 +106,7 @@ func createMaterialSummary(ctx context.Context, db *mongo.Database) error {
 			"bsonType": "object",
 			"required": []string{"material_id", "summary", "key_points", "language", "word_count", "version", "ai_model", "processing_time_ms", "created_at", "updated_at"},
 			"properties": bson.M{
-				"material_id":        bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"},
+				"material_id":        bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"},
 				"summary":            bson.M{"bsonType": "string", "minLength": 10, "maxLength": 5000},
 				"key_points":         bson.M{"bsonType": "array", "minItems": 1, "maxItems": 10, "items": bson.M{"bsonType": "string"}},
 				"language":           bson.M{"bsonType": "string", "enum": []string{"es", "en", "pt"}},
@@ -134,7 +134,7 @@ func createMaterialAssessmentWorker(ctx context.Context, db *mongo.Database) err
 			"bsonType": "object",
 			"required": []string{"questions", "total_questions", "total_points", "version", "ai_model", "created_at", "updated_at"},
 			"properties": bson.M{
-				"material_id": bson.M{"bsonType": "string"},
+				"material_id": bson.M{"bsonType": []string{"string", "null"}},
 				"questions": bson.M{
 					"bsonType": "array", "maxItems": 50,
 					"items": bson.M{
@@ -178,8 +178,8 @@ func createMaterialEvent(ctx context.Context, db *mongo.Database) error {
 			"required": []string{"event_type", "payload", "status", "retry_count", "created_at", "updated_at"},
 			"properties": bson.M{
 				"event_type":    bson.M{"bsonType": "string", "enum": []string{"material_uploaded", "material_reprocess", "material_deleted", "assessment_attempt", "student_enrolled", "student_unenrolled"}},
-				"material_id":   bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"},
-				"user_id":       bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"},
+				"material_id":   bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"},
+				"user_id":       bson.M{"bsonType": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"},
 				"payload":       bson.M{"bsonType": "object"},
 				"status":        bson.M{"bsonType": "string", "enum": []string{"pending", "processing", "completed", "failed"}},
 				"error_msg":     bson.M{"bsonType": "string", "maxLength": 5000},
