@@ -5,175 +5,107 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"sort"
-	"strings"
 
 	_ "github.com/lib/pq"
+
+	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 )
-
-const (
-	colorReset  = "\033[0m"
-	colorRed    = "\033[31m"
-	colorGreen  = "\033[32m"
-	colorYellow = "\033[33m"
-	colorBlue   = "\033[34m"
-	colorPurple = "\033[35m"
-	colorCyan   = "\033[36m"
-)
-
-type Layer struct {
-	Name      string
-	Directory string
-	Color     string
-}
-
-var layers = []Layer{
-	{Name: "STRUCTURE", Directory: "structure", Color: colorBlue},
-	{Name: "CONSTRAINTS", Directory: "constraints", Color: colorPurple},
-	{Name: "SEEDS", Directory: "seeds", Color: colorGreen},
-	{Name: "TESTING", Directory: "testing", Color: colorCyan},
-}
 
 func main() {
-	// Configuración de conexión a PostgreSQL
-	dbHost := getEnv("POSTGRES_HOST", "localhost")
-	dbPort := getEnv("POSTGRES_PORT", "5432")
-	dbUser := getEnv("POSTGRES_USER", "edugo")
-	dbPassword := getEnv("POSTGRES_PASSWORD", "edugo_dev_2024")
-	dbName := getEnv("POSTGRES_DB", "edugo_db")
+	command := "all"
+	if len(os.Args) > 1 {
+		command = os.Args[1]
+	}
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
+	if command == "help" || command == "--help" || command == "-h" {
+		printHelp()
+		return
+	}
 
-	// Conectar a la base de datos
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", buildDBURL())
 	if err != nil {
-		log.Fatalf("%s✗ Error conectando a PostgreSQL: %v%s\n", colorRed, err, colorReset)
+		log.Fatalf("error conectando a PostgreSQL: %v", err)
 	}
 	defer func() { _ = db.Close() }()
 
-	// Verificar conexión
 	if err := db.Ping(); err != nil {
-		log.Fatalf("%s✗ Error verificando conexión: %v%s\n", colorRed, err, colorReset)
+		log.Fatalf("error validando conexión PostgreSQL: %v", err)
 	}
 
-	fmt.Printf("%s✓ Conectado a PostgreSQL: %s@%s:%s/%s%s\n\n",
-		colorGreen, dbUser, dbHost, dbPort, dbName, colorReset)
-
-	// Obtener directorio base
-	baseDir, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("%s✗ Error obteniendo directorio actual: %v%s\n", colorRed, err, colorReset)
-	}
-
-	// Ejecutar cada capa en orden
-	totalExecuted := 0
-	totalSkipped := 0
-
-	for _, layer := range layers {
-		layerDir := filepath.Join(baseDir, layer.Directory)
-
-		// Verificar si el directorio existe
-		if _, err := os.Stat(layerDir); os.IsNotExist(err) {
-			fmt.Printf("%s⊘ Capa %s: directorio no existe, omitiendo...%s\n\n",
-				colorYellow, layer.Name, colorReset)
-			continue
+	switch command {
+	case "structure":
+		fmt.Println("Aplicando estructura PostgreSQL...")
+		if err := postgresMigrations.ApplyAll(db); err != nil {
+			log.Fatalf("error aplicando estructura: %v", err)
 		}
-
-		fmt.Printf("%s═══════════════════════════════════════════════════════════════%s\n", layer.Color, colorReset)
-		fmt.Printf("%s  CAPA: %s%s\n", layer.Color, layer.Name, colorReset)
-		fmt.Printf("%s═══════════════════════════════════════════════════════════════%s\n\n", layer.Color, colorReset)
-
-		executed, skipped := executeLayer(db, layerDir, layer.Color)
-		totalExecuted += executed
-		totalSkipped += skipped
-
-		fmt.Println()
+	case "production-seeds":
+		fmt.Println("Aplicando seeds de producción...")
+		if err := postgresSeeds.ApplyProduction(db); err != nil {
+			log.Fatalf("error aplicando seeds de producción: %v", err)
+		}
+	case "development-seeds":
+		fmt.Println("Aplicando seeds de desarrollo...")
+		if err := postgresSeeds.ApplyDevelopment(db); err != nil {
+			log.Fatalf("error aplicando seeds de desarrollo: %v", err)
+		}
+	case "all":
+		fmt.Println("Aplicando estructura PostgreSQL...")
+		if err := postgresMigrations.ApplyAll(db); err != nil {
+			log.Fatalf("error aplicando estructura: %v", err)
+		}
+		fmt.Println("Aplicando seeds de producción...")
+		if err := postgresSeeds.ApplyProduction(db); err != nil {
+			log.Fatalf("error aplicando seeds de producción: %v", err)
+		}
+		fmt.Println("Aplicando seeds de desarrollo...")
+		if err := postgresSeeds.ApplyDevelopment(db); err != nil {
+			log.Fatalf("error aplicando seeds de desarrollo: %v", err)
+		}
+	default:
+		printHelp()
+		os.Exit(1)
 	}
 
-	// Resumen final
-	fmt.Printf("%s═══════════════════════════════════════════════════════════════%s\n", colorGreen, colorReset)
-	fmt.Printf("%s  RESUMEN FINAL%s\n", colorGreen, colorReset)
-	fmt.Printf("%s═══════════════════════════════════════════════════════════════%s\n", colorGreen, colorReset)
-	fmt.Printf("%s✓ Archivos ejecutados: %d%s\n", colorGreen, totalExecuted, colorReset)
-	fmt.Printf("%s⊘ Archivos omitidos: %d%s\n", colorYellow, totalSkipped, colorReset)
-	fmt.Printf("%s✓ Todas las capas procesadas exitosamente%s\n", colorGreen, colorReset)
+	fmt.Println("Runner PostgreSQL completado")
 }
 
-func executeLayer(db *sql.DB, layerDir string, color string) (executed, skipped int) {
-	// Leer archivos del directorio
-	files, err := os.ReadDir(layerDir)
-	if err != nil {
-		log.Printf("%s✗ Error leyendo directorio %s: %v%s\n", colorRed, layerDir, err, colorReset)
-		return 0, 0
-	}
-
-	// Filtrar y ordenar archivos .sql
-	var sqlFiles []string
-	for _, file := range files {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ".sql") {
-			sqlFiles = append(sqlFiles, file.Name())
-		}
-	}
-	sort.Strings(sqlFiles)
-
-	if len(sqlFiles) == 0 {
-		fmt.Printf("%s⊘ No se encontraron archivos SQL en %s%s\n", colorYellow, layerDir, colorReset)
-		return 0, 0
-	}
-
-	// Ejecutar cada archivo SQL
-	for _, filename := range sqlFiles {
-		filePath := filepath.Join(layerDir, filename)
-
-		// Leer contenido del archivo
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			log.Printf("%s✗ Error leyendo %s: %v%s\n", colorRed, filename, err, colorReset)
-			continue
-		}
-
-		sqlContent := string(content)
-
-		// Verificar si el archivo tiene contenido ejecutable
-		if isEmptyOrComment(sqlContent) {
-			fmt.Printf("%s⊘ %s (vacío/comentarios)%s\n", colorYellow, filename, colorReset)
-			skipped++
-			continue
-		}
-
-		// Ejecutar el SQL
-		fmt.Printf("%s▸ Ejecutando: %s%s\n", color, filename, colorReset)
-
-		_, err = db.Exec(sqlContent)
-		if err != nil {
-			log.Printf("%s  ✗ Error: %v%s\n", colorRed, err, colorReset)
-			continue
-		}
-
-		fmt.Printf("%s  ✓ Éxito%s\n", colorGreen, colorReset)
-		executed++
-	}
-
-	return executed, skipped
+func printHelp() {
+	fmt.Println("PostgreSQL Runner")
+	fmt.Println("")
+	fmt.Println("Uso:")
+	fmt.Println("  go run ./cmd/runner structure          Aplicar estructura embebida")
+	fmt.Println("  go run ./cmd/runner production-seeds   Aplicar seeds de producción")
+	fmt.Println("  go run ./cmd/runner development-seeds  Aplicar seeds de desarrollo")
+	fmt.Println("  go run ./cmd/runner all                Aplicar estructura + producción + desarrollo")
+	fmt.Println("")
+	fmt.Println("Variables soportadas:")
+	fmt.Println("  DATABASE_URL")
+	fmt.Println("  DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD / DB_SSL_MODE")
+	fmt.Println("  POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_SSLMODE")
 }
 
-func isEmptyOrComment(content string) bool {
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		// Si hay una línea que no es vacía ni comentario, el archivo tiene contenido
-		if trimmed != "" && !strings.HasPrefix(trimmed, "--") {
-			return false
-		}
+func buildDBURL() string {
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		return databaseURL
 	}
-	return true
+
+	host := envFirst("DB_HOST", "POSTGRES_HOST", "localhost")
+	port := envFirst("DB_PORT", "POSTGRES_PORT", "5432")
+	name := envFirst("DB_NAME", "POSTGRES_DB", "edugo_dev")
+	user := envFirst("DB_USER", "POSTGRES_USER", "edugo")
+	password := envFirst("DB_PASSWORD", "POSTGRES_PASSWORD", "changeme")
+	sslmode := envFirst("DB_SSL_MODE", "POSTGRES_SSLMODE", "disable")
+
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, name, sslmode)
 }
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
+func envFirst(primary, secondary, fallback string) string {
+	if value := os.Getenv(primary); value != "" {
 		return value
 	}
-	return defaultValue
+	if value := os.Getenv(secondary); value != "" {
+		return value
+	}
+	return fallback
 }

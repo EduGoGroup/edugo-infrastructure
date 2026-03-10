@@ -179,4 +179,27 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
 }'::jsonb)
 ON CONFLICT (name, version) DO NOTHING;
 
+-- Template 7: Master-Detail
+INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
+('a0000000-0000-0000-0000-000000000007', 'master-detail', 'master-detail-basic-v1', 'Formulario maestro con panel de detalle lateral para entidades hijas', 2, '{
+  "navigation": {"topBar": {"title": "slot:page_title", "showBack": true}},
+  "zones": [
+    {"id": "form_header", "type": "container", "slots": [
+      {"id": "form_title", "controlType": "label", "style": "headline-medium", "bind": "slot:form_title"},
+      {"id": "form_description", "controlType": "label", "style": "body", "bind": "slot:form_description"}
+    ]},
+    {"id": "form_fields", "type": "form-section", "slots": []},
+    {"id": "form_actions", "type": "action-group", "slots": [
+      {"id": "delete_btn", "controlType": "text-button", "bind": "slot:delete_label", "event_id": "delete", "style": "destructive", "condition": "edit-only"},
+      {"id": "submit_btn", "controlType": "filled-button", "bind": "slot:submit_label", "event_id": "submit-form", "style": "filled", "condition": "always"}
+    ]}
+  ],
+  "platformOverrides": {
+    "desktop": {"distribution": "side-by-side"},
+    "web": {"distribution": "side-by-side"},
+    "mobile": {"distribution": "tabbed"}
+  }
+}'::jsonb)
+ON CONFLICT (name, version) DO NOTHING;
+
 COMMIT;

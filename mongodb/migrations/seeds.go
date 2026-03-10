@@ -11,14 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// seedDocument representa un conjunto de documentos para insertar en una colección
+// seedDocument representa un conjunto de documentos para insertar en una coleccion
 type seedDocument struct {
 	collection string
 	documents  []interface{}
 }
 
 // applySeedsInternal ejecuta todos los seeds en la base de datos MongoDB
-// Retorna el número de documentos insertados y cualquier error
+// Retorna el numero de documentos insertados y cualquier error
 func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 	seeds := getSeedDocuments()
 	totalInserted := 0
@@ -30,19 +30,18 @@ func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 
 		collection := db.Collection(seed.collection)
 
-		// Usar ordered: false para que si un documento ya existe, continúe con los demás
+		// Usar ordered: false para que si un documento ya existe, continue con los demas
 		opts := options.InsertMany().SetOrdered(false)
 
 		result, err := collection.InsertMany(ctx, seed.documents, opts)
 		if err != nil {
-			// Si es error de duplicados, solo reportamos cuántos se insertaron
+			// Si es error de duplicados, solo reportamos cuantos se insertaron
 			if mongo.IsDuplicateKeyError(err) {
 				inserted := 0
 				if result != nil {
 					inserted = len(result.InsertedIDs)
 				}
 				totalInserted += inserted
-				// Continuamos con la siguiente colección
 				continue
 			}
 			return totalInserted, fmt.Errorf("error insertando seeds en %s: %w", seed.collection, err)
@@ -54,162 +53,407 @@ func applySeedsInternal(ctx context.Context, db *mongo.Database) (int, error) {
 	return totalInserted, nil
 }
 
-// getSeedDocuments retorna todos los seeds organizados por colección
+// getSeedDocuments retorna todos los seeds organizados por coleccion
+// IDs alineados con PostgreSQL v2 seeds (007_materials.sql):
+//   - mat001: aa100000-0000-0000-0000-000000000001 (Fracciones)
+//   - mat002: aa100000-0000-0000-0000-000000000002 (Sistema Solar)
+//   - mat003: aa100000-0000-0000-0000-000000000003 (Historia Chile)
+//   - mat004: aa100000-0000-0000-0000-000000000004 (Teoria del Color)
+//   - mat005: aa100000-0000-0000-0000-000000000005 (English Grammar)
 func getSeedDocuments() []seedDocument {
 	return []seedDocument{
 		materialAssessmentWorkerSeeds(),
 		materialSummarySeeds(),
-		// Las siguientes colecciones fueron eliminadas por no uso:
-		// - analytics_events (analytics usa servicio externo)
-		// - material_assessment (duplicada por material_assessment_worker)
-		// - audit_logs (usará SaaS externo)
-		// - notifications (push notifications no implementado)
 	}
 }
 
-// materialAssessmentWorkerSeeds retorna los seeds de la colección material_assessment_worker
+// materialAssessmentWorkerSeeds retorna los seeds de la coleccion material_assessment_worker
+// IDs alineados con PostgreSQL seeds (008_assessments.sql) via mongo_document_id
 func materialAssessmentWorkerSeeds() seedDocument {
 	return seedDocument{
 		collection: "material_assessment_worker",
 		documents: []interface{}{
-			// Worker 1 - POO Java
+			// ass001 - Examen Fracciones (mat001)
 			bson.D{
-				{Key: "material_id", Value: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"},
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000001")},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000001"},
 				{Key: "questions", Value: bson.A{
 					bson.D{
-						{Key: "question_id", Value: "q1111111-1111-1111-1111-111111111111"},
-						{Key: "question_text", Value: "¿Cuál es el principio fundamental de la Programación Orientada a Objetos que permite ocultar los detalles de implementación?"},
+						{Key: "question_id", Value: "q-frac-001"},
+						{Key: "question_text", Value: "Cuanto es 1/4 + 1/4?"},
 						{Key: "question_type", Value: "multiple_choice"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "Herencia"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "Polimorfismo"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "Encapsulación"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Abstracción"}},
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "1/2"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "2/8"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "1/4"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "2/4"}},
 						}},
-						{Key: "correct_answer", Value: "opt3"},
-						{Key: "explanation", Value: "La encapsulación es el principio que permite ocultar los detalles internos de implementación y exponer solo lo necesario mediante interfaces públicas."},
-						{Key: "points", Value: 10},
-						{Key: "difficulty", Value: "medium"},
-						{Key: "tags", Value: bson.A{"POO", "conceptos"}},
-					},
-					bson.D{
-						{Key: "question_id", Value: "q2222222-2222-2222-2222-222222222222"},
-						{Key: "question_text", Value: "En Java, ¿una clase puede heredar de múltiples clases?"},
-						{Key: "question_type", Value: "true_false"},
-						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "true"}, {Key: "option_text", Value: "Verdadero"}},
-							bson.D{{Key: "option_id", Value: "false"}, {Key: "option_text", Value: "Falso"}},
-						}},
-						{Key: "correct_answer", Value: "false"},
-						{Key: "explanation", Value: "Java no soporta herencia múltiple de clases para evitar el problema del diamante. Sin embargo, una clase puede implementar múltiples interfaces."},
-						{Key: "points", Value: 5},
+						{Key: "correct_answer", Value: "A"},
+						{Key: "explanation", Value: "1/4 + 1/4 = 2/4 = 1/2"},
+						{Key: "points", Value: 20},
 						{Key: "difficulty", Value: "easy"},
 					},
 					bson.D{
-						{Key: "question_id", Value: "q3333333-3333-3333-3333-333333333333"},
-						{Key: "question_text", Value: "Explica brevemente qué es el polimorfismo y da un ejemplo en Java."},
-						{Key: "question_type", Value: "open"},
-						{Key: "options", Value: bson.A{}},
-						{Key: "correct_answer", Value: "El polimorfismo permite que objetos de diferentes clases sean tratados como objetos de una clase común. Ejemplo: Animal animal = new Perro(); donde Perro extiende Animal."},
-						{Key: "explanation", Value: "El polimorfismo permite escribir código más flexible y reutilizable al trabajar con abstracciones en lugar de implementaciones concretas."},
-						{Key: "points", Value: 15},
-						{Key: "difficulty", Value: "hard"},
-						{Key: "tags", Value: bson.A{"POO", "polimorfismo"}},
+						{Key: "question_id", Value: "q-frac-002"},
+						{Key: "question_text", Value: "Cuanto es 1/4 + 2/4?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "3/8"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "3/4"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "1/2"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "2/4"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "1/4 + 2/4 = 3/4"},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-frac-003"},
+						{Key: "question_text", Value: "Cual fraccion es equivalente a 2/6?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "1/3"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "2/6"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "1/2"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "3/6"}},
+						}},
+						{Key: "correct_answer", Value: "A"},
+						{Key: "explanation", Value: "2/6 simplificado es 1/3"},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "medium"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-frac-004"},
+						{Key: "question_text", Value: "Cuanto es 1/5 + 1/5?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "1/5"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "2/5"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "2/10"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "1/10"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "1/5 + 1/5 = 2/5"},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-frac-005"},
+						{Key: "question_text", Value: "Cuanto es 1/8 + 2/8?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "3/16"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "2/8"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "3/8"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "1/4"}},
+						}},
+						{Key: "correct_answer", Value: "C"},
+						{Key: "explanation", Value: "1/8 + 2/8 = 3/8"},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
 					},
 				}},
-				{Key: "total_questions", Value: 3},
-				{Key: "total_points", Value: 30},
+				{Key: "total_questions", Value: 5},
+				{Key: "total_points", Value: 100},
 				{Key: "version", Value: 1},
-				{Key: "ai_model", Value: "gpt-4"},
-				{Key: "processing_time_ms", Value: 5200},
-				{Key: "token_usage", Value: bson.D{
-					{Key: "prompt_tokens", Value: 1200},
-					{Key: "completion_tokens", Value: 450},
-					{Key: "total_tokens", Value: 1650},
-				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-15T10:35:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-15T10:35:00Z")},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
 			},
-			// Worker 2 - React Hooks
+			// ass002 - Quiz Sistema Solar (mat002)
 			bson.D{
-				{Key: "material_id", Value: "f1a2b3c4-d5e6-4f5a-9b8c-7d6e5f4a3b2c"},
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000002")},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000002"},
 				{Key: "questions", Value: bson.A{
 					bson.D{
-						{Key: "question_id", Value: "q4444444-4444-4444-4444-444444444444"},
-						{Key: "question_text", Value: "Which React Hook is used to perform side effects in functional components?"},
+						{Key: "question_id", Value: "q-solar-001"},
+						{Key: "question_text", Value: "Cual es el planeta mas grande del sistema solar?"},
 						{Key: "question_type", Value: "multiple_choice"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "useState"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "useEffect"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "useContext"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "useReducer"}},
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Saturno"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Jupiter"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Urano"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Neptuno"}},
 						}},
-						{Key: "correct_answer", Value: "opt2"},
-						{Key: "explanation", Value: "useEffect is the Hook used to perform side effects such as data fetching, subscriptions, or manually changing the DOM."},
-						{Key: "points", Value: 10},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "Jupiter es el planeta mas grande del sistema solar."},
+						{Key: "points", Value: 20},
 						{Key: "difficulty", Value: "easy"},
-						{Key: "tags", Value: bson.A{"React", "Hooks"}},
 					},
 					bson.D{
-						{Key: "question_id", Value: "q5555555-5555-5555-5555-555555555555"},
-						{Key: "question_text", Value: "What is the correct syntax for creating a custom Hook in React?"},
+						{Key: "question_id", Value: "q-solar-002"},
+						{Key: "question_text", Value: "Cual es el planeta mas cercano al Sol?"},
 						{Key: "question_type", Value: "multiple_choice"},
 						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "function myHook() {}"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "const myHook = () => {}"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "function useMyHook() {}"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "hook myHook() {}"}},
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Venus"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Tierra"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Mercurio"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Marte"}},
 						}},
-						{Key: "correct_answer", Value: "opt3"},
-						{Key: "explanation", Value: "Custom Hooks must start with 'use' prefix to follow React conventions and enable linting rules."},
-						{Key: "points", Value: 10},
+						{Key: "correct_answer", Value: "C"},
+						{Key: "explanation", Value: "Mercurio es el planeta mas cercano al Sol."},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-solar-003"},
+						{Key: "question_text", Value: "Cuantos planetas hay en el sistema solar?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "7"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "8"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "9"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "10"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "El sistema solar tiene 8 planetas desde que Pluton fue reclasificado."},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-solar-004"},
+						{Key: "question_text", Value: "Que planeta es conocido como el planeta rojo?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Venus"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Jupiter"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Marte"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Saturno"}},
+						}},
+						{Key: "correct_answer", Value: "C"},
+						{Key: "explanation", Value: "Marte es conocido como el planeta rojo por el oxido de hierro en su superficie."},
+						{Key: "points", Value: 20},
+						{Key: "difficulty", Value: "easy"},
+					},
+				}},
+				{Key: "total_questions", Value: 4},
+				{Key: "total_points", Value: 80},
+				{Key: "version", Value: 1},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
+			},
+			// ass003 - Ejercicio Color y Forma (mat004)
+			bson.D{
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000003")},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000004"},
+				{Key: "questions", Value: bson.A{
+					bson.D{
+						{Key: "question_id", Value: "q-color-001"},
+						{Key: "question_text", Value: "Cuales son los colores primarios en pintura?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Rojo, Azul, Amarillo"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Rojo, Verde, Azul"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Amarillo, Verde, Naranja"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Blanco, Negro, Gris"}},
+						}},
+						{Key: "correct_answer", Value: "A"},
+						{Key: "explanation", Value: "Los colores primarios en pintura son rojo, azul y amarillo."},
+						{Key: "points", Value: 34},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-color-002"},
+						{Key: "question_text", Value: "Que color se obtiene al mezclar azul y amarillo?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Naranja"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Verde"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Morado"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Marron"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "La mezcla de azul y amarillo produce verde."},
+						{Key: "points", Value: 33},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-color-003"},
+						{Key: "question_text", Value: "Que son los colores complementarios?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Colores que estan juntos en el circulo cromatico"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Colores opuestos en el circulo cromatico"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Colores primarios mezclados"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Colores claros y oscuros"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "Los colores complementarios son los que se encuentran opuestos en el circulo cromatico."},
+						{Key: "points", Value: 33},
 						{Key: "difficulty", Value: "medium"},
-						{Key: "tags", Value: bson.A{"React", "Hooks", "custom"}},
-					},
-					bson.D{
-						{Key: "question_id", Value: "q6666666-6666-4666-8666-666666666666"},
-						{Key: "question_text", Value: "What does the useCallback Hook do in React?"},
-						{Key: "question_type", Value: "multiple_choice"},
-						{Key: "options", Value: bson.A{
-							bson.D{{Key: "option_id", Value: "opt1"}, {Key: "option_text", Value: "Manages component state"}},
-							bson.D{{Key: "option_id", Value: "opt2"}, {Key: "option_text", Value: "Memoizes a callback function"}},
-							bson.D{{Key: "option_id", Value: "opt3"}, {Key: "option_text", Value: "Fetches data from an API"}},
-							bson.D{{Key: "option_id", Value: "opt4"}, {Key: "option_text", Value: "Creates a ref to a DOM element"}},
-						}},
-						{Key: "correct_answer", Value: "opt2"},
-						{Key: "explanation", Value: "useCallback returns a memoized callback that only changes if one of the dependencies has changed."},
-						{Key: "points", Value: 10},
-						{Key: "difficulty", Value: "hard"},
-						{Key: "tags", Value: bson.A{"React", "Hooks", "performance"}},
 					},
 				}},
 				{Key: "total_questions", Value: 3},
-				{Key: "total_points", Value: 30},
+				{Key: "total_points", Value: 100},
 				{Key: "version", Value: 1},
-				{Key: "ai_model", Value: "gpt-4-turbo"},
-				{Key: "processing_time_ms", Value: 4100},
-				{Key: "created_at", Value: mustParseTime("2025-11-16T14:25:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-16T14:25:00Z")},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-14T09:00:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-14T09:00:00Z")},
+			},
+			// ass004 - English Grammar Test (mat005)
+			bson.D{
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000004")},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000005"},
+				{Key: "questions", Value: bson.A{
+					bson.D{
+						{Key: "question_id", Value: "q-eng-001"},
+						{Key: "question_text", Value: "Choose the correct article: ___ apple a day keeps the doctor away."},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "A"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "An"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "The"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "No article"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "Use 'an' before words that start with a vowel sound."},
+						{Key: "points", Value: 25},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-eng-002"},
+						{Key: "question_text", Value: "Which is the correct form? She ___ to school every day."},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "go"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "goes"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "going"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "gone"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "Third person singular in present simple requires 'goes'."},
+						{Key: "points", Value: 25},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-eng-003"},
+						{Key: "question_text", Value: "What is the plural of child?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "childs"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "childes"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "children"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "childrens"}},
+						}},
+						{Key: "correct_answer", Value: "C"},
+						{Key: "explanation", Value: "Child has an irregular plural form: children."},
+						{Key: "points", Value: 25},
+						{Key: "difficulty", Value: "easy"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-eng-004"},
+						{Key: "question_text", Value: "Choose the correct pronoun: John gave the book to ___."},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "I"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "me"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "my"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "mine"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "After a preposition, use the object pronoun 'me'."},
+						{Key: "points", Value: 25},
+						{Key: "difficulty", Value: "easy"},
+					},
+				}},
+				{Key: "total_questions", Value: 4},
+				{Key: "total_points", Value: 100},
+				{Key: "version", Value: 1},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-16T08:00:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-16T08:00:00Z")},
+			},
+			// ass005 - Evaluacion Historia Chile (mat003)
+			bson.D{
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000005")},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000003"},
+				{Key: "questions", Value: bson.A{
+					bson.D{
+						{Key: "question_id", Value: "q-hist-001"},
+						{Key: "question_text", Value: "En que ano se firmo el Acta de Independencia de Chile?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "1810"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "1818"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "1820"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "1825"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "El Acta de Independencia de Chile se firmo el 12 de febrero de 1818."},
+						{Key: "points", Value: 34},
+						{Key: "difficulty", Value: "medium"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-hist-002"},
+						{Key: "question_text", Value: "Quien fue el Director Supremo que firmo la independencia?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Jose Miguel Carrera"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Bernardo O'Higgins"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Manuel Blanco Encalada"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Diego Portales"}},
+						}},
+						{Key: "correct_answer", Value: "B"},
+						{Key: "explanation", Value: "Bernardo O'Higgins fue el Director Supremo que firmo el Acta de Independencia."},
+						{Key: "points", Value: 33},
+						{Key: "difficulty", Value: "medium"},
+					},
+					bson.D{
+						{Key: "question_id", Value: "q-hist-003"},
+						{Key: "question_text", Value: "Que batalla fue decisiva para la independencia de Chile?"},
+						{Key: "question_type", Value: "multiple_choice"},
+						{Key: "options", Value: bson.A{
+							bson.D{{Key: "option_id", Value: "A"}, {Key: "option_text", Value: "Batalla de Rancagua"}},
+							bson.D{{Key: "option_id", Value: "B"}, {Key: "option_text", Value: "Batalla de Chacabuco"}},
+							bson.D{{Key: "option_id", Value: "C"}, {Key: "option_text", Value: "Batalla de Maipu"}},
+							bson.D{{Key: "option_id", Value: "D"}, {Key: "option_text", Value: "Batalla de Ayacucho"}},
+						}},
+						{Key: "correct_answer", Value: "C"},
+						{Key: "explanation", Value: "La Batalla de Maipu (1818) fue decisiva para consolidar la independencia de Chile."},
+						{Key: "points", Value: 33},
+						{Key: "difficulty", Value: "hard"},
+					},
+				}},
+				{Key: "total_questions", Value: 3},
+				{Key: "total_points", Value: 100},
+				{Key: "version", Value: 1},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
+			},
+			// ass006 - Proyecto Final Escultura (sin material, borrador)
+			bson.D{
+				{Key: "_id", Value: mustObjectID("aaaaaa000000000000000006")},
+				{Key: "material_id", Value: nil},
+				{Key: "questions", Value: bson.A{}},
+				{Key: "total_questions", Value: 0},
+				{Key: "total_points", Value: 0},
+				{Key: "version", Value: 1},
+				{Key: "ai_model", Value: "manual"},
+				{Key: "created_at", Value: mustParseTime("2026-02-18T10:00:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-18T10:00:00Z")},
 			},
 		},
 	}
 }
 
-// materialSummarySeeds retorna los seeds de la colección material_summary
+// materialSummarySeeds retorna los seeds de la coleccion material_summary
 func materialSummarySeeds() seedDocument {
 	return seedDocument{
 		collection: "material_summary",
 		documents: []interface{}{
-			// Summary 1 - POO Java (español)
+			// Summary 1 - Fracciones (mat001)
 			bson.D{
-				{Key: "material_id", Value: "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"},
-				{Key: "summary", Value: "Este material cubre los fundamentos de la programación orientada a objetos en Java. Se explican conceptos clave como clases, objetos, herencia, polimorfismo y encapsulación con ejemplos prácticos."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000001"},
+				{Key: "summary", Value: "Material introductorio sobre fracciones simples, equivalentes y operaciones basicas. Cubre suma, resta, multiplicacion y division de fracciones con ejemplos practicos."},
 				{Key: "key_points", Value: bson.A{
-					"Introducción a POO y sus principios fundamentales",
-					"Clases y objetos: definición y uso",
-					"Herencia y polimorfismo en Java",
-					"Encapsulación y modificadores de acceso",
-					"Ejemplos prácticos con código",
+					"Concepto de fraccion: numerador y denominador",
+					"Fracciones equivalentes y simplificacion",
+					"Suma y resta de fracciones con igual y distinto denominador",
+					"Multiplicacion y division de fracciones",
+					"Problemas de aplicacion con fracciones",
 				}},
 				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 42},
@@ -225,21 +469,21 @@ func materialSummarySeeds() seedDocument {
 					{Key: "source_length", Value: 5420},
 					{Key: "has_images", Value: false},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-15T10:30:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-15T10:30:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-10T10:05:00Z")},
 			},
-			// Summary 2 - React Hooks (inglés)
+			// Summary 2 - Sistema Solar (mat002)
 			bson.D{
-				{Key: "material_id", Value: "f1a2b3c4-d5e6-4f5a-9b8c-7d6e5f4a3b2c"},
-				{Key: "summary", Value: "A comprehensive guide to React Hooks covering useState, useEffect, useContext, and custom hooks. Learn how to manage state and side effects in functional components effectively."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000002"},
+				{Key: "summary", Value: "Descripcion completa de los planetas del Sistema Solar, el Sol y sus caracteristicas principales. Incluye datos como tamano, distancia al Sol y composicion."},
 				{Key: "key_points", Value: bson.A{
-					"Introduction to React Hooks and their benefits",
-					"useState for state management",
-					"useEffect for side effects and lifecycle",
-					"useContext for global state sharing",
-					"Creating custom hooks for reusable logic",
+					"El Sol como estrella central del sistema",
+					"Planetas rocosos: Mercurio, Venus, Tierra, Marte",
+					"Planetas gaseosos: Jupiter, Saturno, Urano, Neptuno",
+					"Cinturon de asteroides y otros cuerpos",
+					"Comparacion de tamanos y distancias",
 				}},
-				{Key: "language", Value: "en"},
+				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 38},
 				{Key: "version", Value: 1},
 				{Key: "ai_model", Value: "gpt-4-turbo"},
@@ -249,21 +493,21 @@ func materialSummarySeeds() seedDocument {
 					{Key: "completion_tokens", Value: 165},
 					{Key: "total_tokens", Value: 1085},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-16T14:20:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-16T14:20:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-12T11:04:00Z")},
 			},
-			// Summary 3 - Estruturas de dados (portugués)
+			// Summary 3 - Historia de Chile (mat003)
 			bson.D{
-				{Key: "material_id", Value: "b2c3d4e5-f6a7-4b5c-8d9e-0f1a2b3c4d5e"},
-				{Key: "summary", Value: "Material sobre estruturas de dados fundamentais: arrays, listas encadeadas, pilhas e filas. Inclui análise de complexidade e implementações práticas em Python."},
+				{Key: "material_id", Value: "aa100000-0000-0000-0000-000000000003"},
+				{Key: "summary", Value: "Resumen de los principales procesos de la independencia de Chile, desde la Primera Junta de Gobierno hasta la consolidacion de la republica."},
 				{Key: "key_points", Value: bson.A{
-					"Arrays e suas operações básicas",
-					"Listas encadeadas: simples e duplas",
-					"Pilhas (LIFO) e suas aplicações",
-					"Filas (FIFO) e variantes",
-					"Análise de complexidade temporal e espacial",
+					"Contexto historico: invasion napoleonica a Espana",
+					"Primera Junta de Gobierno (1810)",
+					"Patria Vieja y Reconquista",
+					"Batalla de Chacabuco y Maipu",
+					"Proclamacion de la independencia",
 				}},
-				{Key: "language", Value: "pt"},
+				{Key: "language", Value: "es"},
 				{Key: "word_count", Value: 35},
 				{Key: "version", Value: 1},
 				{Key: "ai_model", Value: "gpt-4o"},
@@ -273,14 +517,23 @@ func materialSummarySeeds() seedDocument {
 					{Key: "completion_tokens", Value: 155},
 					{Key: "total_tokens", Value: 935},
 				}},
-				{Key: "created_at", Value: mustParseTime("2025-11-17T09:45:00Z")},
-				{Key: "updated_at", Value: mustParseTime("2025-11-17T09:45:00Z")},
+				{Key: "created_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
+				{Key: "updated_at", Value: mustParseTime("2026-02-15T14:06:00Z")},
 			},
 		},
 	}
 }
 
-// mustParseTime parsea una fecha RFC3339 o entra en pánico (solo para seeds)
+// mustObjectID convierte un hex string de 24 caracteres a bson.ObjectID o entra en panico (solo para seeds)
+func mustObjectID(hex string) bson.ObjectID {
+	oid, err := bson.ObjectIDFromHex(hex)
+	if err != nil {
+		panic(fmt.Sprintf("invalid ObjectID hex: %s", hex))
+	}
+	return oid
+}
+
+// mustParseTime parsea una fecha RFC3339 o entra en panico (solo para seeds)
 func mustParseTime(s string) time.Time {
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
