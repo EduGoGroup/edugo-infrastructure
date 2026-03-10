@@ -11,19 +11,19 @@ import (
 )
 
 var (
-	testingDir string
-	outputDir  string
+	inputDir  string
+	outputDir string
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "mock-generator",
-	Short: "Genera codigo Go desde scripts SQL de testing",
-	Long:  "Parser de SQL que genera dataset mock para desarrollo frontend",
+	Short: "Genera código Go desde scripts SQL de seeds o testing",
+	Long:  "Parser de SQL que genera dataset mock para desarrollo y pruebas desde scripts INSERT.",
 	Run:   runGenerator,
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&testingDir, "testing", "../../postgres/migrations/testing", "Directorio con SQL de testing")
+	rootCmd.Flags().StringVar(&inputDir, "input", "../../postgres/seeds/development", "Directorio con archivos SQL de entrada")
 	rootCmd.Flags().StringVar(&outputDir, "output", "../../mock/dataset", "Directorio de salida")
 }
 
@@ -36,29 +36,26 @@ func main() {
 
 func runGenerator(cmd *cobra.Command, args []string) {
 	fmt.Println("Mock Generator v1.0.0")
-	fmt.Printf("Testing dir: %s\n", testingDir)
+	fmt.Printf("Input dir: %s\n", inputDir)
 	fmt.Printf("Output dir: %s\n", outputDir)
 	fmt.Println("")
 
-	// Parser
 	p := parser.NewSQLParser()
 	fmt.Println("Parseando archivos SQL...")
-	tables, err := p.ParseDirectory(testingDir)
+	tables, err := p.ParseDirectory(inputDir)
 	if err != nil {
 		fmt.Printf("Error parseando: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Parseados %d tablas\n\n", len(tables))
+	fmt.Printf("Parseadas %d tablas\n\n", len(tables))
 
-	// Mostrar estadísticas
-	fmt.Println("Estadisticas por tabla:")
+	fmt.Println("Estadísticas por tabla:")
 	for tableName, data := range tables {
 		fmt.Printf("  - %-20s: %d registros, %d columnas\n",
 			tableName, len(data.Rows), len(data.Columns))
 	}
 
-	// Generador
 	fmt.Println("\nGenerando dataset...")
 	gen := generator.NewDatasetGenerator(outputDir, tables)
 	if err := gen.Generate(); err != nil {

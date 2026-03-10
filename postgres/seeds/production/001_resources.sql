@@ -29,8 +29,9 @@ VALUES
   ('20000000-0000-0000-0000-000000000060', 'guardian_relations',   'Vínculos Guardian',      'Gestión de vínculos guardian-estudiante',        'user-check',            'school', '20000000-0000-0000-0000-000000000003',  4, TRUE,  TRUE),
 
   -- Hijos de content (20000000-0000-0000-0000-000000000004)
-  ('20000000-0000-0000-0000-000000000030', 'materials',        'Materiales',             'Materiales educativos',                         'file-text',             'unit',   '20000000-0000-0000-0000-000000000004',  1, TRUE,  TRUE),
-  ('20000000-0000-0000-0000-000000000031', 'assessments',      'Evaluaciones',           'Evaluaciones y exámenes',                       'clipboard',             'unit',   '20000000-0000-0000-0000-000000000004',  2, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000030', 'materials',           'Materiales',             'Materiales educativos',                                        'file-text',   'unit', '20000000-0000-0000-0000-000000000004', 1, TRUE, TRUE),
+  ('20000000-0000-0000-0000-000000000031', 'assessments',         'Evaluaciones',           'Evaluaciones y exámenes',                                      'clipboard',   'unit', '20000000-0000-0000-0000-000000000004', 2, TRUE, TRUE),
+  ('20000000-0000-0000-0000-000000000033', 'assessments_student', 'Tomar Evaluación',       'Vista de evaluaciones desde perspectiva del estudiante',        'play-circle', 'unit', '20000000-0000-0000-0000-000000000004', 3, TRUE, TRUE),
 
   -- Hijos de reports (20000000-0000-0000-0000-000000000005)
   ('20000000-0000-0000-0000-000000000040', 'progress',         'Progreso',               'Seguimiento de progreso',                       'trending-up',           'unit',   '20000000-0000-0000-0000-000000000005',  1, TRUE,  TRUE),

@@ -1,63 +1,34 @@
-# schemas - Módulo de JSON Schemas
+# schemas
 
-Validación automática de eventos RabbitMQ usando JSON Schema.
+Modulo responsable de validar contratos JSON Schema para eventos.
 
-## Schemas Disponibles
+## Rol actual
 
-| Evento | Versión | Publicado por | Consumido por |
-|--------|---------|---------------|---------------|
-| `material.uploaded` | v1.0 | api-mobile | worker |
-| `assessment.generated` | v1.0 | worker | api-mobile |
-| `material.deleted` | v1.0 | api-mobile | worker |
-| `student.enrolled` | v1.0 | api-admin | api-mobile |
+- Embebe archivos JSON Schema desde `schemas/events`.
+- Construye un indice interno `event_type:event_version`.
+- Valida eventos desde struct, bytes JSON o tipo/version explicitos.
+- Mantiene tests de validacion y benchmarks.
 
-## Uso en Publisher
+## Estado observado
 
-```go
-import "github.com/EduGoGroup/edugo-infrastructure/schemas"
+- Tests cortos pasan.
+- El ultimo tag observado en Git es `schemas/v0.51.0`.
+- La API publica esta concentrada en `validator.go`.
 
-event := MaterialUploadedEvent{
-    EventID:      uuid.New(),
-    EventType:    "material.uploaded",
-    EventVersion: "1.0",
-    Payload:      payload,
-}
+## Documentacion del modulo
 
-validator := schemas.NewEventValidator()
-if err := validator.Validate(event); err != nil {
-    return fmt.Errorf("invalid event: %w", err)
-}
+- [docs/README.md](docs/README.md)
+- [docs/processes.md](docs/processes.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/ecosystem-integration.md](docs/ecosystem-integration.md)
+- [../docs/releasing.md](../docs/releasing.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
-publisher.Publish(event)  // ✅ Validado
-```
+## Entrada rapida
 
-## Uso en Consumer
+- `make -C schemas build test fmt-check`
+- `make -C schemas release-check`
 
-```go
-validator := schemas.NewEventValidator()
+## Nota operativa
 
-if err := validator.ValidateJSON(msg, "material.uploaded", "1.0"); err != nil {
-    logger.Error("invalid event", err)
-    return sendToDLQ(msg, err)
-}
-
-// Procesar evento validado
-```
-
-## Versionamiento
-
-- **Minor change (1.0 → 1.1):** Agregar campos opcionales
-- **Major change (1.0 → 2.0):** Breaking changes
-
-Consumer debe manejar múltiples versiones:
-
-```go
-switch event.EventVersion {
-case "1.0", "1.1":
-    return handleV1(event)
-case "2.0":
-    return handleV2(event)
-default:
-    return fmt.Errorf("unsupported version: %s", event.EventVersion)
-}
-```
+La integracion con servicios externos ya esta en `docs/ecosystem-integration.md`. El flujo de release se documenta una sola vez en `../docs/releasing.md`.

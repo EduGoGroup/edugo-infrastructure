@@ -1,43 +1,35 @@
-# docker - Módulo de Docker Compose
+# docker
 
-Docker Compose con perfiles para diferentes necesidades.
+Superficie de runtime local para `edugo-infrastructure`.
 
-## Perfiles Disponibles
+## Rol actual
 
-| Perfil | Servicios | Uso |
-|--------|-----------|-----|
-| **(default)** | PostgreSQL, MongoDB | Desarrollo básico |
-| `messaging` | + RabbitMQ | APIs con eventos |
-| `cache` | + Redis | Si necesitas caché |
-| `tools` | + PgAdmin, Mongo Express | Debugging visual |
+- Define servicios core para desarrollo local.
+- Expone perfiles opcionales para mensajeria, cache y herramientas visuales.
+- Usa `.env.example` como contrato base de configuracion local.
 
-## Ejemplos de Uso
+## Estado observado
 
-```bash
-# Solo core (PostgreSQL + MongoDB)
-docker-compose up -d
+- El ultimo tag observado en Git es `docker/v0.1.0`.
+- El modulo no es un modulo Go, pero si una pieza operativa central del repo.
 
-# Core + RabbitMQ
-docker-compose --profile messaging up -d
+## Documentacion del modulo
 
-# Core + RabbitMQ + Redis
-docker-compose --profile messaging --profile cache up -d
+- [docs/README.md](docs/README.md)
+- [docs/processes.md](docs/processes.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/ecosystem-integration.md](docs/ecosystem-integration.md)
+- [../docs/releasing.md](../docs/releasing.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
-# Todo + herramientas
-docker-compose --profile messaging --profile cache --profile tools up -d
-```
+## Entrada rapida
 
-## Variables de Entorno
+- `make -C docker validate`
+- `make -C docker up-core`
+- `make -C docker up-messaging`
+- `make -C docker up-full`
+- `make -C docker release-check`
 
-Ver `.env.example` en la raíz del proyecto.
+## Nota operativa
 
-## Desde Otros Proyectos
-
-```makefile
-# api-mobile/Makefile
-INFRA_PATH := ../edugo-infrastructure
-
-.PHONY: dev-setup
-dev-setup:
-	@cd $(INFRA_PATH)/docker && docker-compose --profile messaging up -d
-```
+La integracion con `edugo-dev-environment` y el ecosistema ya esta documentada en `docs/ecosystem-integration.md`. El flujo de versionado se comparte en `../docs/releasing.md`.

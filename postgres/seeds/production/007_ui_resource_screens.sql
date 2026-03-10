@@ -125,6 +125,26 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000071', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-take', 'detail', FALSE, 3)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Assessments Student View -> assessments-list (superadmin puede ver como estudiante)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000094', '20000000-0000-0000-0000-000000000033', 'assessments_student', 'assessments-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Assessments -> assessments-management-list (superadmin view) [Fase 3 - Gestión]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000091', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessments-management-list', 'superadmin', FALSE, 7)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Assessments -> assessments-management-list (teacher view) [Fase 3 - Gestión]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000092', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessments-management-list', 'teacher', FALSE, 8)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Assessments -> assessments-management-list (school_coordinator view) [Fase 3 - Gestión]
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000093', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessments-management-list', 'schoolcoordinator', FALSE, 9)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 -- Audit -> audit-events-list (list, default) [Fase 6]
 INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
 ('c0000000-0000-0000-0000-000000000072', '20000000-0000-0000-0000-000000000070', 'audit', 'audit-events-list', 'list', TRUE, 1)
