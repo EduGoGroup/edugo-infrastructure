@@ -343,7 +343,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 -- Instancia 42: Lista de Tipos de Concepto
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000092', 'concept-types-list',
- 'a0000000-0000-0000-0000-000000000003', 'Tipos de Concepto', 'Lista de tipos de institucion y terminologia',
+ 'a0000000-0000-0000-0000-000000000003', 'Tipos de Concepto', 'Lista de tipos de institución y terminología',
  '{"page_title": "Tipos de Concepto", "search_placeholder": "Buscar tipo...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "tag", "empty_state_title": "No hay tipos de concepto", "empty_state_description": "No se encontraron tipos de concepto", "empty_action_label": "Crear Tipo"}'::jsonb,
  'system', 'concept_types:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;

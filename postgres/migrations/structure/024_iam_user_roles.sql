@@ -33,7 +33,7 @@ CREATE INDEX idx_user_roles_context ON iam.user_roles USING btree (user_id, scho
 CREATE INDEX idx_user_roles_user_active ON iam.user_roles USING btree (user_id, is_active);
 CREATE INDEX idx_user_roles_expires ON iam.user_roles USING btree (expires_at) WHERE (expires_at IS NOT NULL);
 CREATE INDEX idx_user_roles_user_active_covering
-  ON iam.user_roles (user_id, school_id, role_id, academic_unit_id)
+  ON iam.user_roles (user_id, school_id, academic_unit_id, role_id)
   WHERE is_active = true;
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON iam.user_roles
