@@ -1,6 +1,6 @@
 -- ====================================================================
 -- SEEDS: Instancias de pantalla para las pantallas configuradas
--- Idempotente: usa ON CONFLICT DO NOTHING
+-- Idempotente: usa ON CONFLICT (DO NOTHING o DO UPDATE SET)
 -- ====================================================================
 
 BEGIN;
@@ -177,9 +177,16 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000032', 'users-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Usuario', 'Crear o editar un usuario',
- '{"page_title": "Nuevo Usuario", "edit_title": "Editar Usuario", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "first_name", "type": "text", "label": "Nombre", "placeholder": "Nombre del usuario", "required": true}, {"key": "last_name", "type": "text", "label": "Apellido", "placeholder": "Apellido del usuario", "required": true}, {"key": "email", "type": "email", "label": "Email", "placeholder": "email@ejemplo.com", "required": true}, {"key": "password", "type": "password", "label": "Contraseña", "placeholder": "Mínimo 8 caracteres", "required": true}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true, "required": false}]}'::jsonb,
+ '{"page_title": "Nuevo Usuario", "edit_title": "Editar Usuario", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "first_name", "type": "text", "label": "Nombre", "placeholder": "Nombre del usuario", "required": true}, {"key": "last_name", "type": "text", "label": "Apellido", "placeholder": "Apellido del usuario", "required": true}, {"key": "email", "type": "email", "label": "Email", "placeholder": "email@ejemplo.com", "required": true}, {"key": "password", "type": "password", "label": "Contraseña", "placeholder": "Mínimo 8 caracteres", "required": true, "condition": "create-only"}, {"key": "confirm_password", "type": "password", "label": "Confirmar Contraseña", "placeholder": "Repita la contraseña", "required": true, "condition": "create-only"}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true, "required": false}]}'::jsonb,
  'school', 'users:create', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    template_id         = EXCLUDED.template_id,
+    name                = EXCLUDED.name,
+    description         = EXCLUDED.description,
+    slot_data           = EXCLUDED.slot_data,
+    scope               = EXCLUDED.scope,
+    required_permission = EXCLUDED.required_permission,
+    handler_key         = EXCLUDED.handler_key;
 
 -- Instancia 23: Formulario de Rol
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
