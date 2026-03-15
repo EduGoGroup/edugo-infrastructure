@@ -340,4 +340,20 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'unit', 'assessments:view_results', 'assessment-result')
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 42: Lista de Tipos de Concepto
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000092', 'concept-types-list',
+ 'a0000000-0000-0000-0000-000000000003', 'Tipos de Concepto', 'Lista de tipos de institucion y terminologia',
+ '{"page_title": "Tipos de Concepto", "search_placeholder": "Buscar tipo...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "tag", "empty_state_title": "No hay tipos de concepto", "empty_state_description": "No se encontraron tipos de concepto", "empty_action_label": "Crear Tipo"}'::jsonb,
+ 'system', 'concept_types:read', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 43: Formulario de Tipo de Concepto
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000093', 'concept-types-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Tipo de Concepto', 'Crear o editar un tipo de concepto',
+ '{"page_title": "Nuevo Tipo de Concepto", "edit_title": "Editar Tipo de Concepto", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "name", "type": "text", "label": "Nombre", "placeholder": "Nombre del tipo", "required": true}, {"key": "code", "type": "text", "label": "Código", "placeholder": "Código único (ej: school)", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del tipo de concepto", "required": false}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true}]}'::jsonb,
+ 'system', 'concept_types:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;

@@ -165,4 +165,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000090', '20000000-0000-0000-0000-000000000031', 'assessments', 'assessment-result', 'result', FALSE, 6)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Concept Types -> concept-types-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000095', '20000000-0000-0000-0000-000000000080', 'concept_types', 'concept-types-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Concept Types -> concept-types-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000096', '20000000-0000-0000-0000-000000000080', 'concept_types', 'concept-types-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
