@@ -22,3 +22,5 @@ COMMENT ON TABLE auth.users IS 'Usuarios del sistema (admin, docentes, estudiant
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE INDEX idx_users_active ON auth.users (is_active) WHERE is_active = true;

@@ -30,3 +30,6 @@ CREATE TABLE content.materials (
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON content.materials
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE INDEX idx_materials_status ON content.materials (status);
+CREATE INDEX idx_materials_status_active ON content.materials (status) WHERE deleted_at IS NULL;
