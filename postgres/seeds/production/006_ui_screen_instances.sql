@@ -132,7 +132,8 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'a0000000-0000-0000-0000-000000000003', 'Lista de Evaluaciones', 'Lista de evaluaciones',
  '{"page_title": "Evaluaciones", "search_placeholder": "Buscar evaluación...", "filter_all_label": "Todas", "filter_ready_label": "Publicadas", "filter_processing_label": "Borradores", "empty_icon": "clipboard", "empty_state_title": "No hay evaluaciones", "empty_state_description": "No se encontraron evaluaciones"}'::jsonb,
  'unit', 'assessments:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 17: Dashboard Progreso
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -364,7 +365,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000094', 'screens-form',
  'a0000000-0000-0000-0000-000000000006', 'Nueva Screen Instance', 'Formulario para crear una nueva screen instance',
  '{"page_title": "Nueva Screen Instance", "edit_title": "Editar Screen Instance", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "admin:/api/v1/screen-instances", "fields": [{"key": "screen_key", "type": "text", "label": "Screen Key", "placeholder": "ej: my-screen-list", "required": true}, {"key": "template_id", "type": "remote_select", "label": "Template", "required": true, "remote_endpoint": "admin:/api/v1/screen-config/templates", "display_field": "name", "value_field": "id"}, {"key": "name", "type": "text", "label": "Nombre", "placeholder": "Nombre de la instancia", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción de la pantalla"}, {"key": "scope", "type": "select", "label": "Alcance", "required": true, "options": [{"value": "system", "label": "Sistema"}, {"value": "school", "label": "Escuela"}, {"value": "unit", "label": "Unidad"}]}, {"key": "required_permission", "type": "text", "label": "Permiso requerido", "placeholder": "ej: screen_config:read"}, {"key": "handler_key", "type": "text", "label": "Handler Key", "placeholder": "Clave del handler (opcional)"}, {"key": "is_active", "type": "toggle", "label": "Activa", "default": true}]}'::jsonb,
- 'system', 'screen_config:create', NULL)
+ 'system', 'screen_instances:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 45: Detalle de Evento de Auditoría (audit-detail)
@@ -380,7 +381,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000096', 'materials-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Material', 'Crear un nuevo material educativo',
  '{"page_title": "Nuevo Material", "edit_title": "Editar Material", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "mobile:/api/v1/materials", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject", "type": "text", "label": "Materia", "placeholder": "Materia relacionada", "required": false}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "uploaded", "label": "Subido"}, {"value": "processing", "label": "Procesando"}, {"value": "ready", "label": "Listo"}, {"value": "failed", "label": "Fallido"}]}, {"key": "file_url", "type": "text", "label": "URL del Archivo", "placeholder": "https://...", "required": true}]}'::jsonb,
- 'school', 'materials:create', NULL)
+ 'unit', 'materials:create', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 47: Detalle de Progreso
@@ -388,7 +389,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000097', 'progress-detail',
  'a0000000-0000-0000-0000-000000000004', 'Detalle de Progreso', 'Detalle de progreso académico por escuela',
  '{"page_title": "Detalle de Progreso", "data_endpoint": "mobile:/api/v1/stats/global?school_id={schoolId}", "sections": [{"key": "total_materials", "label": "Total Materiales", "field": "total_materials"}, {"key": "completed_progress", "label": "Progreso Completado", "field": "completed_progress"}, {"key": "average_attempt_score", "label": "Promedio de Evaluaciones", "field": "average_attempt_score"}]}'::jsonb,
- 'school', 'progress:read', NULL)
+ 'unit', 'progress:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 -- Instancia 48: Detalle de Estadísticas
@@ -396,7 +397,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000098', 'stats-detail',
  'a0000000-0000-0000-0000-000000000004', 'Detalle de Estadísticas', 'Estadísticas detalladas del sistema',
  '{"page_title": "Estadísticas del Sistema", "data_endpoint": "admin:/api/v1/stats/global", "sections": [{"key": "total_users", "label": "Usuarios Totales", "field": "total_users"}, {"key": "total_active_users", "label": "Usuarios Activos", "field": "total_active_users"}, {"key": "total_schools", "label": "Escuelas", "field": "total_schools"}, {"key": "total_subjects", "label": "Materias", "field": "total_subjects"}, {"key": "total_guardian_relations", "label": "Relaciones de Tutor", "field": "total_guardian_relations"}]}'::jsonb,
- 'system', 'stats:read', NULL)
+ 'system', 'stats:global', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 COMMIT;
