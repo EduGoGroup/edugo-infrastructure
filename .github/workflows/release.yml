@@ -79,16 +79,18 @@ jobs:
           fi
 
           if [ -f "$MODULE/go.mod" ]; then
-            cat >> "$NOTES_FILE" <<EOF_NOTES
-
----
-
-## Instalación
-
-\`\`\`bash
-go get github.com/EduGoGroup/edugo-infrastructure/$MODULE@$VERSION
-\`\`\`
-EOF_NOTES
+            # Nota: se usan echo en lugar de heredoc para evitar el conflicto
+            # entre la indentación YAML y los delimitadores de heredoc bash.
+            {
+              echo ""
+              echo "---"
+              echo ""
+              echo "## Instalación"
+              echo ""
+              echo '```bash'
+              echo "go get github.com/EduGoGroup/edugo-infrastructure/$MODULE@$VERSION"
+              echo '```'
+            } >> "$NOTES_FILE"
           fi
 
       - name: Crear GitHub Release

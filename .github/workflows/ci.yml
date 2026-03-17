@@ -8,19 +8,87 @@ on:
 
 env:
   GO_VERSION: "1.25"
+  GOLANGCI_LINT_VERSION: "v1.64.7"
 
 jobs:
-  quality-modules:
-    name: Quality ${{ matrix.module }}
+  # ──────────────────────────────────────────────────────────────
+  # Prepara la lista de módulos a validar.
+  #
+  # Lógica de scope (misma que edugo-shared):
+  #   PR → dev  : solo módulos con archivos modificados en el PR
+  #               (si cambian Makefile/make/scripts/.github → todos)
+  #   PR → main : todos los módulos (máxima seguridad antes de merge)
+  #   push main : todos los módulos
+  #   push dev  : todos los módulos
+  # ──────────────────────────────────────────────────────────────
+  prepare:
+    name: Prepare Module Matrix
     runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.scope.outputs.target }}
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determinar módulos objetivo
+        id: scope
+        run: |
+          ALL='["postgres","mongodb","schemas","tools/mock-generator"]'
+
+          # Solo para PRs a dev aplicamos el filtro de módulos modificados
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "dev" ]]; then
+            CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+
+            # Si cambian archivos globales, correr todos los módulos
+            if echo "$CHANGED" | grep -qE "^(Makefile|make/|scripts/|\.github/)"; then
+              echo "Cambios globales detectados → corriendo todos los módulos"
+              echo "target=$ALL" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            HITS=()
+            for m in postgres mongodb schemas "tools/mock-generator"; do
+              if echo "$CHANGED" | grep -q "^${m}/"; then
+                HITS+=("\"$m\"")
+              fi
+            done
+
+            if [ ${#HITS[@]} -eq 0 ]; then
+              echo "Sin módulos con cambios detectados → corriendo todos como fallback"
+              echo "target=$ALL" >> "$GITHUB_OUTPUT"
+            else
+              TARGET="[$(IFS=,; echo "${HITS[*]}")]"
+              echo "Módulos con cambios: $TARGET"
+              echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "target=$ALL" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ──────────────────────────────────────────────────────────────
+  # Optimizaciones aplicadas respecto al pipeline anterior:
+  #
+  #   1. quality + build + test unificados en un solo job por módulo
+  #      → elimina el triple overhead de checkout/setup-go por módulo
+  #
+  #   2. Solo módulos modificados para PRs a dev (ver prepare)
+  #      → PRs cotidianas validan solo lo necesario
+  #
+  #   3. Cache de go mod con cache-dependency-path por módulo
+  #      → go mod download se reutiliza entre runs del mismo módulo
+  #
+  #   4. build step eliminado (go test ya compila el módulo)
+  # ──────────────────────────────────────────────────────────────
+  validate:
+    name: Validate ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    needs: prepare
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        module:
-          - postgres
-          - mongodb
-          - schemas
-          - tools/mock-generator
+        module: ${{ fromJson(needs.prepare.outputs.target) }}
 
     steps:
       - name: Checkout código
@@ -31,11 +99,12 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
+          cache-dependency-path: ${{ matrix.module }}/go.sum
 
       - name: Instalar golangci-lint
         shell: bash
         run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.7
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@${{ env.GOLANGCI_LINT_VERSION }}
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Calidad del módulo
@@ -43,53 +112,6 @@ jobs:
           make -C "${{ matrix.module }}" fmt-check
           make -C "${{ matrix.module }}" vet
           make -C "${{ matrix.module }}" lint
-
-  build-modules:
-    name: Build ${{ matrix.module }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        module:
-          - postgres
-          - mongodb
-          - schemas
-          - tools/mock-generator
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v6
-
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: Build módulo
-        run: make -C "${{ matrix.module }}" build
-
-  test-modules:
-    name: Test ${{ matrix.module }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        module:
-          - postgres
-          - mongodb
-          - schemas
-          - tools/mock-generator
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v6
-
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
 
       - name: Tests del módulo
         run: make -C "${{ matrix.module }}" test
