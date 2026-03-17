@@ -33,9 +33,10 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000004', 'materials-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Materiales', 'Lista de materiales educativos',
- '{"page_title": "Materials", "search_placeholder": "Search materials...", "filter_all_label": "All", "filter_ready_label": "Ready", "filter_processing_label": "Processing", "empty_icon": "folder_open", "empty_state_title": "No materials yet", "empty_state_description": "Upload your first educational material", "empty_action_label": "Upload Material"}'::jsonb,
+ '{"page_title": "Materials", "search_placeholder": "Search materials...", "filter_all_label": "All", "filter_ready_label": "Ready", "filter_processing_label": "Processing", "empty_icon": "folder_open", "empty_state_title": "No materials yet", "empty_state_description": "Upload your first educational material", "empty_action_label": "Upload Material", "data_endpoint": "mobile:/api/v1/materials"}'::jsonb,
  'unit', 'materials:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 5: Detalle de Material
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -129,17 +130,19 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000026', 'assessments-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Evaluaciones', 'Lista de evaluaciones',
- '{"page_title": "Evaluaciones", "search_placeholder": "Buscar evaluación...", "filter_all_label": "Todas", "filter_ready_label": "Publicadas", "filter_processing_label": "Borradores", "empty_icon": "clipboard", "empty_state_title": "No hay evaluaciones", "empty_state_description": "No se encontraron evaluaciones", "empty_action_label": "Crear Evaluación"}'::jsonb,
+ '{"page_title": "Evaluaciones", "search_placeholder": "Buscar evaluación...", "filter_all_label": "Todas", "filter_ready_label": "Publicadas", "filter_processing_label": "Borradores", "empty_icon": "clipboard", "empty_state_title": "No hay evaluaciones", "empty_state_description": "No se encontraron evaluaciones"}'::jsonb,
  'unit', 'assessments:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 17: Dashboard Progreso
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000027', 'progress-dashboard',
  'a0000000-0000-0000-0000-000000000002', 'Progreso Academico', 'Dashboard de progreso academico',
- '{"page_title": "Progreso", "greeting_text": "Progreso Académico", "date_text": "{today_date}", "kpi_students_label": "Estudiantes", "kpi_materials_label": "Completados", "kpi_avg_score_label": "Promedio", "kpi_completion_label": "Avance", "activity_title": "Actividad Reciente", "upload_label": "Ver Detalle", "progress_label": "Exportar"}'::jsonb,
+ '{"page_title": "Progreso", "greeting_text": "Progreso Académico", "date_text": "{today_date}", "kpi_students_label": "Estudiantes", "kpi_materials_label": "Completados", "kpi_avg_score_label": "Promedio", "kpi_completion_label": "Avance", "activity_title": "Actividad Reciente", "upload_label": "Ver Detalle", "progress_label": "Exportar", "data_endpoint": "admin:/api/v1/stats/global"}'::jsonb,
  'unit', 'progress:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 18: Dashboard Estadisticas
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -216,9 +219,10 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000041', 'memberships-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Miembro', 'Asignar miembro a unidad academica',
- '{"page_title": "Asignar Miembro", "edit_title": "Editar Miembro", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "user_id", "type": "remote_select", "label": "Usuario", "required": true, "remote_endpoint": "/api/v1/users", "display_field": "email", "value_field": "id"}, {"key": "academic_unit_id", "type": "remote_select", "label": "Unidad Académica", "required": true, "remote_endpoint": "/api/v1/schools/{schoolId}/units", "display_field": "name", "value_field": "id"}, {"key": "role", "type": "select", "label": "Rol", "required": true, "options": [{"value": "student", "label": "Estudiante"}, {"value": "teacher", "label": "Profesor"}, {"value": "assistant", "label": "Asistente"}]}, {"key": "enrolled_at", "type": "text", "label": "Fecha de inscripción", "placeholder": "YYYY-MM-DD", "required": false}]}'::jsonb,
+ '{"page_title": "Asignar Miembro", "edit_title": "Editar Miembro", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "user_id", "type": "remote_select", "label": "Usuario", "required": true, "remote_endpoint": "admin:/api/v1/users", "display_field": "email", "value_field": "id"}, {"key": "academic_unit_id", "type": "remote_select", "label": "Unidad Académica", "required": true, "remote_endpoint": "/api/v1/schools/{schoolId}/units", "display_field": "name", "value_field": "id"}, {"key": "role", "type": "select", "label": "Rol", "required": true, "options": [{"value": "student", "label": "Estudiante"}, {"value": "teacher", "label": "Profesor"}, {"value": "assistant", "label": "Asistente"}]}, {"key": "enrolled_at", "type": "text", "label": "Fecha de inscripción", "placeholder": "YYYY-MM-DD", "required": false}]}'::jsonb,
  'school', 'memberships:create', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 27: Formulario de Crear Material (Fase 2.3)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -280,7 +284,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000062', 'guardian-requests-list',
  'a0000000-0000-0000-0000-000000000003', 'Solicitudes de Vinculación', 'Lista de solicitudes de vinculación guardian-estudiante',
- '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación"}'::jsonb,
+ '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación", "item_actions": [{"action_id": "approve-request", "label": "Aprobar", "icon": "check", "style": "primary"}, {"action_id": "reject-request", "label": "Rechazar", "icon": "close", "style": "destructive"}]}'::jsonb,
  'school', 'guardian_relations:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
@@ -354,6 +358,46 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Tipo de Concepto', 'Crear o editar un tipo de concepto',
  '{"page_title": "Nuevo Tipo de Concepto", "edit_title": "Editar Tipo de Concepto", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "name", "type": "text", "label": "Nombre", "placeholder": "Nombre del tipo", "required": true}, {"key": "code", "type": "text", "label": "Código", "placeholder": "Código único (ej: school)", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del tipo de concepto", "required": false}, {"key": "is_active", "type": "toggle", "label": "Activo", "default": true}]}'::jsonb,
  'system', 'concept_types:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 44: Formulario de Screen Instance (screens-form) — admin crear instancias via UI
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000094', 'screens-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Nueva Screen Instance', 'Formulario para crear una nueva screen instance',
+ '{"page_title": "Nueva Screen Instance", "edit_title": "Editar Screen Instance", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "admin:/api/v1/screen-instances", "fields": [{"key": "screen_key", "type": "text", "label": "Screen Key", "placeholder": "ej: my-screen-list", "required": true}, {"key": "template_id", "type": "remote_select", "label": "Template", "required": true, "remote_endpoint": "admin:/api/v1/screen-config/templates", "display_field": "name", "value_field": "id"}, {"key": "name", "type": "text", "label": "Nombre", "placeholder": "Nombre de la instancia", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción de la pantalla"}, {"key": "scope", "type": "select", "label": "Alcance", "required": true, "options": [{"value": "system", "label": "Sistema"}, {"value": "school", "label": "Escuela"}, {"value": "unit", "label": "Unidad"}]}, {"key": "required_permission", "type": "text", "label": "Permiso requerido", "placeholder": "ej: screen_config:read"}, {"key": "handler_key", "type": "text", "label": "Handler Key", "placeholder": "Clave del handler (opcional)"}, {"key": "is_active", "type": "toggle", "label": "Activa", "default": true}]}'::jsonb,
+ 'system', 'screen_instances:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 45: Detalle de Evento de Auditoría (audit-detail)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000095', 'audit-detail',
+ 'a0000000-0000-0000-0000-000000000004', 'Detalle de Auditoría', 'Detalle de un evento de auditoría',
+ '{"page_title": "Detalle de Auditoría", "data_endpoint": "admin:/api/v1/audit/{id}", "file_size_label": "Recurso", "uploaded_label": "Fecha", "status_label": "Acción", "description_title": "Información del Evento", "summary_title": "Metadata", "download_label": "Exportar", "quiz_label": "Ver contexto", "sections": [{"key": "action", "label": "Acción", "field": "action"}, {"key": "resource_type", "label": "Tipo de Recurso", "field": "resource_type"}, {"key": "actor_email", "label": "Usuario", "field": "actor_email"}, {"key": "created_at", "label": "Fecha y Hora", "field": "created_at", "type": "datetime"}, {"key": "metadata", "label": "Metadata", "field": "metadata", "type": "json"}]}'::jsonb,
+ 'system', 'audit:read', 'audit-detail')
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 46: Formulario de Material (materials-form)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000096', 'materials-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Material', 'Crear un nuevo material educativo',
+ '{"page_title": "Nuevo Material", "edit_title": "Editar Material", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "mobile:/api/v1/materials", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject", "type": "text", "label": "Materia", "placeholder": "Materia relacionada", "required": false}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "uploaded", "label": "Subido"}, {"value": "processing", "label": "Procesando"}, {"value": "ready", "label": "Listo"}, {"value": "failed", "label": "Fallido"}]}, {"key": "file_url", "type": "text", "label": "URL del Archivo", "placeholder": "https://...", "required": true}]}'::jsonb,
+ 'unit', 'materials:create', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 47: Detalle de Progreso
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000097', 'progress-detail',
+ 'a0000000-0000-0000-0000-000000000004', 'Detalle de Progreso', 'Detalle de progreso académico por escuela',
+ '{"page_title": "Detalle de Progreso", "data_endpoint": "mobile:/api/v1/stats/global?school_id={schoolId}", "sections": [{"key": "total_materials", "label": "Total Materiales", "field": "total_materials"}, {"key": "completed_progress", "label": "Progreso Completado", "field": "completed_progress"}, {"key": "average_attempt_score", "label": "Promedio de Evaluaciones", "field": "average_attempt_score"}]}'::jsonb,
+ 'unit', 'progress:read', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
+-- Instancia 48: Detalle de Estadísticas
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000098', 'stats-detail',
+ 'a0000000-0000-0000-0000-000000000004', 'Detalle de Estadísticas', 'Estadísticas detalladas del sistema',
+ '{"page_title": "Estadísticas del Sistema", "data_endpoint": "admin:/api/v1/stats/global", "sections": [{"key": "total_users", "label": "Usuarios Totales", "field": "total_users"}, {"key": "total_active_users", "label": "Usuarios Activos", "field": "total_active_users"}, {"key": "total_schools", "label": "Escuelas", "field": "total_schools"}, {"key": "total_subjects", "label": "Materias", "field": "total_subjects"}, {"key": "total_guardian_relations", "label": "Relaciones de Tutor", "field": "total_guardian_relations"}]}'::jsonb,
+ 'system', 'stats:global', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
 COMMIT;
