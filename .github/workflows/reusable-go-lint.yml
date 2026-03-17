@@ -43,6 +43,9 @@ jobs:
     name: Run Linter
     runs-on: ubuntu-latest
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     outputs:
       result: ${{ steps.lint.outcome }}
 
@@ -65,7 +68,7 @@ jobs:
 
       - name: Run golangci-lint
         id: lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v8
         with:
           version: ${{ inputs.golangci-lint-version }}
           working-directory: ${{ inputs.working-directory }}
