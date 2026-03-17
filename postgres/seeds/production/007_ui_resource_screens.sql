@@ -175,4 +175,29 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000096', '20000000-0000-0000-0000-000000000080', 'concept_types', 'concept-types-form', 'form', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Audit -> audit-detail (detail)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000097', '20000000-0000-0000-0000-000000000070', 'audit', 'audit-detail', 'detail', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Materials -> materials-form (create-form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000098', '20000000-0000-0000-0000-000000000030', 'materials', 'materials-form', 'create-form', FALSE, 4)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Screen Instances -> screens-form (create-form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000099', '20000000-0000-0000-0000-000000000051', 'screen_instances', 'screens-form', 'create-form', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Progress -> progress-detail (detail)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000100', '20000000-0000-0000-0000-000000000040', 'progress', 'progress-detail', 'detail', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Stats -> stats-detail (detail)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000101', '20000000-0000-0000-0000-000000000041', 'stats', 'stats-detail', 'detail', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
