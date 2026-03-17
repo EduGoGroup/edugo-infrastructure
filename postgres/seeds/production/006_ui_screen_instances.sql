@@ -283,7 +283,7 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000062', 'guardian-requests-list',
  'a0000000-0000-0000-0000-000000000003', 'Solicitudes de Vinculación', 'Lista de solicitudes de vinculación guardian-estudiante',
- '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación"}'::jsonb,
+ '{"page_title": "Solicitudes de Vinculación", "search_placeholder": "Buscar solicitud...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Pendientes", "empty_icon": "user-check", "empty_state_title": "No hay solicitudes", "empty_state_description": "No se encontraron solicitudes de vinculación", "item_actions": [{"action_id": "approve-request", "label": "Aprobar", "icon": "check", "style": "primary"}, {"action_id": "reject-request", "label": "Rechazar", "icon": "close", "style": "destructive"}]}'::jsonb,
  'school', 'guardian_relations:read', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
