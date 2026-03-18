@@ -30,11 +30,11 @@
 --   m019 → Ricardo (U-13)   → CreArte     → Grupo Manana (au009) → guardian
 --   m020 → Patricia (U-14)  → San Ignacio → 5to A (au003)        → guardian
 --   m021 → Patricia (U-14)  → San Ignacio → 5to B (au004)        → guardian
---   m022 → Miguel (U-16)    → San Ignacio → NULL                 → director
+--   m022 → Miguel (U-16)    → San Ignacio → NULL                 → admin (role=admin, RBAC role=school_director)
 --   m023 → Laura (U-17)     → San Ignacio → NULL                 → assistant
---   m024 → Andres (U-18)    → San Ignacio → 5to A (au003)        → assistant_teacher
---   m025 → Diana (U-19)     → San Ignacio → 5to A (au003)        → observer
---   m026 → Diana (U-19)     → CreArte     → Grupo Manana (au009) → observer
+--   m024 → Andres (U-18)    → San Ignacio → 5to A (au003)        → assistant (role=assistant, RBAC role=assistant_teacher)
+--   m025 → Diana (U-19)     → San Ignacio → 5to A (au003)        → assistant (role=assistant, RBAC role=observer)
+--   m026 → Diana (U-19)     → CreArte     → Grupo Manana (au009) → assistant (role=assistant, RBAC role=observer)
 --   m027 → Fernando (U-20)  → San Ignacio → 5to A (au003)        → guardian
 -- =============================================================================
 
@@ -196,8 +196,8 @@ INSERT INTO academic.memberships (
     '00000000-0000-0000-0000-000000000018',   -- Andres Gomez
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
-    'assistant_teacher',
-    '{"subjects": ["Matematicas"]}'::jsonb,
+    'assistant',
+    '{"subjects": ["Matematicas"], "rbac_role": "assistant_teacher"}'::jsonb,
     true,
     '2026-02-15 09:00:00+00'
 ),
@@ -206,8 +206,8 @@ INSERT INTO academic.memberships (
     '00000000-0000-0000-0000-000000000019',   -- Diana Lopez
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
-    'observer',
-    '{"scope": "unit"}'::jsonb,
+    'assistant',
+    '{"scope": "unit", "rbac_role": "observer"}'::jsonb,
     true,
     '2026-02-20 09:00:00+00'
 ),
@@ -216,8 +216,8 @@ INSERT INTO academic.memberships (
     '00000000-0000-0000-0000-000000000019',   -- Diana Lopez
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
-    'observer',
-    '{"scope": "unit"}'::jsonb,
+    'assistant',
+    '{"scope": "unit", "rbac_role": "observer"}'::jsonb,
     true,
     '2026-02-20 09:00:00+00'
 ),
@@ -337,8 +337,8 @@ INSERT INTO academic.memberships (
     '00000000-0000-0000-0000-000000000016',   -- Miguel Castillo
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
-    'director',
-    '{"scope": "school"}'::jsonb,
+    'admin',
+    '{"scope": "school", "rbac_role": "school_director"}'::jsonb,
     true,
     '2026-01-20 09:00:00+00'
 ),
