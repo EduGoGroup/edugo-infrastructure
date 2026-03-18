@@ -1,36 +1,48 @@
 -- =============================================================================
 -- EduGo Development Seeds v2 — 005_user_roles.sql
 -- =============================================================================
--- 19 asignaciones de roles RBAC para los 14 usuarios.
+-- 26 asignaciones de roles RBAC para los 20 usuarios.
 --
 -- Role IDs (produccion):
 --   10000000-...0001 → super_admin
+--   10000000-...0002 → platform_admin
 --   10000000-...0003 → school_admin
+--   10000000-...0004 → school_director
 --   10000000-...0005 → school_coordinator
+--   10000000-...0006 → school_assistant
 --   10000000-...0007 → teacher
+--   10000000-...0008 → assistant_teacher
 --   10000000-...0009 → student
 --   10000000-...0010 → guardian
+--   10000000-...0011 → observer
 --
 -- Mapa:
---   ur01: U-01 → super_admin    → NULL (global)
---   ur02: U-02 → school_admin   → San Ignacio
---   ur03: U-03 → school_admin   → CreArte
+--   ur01: U-01 → super_admin        → NULL (global)
+--   ur02: U-02 → school_admin       → San Ignacio
+--   ur03: U-03 → school_admin       → CreArte
 --   ur04: U-04 → school_coordinator → San Ignacio
 --   ur05: U-04 → school_coordinator → CreArte
---   ur06: U-05 → teacher        → San Ignacio
---   ur07: U-05 → teacher        → Academia
---   ur08: U-06 → teacher        → San Ignacio
---   ur09: U-07 → teacher        → CreArte
---   ur10: U-08 → student        → San Ignacio
---   ur11: U-08 → student        → CreArte
---   ur12: U-09 → student        → San Ignacio
---   ur13: U-10 → student        → San Ignacio
---   ur14: U-11 → student        → San Ignacio
---   ur15: U-11 → student        → Academia
---   ur16: U-12 → student        → CreArte
---   ur17: U-13 → guardian       → San Ignacio
---   ur18: U-13 → guardian       → CreArte
---   ur19: U-14 → guardian       → San Ignacio
+--   ur06: U-05 → teacher            → San Ignacio
+--   ur07: U-05 → teacher            → Academia
+--   ur08: U-06 → teacher            → San Ignacio
+--   ur09: U-07 → teacher            → CreArte
+--   ur10: U-08 → student            → San Ignacio
+--   ur11: U-08 → student            → CreArte
+--   ur12: U-09 → student            → San Ignacio
+--   ur13: U-10 → student            → San Ignacio
+--   ur14: U-11 → student            → San Ignacio
+--   ur15: U-11 → student            → Academia
+--   ur16: U-12 → student            → CreArte
+--   ur17: U-13 → guardian           → San Ignacio
+--   ur18: U-13 → guardian           → CreArte
+--   ur19: U-14 → guardian           → San Ignacio
+--   ur20: U-15 → platform_admin     → NULL (global)
+--   ur21: U-16 → school_director    → San Ignacio
+--   ur22: U-17 → school_assistant   → San Ignacio
+--   ur23: U-18 → assistant_teacher  → San Ignacio
+--   ur24: U-19 → observer           → San Ignacio
+--   ur25: U-19 → observer           → CreArte
+--   ur26: U-20 → guardian           → San Ignacio
 -- =============================================================================
 
 BEGIN;
@@ -225,6 +237,85 @@ INSERT INTO iam.user_roles (
     NULL, true,
     '00000000-0000-0000-0000-000000000002',
     '2026-03-01 08:00:00'
+),
+
+-- Nuevos roles (U-15 a U-20)
+
+-- U-15: Elena Torres → platform_admin (global)
+(
+    'cc000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000015',
+    '10000000-0000-0000-0000-000000000002',   -- platform_admin
+    NULL,
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-01-20 00:00:00'
+),
+
+-- U-16: Miguel Castillo → school_director / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000021',
+    '00000000-0000-0000-0000-000000000016',
+    '10000000-0000-0000-0000-000000000004',   -- school_director
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-01-20 09:00:00'
+),
+
+-- U-17: Laura Pena → school_assistant / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000022',
+    '00000000-0000-0000-0000-000000000017',
+    '10000000-0000-0000-0000-000000000006',   -- school_assistant
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-02-01 09:00:00'
+),
+
+-- U-18: Andres Gomez → assistant_teacher / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000023',
+    '00000000-0000-0000-0000-000000000018',
+    '10000000-0000-0000-0000-000000000008',   -- assistant_teacher
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-02-15 09:00:00'
+),
+
+-- U-19: Diana Lopez → observer / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000024',
+    '00000000-0000-0000-0000-000000000019',
+    '10000000-0000-0000-0000-000000000011',   -- observer
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-02-20 09:00:00'
+),
+
+-- U-19: Diana Lopez → observer / CreArte
+(
+    'cc000000-0000-0000-0000-000000000025',
+    '00000000-0000-0000-0000-000000000019',
+    '10000000-0000-0000-0000-000000000011',   -- observer
+    'b2000000-0000-0000-0000-000000000002',   -- CreArte
+    NULL, true,
+    '00000000-0000-0000-0000-000000000003',
+    '2026-02-20 09:00:00'
+),
+
+-- U-20: Fernando Ruiz → guardian / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000026',
+    '00000000-0000-0000-0000-000000000020',
+    '10000000-0000-0000-0000-000000000010',   -- guardian
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000002',
+    '2026-03-10 08:00:00'
 )
 
 ON CONFLICT (user_id, role_id, school_id, academic_unit_id) DO UPDATE SET

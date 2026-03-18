@@ -24,9 +24,9 @@
 --   school_director    : 17
 --   school_coordinator : 30
 --   school_assistant   :  7
---   teacher            : 20
+--   teacher            : 21
 --   assistant_teacher  :  8
---   student            :  9
+--   student            : 11
 --   guardian           : 11
 --   observer           :  5
 -- ============================================================
@@ -401,3 +401,16 @@ VALUES
   ('da000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', 'd0000000-0000-0000-0000-000000000001', '2026-03-07 00:00:00.000000')   -- dashboard:view (NUEVO)
 
 ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- ============================================================
+-- D-01, D-02, D-03: Permission decisions from core data analysis
+-- ============================================================
+INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
+VALUES
+  -- D-01: student + progress:read (allows access to progress-dashboard screen)
+  ('aaa00000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000009', '89336e44-3636-4744-a056-aea878f57b18', now()),
+  -- D-02: teacher + stats:school (allows access to stats-dashboard screen)
+  ('aaa00000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000007', 'f35d45c1-9539-422d-974f-5075d8f9b296', now()),
+  -- D-03: student + assessments_student:read (allows "Tomar Evaluacion" menu item)
+  ('aaa00000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000009', '30000000-0000-0000-0000-000000000033', now())
+ON CONFLICT DO NOTHING;
