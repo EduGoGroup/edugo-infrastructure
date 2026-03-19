@@ -114,9 +114,10 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000024', 'units-list',
  'a0000000-0000-0000-0000-000000000003', 'Unidades Academicas', 'Lista de unidades academicas',
- '{"page_title": "Unidades Académicas", "search_placeholder": "Buscar unidad...", "filter_all_label": "Todas", "filter_ready_label": "Activas", "filter_processing_label": "Inactivas", "empty_icon": "layers", "empty_state_title": "No hay unidades", "empty_state_description": "No se encontraron unidades académicas", "empty_action_label": "Crear Unidad"}'::jsonb,
+ '{"page_title": "Unidades Académicas", "search_placeholder": "Buscar unidad...", "filter_all_label": "Todas", "filter_ready_label": "Activas", "filter_processing_label": "Inactivas", "empty_icon": "layers", "empty_state_title": "No hay unidades", "empty_state_description": "No se encontraron unidades académicas", "empty_action_label": "Crear Unidad", "data_endpoint": "admin:/api/v1/schools/{schoolId}/units"}'::jsonb,
  'school', 'units:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 15: Lista de Miembros
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -228,33 +229,37 @@ ON CONFLICT (screen_key) DO UPDATE SET
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000042', 'material-create',
  'a0000000-0000-0000-0000-000000000006', 'Crear Material', 'Formulario para crear material educativo',
- '{"page_title": "Nuevo Material", "submit_label": "Crear", "delete_label": "Eliminar", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject", "type": "text", "label": "Materia", "placeholder": "Materia relacionada", "required": false}, {"key": "grade", "type": "text", "label": "Grado", "placeholder": "Grado o nivel", "required": false}, {"key": "is_public", "type": "toggle", "label": "Público", "default": false}]}'::jsonb,
+ '{"page_title": "Nuevo Material", "submit_label": "Crear", "delete_label": "Eliminar", "submit_endpoint": "mobile:/api/v1/materials", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject_id", "type": "remote_select", "label": "Materia", "required": false, "remote_endpoint": "admin:/api/v1/subjects", "display_field": "name", "value_field": "id"}, {"key": "grade", "type": "text", "label": "Grado", "placeholder": "Grado o nivel", "required": false}, {"key": "is_public", "type": "toggle", "label": "Público", "default": false}]}'::jsonb,
  'unit', 'materials:create', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 28: Formulario de Editar Material (Fase 2.3)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000043', 'material-edit',
  'a0000000-0000-0000-0000-000000000006', 'Editar Material', 'Formulario para editar material educativo',
- '{"page_title": "Editar Material", "edit_title": "Editar Material", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject", "type": "text", "label": "Materia", "placeholder": "Materia relacionada", "required": false}, {"key": "grade", "type": "text", "label": "Grado", "placeholder": "Grado o nivel", "required": false}, {"key": "is_public", "type": "toggle", "label": "Público", "default": false}]}'::jsonb,
+ '{"page_title": "Editar Material", "edit_title": "Editar Material", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "mobile:/api/v1/materials", "fields": [{"key": "title", "type": "text", "label": "Título", "placeholder": "Título del material", "required": true}, {"key": "description", "type": "textarea", "label": "Descripción", "placeholder": "Descripción del material", "required": false}, {"key": "subject_id", "type": "remote_select", "label": "Materia", "required": false, "remote_endpoint": "admin:/api/v1/subjects", "display_field": "name", "value_field": "id"}, {"key": "grade", "type": "text", "label": "Grado", "placeholder": "Grado o nivel", "required": false}, {"key": "is_public", "type": "toggle", "label": "Público", "default": false}]}'::jsonb,
  'unit', 'materials:update', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 29: Lista de Templates de Pantalla (Fase 5.5)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000050', 'screen-templates-list',
  'a0000000-0000-0000-0000-000000000003', 'Templates de Pantalla', 'Lista de templates base del sistema SDUI',
- '{"page_title": "Templates de Pantalla", "search_placeholder": "Buscar template...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "settings_applications", "empty_state_title": "No hay templates", "empty_state_description": "No se encontraron templates de pantalla"}'::jsonb,
+ '{"page_title": "Templates de Pantalla", "search_placeholder": "Buscar template...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "settings_applications", "empty_state_title": "No hay templates", "empty_state_description": "No se encontraron templates de pantalla", "show_add_button": false, "readonly": true}'::jsonb,
  'system', 'screen_templates:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 30: Lista de Instancias de Pantalla (Fase 5.5)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000051', 'screen-instances-list',
  'a0000000-0000-0000-0000-000000000003', 'Instancias de Pantalla', 'Lista de instancias configuradas de pantalla',
- '{"page_title": "Instancias de Pantalla", "search_placeholder": "Buscar instancia...", "filter_all_label": "Todas", "filter_ready_label": "Activas", "filter_processing_label": "Inactivas", "empty_icon": "devices", "empty_state_title": "No hay instancias", "empty_state_description": "No se encontraron instancias de pantalla", "empty_action_label": "Crear Instancia"}'::jsonb,
+ '{"page_title": "Instancias de Pantalla", "search_placeholder": "Buscar instancia...", "filter_all_label": "Todas", "filter_ready_label": "Activas", "filter_processing_label": "Inactivas", "empty_icon": "devices", "empty_state_title": "No hay instancias", "empty_state_description": "No se encontraron instancias de pantalla", "show_add_button": false, "readonly": true}'::jsonb,
  'system', 'screen_instances:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 31: Formulario de Instancia de Pantalla (Fase 5.5)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -316,9 +321,10 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000072', 'audit-events-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Eventos de Auditoría', 'Lista de eventos de auditoría del sistema',
- '{"page_title": "Auditoría", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Normales", "filter_processing_label": "Críticos", "empty_icon": "file-search", "empty_state_title": "No hay eventos de auditoría", "empty_state_description": "No se encontraron eventos de auditoría"}'::jsonb,
+ '{"page_title": "Auditoría", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Normales", "filter_processing_label": "Críticos", "empty_icon": "file-search", "empty_state_title": "No hay eventos de auditoría", "empty_state_description": "No se encontraron eventos de auditoría", "show_add_button": false, "readonly": true}'::jsonb,
  'system', 'audit:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 38: Lista de Preguntas de Evaluación (Assessment CRUD)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
@@ -348,9 +354,10 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000092', 'concept-types-list',
  'a0000000-0000-0000-0000-000000000003', 'Tipos de Concepto', 'Lista de tipos de institución y terminología',
- '{"page_title": "Tipos de Concepto", "search_placeholder": "Buscar tipo...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "tag", "empty_state_title": "No hay tipos de concepto", "empty_state_description": "No se encontraron tipos de concepto", "empty_action_label": "Crear Tipo"}'::jsonb,
+ '{"page_title": "Tipos de Concepto", "search_placeholder": "Buscar tipo...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "tag", "empty_state_title": "No hay tipos de concepto", "empty_state_description": "No se encontraron tipos de concepto", "empty_action_label": "Crear Tipo", "data_endpoint": "admin:/api/v1/concept-types"}'::jsonb,
  'system', 'concept_types:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 43: Formulario de Tipo de Concepto
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
