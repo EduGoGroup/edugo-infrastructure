@@ -423,4 +423,12 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'school', 'guardian_relations:manage', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 51: Configuración del Sistema (super_admin)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000101', 'system-settings',
+ 'a0000000-0000-0000-0000-000000000005', 'Configuración del Sistema', 'Configuración y mantenimiento del sistema',
+ '{"page_title": "Configuración del Sistema", "sections": [{"key": "cache", "title": "Caché", "description": "Gestionar el caché local de la aplicación", "items": [{"key": "clear_cache", "type": "action_button", "label": "Limpiar Caché", "description": "Elimina todos los datos almacenados localmente y recarga desde el servidor", "icon": "trash-2", "action": "clear_all_cache", "confirm": true, "confirm_message": "¿Estás seguro? Se eliminarán todos los datos en caché y la aplicación recargará la información desde el servidor."}]}, {"key": "info", "title": "Información", "description": "Información del sistema", "items": [{"key": "app_version", "type": "info_label", "label": "Versión de la App", "value": "1.0.0"}, {"key": "schema_version", "type": "info_label", "label": "Versión de BD", "value": "1.1.0"}]}]}'::jsonb,
+ 'system', 'system:settings', 'settings')
+ON CONFLICT (screen_key) DO NOTHING;
+
 COMMIT;

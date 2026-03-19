@@ -18,7 +18,7 @@
 --   10000000-...-000011  observer
 --
 -- Permisos por rol (conteo):
---   super_admin        : 65 (todos)
+--   super_admin        : 66 (todos)
 --   platform_admin     : 18
 --   school_admin       : 38
 --   school_director    : 17
@@ -35,7 +35,7 @@ INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
 VALUES
 
   -- ================================================================
-  -- super_admin — acceso total (65 permisos)
+  -- super_admin — acceso total (66 permisos)
   -- ================================================================
   -- assessments: attempt, create, delete, grade, publish, read, update, view_results
   ('f6de19dc-1f39-4965-9a94-9765266b7af3', '10000000-0000-0000-0000-000000000001', '8c8d7a5b-2688-4646-9888-bc53600dbbc0', '2026-02-21 02:41:20.433312'),  -- assessments:attempt
@@ -127,6 +127,8 @@ VALUES
   ('ca000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'c2000000-0000-0000-0000-000000000004', '2026-03-04 00:00:00.000000'),  -- concept_types:delete
   -- dashboard: view
   ('da000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '2026-03-04 00:00:00.000000'),  -- dashboard:view
+  -- system_settings: settings
+  ('da000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2026-03-19 00:00:00.000000'),  -- system:settings
 
   -- ================================================================
   -- platform_admin (18 permisos)

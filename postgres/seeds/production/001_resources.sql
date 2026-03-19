@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: resources (21 registros)
+-- SEED: resources (22 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -42,5 +42,6 @@ VALUES
 
   -- Hijo de admin (20000000-0000-0000-0000-000000000002)
   ('20000000-0000-0000-0000-000000000070', 'audit',            'Auditoría',               'Registro de auditoría del sistema',             'file-search',           'system', '20000000-0000-0000-0000-000000000002',  7, TRUE,  TRUE),
-  ('20000000-0000-0000-0000-000000000080', 'concept_types',    'Tipos de Concepto',       'Tipos de institución y terminología',           'tag',                   'system', '20000000-0000-0000-0000-000000000002',  8, TRUE,  TRUE)
+  ('20000000-0000-0000-0000-000000000080', 'concept_types',    'Tipos de Concepto',       'Tipos de institución y terminología',           'tag',                   'system', '20000000-0000-0000-0000-000000000002',  8, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000090', 'system_settings',  'Configuración',           'Configuración y mantenimiento del sistema',     'settings',              'system', '20000000-0000-0000-0000-000000000002',  9, TRUE,  TRUE)
 ON CONFLICT (id) DO NOTHING;
