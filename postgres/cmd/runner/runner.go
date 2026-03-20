@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/internal/dbutil"
 	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 )
@@ -23,7 +24,7 @@ func main() {
 		return
 	}
 
-	db, err := sql.Open("postgres", buildDBURL())
+	db, err := sql.Open("postgres", dbutil.BuildDBURL())
 	if err != nil {
 		log.Fatalf("error conectando a PostgreSQL: %v", err)
 	}
@@ -83,29 +84,4 @@ func printHelp() {
 	fmt.Println("  DATABASE_URL")
 	fmt.Println("  DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD / DB_SSL_MODE")
 	fmt.Println("  POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_SSLMODE")
-}
-
-func buildDBURL() string {
-	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
-		return databaseURL
-	}
-
-	host := envFirst("DB_HOST", "POSTGRES_HOST", "localhost")
-	port := envFirst("DB_PORT", "POSTGRES_PORT", "5432")
-	name := envFirst("DB_NAME", "POSTGRES_DB", "edugo_dev")
-	user := envFirst("DB_USER", "POSTGRES_USER", "edugo")
-	password := envFirst("DB_PASSWORD", "POSTGRES_PASSWORD", "changeme")
-	sslmode := envFirst("DB_SSL_MODE", "POSTGRES_SSLMODE", "disable")
-
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, name, sslmode)
-}
-
-func envFirst(primary, secondary, fallback string) string {
-	if value := os.Getenv(primary); value != "" {
-		return value
-	}
-	if value := os.Getenv(secondary); value != "" {
-		return value
-	}
-	return fallback
 }

@@ -18,15 +18,15 @@
 --   10000000-...-000011  observer
 --
 -- Permisos por rol (conteo):
---   super_admin        : 65 (todos)
+--   super_admin        : 66 (todos)
 --   platform_admin     : 18
 --   school_admin       : 38
 --   school_director    : 17
 --   school_coordinator : 30
 --   school_assistant   :  7
---   teacher            : 20
+--   teacher            : 21
 --   assistant_teacher  :  8
---   student            :  9
+--   student            : 11
 --   guardian           : 11
 --   observer           :  5
 -- ============================================================
@@ -35,7 +35,7 @@ INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
 VALUES
 
   -- ================================================================
-  -- super_admin — acceso total (65 permisos)
+  -- super_admin — acceso total (66 permisos)
   -- ================================================================
   -- assessments: attempt, create, delete, grade, publish, read, update, view_results
   ('f6de19dc-1f39-4965-9a94-9765266b7af3', '10000000-0000-0000-0000-000000000001', '8c8d7a5b-2688-4646-9888-bc53600dbbc0', '2026-02-21 02:41:20.433312'),  -- assessments:attempt
@@ -127,6 +127,8 @@ VALUES
   ('ca000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'c2000000-0000-0000-0000-000000000004', '2026-03-04 00:00:00.000000'),  -- concept_types:delete
   -- dashboard: view
   ('da000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '2026-03-04 00:00:00.000000'),  -- dashboard:view
+  -- system_settings: settings
+  ('da000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2026-03-19 00:00:00.000000'),  -- system:settings
 
   -- ================================================================
   -- platform_admin (18 permisos)
@@ -400,4 +402,17 @@ VALUES
   ('50000000-0000-0000-0000-000000000025', '10000000-0000-0000-0000-000000000011', '2b31df13-4c54-43fc-8bcd-8a9265fba1a0', '2026-03-01 00:00:00.000000'),  -- screens:read
   ('da000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', 'd0000000-0000-0000-0000-000000000001', '2026-03-07 00:00:00.000000')   -- dashboard:view (NUEVO)
 
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- ============================================================
+-- D-01, D-02, D-03: Permission decisions from core data analysis
+-- ============================================================
+INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
+VALUES
+  -- D-01: student + progress:read (allows access to progress-dashboard screen)
+  ('aaa00000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000009', '89336e44-3636-4744-a056-aea878f57b18', '2026-03-19 00:00:00.000000'),
+  -- D-02: teacher + stats:school (allows access to stats-dashboard screen)
+  ('aaa00000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000007', 'f35d45c1-9539-422d-974f-5075d8f9b296', '2026-03-19 00:00:00.000000'),
+  -- D-03: student + assessments_student:read (allows "Tomar Evaluacion" menu item)
+  ('aaa00000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000009', '30000000-0000-0000-0000-000000000033', '2026-03-19 00:00:00.000000')
 ON CONFLICT (role_id, permission_id) DO NOTHING;

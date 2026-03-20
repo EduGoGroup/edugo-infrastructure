@@ -200,4 +200,9 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000101', '20000000-0000-0000-0000-000000000041', 'stats', 'stats-detail', 'detail', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- System Settings -> system-settings (settings, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000102', '20000000-0000-0000-0000-000000000090', 'system_settings', 'system-settings', 'settings', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;

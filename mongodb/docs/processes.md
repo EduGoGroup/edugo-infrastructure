@@ -36,15 +36,12 @@ Los comentarios del propio archivo alinean esos documentos con materiales sembra
 
 `migrations/mock_data.go` carga documentos de prueba para desarrollo y testing sobre las mismas collections principales.
 
-### 5. Mantener estado de migraciones
+### 5. Operacion por CLI
 
-`cmd/migrate/migrate.go` no ejecuta toda la estructura. Su responsabilidad actual es:
+El modulo tiene dos entrypoints operativos:
 
-- asegurar la collection `schema_migrations`
-- mostrar estado
-- forzar una version
-
-El propio help del comando deja claro que las migraciones reales se aplican desde Go usando el paquete `migrations`.
+- `cmd/runner/main.go`: ejecuta estructura + constraints embebidos; comandos: `all`, `structure`, `constraints`
+- `cmd/seed/main.go`: ejecuta solo seeds embebidos; comandos: `all`, `canonical`, `mock`
 
 ### 6. Exponer entities Go
 
@@ -60,8 +57,3 @@ Estas structs reflejan el shape actual de las collections activas.
 
 El paquete `mongodb/migrations` tiene tests de integracion y los tests cortos pasan en esta fase.
 
-## Realidades que importan documentar
-
-- El centro del modulo es codigo Go embebido, no scripts JS externos.
-- Aun existen artefactos `_deprecated/` y un script JS heredado en `migrations/001_setup_collections.js`, pero no son la superficie recomendada.
-- `mongodb/Makefile` tiene targets `migrate-*` que apuntan a `go run migrate.go`, ruta que hoy no existe en la raiz del modulo.
