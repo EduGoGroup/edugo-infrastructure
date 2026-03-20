@@ -2,21 +2,11 @@ MODULE_NAME = github.com/EduGoGroup/edugo-infrastructure/mongodb
 MODULE_PATH = mongodb
 ROOT_DIR = ..
 BUILD_DIR = build
-BUILD_COMMAND = mkdir -p $(BUILD_DIR) && go build -o $(BUILD_DIR)/migrate ./cmd/migrate && go build -o $(BUILD_DIR)/runner ./cmd/runner && go build -o $(BUILD_DIR)/seed ./cmd/seed
+BUILD_COMMAND = mkdir -p $(BUILD_DIR) && go build -o $(BUILD_DIR)/runner ./cmd/runner && go build -o $(BUILD_DIR)/seed ./cmd/seed
 
 include ../make/go-module.mk
 
-.PHONY: migrate-status migrate-force runner-up runner-structure runner-constraints seed seed-canonical seed-mock seed-all
-
-migrate-status: ## Ver estado de migraciones MongoDB
-	@go run ./cmd/migrate status
-
-migrate-force: ## Forzar versión de migración (uso: make migrate-force VERSION_NUMBER=3)
-	@if [ -z "$(VERSION_NUMBER)" ]; then \
-		echo "$(RED)Debe especificar VERSION_NUMBER=<numero>$(NC)"; \
-		exit 1; \
-	fi
-	@go run ./cmd/migrate force "$(VERSION_NUMBER)"
+.PHONY: runner-up runner-structure runner-constraints seed seed-canonical seed-mock seed-all
 
 runner-up: ## Aplicar structure + constraints
 	@go run ./cmd/runner all

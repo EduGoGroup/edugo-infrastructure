@@ -5,10 +5,13 @@
 ```text
 postgres/
 |-- cmd/
-|   |-- migrate/
-|   `-- runner/
+|   |-- runner/
+|   `-- seed/
 |-- docs/
 |-- entities/
+|-- internal/
+|   |-- dbutil/
+|   `-- sqlutil/
 |-- migrations/
 |   `-- structure/
 |-- seeds/
@@ -25,10 +28,14 @@ postgres/
 | --- | --- |
 | `migrations/structure/*.sql` | define schemas, tablas, funciones, vistas y FK |
 | `migrations/embed.go` | embebe y ejecuta SQL de estructura |
+| `migrations/version.go` | constante `SchemaVersion` y calculo de hash de archivos |
 | `seeds/embed.go` | embebe y ejecuta seeds de produccion y desarrollo |
+| `seeds/version.go` | calculo de hash combinado de seeds (production + development) |
 | `entities/*.go` | representa tablas como structs Go |
-| `cmd/migrate` | administra migraciones versionadas legacy |
-| `cmd/runner` | intenta ejecutar capas desde el filesystem |
+| `internal/dbutil` | utilidad compartida para construir DB URL desde variables de entorno |
+| `internal/sqlutil` | utilidad compartida para detectar SQL vacio o de solo comentarios |
+| `cmd/runner` | ejecuta estructura + seeds embebidos (`all`, `structure`, `production-seeds`, `development-seeds`) |
+| `cmd/seed` | ejecuta solo seeds embebidos (`all`, `production`, `development`) |
 
 ## Diagrama local
 
@@ -38,8 +45,8 @@ flowchart TB
     PG --> SQL[structure SQL]
     PG --> SD[seed packages]
     PG --> ENT[entities]
-    PG --> CLI1[cmd/migrate]
     PG --> CLI2[cmd/runner]
+    PG --> CLI3[cmd/seed]
 
     SQL --> AUTH[auth]
     SQL --> IAM[iam]

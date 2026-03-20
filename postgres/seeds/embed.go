@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/internal/sqlutil"
 )
 
 //go:embed production/*.sql development/*.sql
@@ -21,36 +23,6 @@ func ApplyProduction(db *sql.DB) error {
 // ApplyDevelopment ejecuta los seeds de desarrollo (datos de prueba: escuelas, usuarios, materiales, etc.)
 func ApplyDevelopment(db *sql.DB) error {
 	return applyLayer(db, "development")
-}
-
-// GetScript obtiene el contenido de un script específico
-func GetScript(name string) (string, error) {
-	content, err := Files.ReadFile(name)
-	if err != nil {
-		return "", fmt.Errorf("script no encontrado: %s", name)
-	}
-	return string(content), nil
-}
-
-// ListScripts lista todos los scripts disponibles por capa
-func ListScripts() map[string][]string {
-	result := make(map[string][]string)
-	layers := []string{"production", "development"}
-	for _, layer := range layers {
-		files, err := fs.ReadDir(Files, layer)
-		if err != nil {
-			continue
-		}
-		var sqlFiles []string
-		for _, file := range files {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".sql") {
-				sqlFiles = append(sqlFiles, file.Name())
-			}
-		}
-		sort.Strings(sqlFiles)
-		result[layer] = sqlFiles
-	}
-	return result
 }
 
 func applyLayer(db *sql.DB, layer string) error {
@@ -72,7 +44,7 @@ func applyLayer(db *sql.DB, layer string) error {
 			return fmt.Errorf("error leyendo %s: %w", path, err)
 		}
 		sqlContent := string(content)
-		if isEmptyOrComment(sqlContent) {
+		if sqlutil.IsEmptyOrComment(sqlContent) {
 			continue
 		}
 		if _, err := db.Exec(sqlContent); err != nil {
@@ -82,13 +54,3 @@ func applyLayer(db *sql.DB, layer string) error {
 	return nil
 }
 
-func isEmptyOrComment(content string) bool {
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed != "" && !strings.HasPrefix(trimmed, "--") {
-			return false
-		}
-	}
-	return true
-}

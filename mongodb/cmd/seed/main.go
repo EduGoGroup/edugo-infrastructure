@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/EduGoGroup/edugo-infrastructure/mongodb/internal/mongodbutil"
 	"github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -26,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(options.Client().ApplyURI(buildMongoURI()))
+	client, err := mongo.Connect(options.Client().ApplyURI(mongodbutil.BuildMongoURI()))
 	if err != nil {
 		log.Fatalf("error conectando a MongoDB: %v", err)
 	}
@@ -36,7 +37,7 @@ func main() {
 		log.Fatalf("error validando conexión a MongoDB: %v", err)
 	}
 
-	db := client.Database(envFirst("MONGO_DB_NAME", "MONGO_DB", "edugo"))
+	db := client.Database(mongodbutil.EnvFirst("MONGO_DB_NAME", "MONGO_DB", "edugo"))
 
 	switch command {
 	case "canonical":
@@ -77,33 +78,4 @@ func printHelp() {
 	fmt.Println("Variables soportadas:")
 	fmt.Println("  MONGO_URI")
 	fmt.Println("  MONGO_HOST / MONGO_PORT / MONGO_USER / MONGO_PASSWORD / MONGO_DB o MONGO_DB_NAME")
-}
-
-func buildMongoURI() string {
-	if uri := os.Getenv("MONGO_URI"); uri != "" {
-		return uri
-	}
-
-	host := envFirst("MONGO_HOST", "", "localhost")
-	port := envFirst("MONGO_PORT", "", "27017")
-	user := os.Getenv("MONGO_USER")
-	password := os.Getenv("MONGO_PASSWORD")
-
-	if user != "" && password != "" {
-		return fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", user, password, host, port)
-	}
-
-	return fmt.Sprintf("mongodb://%s:%s", host, port)
-}
-
-func envFirst(primary, secondary, fallback string) string {
-	if value := os.Getenv(primary); value != "" {
-		return value
-	}
-	if secondary != "" {
-		if value := os.Getenv(secondary); value != "" {
-			return value
-		}
-	}
-	return fallback
 }
