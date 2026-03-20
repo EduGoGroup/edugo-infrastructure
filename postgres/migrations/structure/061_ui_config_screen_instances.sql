@@ -31,7 +31,5 @@ CREATE INDEX idx_screen_instances_scope ON ui_config.screen_instances USING btre
 CREATE INDEX idx_screen_instances_slot_data ON ui_config.screen_instances USING gin (slot_data);
 CREATE INDEX idx_screen_instances_handler_key ON ui_config.screen_instances USING btree (handler_key) WHERE (handler_key IS NOT NULL);
 
-CREATE INDEX idx_screen_instances_screen_key ON ui_config.screen_instances (screen_key);
-
 CREATE TRIGGER update_screen_instances_updated_at BEFORE UPDATE ON ui_config.screen_instances
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

@@ -53,4 +53,3 @@ func applyLayer(db *sql.DB, layer string) error {
 	}
 	return nil
 }
-
