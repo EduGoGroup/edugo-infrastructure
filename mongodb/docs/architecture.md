@@ -5,17 +5,16 @@
 ```text
 mongodb/
 |-- cmd/
-|   `-- migrate/
+|   |-- runner/
+|   `-- seed/
 |-- docs/
 |-- entities/
+|-- internal/
+|   `-- mongodbutil/
 |-- migrations/
-|   |-- _deprecated/
-|   |-- cmd/
 |   |-- embed.go
 |   |-- mock_data.go
 |   `-- seeds.go
-|-- seeds/
-|   `-- development/
 |-- Makefile
 |-- README.md
 `-- CHANGELOG.md
@@ -29,7 +28,9 @@ mongodb/
 | `migrations/seeds.go` | seeds canonicos embebidos |
 | `migrations/mock_data.go` | mock data para desarrollo y pruebas |
 | `entities/*.go` | models Go de las collections activas |
-| `cmd/migrate/migrate.go` | CLI de estado y force |
+| `internal/mongodbutil` | utilidad compartida para construir MongoDB URI desde variables de entorno |
+| `cmd/runner` | ejecuta estructura + constraints embebidos (`all`, `structure`, `constraints`) |
+| `cmd/seed` | ejecuta seeds embebidos (`all`, `canonical`, `mock`) |
 
 ## Diagrama local
 
@@ -37,9 +38,9 @@ mongodb/
 flowchart TB
     MG[mongodb]
     MG --> API[migrations package]
-    MG --> CLI[cmd/migrate]
+    MG --> CLI2[cmd/runner]
+    MG --> CLI3[cmd/seed]
     MG --> ENT[entities]
-    MG --> LEG[legacy artifacts]
 
     API --> STR[structure functions]
     API --> IDX[index functions]
@@ -51,4 +52,3 @@ flowchart TB
 
 - La estructura activa esta colapsada en un solo paquete Go.
 - Las collections activas son pocas y estan orientadas a artefactos del worker.
-- El modulo mantiene restos historicos, pero la documentacion nueva los trata como secundarios.

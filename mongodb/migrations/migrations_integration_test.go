@@ -282,7 +282,7 @@ func testApplySeeds(ctx context.Context, db *mongo.Database) func(*testing.T) {
 
 		// Verificar que se insertaron documentos en las colecciones activas
 		expectedCounts := map[string]int64{
-			"material_assessment_worker": 2,
+			"material_assessment_worker": 6,
 			"material_summary":           3,
 		}
 

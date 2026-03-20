@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: permissions (65 registros)
+-- SEED: permissions (66 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -115,5 +115,8 @@ VALUES
   ('30000000-0000-0000-0000-000000000033', '20000000-0000-0000-0000-000000000033', 'assessments_student:read', 'Ver evaluaciones como estudiante', 'Permite ver y tomar evaluaciones desde la perspectiva del estudiante', 'read', 'unit', TRUE),
 
   -- dashboard (resource: 20000000-0000-0000-0000-000000000001)
-  ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE)
+  ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE),
+
+  -- system_settings (resource: 20000000-0000-0000-0000-000000000090)
+  ('d1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000090', 'system:settings', 'Configuración del Sistema', 'Acceder a la configuración y mantenimiento del sistema', 'settings', 'system', TRUE)
 ON CONFLICT (id) DO NOTHING;

@@ -44,5 +44,13 @@ seeds/generated/
 # Compiled cmd binaries
 postgres/cmd/migrate/migrate
 postgres/cmd/runner/runner
+postgres/cmd/seed/seed
 mongodb/cmd/migrate/migrate
 mongodb/cmd/runner/runner
+mongodb/cmd/seed/seed
+
+# Top-level compiled binaries (go build output)
+postgres/runner
+postgres/seed
+mongodb/runner
+mongodb/seed

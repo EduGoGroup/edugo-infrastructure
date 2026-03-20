@@ -78,24 +78,6 @@ func ApplyMockData(ctx context.Context, db *mongo.Database) error {
 	return nil
 }
 
-// ListFunctions lista todas las funciones disponibles por capa
-func ListFunctions() map[string][]string {
-	return map[string][]string{
-		"structure": {
-			"createMaterialSummary",
-			"createMaterialAssessmentWorker",
-			"createMaterialEvent",
-		},
-		"constraints": {
-			"createMaterialSummaryIndexes",
-			"createMaterialAssessmentWorkerIndexes",
-			"createMaterialEventIndexes",
-		},
-		"seeds":   {},
-		"testing": {},
-	}
-}
-
 // ============================================================
 // Structure functions (inlined from deprecated sub-packages)
 // ============================================================

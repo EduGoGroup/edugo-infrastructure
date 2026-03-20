@@ -46,7 +46,7 @@ Estos scripts conforman la configuracion canonica del sistema y no deben tratars
 
 ### 4. Seeds de desarrollo
 
-El modulo incluye 13 scripts en `postgres/seeds/development/`.
+El modulo incluye 14 scripts en `postgres/seeds/development/`.
 
 Procesos cubiertos por esos seeds:
 
@@ -62,6 +62,7 @@ Procesos cubiertos por esos seeds:
 - relaciones guardian-estudiante
 - preferencias UI
 - conceptos por escuela
+- progreso de estudiantes
 
 ### 5. Exposicion de entities Go
 
@@ -69,7 +70,7 @@ El directorio `postgres/entities/` contiene 27 structs, entre ellos:
 
 - autenticacion: `User`, `RefreshToken`, `LoginAttempt`
 - IAM: `Resource`, `Role`, `Permission`, `RolePermission`, `UserRole`
-- academico: `School`, `AcademicUnit`, `Membership`, `Subject`, `GuardianRelation`, `ConceptType`, `ConceptDefinition`, `SchoolConcept`
+- academico: `School`, `AcademicUnit`, `Membership`, `Subject`, `GuardianRelation`, `ConceptType`, `ConceptDefinition`, `SchoolConcept`, `Unit`
 - contenido: `Material`, `MaterialVersion`, `Progress`
 - evaluacion: `Assessment`, `AssessmentAttempt`, `AssessmentAttemptAnswer`, `AssessmentMaterial`
 - UI config: `ScreenTemplate`, `ScreenInstance`, `ResourceScreen`
@@ -78,20 +79,14 @@ El directorio `postgres/entities/` contiene 27 structs, entre ellos:
 
 El modulo tiene dos entrypoints operativos:
 
-- `cmd/migrate/migrate.go`: CLI legacy con `up`, `down`, `status`, `create`, `force`
-- `cmd/runner/runner.go`: runner por capas que intenta ejecutar `structure`, `constraints`, `seeds`, `testing`
+- `cmd/runner/runner.go`: ejecuta estructura + seeds embebidos; comandos: `all`, `structure`, `production-seeds`, `development-seeds`
+- `cmd/seed/main.go`: ejecuta solo seeds embebidos; comandos: `all`, `production`, `development`
 
 ### 7. Tests del modulo
 
 El modulo tiene tests de integracion en `postgres/migrations/migrations_integration_test.go` y los tests cortos pasan en el estado observado de esta fase.
 
-## Realidades que importan documentar
-
-- El paquete embebido y probado es `postgres/migrations` sobre `structure/*.sql`.
-- La narrativa vieja de una arquitectura de 4 capas ya no representa exactamente el layout actual del modulo.
-- `postgres/Makefile` conserva un target `seed` con una referencia a `../scripts/get-db-url.go`, archivo que hoy no existe.
-
-## Superficie recomendada en fase 1
+## Superficie recomendada
 
 Si alguien necesita usar el modulo desde el propio repo, la superficie mas confiable hoy es:
 
