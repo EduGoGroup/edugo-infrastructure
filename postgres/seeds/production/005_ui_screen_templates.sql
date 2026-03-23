@@ -202,4 +202,23 @@ INSERT INTO ui_config.screen_templates (id, pattern, name, description, version,
 }'::jsonb)
 ON CONFLICT (name, version) DO NOTHING;
 
+-- Template 8: System Settings
+INSERT INTO ui_config.screen_templates (id, pattern, name, description, version, definition) VALUES
+('a0000000-0000-0000-0000-000000000008', 'settings', 'settings-system-v1', 'Configuración del sistema con secciones, acciones y datos informativos', 1, '{
+  "navigation": {"topBar": {"title": "slot:page_title", "showBack": false}},
+  "zones": [
+    {"id": "section_cache", "type": "form-section", "slots": [
+      {"id": "cache_title", "controlType": "label", "style": "title-medium", "bind": "slot:cache_title"},
+      {"id": "cache_description", "controlType": "label", "style": "body-small", "bind": "slot:cache_description"},
+      {"id": "clear_cache_btn", "controlType": "filled-button", "bind": "slot:clear_cache_label", "event_id": "clear_all_cache", "icon": "trash-2", "style": "error"}
+    ]},
+    {"id": "section_info", "type": "form-section", "slots": [
+      {"id": "info_title", "controlType": "label", "style": "title-medium", "bind": "slot:info_title"},
+      {"id": "app_version", "controlType": "list-item", "bind": "slot:app_version_label", "value": "slot:app_version_value"},
+      {"id": "schema_version", "controlType": "list-item", "bind": "slot:schema_version_label", "value": "slot:schema_version_value"}
+    ]}
+  ]
+}'::jsonb)
+ON CONFLICT (name, version) DO NOTHING;
+
 COMMIT;
