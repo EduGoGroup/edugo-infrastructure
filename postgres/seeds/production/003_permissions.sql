@@ -118,5 +118,5 @@ VALUES
   ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE),
 
   -- system_settings (resource: 20000000-0000-0000-0000-000000000090)
-  ('d1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000090', 'system:settings', 'Configuración del Sistema', 'Acceder a la configuración y mantenimiento del sistema', 'settings', 'system', TRUE)
+  ('d1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000090', 'system_settings:settings', 'Configuración del Sistema', 'Acceder a la configuración y mantenimiento del sistema', 'settings', 'system', TRUE)
 ON CONFLICT (id) DO NOTHING;
