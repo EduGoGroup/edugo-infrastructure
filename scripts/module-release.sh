@@ -100,6 +100,19 @@ create_github_release() {
   require_cmd gh
   print_notes "$version" > "$tmp_notes"
 
+  if [[ -f "$MODULE_DIR/go.mod" ]]; then
+    {
+      echo ""
+      echo "---"
+      echo ""
+      echo "## Instalación"
+      echo ""
+      echo '```bash'
+      echo "go get github.com/EduGoGroup/edugo-infrastructure/$MODULE_PATH@$version"
+      echo '```'
+    } >> "$tmp_notes"
+  fi
+
   gh release create "$tag" \
     --verify-tag \
     --title "$MODULE_PATH $version" \

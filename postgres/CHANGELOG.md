@@ -6,6 +6,17 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.66.0] - 2026-03-23
+
+### Changed
+- Renombrada la clave de permiso `system:settings` a `system_settings:settings` en seeds de produccion.
+- Actualizada la instancia de pantalla `system-settings` para usar la nueva clave de permiso y la plantilla `settings-system-v1`.
+
+### Added
+- Nueva plantilla de pantalla `settings-system-v1` en seeds de produccion.
+
+## [0.65.0] - 2026-03-20
+
 ### Added
 - Nueva documentacion fase 1 del modulo.
 - Documentacion fase 2 de integracion ecosistemica del modulo.
