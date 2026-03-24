@@ -61,7 +61,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -71,7 +71,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -81,7 +81,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',
     'ac000000-0000-0000-0000-000000000004',   -- 5to B
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -91,7 +91,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',
     'ac000000-0000-0000-0000-000000000006',   -- 6to A
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -103,7 +103,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -113,7 +113,7 @@ INSERT INTO academic.memberships (
     'b3000000-0000-0000-0000-000000000003',   -- Academia
     'ac000000-0000-0000-0000-000000000014',   -- Class Monday
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -123,7 +123,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
     'student',
-    '{"enrollment_type": "regular"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -135,7 +135,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'teacher',
-    '{"subjects": ["Matematicas"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -145,7 +145,7 @@ INSERT INTO academic.memberships (
     'b3000000-0000-0000-0000-000000000003',   -- Academia
     'ac000000-0000-0000-0000-000000000014',   -- Class Monday
     'teacher',
-    '{"subjects": ["English Basics A2"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -155,7 +155,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000004',   -- 5to B
     'teacher',
-    '{"subjects": ["Matematicas", "Ciencias Naturales"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -165,7 +165,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000006',   -- 6to A
     'teacher',
-    '{"subjects": ["Historia"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -175,7 +175,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
     'teacher',
-    '{"subjects": ["Tecnicas de Pintura"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -185,7 +185,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000011',   -- Grupo Tarde
     'teacher',
-    '{"subjects": ["Fundamentos de Escultura"]}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -197,7 +197,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'assistant',
-    '{"subjects": ["Matematicas"], "rbac_role": "assistant_teacher"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-15 09:00:00+00'
 ),
@@ -207,7 +207,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'assistant',
-    '{"scope": "unit", "rbac_role": "observer"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-20 09:00:00+00'
 ),
@@ -217,7 +217,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
     'assistant',
-    '{"scope": "unit", "rbac_role": "observer"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-20 09:00:00+00'
 ),
@@ -227,7 +227,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "tio"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-10 08:00:00+00'
 ),
@@ -239,7 +239,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "padre"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -249,7 +249,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     'ac000000-0000-0000-0000-000000000009',   -- Grupo Manana
     'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000008", "relationship": "padre"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -259,7 +259,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000003',   -- 5to A
     'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000009", "relationship": "madre"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 ),
@@ -269,7 +269,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     'ac000000-0000-0000-0000-000000000004',   -- 5to B
     'guardian',
-    '{"ward_student_id": "00000000-0000-0000-0000-000000000010", "relationship": "tutora"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-03-01 08:00:00+00'
 )
@@ -298,7 +298,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
     'admin',
-    '{"scope": "school"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-01-15 09:00:00+00'
 ),
@@ -308,7 +308,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     NULL,
     'admin',
-    '{"scope": "school"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-01-15 09:00:00+00'
 ),
@@ -318,7 +318,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
     'coordinator',
-    '{"scope": "school"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -328,7 +328,7 @@ INSERT INTO academic.memberships (
     'b2000000-0000-0000-0000-000000000002',   -- CreArte
     NULL,
     'coordinator',
-    '{"scope": "school"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-10 09:00:00+00'
 ),
@@ -338,7 +338,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
     'admin',
-    '{"scope": "school", "rbac_role": "school_director"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-01-20 09:00:00+00'
 ),
@@ -348,7 +348,7 @@ INSERT INTO academic.memberships (
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL,
     'assistant',
-    '{"scope": "school"}'::jsonb,
+    '{}'::jsonb,
     true,
     '2026-02-01 09:00:00+00'
 )

@@ -48,6 +48,9 @@ UPDATE ui_config.screen_templates SET created_by = NULL WHERE created_by IS NOT 
 UPDATE ui_config.screen_instances SET created_by = NULL WHERE created_by IS NOT NULL;
 
 -- Tablas adicionales de desarrollo (hojas)
+TRUNCATE TABLE academic.calendar_events CASCADE;
+TRUNCATE TABLE academic.announcements CASCADE;
+TRUNCATE TABLE academic.schedules CASCADE;
 TRUNCATE TABLE academic.subjects CASCADE;
 TRUNCATE TABLE academic.guardian_relations CASCADE;
 TRUNCATE TABLE academic.school_concepts CASCADE;
