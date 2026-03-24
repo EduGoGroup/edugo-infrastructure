@@ -6,6 +6,9 @@
 
 BEGIN;
 
+DO $$ BEGIN
+IF to_regclass('academic.grades') IS NOT NULL THEN
+
 INSERT INTO academic.grades (id, membership_id, subject_id, period_id, grade_value, grade_letter, teacher_id, notes, finalized_at) VALUES
 -- Carlos (m001) en Matematicas 5A — nota final
 ('a0000000-0000-0000-0000-000000000001', 'bb000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000001', 'ff000000-0000-0000-0000-000000000001', 6.5, 'B+', 'bb000000-0000-0000-0000-000000000008', 'Buen rendimiento', '2026-03-20 10:00:00+00'),
@@ -16,5 +19,8 @@ INSERT INTO academic.grades (id, membership_id, subject_id, period_id, grade_val
 -- Diego (m004) en Matematicas 5B — borrador
 ('a0000000-0000-0000-0000-000000000004', 'bb000000-0000-0000-0000-000000000004', 'dd000000-0000-0000-0000-000000000003', 'ff000000-0000-0000-0000-000000000001', 5.0, 'C+', 'bb000000-0000-0000-0000-000000000010', 'Debe mejorar', NULL)
 ON CONFLICT (id) DO NOTHING;
+
+END IF;
+END $$;
 
 COMMIT;

@@ -6,6 +6,9 @@
 
 BEGIN;
 
+DO $$ BEGIN
+IF to_regclass('academic.academic_periods') IS NOT NULL THEN
+
 INSERT INTO academic.academic_periods (id, school_id, name, code, type, start_date, end_date, is_active, academic_year, sort_order) VALUES
 -- San Ignacio - 2 semestres
 ('ff000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'Primer Semestre 2026', 'S1-2026', 'semester', '2026-03-01', '2026-07-15', true, 2026, 1),
@@ -16,5 +19,8 @@ INSERT INTO academic.academic_periods (id, school_id, name, code, type, start_da
 -- Academia - bimestres
 ('ff000000-0000-0000-0000-000000000005', 'b3000000-0000-0000-0000-000000000003', 'Bimestre 1', 'B1-2026', 'bimester', '2026-03-01', '2026-04-30', true, 2026, 1)
 ON CONFLICT (id) DO NOTHING;
+
+END IF;
+END $$;
 
 COMMIT;

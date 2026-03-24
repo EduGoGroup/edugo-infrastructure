@@ -38,7 +38,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000112', 'grades-list',
  'a0000000-0000-0000-0000-000000000003', 'Lista de Calificaciones', 'Lista de calificaciones de los estudiantes',
  '{"page_title": "Calificaciones", "search_placeholder": "Buscar estudiante...", "filter_all_label": "Todas", "filter_ready_label": "Aprobadas", "filter_processing_label": "Reprobadas", "empty_icon": "grade", "empty_state_title": "No hay calificaciones", "empty_state_description": "No se encontraron calificaciones registradas", "empty_action_label": "Registrar Calificacion"}'::jsonb,
- 'school', 'grades:read', NULL)
+ 'unit', 'grades:read', NULL)
 ON CONFLICT (screen_key) DO UPDATE SET
     slot_data = EXCLUDED.slot_data;
 
@@ -47,7 +47,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000113', 'grades-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Calificacion', 'Registrar o editar una calificacion',
  '{"page_title": "Nueva Calificacion", "edit_title": "Editar Calificacion", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "membership_id", "type": "remote_select", "label": "Estudiante", "required": true, "remote_endpoint": "admin:/api/v1/memberships", "display_field": "user_name", "value_field": "id"}, {"key": "subject_id", "type": "remote_select", "label": "Materia", "required": true, "remote_endpoint": "admin:/api/v1/subjects", "display_field": "name", "value_field": "id"}, {"key": "period_id", "type": "remote_select", "label": "Periodo", "required": true, "remote_endpoint": "admin:/api/v1/periods", "display_field": "name", "value_field": "id"}, {"key": "grade_value", "type": "number", "label": "Nota", "placeholder": "0-100", "required": true}, {"key": "grade_letter", "type": "text", "label": "Letra", "placeholder": "Ej: A, B, C"}, {"key": "notes", "type": "textarea", "label": "Observaciones", "placeholder": "Observaciones sobre el desempeno"}]}'::jsonb,
- 'school', 'grades:create', NULL)
+ 'unit', 'grades:create', NULL)
 ON CONFLICT (screen_key) DO UPDATE SET
     slot_data = EXCLUDED.slot_data;
 
@@ -135,7 +135,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000121', 'calendar-list',
  'a0000000-0000-0000-0000-000000000003', 'Calendario Escolar', 'Eventos del calendario escolar',
  '{"page_title": "Calendario Escolar", "search_placeholder": "Buscar evento...", "filter_all_label": "Todos", "filter_ready_label": "Proximos", "filter_processing_label": "Pasados", "empty_icon": "event", "empty_state_title": "No hay eventos en el calendario", "empty_state_description": "No se encontraron eventos programados", "empty_action_label": "Crear Evento"}'::jsonb,
- 'school', 'calendar:read', NULL)
+ 'school', 'calendar_events:read', NULL)
 ON CONFLICT (screen_key) DO UPDATE SET
     slot_data = EXCLUDED.slot_data;
 
@@ -144,7 +144,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000122', 'calendar-form',
  'a0000000-0000-0000-0000-000000000006', 'Formulario de Evento', 'Crear o editar un evento del calendario',
  '{"page_title": "Nuevo Evento", "edit_title": "Editar Evento", "submit_label": "Guardar", "delete_label": "Eliminar", "fields": [{"key": "title", "type": "text", "label": "Titulo", "placeholder": "Titulo del evento", "required": true}, {"key": "description", "type": "textarea", "label": "Descripcion", "placeholder": "Descripcion del evento"}, {"key": "event_type", "type": "select", "label": "Tipo", "required": true, "options": [{"value": "holiday", "label": "Feriado"}, {"value": "exam", "label": "Examen"}, {"value": "meeting", "label": "Reunion"}, {"value": "activity", "label": "Actividad"}, {"value": "deadline", "label": "Fecha Limite"}]}, {"key": "start_date", "type": "date", "label": "Fecha inicio", "required": true}, {"key": "end_date", "type": "date", "label": "Fecha fin"}, {"key": "is_all_day", "type": "toggle", "label": "Todo el dia", "default": false}]}'::jsonb,
- 'school', 'calendar:create', NULL)
+ 'school', 'calendar_events:create', NULL)
 ON CONFLICT (screen_key) DO UPDATE SET
     slot_data = EXCLUDED.slot_data;
 
@@ -166,7 +166,7 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
 ('b0000000-0000-0000-0000-000000000124', 'report-card',
  'a0000000-0000-0000-0000-000000000004', 'Boleta de Notas', 'Boleta de notas del estudiante por periodo',
  '{"page_title": "Boleta de Notas", "file_size_label": "Promedio General", "uploaded_label": "Periodo", "status_label": "Estado", "description_title": "Calificaciones por Materia", "summary_title": "Observaciones", "download_label": "Descargar PDF", "quiz_label": "Ver Historial", "sections": [{"key": "student_name", "label": "Estudiante", "field": "student_name"}, {"key": "period_name", "label": "Periodo", "field": "period_name"}, {"key": "overall_average", "label": "Promedio General", "field": "overall_average"}, {"key": "grades", "label": "Calificaciones", "field": "grades", "type": "table"}]}'::jsonb,
- 'school', 'reports:read', NULL)
+ 'school', 'progress:read', NULL)
 ON CONFLICT (screen_key) DO UPDATE SET
     slot_data = EXCLUDED.slot_data;
 

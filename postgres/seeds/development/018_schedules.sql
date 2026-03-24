@@ -7,6 +7,9 @@
 
 BEGIN;
 
+DO $$ BEGIN
+IF to_regclass('academic.schedules') IS NOT NULL THEN
+
 INSERT INTO academic.schedules (id, academic_unit_id, subject_id, teacher_membership_id, day_of_week, start_time, end_time, room, period_id, is_active) VALUES
 -- 5to A — Matematicas con Maria, Lunes 08:00-09:30, Sala 101
 ('a2000000-0000-0000-0000-000000000001', 'ac000000-0000-0000-0000-000000000003', 'dd000000-0000-0000-0000-000000000001', 'bb000000-0000-0000-0000-000000000008', 1, '08:00', '09:30', 'Sala 101', 'ff000000-0000-0000-0000-000000000001', true),
@@ -15,5 +18,8 @@ INSERT INTO academic.schedules (id, academic_unit_id, subject_id, teacher_member
 -- 5to B — Matematicas con Pedro, Martes 08:00-09:30, Sala 103
 ('a2000000-0000-0000-0000-000000000003', 'ac000000-0000-0000-0000-000000000004', 'dd000000-0000-0000-0000-000000000003', 'bb000000-0000-0000-0000-000000000010', 2, '08:00', '09:30', 'Sala 103', 'ff000000-0000-0000-0000-000000000001', true)
 ON CONFLICT (id) DO NOTHING;
+
+END IF;
+END $$;
 
 COMMIT;

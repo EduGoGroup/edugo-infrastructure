@@ -17,6 +17,9 @@
 
 BEGIN;
 
+DO $$ BEGIN
+IF to_regclass('academic.membership_subjects') IS NOT NULL THEN
+
 INSERT INTO academic.membership_subjects (membership_id, subject_id) VALUES
 -- Maria Martinez → Matematicas en 5to A
 ('bb000000-0000-0000-0000-000000000008', 'dd000000-0000-0000-0000-000000000001'),
@@ -35,5 +38,8 @@ INSERT INTO academic.membership_subjects (membership_id, subject_id) VALUES
 -- Andres Gomez (assistant_teacher) → Matematicas en 5to A
 ('bb000000-0000-0000-0000-000000000024', 'dd000000-0000-0000-0000-000000000001')
 ON CONFLICT (membership_id, subject_id) DO NOTHING;
+
+END IF;
+END $$;
 
 COMMIT;

@@ -30,7 +30,7 @@ VALUES
   ('20000000-0000-0000-0000-000000000034', 'periods',              'Periodos Académicos',    'Gestión de periodos académicos',                'calendar-range',        'school', '20000000-0000-0000-0000-000000000003',  5, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000035', 'grades',               'Calificaciones',         'Gestión de calificaciones',                     'award',                 'unit',   '20000000-0000-0000-0000-000000000003',  6, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000036', 'attendance',           'Asistencia',             'Registro de asistencia',                        'check-square',          'unit',   '20000000-0000-0000-0000-000000000003',  7, TRUE,  TRUE),
-  ('20000000-0000-0000-0000-000000000037', 'schedules',            'Horarios',               'Horarios semanales por unidad',                 'clock',                 'school', '20000000-0000-0000-0000-000000000003',  8, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000037', 'schedules',            'Horarios',               'Horarios semanales por unidad',                 'clock',                 'unit',   '20000000-0000-0000-0000-000000000003',  8, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000038', 'announcements',        'Anuncios',               'Comunicaciones escuela-familia',                'megaphone',             'school', '20000000-0000-0000-0000-000000000003',  9, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000039', 'calendar',             'Calendario',             'Calendario escolar',                            'calendar',              'school', '20000000-0000-0000-0000-000000000003', 10, TRUE,  TRUE),
 

@@ -264,4 +264,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000120', '20000000-0000-0000-0000-000000000038', 'announcements', 'announcements-form', 'form', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Calendar -> calendar-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000121', '20000000-0000-0000-0000-000000000039', 'calendar', 'calendar-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Calendar -> calendar-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000122', '20000000-0000-0000-0000-000000000039', 'calendar', 'calendar-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
