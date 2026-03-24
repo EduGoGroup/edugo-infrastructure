@@ -205,4 +205,83 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000102', '20000000-0000-0000-0000-000000000090', 'system_settings', 'system-settings', 'settings', TRUE, 1)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- ====================================================================
+-- School Ecosystem — Fase 2 resources (periods, grades, attendance, schedules, announcements)
+-- ====================================================================
+
+-- Periods -> periods-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000110', '20000000-0000-0000-0000-000000000034', 'periods', 'periods-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Periods -> periods-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000111', '20000000-0000-0000-0000-000000000034', 'periods', 'periods-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Grades -> grades-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000112', '20000000-0000-0000-0000-000000000035', 'grades', 'grades-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Grades -> grades-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000113', '20000000-0000-0000-0000-000000000035', 'grades', 'grades-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Attendance -> attendance-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000114', '20000000-0000-0000-0000-000000000036', 'attendance', 'attendance-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Attendance -> attendance-batch (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000115', '20000000-0000-0000-0000-000000000036', 'attendance', 'attendance-batch', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Attendance -> attendance-summary (summary)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000116', '20000000-0000-0000-0000-000000000036', 'attendance', 'attendance-summary', 'summary', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Schedules -> schedules-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000117', '20000000-0000-0000-0000-000000000037', 'schedules', 'schedules-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Schedules -> schedules-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000118', '20000000-0000-0000-0000-000000000037', 'schedules', 'schedules-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Announcements -> announcements-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000119', '20000000-0000-0000-0000-000000000038', 'announcements', 'announcements-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Announcements -> announcements-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000120', '20000000-0000-0000-0000-000000000038', 'announcements', 'announcements-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Calendar -> calendar-list (list, default)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000121', '20000000-0000-0000-0000-000000000039', 'calendar', 'calendar-list', 'list', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Calendar -> calendar-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000122', '20000000-0000-0000-0000-000000000039', 'calendar', 'calendar-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Memberships -> unit-directory (directory, readonly)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000123', '20000000-0000-0000-0000-000000000021', 'memberships', 'unit-directory', 'directory', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Reports -> report-card (detail)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000124', '20000000-0000-0000-0000-000000000005', 'reports', 'report-card', 'detail', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;

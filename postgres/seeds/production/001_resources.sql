@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: resources (22 registros)
+-- SEED: resources (28 registros)
 -- Fecha: 2026-02-24
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -27,6 +27,12 @@ VALUES
   ('20000000-0000-0000-0000-000000000021', 'memberships',          'Miembros',               'Asignación de miembros',                        'user-plus',             'school', '20000000-0000-0000-0000-000000000003',  2, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000032', 'subjects',             'Materias',               'Gestión de materias',                           'book',                  'school', '20000000-0000-0000-0000-000000000003',  3, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000060', 'guardian_relations',   'Vínculos Guardian',      'Gestión de vínculos guardian-estudiante',        'user-check',            'school', '20000000-0000-0000-0000-000000000003',  4, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000034', 'periods',              'Periodos Académicos',    'Gestión de periodos académicos',                'calendar-range',        'school', '20000000-0000-0000-0000-000000000003',  5, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000035', 'grades',               'Calificaciones',         'Gestión de calificaciones',                     'award',                 'unit',   '20000000-0000-0000-0000-000000000003',  6, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000036', 'attendance',           'Asistencia',             'Registro de asistencia',                        'check-square',          'unit',   '20000000-0000-0000-0000-000000000003',  7, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000037', 'schedules',            'Horarios',               'Horarios semanales por unidad',                 'clock',                 'unit',   '20000000-0000-0000-0000-000000000003',  8, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000038', 'announcements',        'Anuncios',               'Comunicaciones escuela-familia',                'megaphone',             'school', '20000000-0000-0000-0000-000000000003',  9, TRUE,  TRUE),
+  ('20000000-0000-0000-0000-000000000039', 'calendar',             'Calendario',             'Calendario escolar',                            'calendar',              'school', '20000000-0000-0000-0000-000000000003', 10, TRUE,  TRUE),
 
   -- Hijos de content (20000000-0000-0000-0000-000000000004)
   ('20000000-0000-0000-0000-000000000030', 'materials',           'Materiales',             'Materiales educativos',                                        'file-text',   'unit', '20000000-0000-0000-0000-000000000004', 1, TRUE, TRUE),
@@ -43,5 +49,8 @@ VALUES
   -- Hijo de admin (20000000-0000-0000-0000-000000000002)
   ('20000000-0000-0000-0000-000000000070', 'audit',            'Auditoría',               'Registro de auditoría del sistema',             'file-search',           'system', '20000000-0000-0000-0000-000000000002',  7, TRUE,  TRUE),
   ('20000000-0000-0000-0000-000000000080', 'concept_types',    'Tipos de Concepto',       'Tipos de institución y terminología',           'tag',                   'system', '20000000-0000-0000-0000-000000000002',  8, TRUE,  TRUE),
-  ('20000000-0000-0000-0000-000000000090', 'system_settings',  'Configuración',           'Configuración y mantenimiento del sistema',     'settings',              'system', '20000000-0000-0000-0000-000000000002',  9, TRUE,  TRUE)
+  ('20000000-0000-0000-0000-000000000090', 'system_settings',  'Configuración',           'Configuración y mantenimiento del sistema',     'settings',              'system', '20000000-0000-0000-0000-000000000002',  9, TRUE,  TRUE),
+
+  -- Recurso de contexto (no visible en menu, solo para permisos de browsing)
+  ('20000000-0000-0000-0000-0000000000A0', 'context',          'Contexto',                'Exploración de escuelas y unidades para selección de contexto', 'swap_horiz', 'system', NULL, 99, FALSE, TRUE)
 ON CONFLICT (id) DO NOTHING;
