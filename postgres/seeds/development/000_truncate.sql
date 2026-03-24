@@ -48,6 +48,16 @@ UPDATE ui_config.screen_templates SET created_by = NULL WHERE created_by IS NOT 
 UPDATE ui_config.screen_instances SET created_by = NULL WHERE created_by IS NOT NULL;
 
 -- Tablas adicionales de desarrollo (hojas)
+-- New ecosystem tables (guarded — may not exist if migrations haven't run)
+DO $$ BEGIN
+  IF to_regclass('academic.calendar_events') IS NOT NULL THEN TRUNCATE TABLE academic.calendar_events CASCADE; END IF;
+  IF to_regclass('academic.announcements') IS NOT NULL THEN TRUNCATE TABLE academic.announcements CASCADE; END IF;
+  IF to_regclass('academic.schedules') IS NOT NULL THEN TRUNCATE TABLE academic.schedules CASCADE; END IF;
+  IF to_regclass('academic.attendance') IS NOT NULL THEN TRUNCATE TABLE academic.attendance CASCADE; END IF;
+  IF to_regclass('academic.grades') IS NOT NULL THEN TRUNCATE TABLE academic.grades CASCADE; END IF;
+  IF to_regclass('academic.membership_subjects') IS NOT NULL THEN TRUNCATE TABLE academic.membership_subjects CASCADE; END IF;
+  IF to_regclass('academic.academic_periods') IS NOT NULL THEN TRUNCATE TABLE academic.academic_periods CASCADE; END IF;
+END $$;
 TRUNCATE TABLE academic.subjects CASCADE;
 TRUNCATE TABLE academic.guardian_relations CASCADE;
 TRUNCATE TABLE academic.school_concepts CASCADE;

@@ -122,10 +122,12 @@ ON CONFLICT (screen_key) DO UPDATE SET
 -- Instancia 15: Lista de Miembros
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000025', 'memberships-list',
- 'a0000000-0000-0000-0000-000000000003', 'Lista de Miembros', 'Lista de miembros de unidades',
- '{"page_title": "Miembros", "search_placeholder": "Buscar miembro...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "user-plus", "empty_state_title": "No hay miembros", "empty_state_description": "No se encontraron miembros asignados", "empty_action_label": "Asignar Miembro"}'::jsonb,
+ 'a0000000-0000-0000-0000-000000000003', 'Lista de Miembros', 'Lista de miembros con datos enriquecidos',
+ '{"page_title": "Miembros", "search_placeholder": "Buscar por nombre o email...", "filter_all_label": "Todos", "filter_ready_label": "Activos", "filter_processing_label": "Inactivos", "empty_icon": "user-plus", "empty_state_title": "No hay miembros", "empty_state_description": "No se encontraron miembros asignados", "empty_action_label": "Asignar Miembro"}'::jsonb,
  'school', 'memberships:read', NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data,
+    description = EXCLUDED.description;
 
 -- Instancia 16: Lista de Evaluaciones
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES

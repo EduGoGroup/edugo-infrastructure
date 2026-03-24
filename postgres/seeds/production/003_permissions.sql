@@ -118,5 +118,47 @@ VALUES
   ('d0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'dashboard:view', 'Ver Dashboard', 'Ver panel principal según rol del usuario', 'view', 'system', TRUE),
 
   -- system_settings (resource: 20000000-0000-0000-0000-000000000090)
-  ('d1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000090', 'system_settings:settings', 'Configuración del Sistema', 'Acceder a la configuración y mantenimiento del sistema', 'settings', 'system', TRUE)
+  ('d1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000090', 'system_settings:settings', 'Configuración del Sistema', 'Acceder a la configuración y mantenimiento del sistema', 'settings', 'system', TRUE),
+
+  -- periods (resource: 20000000-0000-0000-0000-000000000034)
+  ('e1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000034', 'periods:read',     'Ver Periodos',       'Ver periodos académicos',                  'read',     'school', TRUE),
+  ('e1000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000034', 'periods:create',   'Crear Periodo',      'Crear periodos académicos',                'create',   'school', TRUE),
+  ('e1000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000034', 'periods:update',   'Editar Periodo',     'Modificar periodos académicos',            'update',   'school', TRUE),
+  ('e1000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000034', 'periods:delete',   'Eliminar Periodo',   'Eliminar periodos académicos',             'delete',   'school', TRUE),
+  ('e1000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000034', 'periods:activate', 'Activar Periodo',    'Activar/desactivar periodos académicos',   'activate', 'school', TRUE),
+
+  -- grades (resource: 20000000-0000-0000-0000-000000000035)
+  ('e2000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000035', 'grades:read',     'Ver Calificaciones',       'Ver calificaciones de estudiantes',       'read',     'unit', TRUE),
+  ('e2000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000035', 'grades:create',   'Crear Calificación',       'Registrar calificaciones',                'create',   'unit', TRUE),
+  ('e2000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000035', 'grades:update',   'Editar Calificación',      'Modificar calificaciones',                'update',   'unit', TRUE),
+  ('e2000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000035', 'grades:finalize', 'Finalizar Calificación',   'Finalizar y cerrar calificaciones',       'finalize', 'unit', TRUE),
+
+  -- attendance (resource: 20000000-0000-0000-0000-000000000036)
+  ('e3000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000036', 'attendance:read',   'Ver Asistencia',     'Ver registros de asistencia',              'read',   'unit', TRUE),
+  ('e3000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000036', 'attendance:create', 'Registrar Asistencia','Registrar asistencia de estudiantes',      'create', 'unit', TRUE),
+
+  -- schedules (resource: 20000000-0000-0000-0000-000000000037)
+  ('e4000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000037', 'schedules:read',   'Ver Horarios',       'Ver horarios de clases',                   'read',   'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000037', 'schedules:create', 'Crear Horario',      'Crear bloques de horario',                 'create', 'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000037', 'schedules:update', 'Editar Horario',     'Modificar bloques de horario',             'update', 'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000037', 'schedules:delete', 'Eliminar Horario',   'Eliminar bloques de horario',              'delete', 'unit', TRUE),
+
+  -- announcements (resource: 20000000-0000-0000-0000-000000000038)
+  ('e5000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000038', 'announcements:read',   'Ver Anuncios',       'Ver anuncios y comunicaciones',          'read',   'school', TRUE),
+  ('e5000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000038', 'announcements:create', 'Crear Anuncio',      'Crear anuncios y comunicaciones',        'create', 'school', TRUE),
+  ('e5000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000038', 'announcements:update', 'Editar Anuncio',     'Modificar anuncios existentes',          'update', 'school', TRUE),
+  ('e5000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000038', 'announcements:delete', 'Eliminar Anuncio',   'Eliminar anuncios',                     'delete', 'school', TRUE),
+
+  -- calendar (resource: 20000000-0000-0000-0000-000000000039)
+  ('e6000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000039', 'calendar:read',   'Ver Calendario',       'Ver eventos del calendario escolar',      'read',   'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000039', 'calendar:create', 'Crear Evento',         'Crear eventos en el calendario',          'create', 'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000039', 'calendar:update', 'Editar Evento',        'Modificar eventos del calendario',        'update', 'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000039', 'calendar:delete', 'Eliminar Evento',      'Eliminar eventos del calendario',         'delete', 'school', TRUE),
+
+  -- reports (resource: 20000000-0000-0000-0000-000000000005)
+  ('e7000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000005', 'reports:read', 'Ver Reportes', 'Ver reportes y estadisticas generales', 'read', 'school', TRUE),
+
+  -- context (resource: 20000000-0000-0000-0000-0000000000A0)
+  ('f0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-0000000000A0', 'context:browse_schools', 'Explorar Escuelas',    'Permite listar todas las escuelas para seleccion de contexto',           'browse_schools', 'system', TRUE),
+  ('f0000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-0000000000A0', 'context:browse_units',   'Explorar Unidades',    'Permite listar todas las unidades de una escuela para seleccion de contexto', 'browse_units',   'system', TRUE)
 ON CONFLICT (id) DO NOTHING;
