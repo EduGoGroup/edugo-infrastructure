@@ -138,10 +138,10 @@ VALUES
   ('e3000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000036', 'attendance:create', 'Registrar Asistencia','Registrar asistencia de estudiantes',      'create', 'unit', TRUE),
 
   -- schedules (resource: 20000000-0000-0000-0000-000000000037)
-  ('e4000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000037', 'schedules:read',   'Ver Horarios',       'Ver horarios de clases',                   'read',   'school', TRUE),
-  ('e4000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000037', 'schedules:create', 'Crear Horario',      'Crear bloques de horario',                 'create', 'school', TRUE),
-  ('e4000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000037', 'schedules:update', 'Editar Horario',     'Modificar bloques de horario',             'update', 'school', TRUE),
-  ('e4000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000037', 'schedules:delete', 'Eliminar Horario',   'Eliminar bloques de horario',              'delete', 'school', TRUE),
+  ('e4000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000037', 'schedules:read',   'Ver Horarios',       'Ver horarios de clases',                   'read',   'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000037', 'schedules:create', 'Crear Horario',      'Crear bloques de horario',                 'create', 'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000037', 'schedules:update', 'Editar Horario',     'Modificar bloques de horario',             'update', 'unit', TRUE),
+  ('e4000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000037', 'schedules:delete', 'Eliminar Horario',   'Eliminar bloques de horario',              'delete', 'unit', TRUE),
 
   -- announcements (resource: 20000000-0000-0000-0000-000000000038)
   ('e5000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000038', 'announcements:read',   'Ver Anuncios',       'Ver anuncios y comunicaciones',          'read',   'school', TRUE),
@@ -149,11 +149,14 @@ VALUES
   ('e5000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000038', 'announcements:update', 'Editar Anuncio',     'Modificar anuncios existentes',          'update', 'school', TRUE),
   ('e5000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000038', 'announcements:delete', 'Eliminar Anuncio',   'Eliminar anuncios',                     'delete', 'school', TRUE),
 
-  -- calendar_events (resource: 20000000-0000-0000-0000-000000000039)
-  ('e6000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000039', 'calendar_events:read',   'Ver Calendario',       'Ver eventos del calendario escolar',      'read',   'school', TRUE),
-  ('e6000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000039', 'calendar_events:create', 'Crear Evento',         'Crear eventos en el calendario',          'create', 'school', TRUE),
-  ('e6000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000039', 'calendar_events:update', 'Editar Evento',        'Modificar eventos del calendario',        'update', 'school', TRUE),
-  ('e6000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000039', 'calendar_events:delete', 'Eliminar Evento',      'Eliminar eventos del calendario',         'delete', 'school', TRUE),
+  -- calendar (resource: 20000000-0000-0000-0000-000000000039)
+  ('e6000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000039', 'calendar:read',   'Ver Calendario',       'Ver eventos del calendario escolar',      'read',   'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000039', 'calendar:create', 'Crear Evento',         'Crear eventos en el calendario',          'create', 'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000039', 'calendar:update', 'Editar Evento',        'Modificar eventos del calendario',        'update', 'school', TRUE),
+  ('e6000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000039', 'calendar:delete', 'Eliminar Evento',      'Eliminar eventos del calendario',         'delete', 'school', TRUE),
+
+  -- reports (resource: 20000000-0000-0000-0000-000000000005)
+  ('e7000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000005', 'reports:read', 'Ver Reportes', 'Ver reportes y estadisticas generales', 'read', 'school', TRUE),
 
   -- context (resource: 20000000-0000-0000-0000-0000000000A0)
   ('f0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-0000000000A0', 'context:browse_schools', 'Explorar Escuelas',    'Permite listar todas las escuelas para seleccion de contexto',           'browse_schools', 'system', TRUE),

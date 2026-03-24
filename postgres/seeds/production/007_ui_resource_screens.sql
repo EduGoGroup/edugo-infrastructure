@@ -274,4 +274,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000122', '20000000-0000-0000-0000-000000000039', 'calendar', 'calendar-form', 'form', FALSE, 2)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Memberships -> unit-directory (directory, readonly)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000123', '20000000-0000-0000-0000-000000000021', 'memberships', 'unit-directory', 'directory', FALSE, 3)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Reports -> report-card (detail)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000124', '20000000-0000-0000-0000-000000000005', 'reports', 'report-card', 'detail', TRUE, 1)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
