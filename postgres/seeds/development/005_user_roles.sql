@@ -15,7 +15,7 @@
 --   10000000-...0009 → student
 --   10000000-...0010 → guardian
 --   10000000-...0011 → observer
---   10000000-...0012 → readonly_tester
+--   10000000-...0012 → readonly_auditor
 --
 -- Mapa:
 --   ur01: U-01 → super_admin        → NULL (global)
@@ -44,7 +44,7 @@
 --   ur24: U-19 → observer           → San Ignacio
 --   ur25: U-19 → observer           → CreArte
 --   ur26: U-20 → guardian           → San Ignacio
---   ur27: U-21 → readonly_tester   → San Ignacio
+--   ur27: U-21 → readonly_auditor  → San Ignacio
 -- =============================================================================
 
 BEGIN;
@@ -320,11 +320,11 @@ INSERT INTO iam.user_roles (
     '2026-03-10 08:00:00'
 ),
 
--- U-21: Test ReadOnly → readonly_tester / San Ignacio
+-- U-21: Test ReadOnly → readonly_auditor / San Ignacio
 (
     'cc000000-0000-0000-0000-000000000027',
     '00000000-0000-0000-0000-000000000021',
-    '10000000-0000-0000-0000-000000000012',   -- readonly_tester
+    '10000000-0000-0000-0000-000000000012',   -- readonly_auditor
     'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
     NULL, true,
     '00000000-0000-0000-0000-000000000001',

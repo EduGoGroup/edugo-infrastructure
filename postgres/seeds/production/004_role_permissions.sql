@@ -16,7 +16,7 @@
 --   10000000-...-000000000009  student
 --   10000000-...-000000000010  guardian
 --   10000000-...-000000000011  observer
---   10000000-...-000000000012  readonly_tester
+--   10000000-...-000000000012  readonly_auditor
 --
 -- Permisos por rol (conteo):
 --   super_admin              :  99
@@ -30,7 +30,7 @@
 --   student                  :  17
 --   guardian                 :  15
 --   observer                 :  10
---   readonly_tester          :  27
+--   readonly_auditor         :  27
 -- ============================================================
 
 INSERT INTO iam.role_permissions (id, role_id, permission_id, created_at)
@@ -608,7 +608,7 @@ VALUES
   ('50000000-0000-0000-0000-000000000025', '10000000-0000-0000-0000-000000000011', '2b31df13-4c54-43fc-8bcd-8a9265fba1a0', '2026-03-01 00:00:00.000000'),  -- screens:read
 
   -- ================================================================
-  -- readonly_tester — solo permisos de lectura (27 permisos)
+  -- readonly_auditor — solo permisos de lectura (27 permisos)
   -- ================================================================
   -- announcements: read
   ('fc000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000012', 'e5000000-0000-0000-0000-000000000001', '2026-03-25 00:00:00.000000'),  -- announcements:read
