@@ -425,6 +425,14 @@ INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, descr
  'school', 'guardian_relations:manage', NULL)
 ON CONFLICT (screen_key) DO NOTHING;
 
+-- Instancia 50b: Alias guardian_relations-form (resource_key usa underscore)
+INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
+('b0000000-0000-0000-0000-000000000126', 'guardian_relations-form',
+ 'a0000000-0000-0000-0000-000000000006', 'Formulario de Relación Guardian', 'Crear o editar relación guardian-estudiante',
+ '{"page_title": "Nueva Relación", "edit_title": "Editar Relación", "submit_label": "Guardar", "delete_label": "Eliminar", "submit_endpoint": "admin:/api/v1/guardian-relations", "fields": [{"key": "guardian_id", "type": "remote_select", "label": "Tutor", "required": true, "remote_endpoint": "admin:/api/v1/users?role=guardian", "display_field": "email", "value_field": "id"}, {"key": "student_id", "type": "remote_select", "label": "Estudiante", "required": true, "remote_endpoint": "admin:/api/v1/users?role=student", "display_field": "email", "value_field": "id"}, {"key": "relationship_type", "type": "select", "label": "Parentesco", "required": true, "options": [{"value": "padre", "label": "Padre"}, {"value": "madre", "label": "Madre"}, {"value": "tutor_legal", "label": "Tutor Legal"}, {"value": "otro", "label": "Otro"}]}, {"key": "status", "type": "select", "label": "Estado", "required": true, "options": [{"value": "approved", "label": "Aprobado"}, {"value": "pending", "label": "Pendiente"}, {"value": "rejected", "label": "Rechazado"}]}]}'::jsonb,
+ 'school', 'guardian_relations:manage', NULL)
+ON CONFLICT (screen_key) DO NOTHING;
+
 -- Instancia 51: Configuración del Sistema (super_admin)
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000101', 'system-settings',
