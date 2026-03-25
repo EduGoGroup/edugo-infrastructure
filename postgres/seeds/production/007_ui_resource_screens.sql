@@ -205,4 +205,14 @@ INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_ke
 ('c0000000-0000-0000-0000-000000000102', '20000000-0000-0000-0000-000000000090', 'system_settings', 'system-settings', 'settings', TRUE, 1)
 ON CONFLICT (resource_id, screen_type) DO NOTHING;
 
+-- Schools -> schools-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000103', '20000000-0000-0000-0000-000000000011', 'schools', 'schools-form', 'form', FALSE, 2)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
+-- Guardian Relations -> guardian-relations-form (form)
+INSERT INTO ui_config.resource_screens (id, resource_id, resource_key, screen_key, screen_type, is_default, sort_order) VALUES
+('c0000000-0000-0000-0000-000000000063', '20000000-0000-0000-0000-000000000060', 'guardian_relations', 'guardian-relations-form', 'form', FALSE, 4)
+ON CONFLICT (resource_id, screen_type) DO NOTHING;
+
 COMMIT;
