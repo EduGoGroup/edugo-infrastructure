@@ -1,7 +1,7 @@
 -- =============================================================================
 -- EduGo Development Seeds v2 — 005_user_roles.sql
 -- =============================================================================
--- 26 asignaciones de roles RBAC para los 20 usuarios.
+-- 27 asignaciones de roles RBAC para los 21 usuarios.
 --
 -- Role IDs (produccion):
 --   10000000-...0001 → super_admin
@@ -15,6 +15,7 @@
 --   10000000-...0009 → student
 --   10000000-...0010 → guardian
 --   10000000-...0011 → observer
+--   10000000-...0012 → readonly_tester
 --
 -- Mapa:
 --   ur01: U-01 → super_admin        → NULL (global)
@@ -43,6 +44,7 @@
 --   ur24: U-19 → observer           → San Ignacio
 --   ur25: U-19 → observer           → CreArte
 --   ur26: U-20 → guardian           → San Ignacio
+--   ur27: U-21 → readonly_tester   → San Ignacio
 -- =============================================================================
 
 BEGIN;
@@ -316,6 +318,17 @@ INSERT INTO iam.user_roles (
     NULL, true,
     '00000000-0000-0000-0000-000000000002',
     '2026-03-10 08:00:00'
+),
+
+-- U-21: Test ReadOnly → readonly_tester / San Ignacio
+(
+    'cc000000-0000-0000-0000-000000000027',
+    '00000000-0000-0000-0000-000000000021',
+    '10000000-0000-0000-0000-000000000012',   -- readonly_tester
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL, true,
+    '00000000-0000-0000-0000-000000000001',
+    '2026-03-25 08:00:00'
 )
 
 ON CONFLICT (user_id, role_id, school_id, academic_unit_id) DO UPDATE SET

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- EduGo Development Seeds v2 — 003_users.sql
 -- =============================================================================
--- 20 usuarios de prueba con contrasena unificada: "12345678"
+-- 21 usuarios de prueba con contrasena unificada: "12345678"
 -- Hash bcrypt (cost=10): $2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau
 --
 -- U-01: super@edugo.test             — Santiago Ramirez   — Super Admin
@@ -24,6 +24,7 @@
 -- U-18: asist.prof@...               — Andres Gomez       — Assistant Teacher (San Ignacio/5to A)
 -- U-19: observador@...               — Diana Lopez        — Observer (San Ignacio + CreArte)
 -- U-20: guardian.pendiente@...       — Fernando Ruiz      — Guardian with pending request
+-- U-21: readonly@...                 — Test ReadOnly       — Readonly Tester (San Ignacio)
 -- =============================================================================
 
 BEGIN;
@@ -208,6 +209,16 @@ INSERT INTO auth.users (
     '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
     'Fernando',
     'Ruiz',
+    true
+),
+
+-- Readonly Tester
+(
+    '00000000-0000-0000-0000-000000000021',
+    'readonly@edugo.test',
+    '$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau',
+    'Test',
+    'ReadOnly',
     true
 )
 
