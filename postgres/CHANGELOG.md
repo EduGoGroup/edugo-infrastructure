@@ -6,6 +6,20 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.70.0] - 2026-03-25
+
+### Added
+- Nuevo rol `readonly_auditor` (scope: `school`) en seeds de produccion.
+- 27 permisos de solo lectura asignados a `readonly_auditor` (todos los recursos del ecosistema).
+- Permisos `context:browse_schools` y `context:browse_units` para `school_coordinator` (total: 43).
+- Permisos `context:browse_schools` y `context:browse_units` para `school_assistant` (total: 15).
+- Usuario de prueba `readonly@edugo.test` (U-21) en seeds de desarrollo.
+- Membership `m028` para usuario ReadOnly en San Ignacio (rol: `readonly_auditor`).
+- Asignacion de rol `ur27` para usuario ReadOnly en seeds de desarrollo.
+
+### Changed
+- `SchemaVersion` bumpeado de `1.1.0` a `1.1.4`.
+
 ## [0.66.0] - 2026-03-23
 
 ### Changed
