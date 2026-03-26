@@ -1,7 +1,7 @@
 -- =============================================================================
 -- EduGo Development Seeds v2 — 004_memberships.sql
 -- =============================================================================
--- 27 memberships vinculando usuarios a escuelas y unidades academicas.
+-- 28 memberships vinculando usuarios a escuelas y unidades academicas.
 --
 -- Escuelas:
 --   b1 = Colegio San Ignacio
@@ -36,6 +36,7 @@
 --   m025 → Diana (U-19)     → San Ignacio → 5to A (au003)        → assistant (role=assistant, RBAC role=observer)
 --   m026 → Diana (U-19)     → CreArte     → Grupo Manana (au009) → assistant (role=assistant, RBAC role=observer)
 --   m027 → Fernando (U-20)  → San Ignacio → 5to A (au003)        → guardian
+--   m028 → ReadOnly (U-21)  → San Ignacio → NULL                 → admin (RBAC role=readonly_auditor)
 -- =============================================================================
 
 BEGIN;
@@ -351,6 +352,16 @@ INSERT INTO academic.memberships (
     '{}'::jsonb,
     true,
     '2026-02-01 09:00:00+00'
+),
+(
+    'bb000000-0000-0000-0000-000000000028',
+    '00000000-0000-0000-0000-000000000021',   -- Test ReadOnly
+    'b1000000-0000-0000-0000-000000000001',   -- San Ignacio
+    NULL,
+    'admin',
+    '{}'::jsonb,
+    true,
+    '2026-03-25 08:00:00+00'
 )
 ON CONFLICT (id) DO UPDATE SET
     metadata   = EXCLUDED.metadata,

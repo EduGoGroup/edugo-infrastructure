@@ -1,5 +1,5 @@
 -- ============================================================
--- SEED: roles (11 registros)
+-- SEED: roles (12 registros)
 -- Fecha: 2026-02-22
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
@@ -22,5 +22,8 @@ VALUES
   ('10000000-0000-0000-0000-000000000008', 'assistant_teacher',  'Profesor Asistente',          'Asistente de docente',                                       'unit',   TRUE),
   ('10000000-0000-0000-0000-000000000009', 'student',            'Estudiante',                  'Alumno inscrito en la unidad',                               'unit',   TRUE),
   ('10000000-0000-0000-0000-000000000010', 'guardian',           'Apoderado',                   'Tutor legal o apoderado de estudiante',                      'unit',   TRUE),
-  ('10000000-0000-0000-0000-000000000011', 'observer',           'Observador',                  'Rol de solo lectura para auditoría',                         'unit',   TRUE)
+  ('10000000-0000-0000-0000-000000000011', 'observer',           'Observador',                  'Rol de solo lectura para auditoría',                         'unit',   TRUE),
+
+  -- Rol de auditoría
+  ('10000000-0000-0000-0000-000000000012', 'readonly_auditor',   'Auditor Solo Lectura',        'Rol de solo lectura para validaciones y auditoría de pantallas', 'school', TRUE)
 ON CONFLICT (id) DO NOTHING;
