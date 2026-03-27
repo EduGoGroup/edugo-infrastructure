@@ -62,7 +62,7 @@ func hasTables(db *sql.DB) bool {
 
 // dropSchemas elimina y recrea todos los schemas para una migración forzada.
 func dropSchemas(db *sql.DB, user string) error {
-	schemas := []string{"audit", "ui_config", "assessment", "content", "academic", "iam", "auth", "public"}
+	schemas := []string{"notifications", "audit", "ui_config", "assessment", "content", "academic", "iam", "auth", "public"}
 	for _, schema := range schemas {
 		if _, err := db.Exec("DROP SCHEMA IF EXISTS " + schema + " CASCADE"); err != nil {
 			return fmt.Errorf("error eliminando schema %s: %w", schema, err)
