@@ -77,3 +77,23 @@ ALTER TABLE ui_config.screen_user_preferences ADD CONSTRAINT fk_screen_user_pref
 -- academic.guardian_relations -> auth.users (created_by)
 ALTER TABLE academic.guardian_relations ADD CONSTRAINT guardian_relations_created_by_fkey
     FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- assessment.assessment_attempt_answer -> assessment.questions (creada en 054, despues de 052)
+ALTER TABLE assessment.assessment_attempt_answer ADD CONSTRAINT assessment_attempt_answer_question_fkey
+    FOREIGN KEY (question_id) REFERENCES assessment.questions(id);
+
+-- assessment.assessment_assignments -> auth.users, academic.academic_units
+ALTER TABLE assessment.assessment_assignments ADD CONSTRAINT assessment_assignments_student_fkey
+    FOREIGN KEY (student_id) REFERENCES auth.users(id);
+ALTER TABLE assessment.assessment_assignments ADD CONSTRAINT assessment_assignments_unit_fkey
+    FOREIGN KEY (academic_unit_id) REFERENCES academic.academic_units(id);
+ALTER TABLE assessment.assessment_assignments ADD CONSTRAINT assessment_assignments_assigned_by_fkey
+    FOREIGN KEY (assigned_by) REFERENCES auth.users(id);
+
+-- assessment.attempt_reviews -> auth.users
+ALTER TABLE assessment.attempt_reviews ADD CONSTRAINT attempt_reviews_reviewer_fkey
+    FOREIGN KEY (reviewer_id) REFERENCES auth.users(id);
+
+-- notifications.notifications -> auth.users
+ALTER TABLE notifications.notifications ADD CONSTRAINT notifications_user_fkey
+    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
