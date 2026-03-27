@@ -7,7 +7,8 @@
 
 CREATE TABLE assessment.assessment (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    mongo_document_id character varying(24) NOT NULL,
+    mongo_document_id character varying(24),
+    source_type character varying(20) DEFAULT 'manual' NOT NULL,
     school_id uuid,
     created_by_user_id uuid,
     questions_count integer DEFAULT 0 NOT NULL,
@@ -29,7 +30,8 @@ CREATE TABLE assessment.assessment (
     CONSTRAINT assessment_mongo_unique UNIQUE (mongo_document_id),
     CONSTRAINT assessment_pass_threshold_check CHECK (pass_threshold >= 0 AND pass_threshold <= 100),
     CONSTRAINT assessment_status_check CHECK (status IN ('draft', 'generated', 'published', 'archived', 'closed')),
-    CONSTRAINT assessment_available_dates_check CHECK (available_until IS NULL OR available_from IS NULL OR available_until > available_from)
+    CONSTRAINT assessment_available_dates_check CHECK (available_until IS NULL OR available_from IS NULL OR available_until > available_from),
+    CONSTRAINT assessment_source_type_check CHECK (source_type IN ('manual', 'ai_generated'))
 );
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON assessment.assessment

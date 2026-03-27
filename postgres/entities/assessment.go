@@ -18,7 +18,8 @@ import (
 // La relacion con materiales es N:N via assessment_materials (053).
 type Assessment struct {
 	ID                 uuid.UUID      `db:"id" gorm:"type:uuid;primaryKey"`
-	MongoDocumentID    string         `db:"mongo_document_id" gorm:"not null"`
+	MongoDocumentID    *string        `db:"mongo_document_id" gorm:"default:null"`
+	SourceType         string         `db:"source_type" gorm:"not null;type:varchar(20);default:'manual'"`
 	SchoolID           *uuid.UUID     `db:"school_id" gorm:"type:uuid;index"`
 	CreatedByUserID    *uuid.UUID     `db:"created_by_user_id" gorm:"type:uuid"`
 	QuestionsCount     int            `db:"questions_count" gorm:"not null;default:0"`
@@ -38,6 +39,7 @@ type Assessment struct {
 	DeletedAt          gorm.DeletedAt `db:"deleted_at" gorm:"index"`
 
 	Materials []AssessmentMaterial `gorm:"foreignKey:AssessmentID"`
+	Questions []Question           `gorm:"foreignKey:AssessmentID"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
