@@ -1,6 +1,6 @@
 -- ============================================================
--- SEED: permissions (66 registros)
--- Fecha: 2026-02-24
+-- SEED: permissions (68 registros)
+-- Fecha: 2026-03-27
 -- Fuente: Datos reales de producción (Neon)
 -- Idempotente: usa ON CONFLICT DO NOTHING
 -- ============================================================
@@ -15,6 +15,8 @@ VALUES
   ('1b69ea9a-1e15-4c38-a5e1-68c408bb1b97', '20000000-0000-0000-0000-000000000031', 'assessments:publish',      'Publicar Evaluaciones',              'Publicar evaluaciones para estudiantes',       'publish',      'unit',   TRUE),
   ('2606efba-8615-48ef-bc2a-6bf576a9158c', '20000000-0000-0000-0000-000000000031', 'assessments:read',         'Ver Evaluaciones',                   'Ver evaluaciones',                            'read',         'unit',   TRUE),
   ('91c8ae21-a955-4d59-b52e-6cf74bd6532b', '20000000-0000-0000-0000-000000000031', 'assessments:update',       'Editar Evaluaciones',                'Modificar evaluaciones',                      'update',       'unit',   TRUE),
+  ('a5000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000031', 'assessments:assign',       'Asignar Evaluaciones',               'Asignar evaluaciones a estudiantes o unidades', 'assign',       'unit',   TRUE),
+  ('a6000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000031', 'assessments:review',       'Revisar Evaluaciones',               'Revisar intentos de evaluaciones de estudiantes', 'review',       'unit',   TRUE),
   ('b457a385-29bc-4e5e-a79d-06c74f81d23e', '20000000-0000-0000-0000-000000000031', 'assessments:view_results', 'Ver Resultados',                     'Ver resultados propios',                      'view_results', 'unit',   TRUE),
 
   -- materials (resource: 20000000-0000-0000-0000-000000000030)
