@@ -6,6 +6,18 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.71.0] - 2026-03-27
+
+### Added
+- Tablas para el sistema de evaluaciones: `assessment.questions`, `assessment.question_options`, `assessment.assessment_assignments`.
+- Tablas para el sistema de revisiones: `assessment.attempt_reviews`.
+- Tablas para el sistema de notificaciones: `notifications.notifications`.
+- Entidades GORM para todas las nuevas tablas: `Question`, `QuestionOption`, `AssessmentAssignment`, `AttemptReview`, `Notification`.
+
+### Changed
+- Modificada la tabla `assessment.assessment` para soportar `source_type` (manual/ai_generated) y hacer `mongo_document_id` opcional.
+- Actualizada la tabla `assessment.assessment_attempt_answer` con referencia a `question_id` y `review_status`.
+
 ## [0.70.0] - 2026-03-25
 
 ### Added
