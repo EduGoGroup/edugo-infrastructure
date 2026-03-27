@@ -6,6 +6,19 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.72.0] - 2026-03-27
+### Added
+- Agregar assessments:assign y assessments:review a permisos del sistema
+- Asignar ambos a super_admin, school_admin, school_director, school_coordinator, teacher
+- Agregar 2 assessments manuales de ejemplo con preguntas PG, opciones y asignaciones
+- Bump SchemaVersion 1.2.0 → 1.3.0
+
+### Changed
+- 003_permissions.sql — 2 permisos nuevos (68 total)
+- 004_role_permissions.sql — 10 asignaciones nuevas (5 roles x 2 permisos)
+- 008_assessments.sql — 2 assessments manuales + 6 preguntas PG + opciones + 3 asignaciones
+- version.go — SchemaVersion 1.3.0
+
 ## [0.71.0] - 2026-03-27
 
 ### Added
