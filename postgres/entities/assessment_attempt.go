@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,9 +21,10 @@ type AssessmentAttempt struct {
 	Score            *float64   `db:"score" gorm:"type:decimal(5,2)"`
 	MaxScore         *float64   `db:"max_score" gorm:"type:decimal(5,2)"`
 	Percentage       *float64   `db:"percentage" gorm:"type:decimal(5,2)"`
-	TimeSpentSeconds *int       `db:"time_spent_seconds" gorm:"default:null"`
-	IdempotencyKey   *string    `db:"idempotency_key" gorm:"uniqueIndex"`
-	Status           string     `db:"status" gorm:"not null;type:varchar(50)"`
+	QuestionOrder    json.RawMessage `db:"question_order" gorm:"type:jsonb;default:null"`
+	TimeSpentSeconds *int            `db:"time_spent_seconds" gorm:"default:null"`
+	IdempotencyKey   *string         `db:"idempotency_key" gorm:"uniqueIndex"`
+	Status           string          `db:"status" gorm:"not null;type:varchar(50)"`
 	CreatedAt        time.Time  `db:"created_at" gorm:"not null;autoCreateTime"`
 	UpdatedAt        time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime"`
 }
