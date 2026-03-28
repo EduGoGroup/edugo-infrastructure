@@ -13,7 +13,7 @@ import (
 // OBLIGATORIO: Incrementar este valor cada vez que se modifique
 // cualquier archivo en structure/*.sql o en seeds/.
 // El migrador valida que esta version coincida con la registrada en BD.
-const SchemaVersion = "1.4.0"
+const SchemaVersion = "1.4.1"
 
 // ComputeFilesHash calcula un SHA256 de todos los archivos SQL embebidos
 // en el paquete migrations. El hash cambia si cualquier archivo se modifica.

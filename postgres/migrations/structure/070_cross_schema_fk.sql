@@ -94,6 +94,3 @@ ALTER TABLE assessment.assessment_assignments ADD CONSTRAINT assessment_assignme
 ALTER TABLE assessment.attempt_reviews ADD CONSTRAINT attempt_reviews_reviewer_fkey
     FOREIGN KEY (reviewer_id) REFERENCES auth.users(id);
 
--- notifications.notifications -> auth.users
-ALTER TABLE notifications.notifications ADD CONSTRAINT notifications_user_fkey
-    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;

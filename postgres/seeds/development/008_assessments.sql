@@ -213,7 +213,7 @@ INSERT INTO assessment.questions (
 ) VALUES
 -- Q1: multiple_choice
 (
-    'aq000000-0000-0000-0000-000000000001',
+    'ba000000-0000-0000-0000-000000000001',
     'aa200000-0000-0000-0000-000000000007',
     'Cuanto es 15 + 27?',
     'multiple_choice', '42',
@@ -222,7 +222,7 @@ INSERT INTO assessment.questions (
 ),
 -- Q2: true_false
 (
-    'aq000000-0000-0000-0000-000000000002',
+    'ba000000-0000-0000-0000-000000000002',
     'aa200000-0000-0000-0000-000000000007',
     'El resultado de multiplicar cualquier numero por cero es cero.',
     'true_false', 'Verdadero',
@@ -231,7 +231,7 @@ INSERT INTO assessment.questions (
 ),
 -- Q3: short_answer
 (
-    'aq000000-0000-0000-0000-000000000003',
+    'ba000000-0000-0000-0000-000000000003',
     'aa200000-0000-0000-0000-000000000007',
     'Como se llama el resultado de una resta?',
     'short_answer', 'diferencia',
@@ -240,7 +240,7 @@ INSERT INTO assessment.questions (
 ),
 -- Q4: open_ended
 (
-    'aq000000-0000-0000-0000-000000000004',
+    'ba000000-0000-0000-0000-000000000004',
     'aa200000-0000-0000-0000-000000000007',
     'Explica con un ejemplo de la vida cotidiana donde usarias la multiplicacion.',
     'open_ended', NULL,
@@ -255,7 +255,7 @@ INSERT INTO assessment.questions (
     explanation, points, difficulty, sort_order
 ) VALUES
 (
-    'aq000000-0000-0000-0000-000000000005',
+    'ba000000-0000-0000-0000-000000000005',
     'aa200000-0000-0000-0000-000000000008',
     'Que gas absorben las plantas durante la fotosintesis?',
     'multiple_choice', 'Dioxido de carbono',
@@ -263,7 +263,7 @@ INSERT INTO assessment.questions (
     2.0, 'easy', 0
 ),
 (
-    'aq000000-0000-0000-0000-000000000006',
+    'ba000000-0000-0000-0000-000000000006',
     'aa200000-0000-0000-0000-000000000008',
     'Como se llama la capa de la atmosfera donde vivimos?',
     'short_answer', 'troposfera',
@@ -278,17 +278,17 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Opciones Q1 (15+27): 32, 42, 52
 INSERT INTO assessment.question_options (id, question_id, option_text, sort_order) VALUES
-('ao000000-0000-0000-0000-000000000001', 'aq000000-0000-0000-0000-000000000001', '32', 0),
-('ao000000-0000-0000-0000-000000000002', 'aq000000-0000-0000-0000-000000000001', '42', 1),
-('ao000000-0000-0000-0000-000000000003', 'aq000000-0000-0000-0000-000000000001', '52', 2),
-('ao000000-0000-0000-0000-000000000004', 'aq000000-0000-0000-0000-000000000001', '41', 3)
+('bf000000-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', '32', 0),
+('bf000000-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000001', '42', 1),
+('bf000000-0000-0000-0000-000000000003', 'ba000000-0000-0000-0000-000000000001', '52', 2),
+('bf000000-0000-0000-0000-000000000004', 'ba000000-0000-0000-0000-000000000001', '41', 3)
 ON CONFLICT (id) DO NOTHING;
 
 -- Opciones Q5 (gas fotosintesis): Oxigeno, CO2, Nitrogeno
 INSERT INTO assessment.question_options (id, question_id, option_text, sort_order) VALUES
-('ao000000-0000-0000-0000-000000000005', 'aq000000-0000-0000-0000-000000000005', 'Oxigeno', 0),
-('ao000000-0000-0000-0000-000000000006', 'aq000000-0000-0000-0000-000000000005', 'Dioxido de carbono', 1),
-('ao000000-0000-0000-0000-000000000007', 'aq000000-0000-0000-0000-000000000005', 'Nitrogeno', 2)
+('bf000000-0000-0000-0000-000000000005', 'ba000000-0000-0000-0000-000000000005', 'Oxigeno', 0),
+('bf000000-0000-0000-0000-000000000006', 'ba000000-0000-0000-0000-000000000005', 'Dioxido de carbono', 1),
+('bf000000-0000-0000-0000-000000000007', 'ba000000-0000-0000-0000-000000000005', 'Nitrogeno', 2)
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================================================
