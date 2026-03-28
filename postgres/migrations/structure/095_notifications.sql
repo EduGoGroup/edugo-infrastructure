@@ -2,7 +2,7 @@
 -- 095: notifications.notifications
 -- Schema: notifications
 -- Notificaciones para usuarios del sistema
--- Cross-schema FK (user_id -> auth.users) va en 070
+-- Cross-schema FK (user_id -> auth.users) definida al final de este archivo
 -- ============================================================
 
 CREATE SCHEMA IF NOT EXISTS notifications;
@@ -23,3 +23,7 @@ CREATE TABLE notifications.notifications (
 
 CREATE INDEX idx_notif_user_unread ON notifications.notifications(user_id, created_at DESC) WHERE is_read = FALSE;
 CREATE INDEX idx_notif_user_all ON notifications.notifications(user_id, created_at DESC);
+
+-- FK cross-schema: notifications.notifications -> auth.users
+ALTER TABLE notifications.notifications ADD CONSTRAINT notifications_user_fkey
+    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
