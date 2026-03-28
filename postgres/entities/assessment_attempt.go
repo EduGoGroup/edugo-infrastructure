@@ -10,7 +10,7 @@ import (
 // AssessmentAttempt representa la tabla 'assessment_attempt' en PostgreSQL.
 // Esta entity es el reflejo exacto del schema de BD.
 //
-// Migraciones: 007_create_assessment_attempts.up.sql, 010_extend_assessment_attempt.up.sql
+// Migraciones: 051_assessment_assessment_attempt.sql
 // Usada por: api-mobile
 type AssessmentAttempt struct {
 	ID               uuid.UUID       `db:"id" gorm:"type:uuid;primaryKey"`

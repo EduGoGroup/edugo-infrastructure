@@ -34,3 +34,4 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON assessment.assessment_attempt
 
 CREATE INDEX idx_assessment_attempt_status ON assessment.assessment_attempt (status);
 CREATE INDEX idx_attempt_completed ON assessment.assessment_attempt (assessment_id, percentage) WHERE status = 'completed';
+CREATE INDEX idx_attempt_pending_review ON assessment.assessment_attempt (assessment_id) WHERE status = 'pending_review';
