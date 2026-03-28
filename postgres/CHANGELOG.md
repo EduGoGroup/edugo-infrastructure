@@ -6,6 +6,10 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.73.0] - 2026-03-27
+### Added
+- fix seeds
+
 ## [0.72.0] - 2026-03-27
 ### Added
 - Agregar assessments:assign y assessments:review a permisos del sistema

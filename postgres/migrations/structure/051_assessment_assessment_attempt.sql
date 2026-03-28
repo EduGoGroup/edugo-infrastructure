@@ -15,13 +15,14 @@ CREATE TABLE assessment.assessment_attempt (
     max_score numeric(5,2),
     percentage numeric(5,2),
     status character varying(50) DEFAULT 'in_progress' NOT NULL,
+    question_order jsonb,
     time_spent_seconds integer,
     idempotency_key character varying(64),
     created_at timestamptz DEFAULT now() NOT NULL,
     updated_at timestamptz DEFAULT now() NOT NULL,
     CONSTRAINT assessment_attempt_pkey PRIMARY KEY (id),
     CONSTRAINT unique_idempotency_key UNIQUE (idempotency_key),
-    CONSTRAINT assessment_attempt_status_check CHECK (status IN ('in_progress', 'completed', 'abandoned')),
+    CONSTRAINT assessment_attempt_status_check CHECK (status IN ('in_progress', 'completed', 'abandoned', 'pending_review')),
     CONSTRAINT assessment_attempt_time_spent_seconds_check CHECK (time_spent_seconds IS NULL OR (time_spent_seconds > 0 AND time_spent_seconds <= 7200)),
     CONSTRAINT check_attempt_time_logical CHECK (completed_at IS NULL OR completed_at > started_at),
     -- Intra-schema FK
@@ -33,3 +34,4 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON assessment.assessment_attempt
 
 CREATE INDEX idx_assessment_attempt_status ON assessment.assessment_attempt (status);
 CREATE INDEX idx_attempt_completed ON assessment.assessment_attempt (assessment_id, percentage) WHERE status = 'completed';
+CREATE INDEX idx_attempt_pending_review ON assessment.assessment_attempt (assessment_id) WHERE status = 'pending_review';
