@@ -17,17 +17,19 @@ ON CONFLICT (screen_key) DO NOTHING;
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000002', 'dashboard-teacher',
  'a0000000-0000-0000-0000-000000000002', 'Dashboard Profesor', 'Panel principal del profesor',
- '{"page_title": "Dashboard", "greeting_text": "Good morning, {user.firstName}", "date_text": "{today_date}", "kpi_students_label": "Students", "kpi_materials_label": "Materials", "kpi_avg_score_label": "Avg Score", "kpi_completion_label": "Completion", "activity_title": "Recent Activity", "upload_label": "Upload Material", "progress_label": "View Progress"}'::jsonb,
+ '{"page_title": "Dashboard", "greeting_text": "Good morning, {user.firstName}", "date_text": "{today_date}", "kpi_students_label": "Students", "kpi_materials_label": "Materials", "kpi_avg_score_label": "Avg Score", "kpi_completion_label": "Completion", "activity_title": "Recent Activity", "upload_label": "Upload Material", "progress_label": "View Progress", "data_endpoint": "mobile:/api/v1/stats/teacher"}'::jsonb,
  'school', NULL, NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 3: Dashboard Estudiante
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
 ('b0000000-0000-0000-0000-000000000003', 'dashboard-student',
  'a0000000-0000-0000-0000-000000000002', 'Dashboard Estudiante', 'Panel principal del estudiante',
- '{"page_title": "Home", "greeting_text": "Hello, {user.firstName}!", "date_text": "{today_date}", "kpi_students_label": "Courses", "kpi_materials_label": "Materials", "kpi_avg_score_label": "My Score", "kpi_completion_label": "Progress", "activity_title": "Recent Activity", "upload_label": "My Materials", "progress_label": "My Progress"}'::jsonb,
+ '{"page_title": "Home", "greeting_text": "Hello, {user.firstName}!", "date_text": "{today_date}", "kpi_students_label": "Courses", "kpi_materials_label": "Materials", "kpi_avg_score_label": "My Score", "kpi_completion_label": "Progress", "activity_title": "Recent Activity", "upload_label": "My Materials", "progress_label": "My Progress", "data_endpoint": "mobile:/api/v1/stats/student"}'::jsonb,
  'unit', NULL, NULL)
-ON CONFLICT (screen_key) DO NOTHING;
+ON CONFLICT (screen_key) DO UPDATE SET
+    slot_data = EXCLUDED.slot_data;
 
 -- Instancia 4: Lista de Materiales
 INSERT INTO ui_config.screen_instances (id, screen_key, template_id, name, description, slot_data, scope, required_permission, handler_key) VALUES
