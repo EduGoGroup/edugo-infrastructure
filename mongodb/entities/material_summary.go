@@ -24,7 +24,8 @@ type MaterialSummary struct {
 	AIModel          string           `bson:"ai_model"`           // Modelo IA usado
 	ProcessingTimeMs int              `bson:"processing_time_ms"` // Tiempo de procesamiento en ms
 	TokenUsage       *TokenUsage      `bson:"token_usage,omitempty"`
-	Metadata         *SummaryMetadata `bson:"metadata,omitempty"` // Metadata adicional (opcional)
+	Metadata         *SummaryMetadata `bson:"metadata,omitempty"`           // Metadata adicional (opcional)
+	Sections         []DocumentSection `bson:"sections,omitempty" json:"sections,omitempty"` // Secciones extraídas del documento
 	CreatedAt        time.Time        `bson:"created_at"`
 	UpdatedAt        time.Time        `bson:"updated_at"`
 }
@@ -33,6 +34,14 @@ type MaterialSummary struct {
 type SummaryMetadata struct {
 	SourceLength int  `bson:"source_length,omitempty"` // Longitud del material fuente
 	HasImages    bool `bson:"has_images,omitempty"`    // Si el material tiene imágenes
+}
+
+// DocumentSection representa una sección extraída de un documento/material.
+type DocumentSection struct {
+	Index   int    `bson:"index" json:"index"`
+	Title   string `bson:"title" json:"title"`
+	Content string `bson:"content" json:"content"`
+	Preview string `bson:"preview" json:"preview"` // Primeras ~200 palabras
 }
 
 // CollectionName retorna el nombre de la collection en MongoDB
