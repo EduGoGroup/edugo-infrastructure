@@ -39,6 +39,13 @@ La base documental vigente ya cubre tres capas:
 - [docs/roadmap.md](docs/roadmap.md)
 - [CHANGELOG.md](CHANGELOG.md)
 
+## Scripts de automatizacion
+
+- **[scripts/auto-release.sh](scripts/auto-release.sh)** - Release automatizado de modulos ([Documentacion](scripts/AUTO-RELEASE-README.md))
+- [scripts/module-release.sh](scripts/module-release.sh) - Release manual de modulos
+- [scripts/dev-setup.sh](scripts/dev-setup.sh) - Setup del ambiente local
+- [scripts/seed-data.sh](scripts/seed-data.sh) - Aplicar seeds a las bases de datos
+
 ## Estado operativo observado
 
 Validaciones ejecutadas localmente el 2026-03-08 sobre este repo:

@@ -224,6 +224,22 @@ release-github: require-module ## Crear GitHub Release de un módulo
 	@$(MAKE) -C "$(MODULE)" release-github VERSION="$(VERSION)"
 
 # ===================
+# AUTO-RELEASE
+# ===================
+
+auto-release: ## Release automático desde CHANGELOGs modificados (modo interactivo)
+	@./scripts/auto-release.sh
+
+auto-release-all: ## Release automático de todos los módulos con CHANGELOGs modificados
+	@./scripts/auto-release.sh --all
+
+auto-release-dry-run: ## Simular auto-release sin hacer cambios (con verbose)
+	@./scripts/auto-release.sh --dry-run --verbose
+
+auto-release-help: ## Mostrar ayuda del script de auto-release
+	@./scripts/auto-release.sh --help
+
+# ===================
 # UTILIDADES
 # ===================
 
