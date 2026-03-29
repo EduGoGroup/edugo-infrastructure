@@ -6,6 +6,12 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.57.0] - 2026-03-29
+
+### Changed
+- Actualización de migracion
+
+
 ## [0.56.0] - 2026-03-27
 
 ### Changed

@@ -6,6 +6,10 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.77.0] - 2026-03-29
+### Changed
+- fix seeds structure
+
 ## [0.76.0] - 2026-03-28
 ### Changed
 - fix seeds production
