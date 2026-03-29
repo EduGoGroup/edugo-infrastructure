@@ -52,5 +52,8 @@ VALUES
   ('20000000-0000-0000-0000-000000000090', 'system_settings',  'Configuración',           'Configuración y mantenimiento del sistema',     'settings',              'system', '20000000-0000-0000-0000-000000000002',  9, TRUE,  TRUE),
 
   -- Recurso de contexto (no visible en menu, solo para permisos de browsing)
-  ('20000000-0000-0000-0000-0000000000A0', 'context',          'Contexto',                'Exploración de escuelas y unidades para selección de contexto', 'swap_horiz', 'system', NULL, 99, FALSE, TRUE)
+  ('20000000-0000-0000-0000-0000000000A0', 'context',          'Contexto',                'Exploración de escuelas y unidades para selección de contexto', 'swap_horiz', 'system', NULL, 99, FALSE, TRUE),
+
+  -- Recurso de notificaciones (no visible en menu, aplica a todos los usuarios)
+  ('20000000-0000-0000-0000-0000000000B0', 'notifications',    'Notificaciones',          'Centro de notificaciones del usuario',                          'bell',       'system', NULL, 100, FALSE, TRUE)
 ON CONFLICT (id) DO NOTHING;
