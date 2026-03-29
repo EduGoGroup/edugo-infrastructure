@@ -111,8 +111,8 @@ func createMaterialSummary(ctx context.Context, db *mongo.Database) error {
 						},
 					},
 				},
-				"created_at":         bson.M{"bsonType": "date"},
-				"updated_at":         bson.M{"bsonType": "date"},
+				"created_at": bson.M{"bsonType": "date"},
+				"updated_at": bson.M{"bsonType": "date"},
 			},
 		},
 	}
