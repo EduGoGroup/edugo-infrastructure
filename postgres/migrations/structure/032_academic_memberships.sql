@@ -25,5 +25,10 @@ CREATE TABLE academic.memberships (
     CONSTRAINT memberships_unit_fkey FOREIGN KEY (academic_unit_id) REFERENCES academic.academic_units(id) ON DELETE CASCADE
 );
 
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_memberships_unit_role_active
+    ON academic.memberships (academic_unit_id, role)
+    WHERE is_active = true;
+
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON academic.memberships
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
