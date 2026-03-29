@@ -162,5 +162,8 @@ VALUES
 
   -- context (resource: 20000000-0000-0000-0000-0000000000A0)
   ('f0000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-0000000000A0', 'context:browse_schools', 'Explorar Escuelas',    'Permite listar todas las escuelas para seleccion de contexto',           'browse_schools', 'system', TRUE),
-  ('f0000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-0000000000A0', 'context:browse_units',   'Explorar Unidades',    'Permite listar todas las unidades de una escuela para seleccion de contexto', 'browse_units',   'system', TRUE)
+  ('f0000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-0000000000A0', 'context:browse_units',   'Explorar Unidades',    'Permite listar todas las unidades de una escuela para seleccion de contexto', 'browse_units',   'system', TRUE),
+
+  -- notifications (resource: 20000000-0000-0000-0000-0000000000B0)
+  ('f1000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-0000000000B0', 'notifications:read',     'Ver Notificaciones',   'Ver y gestionar notificaciones propias',                                 'read',           'system', TRUE)
 ON CONFLICT (id) DO NOTHING;
