@@ -97,8 +97,22 @@ func createMaterialSummary(ctx context.Context, db *mongo.Database) error {
 				"ai_model":           bson.M{"bsonType": "string", "enum": []string{"gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"}},
 				"processing_time_ms": bson.M{"bsonType": "int", "minimum": 0},
 				"metadata":           bson.M{"bsonType": "object"},
-				"created_at":         bson.M{"bsonType": "date"},
-				"updated_at":         bson.M{"bsonType": "date"},
+				"sections": bson.M{
+					"bsonType":    "array",
+					"description": "Document sections extracted from material",
+					"items": bson.M{
+						"bsonType": "object",
+						"required": []string{"index", "title", "content", "preview"},
+						"properties": bson.M{
+							"index":   bson.M{"bsonType": "int", "description": "Section index"},
+							"title":   bson.M{"bsonType": "string", "description": "Section title"},
+							"content": bson.M{"bsonType": "string", "description": "Section full content"},
+							"preview": bson.M{"bsonType": "string", "description": "First ~200 words preview"},
+						},
+					},
+				},
+				"created_at": bson.M{"bsonType": "date"},
+				"updated_at": bson.M{"bsonType": "date"},
 			},
 		},
 	}
