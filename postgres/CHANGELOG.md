@@ -5,7 +5,13 @@ Este changelog comienza la nueva serie documental del modulo `postgres`.
 Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado en esta fase es `postgres/v0.61.0`, pero el detalle narrativo de versiones anteriores no fue reconstruido aqui.
 
 ## [Unreleased]
+
+## [0.76.0] - 2026-03-28
+### Changed
+- fix seeds production
+
 ## [0.75.0] - 2026-03-28
+### Changed
 - fix seeds UI
 
 ## [0.74.0] - 2026-03-28
