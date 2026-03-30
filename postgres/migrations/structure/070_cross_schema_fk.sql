@@ -94,3 +94,9 @@ ALTER TABLE assessment.assessment_assignments ADD CONSTRAINT assessment_assignme
 ALTER TABLE assessment.attempt_reviews ADD CONSTRAINT attempt_reviews_reviewer_fkey
     FOREIGN KEY (reviewer_id) REFERENCES auth.users(id);
 
+-- assessment.attempt_analytics -> auth.users, academic.schools
+ALTER TABLE assessment.attempt_analytics ADD CONSTRAINT attempt_analytics_student_fkey
+    FOREIGN KEY (student_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE assessment.attempt_analytics ADD CONSTRAINT attempt_analytics_school_fkey
+    FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+
