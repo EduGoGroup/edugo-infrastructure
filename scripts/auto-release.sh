@@ -46,15 +46,15 @@ MODULES_TO_PROCESS=()
 # ============================================================================
 
 log_info() {
-  echo -e "${BLUE}[INFO]${NC} $*"
+  echo -e "${BLUE}[INFO]${NC} $*" >&2
 }
 
 log_success() {
-  echo -e "${GREEN}[SUCCESS]${NC} $*"
+  echo -e "${GREEN}[SUCCESS]${NC} $*" >&2
 }
 
 log_warning() {
-  echo -e "${YELLOW}[WARNING]${NC} $*"
+  echo -e "${YELLOW}[WARNING]${NC} $*" >&2
 }
 
 log_error() {
@@ -63,16 +63,16 @@ log_error() {
 
 log_verbose() {
   if [[ "$VERBOSE" == "true" ]]; then
-    echo -e "${CYAN}[VERBOSE]${NC} $*"
+    echo -e "${CYAN}[VERBOSE]${NC} $*" >&2
   fi
 }
 
 log_section() {
-  echo ""
-  echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${BOLD}$*${NC}"
-  echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo ""
+  echo "" >&2
+  echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}" >&2
+  echo -e "${BOLD}$*${NC}" >&2
+  echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}" >&2
+  echo "" >&2
 }
 
 fail() {
@@ -162,25 +162,42 @@ check_tag_exists() {
 detect_modified_changelogs() {
   log_verbose "Detectando CHANGELOGs modificados..."
   
-  local modified_files
-  modified_files=$(git diff --name-only 2>/dev/null || true)
+  # Detect both unstaged and staged changes
+  local unstaged_files staged_files modified_files
+  unstaged_files=$(git diff --name-only 2>/dev/null || true)
+  staged_files=$(git diff --cached --name-only 2>/dev/null || true)
+  
+  # Combine and deduplicate
+  modified_files=$(printf "%s\n%s" "$unstaged_files" "$staged_files" | sort -u | grep -v '^$' || true)
   
   if [[ -z "$modified_files" ]]; then
     log_verbose "No hay archivos modificados"
     return 1
   fi
   
-  log_verbose "Archivos modificados encontrados:"
-  echo "$modified_files" | while read -r file; do
-    log_verbose "  - $file"
-  done
+  if [[ "$VERBOSE" == "true" ]]; then
+    log_verbose "Archivos modificados encontrados (staged y unstaged):"
+    while IFS= read -r file; do
+      [[ -n "$file" ]] && log_verbose "  - $file"
+    done <<< "$modified_files"
+  fi
   
+  # Filter only CHANGELOGs from valid module directories
+  # Valid modules: postgres, mongodb, schemas, docker, tools/*
   local changelogs
-  changelogs=$(echo "$modified_files" | grep '/CHANGELOG\.md$' || true)
+  changelogs=$(echo "$modified_files" | grep -E '^(postgres|mongodb|schemas|docker|tools/[^/]+)/CHANGELOG\.md$' || true)
   
   if [[ -z "$changelogs" ]]; then
-    log_verbose "No hay CHANGELOGs modificados"
+    log_verbose "No hay CHANGELOGs de módulos modificados"
+    log_verbose "Solo se procesan CHANGELOGs de: postgres, mongodb, schemas, docker, tools/*"
     return 1
+  fi
+  
+  if [[ "$VERBOSE" == "true" ]]; then
+    log_verbose "CHANGELOGs de módulos detectados:"
+    while IFS= read -r file; do
+      [[ -n "$file" ]] && log_verbose "  - $file"
+    done <<< "$changelogs"
   fi
   
   echo "$changelogs"
@@ -205,13 +222,17 @@ extract_version_from_changelog() {
   fi
   
   # Extract the first version after [Unreleased]
+  # Compatible with BSD awk (macOS) and GNU awk
   local version
   version=$(awk '
     /^## \[Unreleased\]/ { found_unreleased=1; next }
     found_unreleased && /^## \[[0-9]/ {
-      match($0, /\[([0-9]+\.[0-9]+\.[0-9]+)\]/, arr)
-      if (arr[1]) {
-        print arr[1]
+      # Extract version using sub/gsub instead of match with array
+      line = $0
+      sub(/^.*\[/, "", line)
+      sub(/\].*$/, "", line)
+      if (line ~ /^[0-9]+\.[0-9]+\.[0-9]+$/) {
+        print line
         exit
       }
     }
@@ -427,12 +448,14 @@ display_success_message() {
 select_modules() {
   local changelogs="$1"
   local changelog_array
-  mapfile -t changelog_array <<< "$changelogs"
+  
+  # Filter empty lines when creating array
+  mapfile -t changelog_array < <(echo "$changelogs" | grep -v '^$')
   
   local num_changelogs=${#changelog_array[@]}
   
   log_info "Detectados $num_changelogs módulo(s) con cambios en CHANGELOG"
-  echo ""
+  echo "" >&2
   
   # If specific modules were specified, filter
   if [[ ${#SPECIFIED_MODULES[@]} -gt 0 ]]; then
@@ -456,7 +479,7 @@ select_modules() {
     changelog_array=("${filtered[@]}")
     num_changelogs=${#changelog_array[@]}
     log_info "Filtrando a $num_changelogs módulo(s)"
-    echo ""
+    echo "" >&2
   fi
   
   # Process all if --all or only one module
@@ -468,19 +491,19 @@ select_modules() {
   fi
   
   # Interactive selection
-  echo "Módulos disponibles:"
+  echo "Módulos disponibles:" >&2
   local idx=1
   for changelog in "${changelog_array[@]}"; do
     local module
     module=$(extract_module_from_changelog "$changelog")
-    echo "  $idx. $module"
+    echo "  $idx. $module" >&2
     ((idx++))
   done
-  echo ""
+  echo "" >&2
   
   if ! confirm "¿Procesar todos los módulos?" "n"; then
-    echo ""
-    echo "Especifica los números de los módulos a procesar (separados por espacio):"
+    echo "" >&2
+    echo "Especifica los números de los módulos a procesar (separados por espacio):" >&2
     read -r -p "> " selection
     
     local selected=()
