@@ -17,4 +17,5 @@ CREATE TABLE assessment.assessment_stats (
     CONSTRAINT assessment_stats_assessment_fkey FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_stats_assessment ON assessment.assessment_stats(assessment_id);
+-- Note: assessment_id already has a unique index from the UNIQUE constraint.
+-- No separate index needed.

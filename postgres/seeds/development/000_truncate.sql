@@ -23,6 +23,12 @@
 
 BEGIN;
 
+-- Nivel 6 — analytics (hojas que dependen de attempts)
+DO $$ BEGIN
+  IF to_regclass('assessment.attempt_analytics') IS NOT NULL THEN TRUNCATE TABLE assessment.attempt_analytics CASCADE; END IF;
+  IF to_regclass('assessment.assessment_stats') IS NOT NULL THEN TRUNCATE TABLE assessment.assessment_stats CASCADE; END IF;
+END $$;
+
 -- Nivel 5 — hojas
 TRUNCATE TABLE assessment.assessment_attempt_answer CASCADE;
 
