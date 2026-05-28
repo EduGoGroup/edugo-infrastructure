@@ -1,0 +1,129 @@
+name: 'EduGo Coverage Check'
+description: 'Valida cobertura de tests y genera reportes'
+author: 'EduGo Team'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  coverage-file:
+    description: 'Archivo de cobertura (coverage.out)'
+    required: false
+    default: 'coverage.out'
+
+  threshold:
+    description: 'Umbral minimo de cobertura (%)'
+    required: false
+    default: '33'
+
+  fail-on-threshold:
+    description: 'Fallar si cobertura bajo umbral'
+    required: false
+    default: 'true'
+
+  generate-html:
+    description: 'Generar reporte HTML'
+    required: false
+    default: 'false'
+
+  html-output:
+    description: 'Nombre del archivo HTML'
+    required: false
+    default: 'coverage.html'
+
+  working-directory:
+    description: 'Directorio de trabajo'
+    required: false
+    default: '.'
+
+outputs:
+  coverage:
+    description: 'Porcentaje de cobertura'
+    value: ${{ steps.check.outputs.coverage }}
+
+  passed:
+    description: 'Si paso el umbral'
+    value: ${{ steps.check.outputs.passed }}
+
+  report:
+    description: 'Resumen del reporte'
+    value: ${{ steps.check.outputs.report }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Verificar archivo de cobertura
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ ! -f "${{ inputs.coverage-file }}" ]; then
+          echo "Error: Archivo de cobertura no encontrado: ${{ inputs.coverage-file }}"
+          echo "Ejecuta primero: go test -coverprofile=${{ inputs.coverage-file }} ./..."
+          exit 1
+        fi
+        echo "Archivo de cobertura encontrado"
+
+    - name: Calcular cobertura
+      id: check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Calcular cobertura total
+        COVERAGE=$(go tool cover -func=${{ inputs.coverage-file }} | grep total | awk '{print $3}' | sed 's/%//')
+
+        # Manejar caso sin cobertura
+        if [ -z "$COVERAGE" ]; then
+          COVERAGE="0"
+        fi
+
+        echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+
+        # Verificar umbral
+        THRESHOLD=${{ inputs.threshold }}
+        PASSED="false"
+
+        if (( $(echo "$COVERAGE >= $THRESHOLD" | bc -l) )); then
+          PASSED="true"
+          STATUS="PASS"
+        else
+          STATUS="FAIL"
+        fi
+
+        echo "passed=$PASSED" >> $GITHUB_OUTPUT
+
+        # Generar reporte
+        REPORT="Coverage: ${COVERAGE}% | Threshold: ${THRESHOLD}% | Status: ${STATUS}"
+        echo "report=$REPORT" >> $GITHUB_OUTPUT
+
+        # Output visual
+        echo "========================================"
+        echo "Coverage Report"
+        echo "========================================"
+        echo "Cobertura: ${COVERAGE}%"
+        echo "Umbral: ${THRESHOLD}%"
+        echo "Estado: ${STATUS}"
+        echo "========================================"
+
+        # Detalles por paquete
+        echo ""
+        echo "Cobertura por paquete:"
+        go tool cover -func=${{ inputs.coverage-file }} | head -20
+
+    - name: Generar HTML
+      if: inputs.generate-html == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        go tool cover -html=${{ inputs.coverage-file }} -o ${{ inputs.html-output }}
+        echo "Reporte HTML generado: ${{ inputs.html-output }}"
+
+    - name: Verificar umbral
+      if: inputs.fail-on-threshold == 'true'
+      shell: bash
+      run: |
+        if [ "${{ steps.check.outputs.passed }}" != "true" ]; then
+          echo "ERROR: Cobertura (${{ steps.check.outputs.coverage }}%) bajo el umbral (${{ inputs.threshold }}%)"
+          exit 1
+        fi
+        echo "OK: Cobertura cumple con el umbral"

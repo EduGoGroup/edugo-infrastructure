@@ -1,0 +1,103 @@
+name: Module Release
+
+on:
+  push:
+    tags:
+      - '*/v*'
+
+env:
+  GO_VERSION: '1.25'
+  GOLANGCI_LINT_VERSION: 'v1.64.7'
+
+jobs:
+  release:
+    name: Release ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolver módulo y versión
+        id: meta
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          MODULE="${TAG%/v*}"
+          VERSION="${TAG##*/}"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "module=$MODULE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ -f "$MODULE/go.mod" ]; then
+            echo "is_go_module=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_go_module=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Go
+        if: steps.meta.outputs.is_go_module == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Instalar golangci-lint
+        if: steps.meta.outputs.is_go_module == 'true'
+        shell: bash
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@${{ env.GOLANGCI_LINT_VERSION }}
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Validar módulo
+        shell: bash
+        run: make -C "${{ steps.meta.outputs.module }}" release-check
+
+      - name: Extraer notas desde CHANGELOG
+        id: notes
+        shell: bash
+        run: |
+          MODULE="${{ steps.meta.outputs.module }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          VERSION_NUMBER="${VERSION#v}"
+          CHANGELOG="$MODULE/CHANGELOG.md"
+          NOTES_FILE="/tmp/release-notes.md"
+
+          awk -v version="$VERSION_NUMBER" '
+            $0 ~ "^## \\[" version "\\]" {flag=1; next}
+            flag && /^## \[/ {exit}
+            flag {print}
+          ' "$CHANGELOG" > "$NOTES_FILE"
+
+          if [ ! -s "$NOTES_FILE" ]; then
+            echo "Release $MODULE/$VERSION" > "$NOTES_FILE"
+          fi
+
+          if [ -f "$MODULE/go.mod" ]; then
+            # Nota: se usan echo en lugar de heredoc para evitar el conflicto
+            # entre la indentación YAML y los delimitadores de heredoc bash.
+            {
+              echo ""
+              echo "---"
+              echo ""
+              echo "## Instalación"
+              echo ""
+              echo '```bash'
+              echo "go get github.com/EduGoGroup/edugo-infrastructure/$MODULE@$VERSION"
+              echo '```'
+            } >> "$NOTES_FILE"
+          fi
+
+      - name: Crear GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            --verify-tag \
+            --title "${{ steps.meta.outputs.module }} ${{ steps.meta.outputs.version }}" \
+            --notes-file /tmp/release-notes.md

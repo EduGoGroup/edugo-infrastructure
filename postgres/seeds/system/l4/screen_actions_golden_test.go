@@ -1,0 +1,83 @@
+package l4_test
+
+// goldenInvariants es el golden SEMÁNTICO de F3.1: por screen_key, el
+// conjunto ORDENADO de claves "event_id_efectivo|permission" de las
+// acciones compuestas. NO incluye campos de presentación (scope, label,
+// condition, order, icon, style) — esos se normalizan al template (ver
+// el doc de invariantKey en screen_actions_roundtrip_test.go).
+//
+// Capturado del estado PRE-migración (con dumpGolden) y verificado
+// idéntico POST-migración: la migración al patrón delta solo cambia
+// presentación, nunca el contrato semántico (qué evento dispara cada
+// botón y con qué permiso se gatea). Cualquier cambio en este mapa debe
+// ser intencional (alta/baja de acción o de permiso) y acompañado del
+// bump de seed correspondiente.
+var goldenInvariants = map[string][]string{
+	"announcement-form":           {"delete|academic.announcements.delete", "submit-form|academic.announcements.create", "submit-form|academic.announcements.update"},
+	"announcements-list":          {"create|academic.announcements.create", "delete|academic.announcements.delete", "edit|academic.announcements.update"},
+	"app-login":                   {},
+	"app-settings":                {},
+	"assessment-assignment":       {"submit-form|content.assessments.update"},
+	"assessment-modality":         {},
+	"assessment-question-form":    {"delete|content.assessments.delete", "submit-form|content.assessments.create", "submit-form|content.assessments.update"},
+	"assessment-questions-list":   {"create|content.assessments.update", "delete|content.assessments.update", "edit|content.assessments.update"},
+	"assessment-result":           {},
+	"assessment-review-dashboard": {},
+	"assessment-take":             {},
+	"assessments-form":            {"archive|content.assessments.update", "delete|content.assessments.delete", "publish|content.assessments.update", "submit-form|content.assessments.create", "submit-form|content.assessments.update", "view-questions|content.assessments.read"},
+	"assessments-list":            {"create|content.assessments.create", "edit|content.assessments.update"},
+	"assessments-management-list": {"create|content.assessments.create", "delete|content.assessments.delete", "edit|content.assessments.update"},
+	"assigned-assessments-list":   {},
+	"attempt-review-detail":       {},
+	"attendance-batch":            {"submit-form|academic.attendance.create"},
+	"attendance-form":             {"submit-form|academic.attendance.create", "submit-form|academic.attendance.update"},
+	"attendance-list":             {"batch|academic.attendance.create"},
+	"attendance-summary":          {},
+	"audit-detail":                {},
+	"audit-events-list":           {},
+	"concept-types-form":          {"submit-form|admin.concept_types.create", "submit-form|admin.concept_types.update"},
+	"concept-types-list":          {"create|admin.concept_types.create", "edit|admin.concept_types.update"},
+	"dashboard-guardian":          {},
+	"dashboard-home":              {},
+	"dashboard-schooladmin":       {},
+	"dashboard-student":           {},
+	"dashboard-superadmin":        {},
+	"dashboard-teacher":           {},
+	"grades-form":                 {"submit-form|academic.grades.create", "submit-form|academic.grades.update"},
+	"grades-list":                 {"create|academic.grades.create", "edit|academic.grades.update"},
+	"invitations-form":            {"submit-form|academic.invitations.create"},
+	"invitations-list":            {"create|academic.invitations.create", "revoke|academic.invitations.revoke"},
+	"join-requests-inbox":         {},
+	"material-form":               {"submit-form|content.materials.update"},
+	"materials-list":              {"create|content.materials.create", "edit|content.materials.update"},
+	"membership-add":              {"submit-form|academic.memberships.create"},
+	"memberships-form":            {"delete|academic.memberships.delete", "submit-form|academic.memberships.create", "submit-form|academic.memberships.update"},
+	"memberships-list":            {"create|academic.memberships.create", "delete|academic.memberships.delete", "edit|academic.memberships.update"},
+	"my-memberships-list":         {},
+	"periods-form":                {"submit-form|academic.periods.create", "submit-form|academic.periods.update"},
+	"periods-list":                {"create|academic.periods.create", "edit|academic.periods.update"},
+	"permissions-form":            {"submit-form|admin.permissions_mgmt.create", "submit-form|admin.permissions_mgmt.update"},
+	"permissions-list":            {"create|admin.permissions_mgmt.create", "edit|admin.permissions_mgmt.update"},
+	"progress-dashboard":          {},
+	"roles-form":                  {"delete|admin.roles.delete", "submit-form|admin.roles.create", "submit-form|admin.roles.update"},
+	"roles-list":                  {"create|admin.roles.create", "delete|admin.roles.delete", "edit|admin.roles.update"},
+	"school-concepts-form":        {"submit-form|admin.concept_types.create", "submit-form|admin.concept_types.update"},
+	"school-concepts-list":        {"create|admin.concept_types.create", "edit|admin.concept_types.update"},
+	"schools-form":                {"delete|admin.schools.delete", "submit-form|admin.schools.create", "submit-form|admin.schools.update"},
+	"schools-list":                {"create|admin.schools.create", "delete|admin.schools.delete", "edit|admin.schools.update"},
+	"screen-instances-form":       {"delete|admin.screen_instances.delete", "submit-form|admin.screen_instances.create", "submit-form|admin.screen_instances.update"},
+	"screen-instances-list":       {"create|admin.screen_instances.create", "edit|admin.screen_instances.update"},
+	"screen-templates-list":       {},
+	"screens-form":                {"submit-form|admin.screen_instances.create", "submit-form|admin.screen_instances.update"},
+	"stats-dashboard":             {},
+	"students-by-subject-list":    {},
+	"subjects-form":               {"delete|academic.subjects.delete", "submit-form|academic.subjects.create", "submit-form|academic.subjects.update"},
+	"subjects-list":               {"create|academic.subjects.create", "delete|academic.subjects.delete", "edit|academic.subjects.update"},
+	"system-settings":             {},
+	"unit-directory":              {},
+	"units-form":                  {"delete|academic.units.delete", "submit-form|academic.units.create", "submit-form|academic.units.update"},
+	"units-list":                  {"create|academic.units.create", "delete|academic.units.delete", "edit|academic.units.update"},
+	"user-roles":                  {"assign-role|admin.users.update", "revoke-role|admin.users.update"},
+	"users-form":                  {"delete|admin.users.delete", "submit-form|admin.users.create", "submit-form|admin.users.update"},
+	"users-list":                  {"create|admin.users.create", "delete|admin.users.delete", "edit|admin.users.update"},
+}

@@ -1,0 +1,26 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+
+linters-settings:
+  errcheck:
+    exclude-functions:
+      - (io.Closer).Close
+      - (*database/sql.Rows).Close
+      - (*database/sql.DB).Close
+      - (*github.com/testcontainers/testcontainers-go.Container).Terminate
+      - (*go.mongodb.org/mongo-driver/mongo.Client).Disconnect
+      - (*database/sql.Row).Scan
+      - (*github.com/dop251/goja.Object).Set
+      - (*github.com/dop251/goja.Runtime).Set
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+    - path: cmd/
+      linters:
+        - errcheck

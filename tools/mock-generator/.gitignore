@@ -1,0 +1,25 @@
+# Binarios
+bin/
+*.exe
+mock-generator
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporales
+tmp/
+temp/
+*.log

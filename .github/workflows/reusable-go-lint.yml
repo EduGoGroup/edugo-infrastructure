@@ -1,0 +1,88 @@
+name: Go Lint (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Version de Go a usar'
+        required: false
+        type: string
+        default: '1.25'
+
+      golangci-lint-version:
+        description: 'Version de golangci-lint'
+        required: false
+        type: string
+        default: 'v2.4.0'
+
+      working-directory:
+        description: 'Directorio de trabajo'
+        required: false
+        type: string
+        default: '.'
+
+      args:
+        description: 'Argumentos adicionales para golangci-lint'
+        required: false
+        type: string
+        default: '--timeout=5m'
+
+      skip-cache:
+        description: 'Saltar cache de golangci-lint'
+        required: false
+        type: boolean
+        default: false
+
+    outputs:
+      result:
+        description: 'Resultado del linting'
+        value: ${{ jobs.lint.outputs.result }}
+
+jobs:
+  lint:
+    name: Run Linter
+    runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    outputs:
+      result: ${{ steps.lint.outcome }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Go Environment
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
+        with:
+          go-version: ${{ inputs.go-version }}
+          github-token: ${{ github.token }}
+
+      - name: Download dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          echo "Descargando dependencias..."
+          go mod download
+          go mod verify
+
+      - name: Run golangci-lint
+        id: lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: ${{ inputs.golangci-lint-version }}
+          working-directory: ${{ inputs.working-directory }}
+          args: ${{ inputs.args }}
+          skip-cache: ${{ inputs.skip-cache }}
+
+      - name: Lint Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Lint Summary"
+          echo "=========================================="
+          echo "Status: ${{ steps.lint.outcome }}"
+          echo "Go version: ${{ inputs.go-version }}"
+          echo "Linter version: ${{ inputs.golangci-lint-version }}"
+          echo "Working directory: ${{ inputs.working-directory }}"
+          echo "=========================================="

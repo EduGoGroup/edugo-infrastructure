@@ -1,0 +1,5 @@
+# Artefactos generados al compilar/ejecutar el binario seed_e2e.
+# Su fuente de verdad es el código Go; aquí solo se materializan en
+# build-time para que los tests Kotlin del KMP puedan consumirlos
+# (ver docs en framework/constants_export.go).
+fixtures-constants.json

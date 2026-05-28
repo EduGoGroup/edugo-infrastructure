@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/EduGoGroup/edugo-infrastructure/schemas/events/assessment-generated-v1",
+  "title": "Assessment Generated Event",
+  "description": "Evento publicado cuando el worker genera un quiz/assessment con IA",
+  "type": "object",
+  "required": ["event_id", "event_type", "event_version", "timestamp", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID único del evento"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "assessment.generated",
+      "description": "Tipo de evento"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Versión del schema"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp del evento"
+    },
+    "payload": {
+      "type": "object",
+      "required": ["material_id", "mongo_document_id", "questions_count"],
+      "properties": {
+        "material_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID del material para el cual se generó el assessment"
+        },
+        "mongo_document_id": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$",
+          "description": "ObjectId del documento en MongoDB (24 caracteres hex)"
+        },
+        "questions_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Número de preguntas generadas"
+        },
+        "processing_time_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tiempo de procesamiento en milisegundos"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
