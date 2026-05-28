@@ -205,7 +205,18 @@ package layers
 //     JWT, NUNCA por path/query/body (estándar del ecosistema). Misma forma de
 //     respuesta `{"units":[{id, display_name,...}]}`; display_field/value_field
 //     sin cambios. Sin cambios de esquema/permisos.
-const L4_SEED_VERSION = "1.33.0"
+//   - 1.33.1: nueva screen_instance `batch-enroll` (inscripción por lote,
+//     pantalla NATIVA) bajo el recurso `subject_offerings` (N1.7 F1, plan 010 /
+//     ADR 0009). requiredPermission=academic.subject_offerings.read; el botón
+//     "Inscribir" se declara como action en slot_data con
+//     permission=academic.subject_offerings.enroll (ADR 0003). Nuevo mapping en
+//     resource_screens (subject_offerings → batch-enroll, list, default). El
+//     recurso y los permisos ya se sembraron en F0a; aquí solo se consumen.
+//   - 1.33.2: recurso `subject_offerings` pasa a IsMenuVisible=true (N1.7 F1):
+//     ya existe screen_instance + mapping, así que el item de menú "Sesiones de
+//     Materia" abre la pantalla batch-enroll (default del recurso). Sin esto la
+//     pantalla quedaba inalcanzable desde el menú.
+const L4_SEED_VERSION = "1.33.2"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

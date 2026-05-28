@@ -461,6 +461,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		invitationsList(),
 		invitationsForm(),
 		joinRequestsInbox(),
+		subjectOfferingsBatchEnroll(), // inscripción por lote (pantalla nativa), N1.7 F1
 
 		// ===========================================================
 		// ACADEMIC: GUARDIAN / CALENDAR / SCHEDULES

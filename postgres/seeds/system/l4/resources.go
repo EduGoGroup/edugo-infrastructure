@@ -210,11 +210,11 @@ var l4Resources = []l4ResourceRow{
 	{ID: L4_RESOURCE_MEMBERSHIPS_ID, Key: "memberships", DisplayName: "Miembros", Description: "Asignación de miembros", Icon: "user-plus", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_SUBJECTS_ID, Key: "subjects", DisplayName: "Materias", Description: "Gestión de materias", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
 	// Plan 010 (N1.7, ADR 0009): sesiones de materia. Recurso de permisos
-	// bajo "academic". IsMenuVisible=false en esta etapa de esquema (F0a):
-	// aún no hay screen_instance ni mapping en resource_screens, así que no
-	// debe aparecer en el menú como item muerto; el item de menú/pantalla
-	// se siembra en una etapa posterior del plan 010.
-	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: false, IsActive: true},
+	// bajo "academic". IsMenuVisible=true desde F1: ya hay screen_instance
+	// (batch-enroll) y mapping en resource_screens, así que el item de menú
+	// "Sesiones de Materia" abre la pantalla de inscripción por lote (default
+	// del recurso). F2 añadirá más pantallas bajo este mismo recurso.
+	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_GUARDIAN_RELATIONS_ID, Key: "guardian_relations", DisplayName: "Vínculos Guardian", Description: "Gestión de vínculos guardian-estudiante", Icon: "user-check", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 4, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_PERIODS_ID, Key: "periods", DisplayName: "Periodos Académicos", Description: "Gestión de periodos académicos", Icon: "calendar-range", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_GRADES_ID, Key: "grades", DisplayName: "Calificaciones", Description: "Gestión de calificaciones", Icon: "award", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: true, IsActive: true},

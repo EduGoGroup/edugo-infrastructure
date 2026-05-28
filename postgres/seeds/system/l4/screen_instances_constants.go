@@ -87,6 +87,14 @@ const (
 	// slot_data nunca se usa para render; existe solo para satisfacer la
 	// FK y permitir que el menú resuelva el screen_key.
 	L4_SCREEN_INST_JOIN_REQUESTS_INBOX_ID = "b4400000-0000-0000-0000-00000000005a"
+	// batch-enroll (N1.7 F1): pantalla NATIVA de "inscripción por lote" de
+	// alumnos en una sesión de materia (subject_offering). Igual que
+	// join-requests-inbox, esta screen_instance existe SOLO para satisfacer la
+	// FK resource_screens.screen_key → screen_instances.screen_key y para que el
+	// menú resuelva el screen_key `batch-enroll`. El slot_data NO se renderiza
+	// por el SDUI engine: el FE intercepta el screen_key y pinta la pantalla
+	// Compose nativa. Sufijo …5c, adyacente a my_memberships …5b.
+	L4_SCREEN_INST_SUBJECT_OFFERINGS_BATCH_ENROLL_ID = "b4400000-0000-0000-0000-00000000005c"
 
 	// academic: guardian / calendar / schedules
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de

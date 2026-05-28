@@ -209,6 +209,14 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// Reintroducido en N1.7 F1 sobre el modelo de sesiones.
 		{id: "b4500000-0000-0000-0000-000000000069", resourceID: L4_RESOURCE_MY_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MY_MEMBERSHIPS_KEY, screenKey: "my-memberships-list", screenType: "list", isDefault: true, sortOrder: 1},
 
+		// academic → subject_offerings (sesiones de materia, plan 010 / ADR
+		// 0009). batch-enroll = "inscripción por lote", pantalla NATIVA del FE
+		// (Compose, NO SDUI). Único mapping del recurso (list, is_default=true):
+		// el menú expone el screen_key `batch-enroll` y el FE lo intercepta. El
+		// recurso subject_offerings es IsMenuVisible=false (contenedor de la
+		// sesión); el ítem se alcanza vía el flujo de sesiones. N1.7 F1.
+		{id: "b4500000-0000-0000-0000-00000000006a", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "batch-enroll", screenType: "list", isDefault: true, sortOrder: 1},
+
 		{id: "b4500000-0000-0000-0000-000000000070", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000071", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-form", screenType: "form", isDefault: false, sortOrder: 2},
 

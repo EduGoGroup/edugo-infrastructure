@@ -872,6 +872,50 @@ func joinRequestsInbox() l4ScreenInstanceRow {
 	}
 }
 
+// subjectOfferingsBatchEnroll (N1.7 F1, plan 010 / ADR 0009): pantalla de
+// "inscripción por lote" de alumnos en una sesión de materia (subject_offering).
+// La pantalla es NATIVA en el FE (Compose, NO SDUI): seleccionar la sesión +
+// marcar/desmarcar alumnos + confirmar es un flujo de selección masiva que el
+// motor SDUI list/form no expresa. MainScreen intercepta el screen_key
+// `batch-enroll` y pinta la pantalla nativa.
+//
+// Esta screen_instance existe para satisfacer la FK
+// resource_screens.screen_key → screen_instances.screen_key y para que el menú
+// resuelva el screen_key. El slot_data NUNCA se renderiza por el SDUI engine;
+// se conserva mínimo y válido (list-basic-v1) por higiene.
+//
+// Permiso de visibilidad (requiredPermission, slot.permission de la pantalla):
+// academic.subject_offerings.read — ver la pantalla. El botón "Inscribir" se
+// declara como action en slot_data con permission
+// academic.subject_offerings.enroll (ADR 0003: única fuente del permiso del
+// botón). El FE nativo lee esa action del contrato y gatea el botón con ese
+// permiso. La action sigue el esquema real de actions_added[] (mismas keys que
+// p.ej. attendanceList/invitationsList): id, scope, label, icon, permission,
+// condition, event_id, style, order. El permiso se lee de la key `permission`.
+func subjectOfferingsBatchEnroll() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_SUBJECT_OFFERINGS_BATCH_ENROLL_ID,
+		screenKey:          "batch-enroll",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Inscripción por Lote",
+		description:        "Inscribir alumnos en una sesión de materia (pantalla nativa)",
+		scope:              "school",
+		requiredPermission: "academic.subject_offerings.read",
+		slotData: `{
+  "title": "Inscripción por Lote",
+  "columns": [
+    {"key": "user_name", "label": "Alumno"},
+    {"key": "enrolled", "label": "Inscrito"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "actions_added": [
+    {"id": "enroll", "scope": "header", "label": "Inscribir", "icon": "person_add", "permission": "academic.subject_offerings.enroll", "condition": "always", "event_id": "enroll", "style": "filled", "order": 10}
+  ],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
 // ===============================================================
 // ACADEMIC: grades / attendance
 // ===============================================================
