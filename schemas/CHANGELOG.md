@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-27
+
 ### Added
 - Documentacion fase 1 del modulo.
 - Documentacion fase 2 de integracion ecosistemica del modulo.

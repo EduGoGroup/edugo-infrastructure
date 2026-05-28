@@ -12,7 +12,7 @@ Modulo responsable de validar contratos JSON Schema para eventos.
 ## Estado observado
 
 - Tests cortos pasan.
-- El ultimo tag observado en Git es `schemas/v0.51.0`.
+- La versión actual del módulo es `schemas/v0.1.0` (reinicio limpio).
 - La API publica esta concentrada en `validator.go`.
 
 ## Documentacion del modulo
