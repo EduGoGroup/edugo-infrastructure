@@ -13,7 +13,7 @@ Modulo responsable de las collections MongoDB y de los documentos derivados usad
 ## Estado observado
 
 - Tests cortos pasan.
-- El ultimo tag observado en Git es `mongodb/v0.53.0`.
+- La versión actual del módulo es `mongodb/v0.1.0` (reinicio limpio).
 - La superficie publica estable del modulo hoy es el paquete `mongodb/migrations`.
 
 ## Documentacion del modulo
