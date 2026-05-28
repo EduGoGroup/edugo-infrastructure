@@ -95,6 +95,21 @@ const (
 	// por el SDUI engine: el FE intercepta el screen_key y pinta la pantalla
 	// Compose nativa. Sufijo …5c, adyacente a my_memberships …5b.
 	L4_SCREEN_INST_SUBJECT_OFFERINGS_BATCH_ENROLL_ID = "b4400000-0000-0000-0000-00000000005c"
+	// enroll-one (N1.7 F2): pantalla NATIVA de "inscripción individual" de un
+	// alumno en una sesión de materia (subject_offering). Igual que batch-enroll,
+	// existe SOLO para satisfacer la FK resource_screens.screen_key →
+	// screen_instances.screen_key y para que el menú/handler resuelva el
+	// screen_key `enroll-one`. El slot_data NO se renderiza por el SDUI engine: el
+	// FE intercepta el screen_key y pinta la pantalla Compose nativa. Sufijo …5d,
+	// adyacente a batch-enroll …5c.
+	L4_SCREEN_INST_ENROLL_ONE_ID = "b4400000-0000-0000-0000-00000000005d"
+	// sessions-by-subject-list (N1.7 F2; reubicada en F2.2): lista hija de
+	// "sesiones de la materia". Se alcanza embebida como pestaña "Sesiones" del
+	// master-detail subjects-form (detail_configs[]); el contenedor inyecta
+	// subjectId y la pantalla consume GET /api/v1/subject-offerings?subject_id={id}.
+	// Pantalla SDUI list estándar (columns subject/section/period/teacher).
+	// Sufijo …5e, adyacente a enroll-one …5d.
+	L4_SCREEN_INST_SESSIONS_BY_SUBJECT_ID = "b4400000-0000-0000-0000-00000000005e"
 
 	// academic: guardian / calendar / schedules
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de

@@ -216,6 +216,14 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// recurso subject_offerings es IsMenuVisible=false (contenedor de la
 		// sesión); el ítem se alcanza vía el flujo de sesiones. N1.7 F1.
 		{id: "b4500000-0000-0000-0000-00000000006a", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "batch-enroll", screenType: "list", isDefault: true, sortOrder: 1},
+		// N1.7 F2: enroll-one (inscripción individual, pantalla NATIVA) y
+		// sessions-by-subject-list (lista hija SDUI; F2.2 la reubica como pestaña
+		// "Sesiones" embebida en subjects-form vía detail_configs[]). Ambas bajo el
+		// mismo recurso subject_offerings para satisfacer la FK screen_key; el
+		// default sigue siendo batch-enroll. No necesitan ser visibles en menú por
+		// sí solas.
+		{id: "b4500000-0000-0000-0000-00000000006b", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "enroll-one", screenType: "list", isDefault: false, sortOrder: 2},
+		{id: "b4500000-0000-0000-0000-00000000006c", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "sessions-by-subject-list", screenType: "list", isDefault: false, sortOrder: 3},
 
 		{id: "b4500000-0000-0000-0000-000000000070", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000071", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-form", screenType: "form", isDefault: false, sortOrder: 2},

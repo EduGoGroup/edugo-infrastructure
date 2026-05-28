@@ -572,8 +572,9 @@ func membershipsForm() l4ScreenInstanceRow {
 
 // subjectsList: hereda los default_actions de list-basic-v1
 // (create/edit/delete sobre $resource$ → academic.subjects.*). Sin deltas:
-// el patrón CRUD estándar es suficiente. La vista "alumnos por materia" no vive
-// aquí sino embebida en subjects-form (master-detail), ver subjectsForm().
+// el patrón CRUD estándar es suficiente. Las vistas "alumnos por materia" y
+// "sesiones por materia" no viven aquí sino embebidas como pestañas en
+// subjects-form (master-detail con detail_configs), ver subjectsForm().
 func subjectsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_SUBJECTS_LIST_ID,
@@ -598,17 +599,23 @@ func subjectsList() l4ScreenInstanceRow {
 	}
 }
 
-// subjectsForm usa master-detail-v1 (plan 006, Trozo A): hereda los 3
+// subjectsForm usa master-detail-v1 (plan 006, Trozo A; N1.7 F2.2): hereda los 3
 // defaults de form (save_new/save/delete con scope=form-submit) y, vía
-// detail_config, embebe `students-by-subject-list` como tab/panel detalle
-// (lista readonly de alumnos de la materia). Sin modal: modal_screen_key=null
-// porque la lista es solo lectura.
+// detail_configs[], embebe DOS pestañas de detalle readonly:
+//   - "Alumnos"  → students-by-subject-list (lista de alumnos de la materia)
+//   - "Sesiones" → sessions-by-subject-list (sesiones/offerings de la materia)
 //
-// detail_config: parent_id_param="subjectId" → MasterDetailContainer carga
-// students-by-subject-list pasando subjectId = id de la materia editada; el
-// contrato KMP lee context.params["subjectId"] y llama al lector B
-// (GET /api/v1/subjects/:id/enrollments). child_id_field="id". El frontend KMP
-// interpreta detail_config; el backend solo lo persiste.
+// Ambas sin modal (modal_screen_key=null): son solo lectura. La pestaña
+// "Sesiones" sustituye a la antigua row-action `view-sessions` de subjects-list
+// (eliminada en F2.2): ahora se llega navegando dentro del formulario de materia.
+//
+// detail_configs: cada entrada lleva parent_id_param="subjectId" →
+// MasterDetailContainer carga la pantalla hija pasando subjectId = id de la
+// materia editada; los contratos KMP leen context.params["subjectId"].
+// students-by-subject-list llama al lector B
+// (GET /api/v1/subjects/:id/enrollments); sessions-by-subject-list llama a
+// GET /api/v1/subject-offerings?subject_id=. child_id_field="id". El frontend
+// KMP interpreta detail_configs; el backend solo lo persiste.
 //
 // actions_removed=["detail"]: el template master-detail-v1 trae un default
 // `detail` (view-detail|$resource$.read|edit-only) pensado para navegar a un
@@ -637,13 +644,10 @@ func subjectsForm() l4ScreenInstanceRow {
     {"key": "code", "label": "Código", "type": "text", "required": true},
     {"key": "description", "label": "Descripción", "type": "textarea"}
   ],
-  "detail_config": {
-    "screen_key": "students-by-subject-list",
-    "modal_screen_key": null,
-    "parent_id_param": "subjectId",
-    "child_id_field": "id",
-    "title": "Alumnos"
-  },
+  "detail_configs": [
+    {"screen_key": "students-by-subject-list", "modal_screen_key": null, "parent_id_param": "subjectId", "child_id_field": "id", "title": "Alumnos"},
+    {"screen_key": "sessions-by-subject-list", "modal_screen_key": null, "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
+  ],
   "actions_removed": ["detail"],
   "api_prefix": "academic"
 }`,
@@ -916,6 +920,67 @@ func subjectOfferingsBatchEnroll() l4ScreenInstanceRow {
 	}
 }
 
+// enrollOne (N1.7 F2, plan 010 / ADR 0009): pantalla NATIVA de "inscripción
+// individual" de UN alumno en una sesión de materia (subject_offering). Igual
+// que batch-enroll, la pantalla es NATIVA en el FE (Compose, NO SDUI):
+// MainScreen intercepta el screen_key `enroll-one` y pinta la pantalla nativa.
+//
+// Esta screen_instance existe para satisfacer la FK
+// resource_screens.screen_key → screen_instances.screen_key y para que el
+// handler resuelva el screen_key. El slot_data NUNCA se renderiza por el SDUI
+// engine; se conserva mínimo y válido por higiene, replicando la forma de
+// batch-enroll (action `enroll` IDÉNTICA: misma permission/event_id/icon/style).
+//
+// requiredPermission (slot.permission de la pantalla) = academic.subject_offerings.read
+// para verla; el botón "Inscribir" se declara como action con permission
+// academic.subject_offerings.enroll (ADR 0003: única fuente del permiso del botón).
+func enrollOne() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_ENROLL_ONE_ID,
+		screenKey:          "enroll-one",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Inscripción Individual",
+		description:        "Inscribir un alumno en una sesión de materia (pantalla nativa)",
+		scope:              "school",
+		requiredPermission: "academic.subject_offerings.read",
+		slotData: `{
+  "title": "Inscripción Individual",
+  "columns": [
+    {"key": "user_name", "label": "Alumno"},
+    {"key": "enrolled", "label": "Inscrito"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "actions_added": [
+    {"id": "enroll", "scope": "header", "label": "Inscribir", "icon": "person_add", "permission": "academic.subject_offerings.enroll", "condition": "always", "event_id": "enroll", "style": "filled", "order": 10}
+  ],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// sessionsBySubjectList (N1.7 F2, plan 010 / ADR 0009; reubicada en F2.2): lista
+// hija de "sesiones de la materia". Pantalla SDUI list estándar (no nativa). Se
+// alcanza embebida como pestaña "Sesiones" del master-detail subjects-form (vía
+// detail_configs[]); el contenedor le inyecta subjectId = id de la materia
+// editada y consume el endpoint
+// GET /api/v1/subject-offerings?subject_id={subjectId} (lo resuelve el handler
+// KMP; el seed solo declara columnas/título/permiso). Columnas
+// subject_name/section_label/period_name/teacher_name. Solo lectura:
+// actions_removed retira create/edit/delete heredados del template.
+// requiredPermission (slot.permission) = academic.subject_offerings.read.
+func sessionsBySubjectList() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_SESSIONS_BY_SUBJECT_ID,
+		screenKey:          "sessions-by-subject-list",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Sesiones de la Materia",
+		description:        "Listado de sesiones (oferta) de una materia",
+		scope:              "school",
+		requiredPermission: "academic.subject_offerings.read",
+		slotData:           `{"title":"Sesiones","columns":[{"key":"subject_name","label":"Materia"},{"key":"section_label","label":"Sección"},{"key":"period_name","label":"Período"},{"key":"teacher_name","label":"Docente"}],"actions_removed":["create","edit","delete"],"api_prefix":"academic"}`,
+	}
+}
+
 // ===============================================================
 // ACADEMIC: grades / attendance
 // ===============================================================
@@ -1117,8 +1182,9 @@ func assessmentsList() l4ScreenInstanceRow {
 // reemplaza el default genérico ("Detalle") por la versión específica
 // ("Preguntas", event_id=view-questions, icon=help_outline).
 //
-// detail_config[] describe la navegación al panel detalle. El frontend
-// KMP es quien lo interpreta; el backend solo lo persiste como blob.
+// detail_configs[] describe los paneles detalle (aquí uno solo: "Preguntas"
+// con modal de crear/editar). El frontend KMP es quien lo interpreta; el
+// backend solo lo persiste como blob.
 func assessmentsForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_FORM_ID,
@@ -1144,12 +1210,9 @@ func assessmentsForm() l4ScreenInstanceRow {
     {"key": "available_from", "label": "Disponible desde", "type": "datetime"},
     {"key": "available_until", "label": "Disponible hasta", "type": "datetime"}
   ],
-  "detail_config": {
-    "screen_key": "assessment-questions-list",
-    "modal_screen_key": "assessment-question-form",
-    "parent_id_param": "assessmentId",
-    "child_id_field": "id"
-  },
+  "detail_configs": [
+    {"screen_key": "assessment-questions-list", "modal_screen_key": "assessment-question-form", "parent_id_param": "assessmentId", "child_id_field": "id"}
+  ],
   "actions_added": [
     {"id": "detail",  "scope": "resource-toolbar", "icon": "help_outline", "label": "Preguntas", "permission": "content.assessments.read",   "condition": "edit-only", "event_id": "view-questions", "style": "icon", "order": 15},
     {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30},

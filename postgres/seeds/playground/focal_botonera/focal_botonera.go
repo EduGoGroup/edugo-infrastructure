@@ -203,12 +203,9 @@ func patchAssessmentsFormSlotData(tx *gorm.DB) error {
     {"key": "available_from", "label": "Disponible desde", "type": "datetime"},
     {"key": "available_until", "label": "Disponible hasta", "type": "datetime"}
   ],
-  "detail_config": {
-    "screen_key": "assessment-questions-list",
-    "modal_screen_key": "assessment-question-form",
-    "parent_id_param": "assessmentId",
-    "child_id_field": "id"
-  },
+  "detail_configs": [
+    {"screen_key": "assessment-questions-list", "modal_screen_key": "assessment-question-form", "parent_id_param": "assessmentId", "child_id_field": "id"}
+  ],
   "actions_added": [
     {"id": "save",      "scope": "form-submit",      "label": "Guardar",   "icon": "save",         "permission": "content.assessments.update",  "condition": "edit-only",   "event_id": "submit-form", "style": "filled",      "order": 10, "priority": 1, "pin": true},
     {"id": "delete",    "scope": "form-submit",      "label": "Eliminar",  "icon": "trash",        "permission": "content.assessments.delete",  "condition": "edit-only",   "event_id": "delete",      "style": "destructive", "order": 20, "priority": 2},
