@@ -13,7 +13,7 @@ CLI para generar codigo Go de dataset a partir de scripts SQL con `INSERT`.
 
 - El modulo compila via tests.
 - No tiene tests propios mas alla de compilacion de paquetes.
-- El ultimo tag observado en Git es `tools/mock-generator/v0.51.0`.
+- La versión actual del módulo es `tools/mock-generator/v0.1.0` (reinicio limpio).
 
 ## Documentacion del modulo
 
