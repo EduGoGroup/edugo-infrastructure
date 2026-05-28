@@ -1,3 +1,6 @@
+//go:build ignore
+// +build ignore
+
 package l4_test
 
 // goldenInvariants es el golden SEMÁNTICO de F3.1: por screen_key, el

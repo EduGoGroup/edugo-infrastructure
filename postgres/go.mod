@@ -3,7 +3,6 @@ module github.com/EduGoGroup/edugo-infrastructure/postgres
 go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-shared/screenconfig v0.100.0
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/testcontainers/testcontainers-go v0.40.0
