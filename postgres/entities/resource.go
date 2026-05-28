@@ -17,10 +17,10 @@ type Resource struct {
 	SortOrder     int        `db:"sort_order" gorm:"not null;default:0;index:idx_resources_sort" validate:"required"`
 	IsMenuVisible bool       `db:"is_menu_visible" gorm:"not null;default:true;index:idx_resources_menu_visible"`
 	// ENUM: created in pre_gorm.sql
-	Scope         string     `db:"scope" gorm:"not null;type:iam.permission_scope;default:'school'" validate:"required"`
-	IsActive      bool       `db:"is_active" gorm:"not null;default:true;index:idx_resources_active"`
-	CreatedAt     time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt     time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	Scope     string    `db:"scope" gorm:"not null;type:iam.permission_scope;default:'school'" validate:"required"`
+	IsActive  bool      `db:"is_active" gorm:"not null;default:true;index:idx_resources_active"`
+	CreatedAt time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

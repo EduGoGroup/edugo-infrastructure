@@ -73,7 +73,7 @@ func (l *JSONLogger) Emit(entry LogEntry) {
 	buf, err := json.Marshal(entry)
 	if err != nil {
 		// Fallback: nunca debería ocurrir con los tipos planos de LogEntry.
-		fmt.Fprintf(l.w, `{"time":%q,"event":%q,"error":"json marshal failed: %v"}`+"\n",
+		_, _ = fmt.Fprintf(l.w, `{"time":%q,"event":%q,"error":"json marshal failed: %v"}`+"\n",
 			entry.Time.Format(time.RFC3339Nano), entry.Event, err)
 		return
 	}

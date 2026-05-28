@@ -21,9 +21,9 @@ type UserRole struct {
 	GrantedAt      time.Time  `db:"granted_at" gorm:"not null"`
 	// NOTE: partial index idx_user_roles_expires (WHERE expires_at IS NOT NULL) must be created in post_gorm.sql
 	// NOTE: partial index idx_user_roles_user_active_covering (WHERE is_active = true) must be created in post_gorm.sql
-	ExpiresAt      *time.Time `db:"expires_at" gorm:"default:null"`
-	CreatedAt      time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt      time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	ExpiresAt *time.Time `db:"expires_at" gorm:"default:null"`
+	CreatedAt time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

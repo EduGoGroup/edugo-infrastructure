@@ -20,9 +20,9 @@ type Notification struct {
 	ResourceType *string    `db:"resource_type" gorm:"type:varchar(50)" validate:"omitempty"`
 	ResourceID   *uuid.UUID `db:"resource_id" gorm:"type:uuid" validate:"omitempty,uuid"`
 	// NOTE: partial index idx_notif_user_unread ON (user_id, created_at DESC) WHERE is_read = FALSE must be created in post_gorm.sql
-	IsRead       bool       `db:"is_read" gorm:"not null;default:false"`
-	CreatedAt    time.Time  `db:"created_at" gorm:"not null;autoCreateTime;index:idx_notif_user_all" validate:"-"`
-	ReadAt       *time.Time `db:"read_at" gorm:"default:null"`
+	IsRead    bool       `db:"is_read" gorm:"not null;default:false"`
+	CreatedAt time.Time  `db:"created_at" gorm:"not null;autoCreateTime;index:idx_notif_user_all" validate:"-"`
+	ReadAt    *time.Time `db:"read_at" gorm:"default:null"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

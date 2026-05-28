@@ -41,9 +41,9 @@ func TestScenariosIntegration_ApplyAndCleanup(t *testing.T) {
 	gdb := testdb.StartPostgres(t)
 
 	cases := []struct {
-		name           string
-		scenario       framework.Scenario
-		skipReason     string // si != "" se llama t.Skip con este motivo
+		name       string
+		scenario   framework.Scenario
+		skipReason string // si != "" se llama t.Skip con este motivo
 	}{
 		// Estos 3 scenarios dependen del catálogo completo (permisos como
 		// audit:read, grades:create, schedules:read) que vivía en el seed

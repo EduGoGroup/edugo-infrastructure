@@ -25,10 +25,11 @@
 //   - colors-author@edugo.local / 12345678
 //
 // **Datos de seed** (academic.colors):
-//   6 colores de muestra en la escuela Playground Admin para que la
-//   lista no se vea vacia al abrirla. Los nombres son humanos (paleta
-//   editorial) y los hex se validan contra el CHECK constraint
-//   `^#[0-9A-Fa-f]{6}$` (post_gorm.sql).
+//
+//	6 colores de muestra en la escuela Playground Admin para que la
+//	lista no se vea vacia al abrirla. Los nombres son humanos (paleta
+//	editorial) y los hex se validan contra el CHECK constraint
+//	`^#[0-9A-Fa-f]{6}$` (post_gorm.sql).
 //
 // Rango UUID 65000000-... para usuarios/memberships/roles/colors
 // (no colisiona con 60..., 61..., 62..., 63... de otros playgrounds).

@@ -24,12 +24,12 @@ import (
 //   - 9 instances NUEVAS exigidas por el FE pero ausentes del legacy
 //     (parte del set de 14 `screen_key_phantom` reportadas por el
 //     cross-checker baseline):
-//       - assessment-assignment, assessment-modality,
-//         assessment-review-dashboard, assigned-assessments-list,
-//         attempt-review-detail (5 pantallas de assessments).
-//       - membership-add, user-roles (admin).
-//       - school-concepts-list, school-concepts-form (concept_types
-//         a nivel escuela).
+//   - assessment-assignment, assessment-modality,
+//     assessment-review-dashboard, assigned-assessments-list,
+//     attempt-review-detail (5 pantallas de assessments).
+//   - membership-add, user-roles (admin).
+//   - school-concepts-list, school-concepts-form (concept_types
+//     a nivel escuela).
 //   - Las 5 phantom restantes (app-login, app-settings,
 //     attendance-form, guardian-relations-list, guardian_relations-form)
 //     SI existian en legacy y figuran como phantom solo porque
@@ -59,15 +59,15 @@ import (
 // api_prefix por servicio (estable, alineado al routing real del
 // backend; coherente con L0 platform / L3 academic):
 //   - `platform`  → announcements (L0), screens config, system-settings,
-//                   notifications.
+//     notifications.
 //   - `identity`  → users, roles, permissions, audit, screen_templates,
-//                   screen_instances (la gestion del catalogo iam vive
-//                   en el servicio identity).
+//     screen_instances (la gestion del catalogo iam vive
+//     en el servicio identity).
 //   - `academic`  → units, memberships, subjects, periods, calendar,
-//                   schedules, guardian_relations, materials (L3),
-//                   directorios escolares, concept_types (school).
+//     schedules, guardian_relations, materials (L3),
+//     directorios escolares, concept_types (school).
 //   - `learning`  → assessments, grades, attendance, progress, stats,
-//                   report-card, dashboards (KPIs).
+//     report-card, dashboards (KPIs).
 //
 // Correcciones aplicadas vs los 9 `service_prefix_mismatch` del
 // baseline (F6-REQ-3.2):
@@ -194,10 +194,10 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// app-login: handler_key="login" → el FE delega la accion de
 		// auth al handler nativo, no a la maquina SDUI.
 		{
-			id:         L4_SCREEN_INST_APP_LOGIN_ID,
-			screenKey:  "app-login",
-			templateID: l4TplLoginV1ID,
-			name:       "Inicio de Sesión",
+			id:          L4_SCREEN_INST_APP_LOGIN_ID,
+			screenKey:   "app-login",
+			templateID:  l4TplLoginV1ID,
+			name:        "Inicio de Sesión",
 			description: "Pantalla de login con autenticacion local y social",
 			slotData: `{
   "app_logo": "edugo_logo",
@@ -499,11 +499,11 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		assessmentResult(),
 		assessmentQuestionsList(),
 		assessmentQuestionForm(),
-		assessmentAssignment(),       // phantom-nueva
-		assessmentModality(),         // phantom-nueva
-		assessmentReviewDashboard(),  // phantom-nueva
-		assignedAssessmentsList(),    // phantom-nueva
-		attemptReviewDetail(),        // phantom-nueva
+		assessmentAssignment(),      // phantom-nueva
+		assessmentModality(),        // phantom-nueva
+		assessmentReviewDashboard(), // phantom-nueva
+		assignedAssessmentsList(),   // phantom-nueva
+		attemptReviewDetail(),       // phantom-nueva
 
 		// ===========================================================
 		// REPORTS (detalles + report-card)

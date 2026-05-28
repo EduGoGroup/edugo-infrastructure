@@ -178,7 +178,7 @@ func lookupSubtreeResourceIDs(tx *gorm.DB, rootKey string) ([]uuid.UUID, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var ids []uuid.UUID
 	for rows.Next() {
 		var id uuid.UUID

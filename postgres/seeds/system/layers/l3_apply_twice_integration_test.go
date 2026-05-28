@@ -38,10 +38,10 @@ import (
 //   - F5-REQ-3.x: 2 ScreenInstances + 2 ResourceScreens para materials
 //     (list default + form no-default).
 //   - Invariantes macro post-L3:
-//     * iam.resources total ≥ 2 (announcements + materials).
-//     * ui_config.resource_screens para announcements sigue siendo 2
-//       (list L0 + form L2) — L3 no debe contaminar ese conteo.
-//     * Cadena L1 viewer→permissions sigue sin contener materials:*.
+//   - iam.resources total ≥ 2 (announcements + materials).
+//   - ui_config.resource_screens para announcements sigue siendo 2
+//     (list L0 + form L2) — L3 no debe contaminar ese conteo.
+//   - Cadena L1 viewer→permissions sigue sin contener materials:*.
 //
 // NOTA Fase 6: el seed se limita a `L3_LAYER_NAME` para aislar este
 // test del contenido de L4 (que sí siembra `materials:delete/download

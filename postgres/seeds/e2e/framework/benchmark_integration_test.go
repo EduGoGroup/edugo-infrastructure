@@ -87,4 +87,3 @@ func BenchmarkRoleOnlyScreenOnlyCompose(b *testing.B) {
 		}
 	}
 }
-

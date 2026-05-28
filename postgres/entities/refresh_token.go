@@ -24,8 +24,8 @@ type RefreshToken struct {
 	ExpiresAt  time.Time       `db:"expires_at" gorm:"not null;index:idx_refresh_tokens_expires_at"`
 	CreatedAt  time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
 	// NOTE: partial index idx_refresh_tokens_revoked_at (WHERE revoked_at IS NOT NULL) must be created in post_gorm.sql
-	RevokedAt  *time.Time      `db:"revoked_at" gorm:"default:null"`
-	ReplacedBy *uuid.UUID      `db:"replaced_by" gorm:"type:uuid;constraint:fk_refresh_tokens_replaced_by,OnDelete:SET NULL" validate:"omitempty,uuid"`
+	RevokedAt  *time.Time `db:"revoked_at" gorm:"default:null"`
+	ReplacedBy *uuid.UUID `db:"replaced_by" gorm:"type:uuid;constraint:fk_refresh_tokens_replaced_by,OnDelete:SET NULL" validate:"omitempty,uuid"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

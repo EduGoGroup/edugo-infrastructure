@@ -72,9 +72,9 @@ type errFakeFixture struct {
 	err      error
 }
 
-func (f *errFakeFixture) Manifest() FixtureManifest                          { return f.manifest }
-func (f *errFakeFixture) Apply(tx *gorm.DB, ctx *ApplyContext) error         { return f.err }
-func (f *errFakeFixture) Cleanup(tx *gorm.DB, ctx *ApplyContext) error       { return nil }
+func (f *errFakeFixture) Manifest() FixtureManifest                    { return f.manifest }
+func (f *errFakeFixture) Apply(tx *gorm.DB, ctx *ApplyContext) error   { return f.err }
+func (f *errFakeFixture) Cleanup(tx *gorm.DB, ctx *ApplyContext) error { return nil }
 
 // TestComposer_ApplyFixture_EmitsErrorEvent cubre C-REQ-8.3: cuando
 // una fixture falla, el composer emite `fixture.error` con stage=apply

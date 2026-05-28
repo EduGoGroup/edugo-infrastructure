@@ -32,12 +32,13 @@
 //  2. academic.academic_units  — 1 unidad raíz.
 //  3. iam.roles                — 3 roles scope=school (admin, viewer, author).
 //  4. iam.role_grants          — admin: content.assessments.* + *.read;
-//                                viewer: *.read; author: *.read + content.assessments.create.
+//     viewer: *.read; author: *.read + content.assessments.create.
 //  5. auth.users               — 3 usuarios focal-v2-{admin,viewer,author}@edugo.local.
 //  6. iam.user_roles           — assignments user × rol.
 //  7. academic.memberships     — admin, viewer y author en la misma escuela/unidad.
 //  8. assessment.assessments   — 3 evaluaciones variadas (status, timed, thresholds distintos).
 //  9. assessment.questions     — 4 preguntas por evaluación (12 total).
+//
 // 10. assessment.question_options — 4 options por cada multiple_choice (24 total).
 //
 // Idempotente: todas las inserciones usan OnConflict DoNothing por id.

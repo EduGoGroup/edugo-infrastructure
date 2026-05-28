@@ -42,11 +42,11 @@ func applyL0Resources(tx *gorm.DB) error {
 		"Anuncios",
 		&description,
 		&icon,
-		nil,    // parent_id raíz
-		0,      // sort_order
-		true,   // is_menu_visible
+		nil,  // parent_id raíz
+		0,    // sort_order
+		true, // is_menu_visible
 		"school",
-		true,   // is_active
+		true, // is_active
 	).Error; err != nil {
 		return fmt.Errorf("applyL0Resources: upsert announcements: %w", err)
 	}

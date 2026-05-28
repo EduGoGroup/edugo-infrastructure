@@ -17,16 +17,16 @@
 //  1. academic.schools          — 1 escuela "V2 Catalog".
 //  2. academic.academic_units   — 1 unidad raíz.
 //  3. iam.roles                 — 3 roles scope=school:
-//                                  v2_catalog_admin   (CRUD completo sobre los 4 meta)
-//                                  v2_catalog_viewer  (sólo .read)
-//                                  v2_catalog_author  (.read + .create, sin update/delete)
+//     v2_catalog_admin   (CRUD completo sobre los 4 meta)
+//     v2_catalog_viewer  (sólo .read)
+//     v2_catalog_author  (.read + .create, sin update/delete)
 //  4. iam.role_grants           — patrones específicos a los 4 recursos meta:
-//                                  admin.screen_templates.*  / .read / .read+.create
-//                                  admin.screen_instances.*  / .read / .read+.create
-//                                  admin.permissions_mgmt.*  / .read / .read+.create
-//                                  admin.roles.*             / .read / .read+.create
-//                                 No se usa wildcard global *.read para mantener
-//                                 el menú colapsado a esos 4 (más el padre admin).
+//     admin.screen_templates.*  / .read / .read+.create
+//     admin.screen_instances.*  / .read / .read+.create
+//     admin.permissions_mgmt.*  / .read / .read+.create
+//     admin.roles.*             / .read / .read+.create
+//     No se usa wildcard global *.read para mantener
+//     el menú colapsado a esos 4 (más el padre admin).
 //  5. auth.users                — 3 usuarios con password "12345678".
 //  6. iam.user_roles            — assignments 1×1.
 //  7. academic.memberships      — los 3 en la misma escuela/unidad.
@@ -62,7 +62,7 @@ const (
 	viewerMembID = "62000000-0000-0000-0000-000000000021"
 	authorMembID = "62000000-0000-0000-0000-000000000022"
 
-	adminRoleID = "12000000-0000-0000-0000-000000000001"
+	adminRoleID  = "12000000-0000-0000-0000-000000000001"
 	viewerRoleID = "12000000-0000-0000-0000-000000000002"
 	authorRoleID = "12000000-0000-0000-0000-000000000003"
 

@@ -25,16 +25,17 @@
 //     docente (lo dicta); Lenguaje y Ciencias quedan sin docente asignado
 //     (teacher_membership_id NULL).
 //  9. academic.subject_offering_enrollments — inscripción del alumno a la sesión:
-//       - alumno 1  → Matemáticas + Lenguaje (inscrito).
-//       - alumno 2  → Matemáticas + Lenguaje + Ciencias (inscrito).
-//       - alumno 3  → SIN filas (sin inscribir, para ejercitar el flujo).
+//     - alumno 1  → Matemáticas + Lenguaje (inscrito).
+//     - alumno 2  → Matemáticas + Lenguaje + Ciencias (inscrito).
+//     - alumno 3  → SIN filas (sin inscribir, para ejercitar el flujo).
 //
 // Credenciales (todas password "12345678"):
-//   admin-n1@n1.edugo.local      school_admin — director del colegio (alcance colegio)
-//   docente-n1@n1.edugo.local    teacher      — dicta Matemáticas
-//   alumno1-n1@n1.edugo.local    student      — inscrito en Matemáticas + Lenguaje
-//   alumno2-n1@n1.edugo.local    student      — inscrito en las 3 materias
-//   alumno3-n1@n1.edugo.local    student      — SIN materias (sin inscribir)
+//
+//	admin-n1@n1.edugo.local      school_admin — director del colegio (alcance colegio)
+//	docente-n1@n1.edugo.local    teacher      — dicta Matemáticas
+//	alumno1-n1@n1.edugo.local    student      — inscrito en Matemáticas + Lenguaje
+//	alumno2-n1@n1.edugo.local    student      — inscrito en las 3 materias
+//	alumno3-n1@n1.edugo.local    student      — SIN materias (sin inscribir)
 //
 // Idempotente: OnConflict DoNothing por id (o clave natural compuesta en
 // subject_offering_enrollments) en todas las inserciones.

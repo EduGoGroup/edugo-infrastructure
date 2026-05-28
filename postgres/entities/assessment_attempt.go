@@ -26,9 +26,9 @@ type AssessmentAttempt struct {
 	IdempotencyKey   *string         `db:"idempotency_key" gorm:"uniqueIndex;size:64" validate:"omitempty"`
 	// NOTE: partial index idx_attempt_completed (WHERE status='completed') must be created in post_gorm.sql
 	// NOTE: partial index idx_attempt_pending_review (WHERE status='pending_review') must be created in post_gorm.sql
-	Status           string          `db:"status" gorm:"not null;type:varchar(50);check:assessment_attempt_status_check,status IN ('in_progress','completed','abandoned','pending_review');index:idx_assessment_attempt_status;default:'in_progress'" validate:"required,oneof=in_progress completed abandoned pending_review"`
-	CreatedAt        time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt        time.Time       `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	Status    string    `db:"status" gorm:"not null;type:varchar(50);check:assessment_attempt_status_check,status IN ('in_progress','completed','abandoned','pending_review');index:idx_assessment_attempt_status;default:'in_progress'" validate:"required,oneof=in_progress completed abandoned pending_review"`
+	CreatedAt time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

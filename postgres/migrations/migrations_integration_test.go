@@ -92,13 +92,13 @@ func TestIntegration(t *testing.T) {
 		// de filas se valida ahora sobre iam.role_grants (patterns
 		// wildcard). Mínimo conservador: ~130 grants (12 roles × 11
 		// patterns prom).
-		assertCountAtLeast(t, db, "iam.resources", 30)              // 1 L0 + 1 L3 + 31 L4
-		assertCountAtLeast(t, db, "iam.roles", 7)                   // 1 L0 + 1 L1 + 5 L4
-		assertCountAtLeast(t, db, "iam.permissions", 90)            // 4 L0 + 3 L3 + ~89 L4
-		assertCountAtLeast(t, db, "iam.role_grants", 130)           // patterns wildcard por rol
-		assertCountAtLeast(t, db, "ui_config.screen_templates", 8)  // 3 L0 + 5 L4
-		assertCountAtLeast(t, db, "ui_config.screen_instances", 1)  // sube a ~78 al cerrar B4
-		assertCountAtLeast(t, db, "ui_config.resource_screens", 1)  // sube a ~64 al cerrar B5
+		assertCountAtLeast(t, db, "iam.resources", 30)             // 1 L0 + 1 L3 + 31 L4
+		assertCountAtLeast(t, db, "iam.roles", 7)                  // 1 L0 + 1 L1 + 5 L4
+		assertCountAtLeast(t, db, "iam.permissions", 90)           // 4 L0 + 3 L3 + ~89 L4
+		assertCountAtLeast(t, db, "iam.role_grants", 130)          // patterns wildcard por rol
+		assertCountAtLeast(t, db, "ui_config.screen_templates", 8) // 3 L0 + 5 L4
+		assertCountAtLeast(t, db, "ui_config.screen_instances", 1) // sube a ~78 al cerrar B4
+		assertCountAtLeast(t, db, "ui_config.resource_screens", 1) // sube a ~64 al cerrar B5
 		assertCountAtLeast(t, db, "academic.concept_types", 5)
 	})
 

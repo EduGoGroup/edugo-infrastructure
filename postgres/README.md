@@ -14,7 +14,7 @@ Modulo responsable del activo relacional de `edugo-infrastructure`.
 
 - Tests cortos pasan.
 - El paquete `migrations` y el paquete `seeds` son la superficie programatica mas confiable del modulo hoy.
-- El modulo tiene tags historicos; el ultimo tag observado en Git es `postgres/v0.61.0`.
+- La versión actual del módulo es `postgres/v0.1.0` (reinicio limpio).
 
 ## Documentacion del modulo
 

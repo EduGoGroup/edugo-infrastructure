@@ -30,8 +30,8 @@ type AuditEvent struct {
 	ErrorMessage   *string        `db:"error_message" gorm:"column:error_message" validate:"omitempty"`
 	CreatedAt      time.Time      `db:"created_at" gorm:"column:created_at;not null;autoCreateTime;index:idx_audit_events_actor;index:idx_audit_events_resource;index:idx_audit_events_action;index:idx_audit_events_school;index:idx_audit_events_created" validate:"-"`
 	// NOTE: partial index idx_audit_events_severity (WHERE severity != 'info') must be created in post_gorm.sql
-	Severity       string         `db:"severity" gorm:"column:severity;not null;size:20;default:'info';check:audit_events_severity_check,severity IN ('info','warning','critical')" validate:"required,oneof=info warning critical"`
-	Category       string         `db:"category" gorm:"column:category;not null;size:50;default:'data';check:audit_events_category_check,category IN ('auth','data','config','admin')" validate:"required,oneof=auth data config admin"`
+	Severity string `db:"severity" gorm:"column:severity;not null;size:20;default:'info';check:audit_events_severity_check,severity IN ('info','warning','critical')" validate:"required,oneof=info warning critical"`
+	Category string `db:"category" gorm:"column:category;not null;size:50;default:'data';check:audit_events_category_check,category IN ('auth','data','config','admin')" validate:"required,oneof=auth data config admin"`
 }
 
 func (AuditEvent) TableName() string {

@@ -15,8 +15,8 @@ type SchoolSpec struct {
 	ID               uuid.UUID
 	Name             string
 	Code             string
-	Country          string          // default "Chile" si vacío
-	SubscriptionTier string          // default "basic" si vacío
+	Country          string // default "Chile" si vacío
+	SubscriptionTier string // default "basic" si vacío
 	MaxTeachers      int
 	MaxStudents      int
 	Metadata         json.RawMessage // default `{}` si nil

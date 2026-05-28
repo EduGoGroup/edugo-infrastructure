@@ -21,7 +21,7 @@
 // los roles existentes 13000000-...-001/002/003 de focal_botonera):
 //   - focal-viewer    -> +content.materials.read, +notifications.read
 //   - focal-author    -> +content.materials.{read,create,update},
-//                        +notifications.{read,create,update}
+//     +notifications.{read,create,update}
 //   - focal-publisher -> +content.materials.*, +notifications.*
 //
 // **Por que no editamos focal_botonera.go**: la convencion del proyecto

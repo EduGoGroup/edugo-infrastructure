@@ -25,8 +25,8 @@ package l4
 // (L0) sin aportar diferencia semántica clara. Cualquier flujo que
 // antes requería `platform_admin` ahora se cubre con `super_admin`.
 //
-//   * 4 canónicos: student, teacher, guardian, school_admin
-//   * 6 alias: school_director, school_coordinator, school_assistant,
+//   - 4 canónicos: student, teacher, guardian, school_admin
+//   - 6 alias: school_director, school_coordinator, school_assistant,
 //     assistant_teacher, observer, readonly_auditor
 //
 // Los roles alias son consultados literalmente por el front KMP vía
@@ -37,9 +37,9 @@ package l4
 // delete (o termine en :create/:update/:delete).
 // -----------------------------------------------------------------
 const (
-	L4_ROLE_STUDENT_ID      = "b4000000-0001-0000-0000-000000000001"
-	L4_ROLE_TEACHER_ID      = "b4000000-0001-0000-0000-000000000002"
-	L4_ROLE_GUARDIAN_ID     = "b4000000-0001-0000-0000-000000000003"
+	L4_ROLE_STUDENT_ID  = "b4000000-0001-0000-0000-000000000001"
+	L4_ROLE_TEACHER_ID  = "b4000000-0001-0000-0000-000000000002"
+	L4_ROLE_GUARDIAN_ID = "b4000000-0001-0000-0000-000000000003"
 	// L4_ROLE_ADMIN_ID / L4_ROLE_ADMIN_NAME eliminados en PRE-4
 	// (slot UUID b4000000-0001-0000-0000-000000000004 queda libre,
 	// no se reutiliza para preservar la lectura del UUID legacy en

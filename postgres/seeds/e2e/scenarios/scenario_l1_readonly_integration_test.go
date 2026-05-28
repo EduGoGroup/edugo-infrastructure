@@ -22,7 +22,7 @@ import (
 //   - F3-REQ-5.3 (parte positiva): el viewer tiene exactamente el
 //     permiso `announcements:read` vía la cadena
 //     `auth.users → iam.user_roles → iam.roles → iam.role_permissions
-//      → iam.permissions`.
+//     → iam.permissions`.
 //   - F3-REQ-5.3 (parte negativa) / F3-REQ-5.4 (parte SQL): el viewer
 //     NO tiene `announcements:create|update|delete`.
 //   - F3-REQ-6.2: el `iam.user_roles` del viewer tiene `school_id` no

@@ -34,7 +34,7 @@
 //  2. assessment.assessment          — 3 evaluaciones en la única escuela.
 //  3. assessment.questions           — 4 preguntas por evaluación (12 total).
 //  4. assessment.question_options    — 4 options para cada multiple_choice
-//                                       (2 multiple_choice × 3 assessments × 4 = 24).
+//     (2 multiple_choice × 3 assessments × 4 = 24).
 //
 // NO siembra assessments_assignments ni assessment_attempts (queda para una
 // iteración posterior si el flujo lo pide).
@@ -243,15 +243,15 @@ func upsertAssessments(tx *gorm.DB) error {
 // el struct entities.Question. Mantiene el código de upsertQuestionsAndOptions
 // declarativo y compacto.
 type questionSpec struct {
-	idSuffix     string // sufijo del UUID (rango 61000001-...-0000XYYYY)
-	sortOrder    int
-	text         string
-	qType        string  // multiple_choice | true_false | short_answer | open_ended
-	correct      string  // valor textual; para multiple_choice es el option_text correcto
-	explanation  string
-	points       float64
-	difficulty   string // easy | medium | hard
-	options      []string
+	idSuffix    string // sufijo del UUID (rango 61000001-...-0000XYYYY)
+	sortOrder   int
+	text        string
+	qType       string // multiple_choice | true_false | short_answer | open_ended
+	correct     string // valor textual; para multiple_choice es el option_text correcto
+	explanation string
+	points      float64
+	difficulty  string // easy | medium | hard
+	options     []string
 }
 
 // upsertQuestionsAndOptions siembra 4 preguntas por cada uno de los 3

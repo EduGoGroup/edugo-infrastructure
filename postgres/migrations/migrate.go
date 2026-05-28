@@ -5,21 +5,21 @@ import (
 	"database/sql"
 	"fmt"
 
+	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/demo"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
-	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
 )
 
 // MigrateOptions configura el comportamiento de Migrate.
 type MigrateOptions struct {
-	Force          bool   // Eliminar y recrear todos los schemas
-	SeedDemo       bool   // Incluir datos de desarrollo (demo seed)
-	SeedUpToLayer  string // Aplicar system seed hasta esta capa (vacío = todas)
-	Playground     string // Si se setea, aplica el playground tras ApplySystem (omite demo)
-	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Mutuamente excluyente con Playground.
-	DBUser         string // Usuario PostgreSQL (para GRANT tras drop)
+	Force         bool   // Eliminar y recrear todos los schemas
+	SeedDemo      bool   // Incluir datos de desarrollo (demo seed)
+	SeedUpToLayer string // Aplicar system seed hasta esta capa (vacío = todas)
+	Playground    string // Si se setea, aplica el playground tras ApplySystem (omite demo)
+	PlaygroundV2  string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Mutuamente excluyente con Playground.
+	DBUser        string // Usuario PostgreSQL (para GRANT tras drop)
 }
 
 // MigrateResult contiene el resultado de una migración.

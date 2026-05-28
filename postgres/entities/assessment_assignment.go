@@ -21,8 +21,8 @@ type AssessmentAssignment struct {
 	// NOTE: partial index idx_assignment_unit (WHERE academic_unit_id IS NOT NULL) must be created in post_gorm.sql
 	// NOTE: partial unique index idx_unique_student_assignment (WHERE student_id IS NOT NULL) must be created in post_gorm.sql
 	// NOTE: partial unique index idx_unique_unit_assignment (WHERE academic_unit_id IS NOT NULL) must be created in post_gorm.sql
-	AssignedAt     time.Time  `db:"assigned_at" gorm:"not null;autoCreateTime"`
-	DueDate        *time.Time `db:"due_date" gorm:"default:null"`
+	AssignedAt time.Time  `db:"assigned_at" gorm:"not null;autoCreateTime"`
+	DueDate    *time.Time `db:"due_date" gorm:"default:null"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

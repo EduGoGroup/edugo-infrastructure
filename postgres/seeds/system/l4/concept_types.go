@@ -64,11 +64,11 @@ type conceptTypeID struct {
 var (
 	// IDs propios (prefijo c4 para distinguir del legacy `c1...`).
 	// El sufijo coincide con el code para legibilidad.
-	conceptTypePrimary    = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000001"), code: "primary_school"}
-	conceptTypeHigh       = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000002"), code: "high_school"}
-	conceptTypeLanguage   = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000003"), code: "language_academy"}
-	conceptTypeTechnical  = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000004"), code: "technical_school"}
-	conceptTypeWorkshop   = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000005"), code: "workshop"}
+	conceptTypePrimary   = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000001"), code: "primary_school"}
+	conceptTypeHigh      = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000002"), code: "high_school"}
+	conceptTypeLanguage  = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000003"), code: "language_academy"}
+	conceptTypeTechnical = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000004"), code: "technical_school"}
+	conceptTypeWorkshop  = conceptTypeID{id: uuid.MustParse("c4000000-0000-0000-0000-000000000005"), code: "workshop"}
 )
 
 func strPtr(s string) *string { return &s }

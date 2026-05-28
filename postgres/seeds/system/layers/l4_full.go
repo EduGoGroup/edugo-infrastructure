@@ -9,11 +9,11 @@
 // Composición (ver phase-6-layer-l4/design.md §2):
 //   - resources.go         — recursos del menú restantes
 //   - roles_permissions.go — student, teacher, guardian, admin,
-//                            school_admin (super_admin en L0,
-//                            announcement_viewer en L1)
+//     school_admin (super_admin en L0,
+//     announcement_viewer en L1)
 //   - screen_templates.go  — templates adicionales + refactor de
-//                            `definition` de los 3 templates base
-//                            de L0 (fix zones para SDUI engine)
+//     `definition` de los 3 templates base
+//     de L0 (fix zones para SDUI engine)
 //   - screen_instances.go  — ~73 instances + 14 phantom legítimas
 //   - resource_screens.go  — mappings recurso↔pantalla
 //   - concept_types.go     — concept_types + concept_definitions
@@ -51,7 +51,7 @@ func (l *l4Layer) SeedVersion() string { return L4_SEED_VERSION }
 //  1. resources           (sin deps L4)
 //  2. roles_permissions   (FK a resources)
 //  3. screen_templates    (sin deps L4; refactoriza también las
-//                          definitions de L0)
+//     definitions de L0)
 //  4. screen_instances    (FK a screen_templates)
 //  5. resource_screens    (FK a resources + screen_instances)
 //  6. concept_types       (sin deps L4)

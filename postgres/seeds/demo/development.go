@@ -701,8 +701,10 @@ func seedProgress(tx *gorm.DB) error {
 // antiguo seedMembershipSubjects: el sentido "docente-dicta-materia" pasa al
 // teacher_membership_id de la oferta, y "alumno-cursa-materia" pasa a las
 // inscripciones. Las ofertas usan el periodo ACTIVO de cada colegio:
-//   colegio San Ignacio (b1…01) → ff…01 ; CreArte (b2…02) → ff…03 ;
-//   Global English (b3…03) → ff…05.
+//
+//	colegio San Ignacio (b1…01) → ff…01 ; CreArte (b2…02) → ff…03 ;
+//	Global English (b3…03) → ff…05.
+//
 // La antigua fila docente=asistente (bb…24) se descarta: el asistente no es un
 // docente valido para teacher_membership_id.
 func seedSubjectOfferings(tx *gorm.DB) error {

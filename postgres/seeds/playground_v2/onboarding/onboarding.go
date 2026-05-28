@@ -27,19 +27,19 @@
 //  1. academic.schools          — 1 colegio "Onboarding".
 //  2. academic.academic_units   — 2 unidades (A y B) bajo ese colegio.
 //  3. auth.users                — 3 usuarios sembrados con password "12345678":
-//                                  colegio-admin (school_admin),
-//                                  profesor-a    (teacher en unidad A),
-//                                  ya-miembro    (student en unidad A).
-//                                 El usuario NUEVO del flujo E2E NO se siembra:
-//                                 se registra por signup en runtime.
+//     colegio-admin (school_admin),
+//     profesor-a    (teacher en unidad A),
+//     ya-miembro    (student en unidad A).
+//     El usuario NUEVO del flujo E2E NO se siembra:
+//     se registra por signup en runtime.
 //  4. iam.user_roles            — assignments 1×1 a los roles L4.
 //  5. academic.memberships      — colegio-admin con academic_unit_id NULL
-//                                 (alcance COLEGIO); profesor-a y ya-miembro
-//                                 con academic_unit_id = unidad A (alcance UNIDAD).
+//     (alcance COLEGIO); profesor-a y ya-miembro
+//     con academic_unit_id = unidad A (alcance UNIDAD).
 //  6. academic.school_invitations — 3 códigos activos legibles:
-//                                  ONB-STUDENT-A (role=student, unidad A),
-//                                  ONB-TEACHER-A (role=teacher, unidad A),
-//                                  ONB-STUDENT-B (role=student, unidad B).
+//     ONB-STUDENT-A (role=student, unidad A),
+//     ONB-TEACHER-A (role=teacher, unidad A),
+//     ONB-STUDENT-B (role=student, unidad B).
 //
 // NO siembra academic.school_join_requests: se crean en runtime al redimir.
 //

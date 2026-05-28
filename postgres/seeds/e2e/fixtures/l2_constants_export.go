@@ -38,7 +38,7 @@ func (f *L2ConstantsExport) Manifest() framework.FixtureManifest {
 		Name:        "l2_constants_export",
 		Description: "Verifica filas L2 sembradas por system.ApplySystem (ScreenInstance announcement-form + ResourceScreen form) y exporta sus identificadores al JSON.",
 		Constants: map[string]string{
-			"E2EFixtureL2ScreenInstanceAnnouncementFormID": layers.L2_SCREEN_INSTANCE_ANNOUNCEMENT_FORM_ID,
+			"E2EFixtureL2ScreenInstanceAnnouncementFormID":  layers.L2_SCREEN_INSTANCE_ANNOUNCEMENT_FORM_ID,
 			"E2EFixtureL2ResourceScreenAnnouncementsFormID": layers.L2_RESOURCE_SCREEN_ANNOUNCEMENTS_FORM_ID,
 			"E2EFixtureL2ScreenKeyAnnouncementForm":         layers.L2_SCREEN_KEY_ANNOUNCEMENT_FORM,
 		},

@@ -18,13 +18,13 @@ import (
 // cuando la entity no declara un campo de relación (mismo caso que
 // academic.subjects / academic.schedules / academic.school_invitations).
 type SubjectOffering struct {
-	ID                  uuid.UUID       `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
-	SchoolID            uuid.UUID       `db:"school_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_school_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
-	SubjectID           uuid.UUID       `db:"subject_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_subject_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
-	AcademicUnitID      uuid.UUID       `db:"academic_unit_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_unit_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
-	SectionLabel        *string         `db:"section_label" gorm:"type:varchar(10);uniqueIndex:uq_subject_offerings_natural" validate:"omitempty,max=10"`
-	PeriodID            uuid.UUID       `db:"period_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_period_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
-	TeacherMembershipID *uuid.UUID      `db:"teacher_membership_id" gorm:"type:uuid;index;constraint:subject_offerings_teacher_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
+	ID                  uuid.UUID  `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
+	SchoolID            uuid.UUID  `db:"school_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_school_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
+	SubjectID           uuid.UUID  `db:"subject_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_subject_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
+	AcademicUnitID      uuid.UUID  `db:"academic_unit_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_unit_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
+	SectionLabel        *string    `db:"section_label" gorm:"type:varchar(10);uniqueIndex:uq_subject_offerings_natural" validate:"omitempty,max=10"`
+	PeriodID            uuid.UUID  `db:"period_id" gorm:"type:uuid;not null;index;constraint:subject_offerings_period_fkey,OnDelete:CASCADE;uniqueIndex:uq_subject_offerings_natural" validate:"required,uuid"`
+	TeacherMembershipID *uuid.UUID `db:"teacher_membership_id" gorm:"type:uuid;index;constraint:subject_offerings_teacher_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	// Capacity esta RESERVADO para el caso universidad (cupo); NO se usa en
 	// N1.7 (la politica de inscripcion es no-op auto-aprobar). Ver ADR 0009.
 	Capacity  *int            `db:"capacity" gorm:"default:null" validate:"omitempty"`

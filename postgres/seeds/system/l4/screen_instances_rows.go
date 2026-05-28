@@ -540,6 +540,7 @@ func membershipsList() l4ScreenInstanceRow {
 //   - role_key (select estático): enum del backend (NO remote, NO role_id).
 //     Misma forma textual que invitations-form: type "select" + options con
 //     {value,label}.
+//
 // NO lleva subject_ids ni materias (retirado en F0b, no se reintroduce).
 func membershipsForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{

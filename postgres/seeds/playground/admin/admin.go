@@ -55,10 +55,10 @@ const (
 
 	// Viewer playground: usuario no-global con rol playground_viewer y
 	// membership a la escuela Norte (1 unidad).
-	viewerUserID         = "60000000-0000-0000-0000-000000000009"
-	viewerRoleID         = "10000000-0000-0000-0000-000000000002"
-	viewerRoleName       = "playground_viewer"
-	viewerMembershipID   = "60000000-0000-0000-0000-00000000000a"
+	viewerUserID       = "60000000-0000-0000-0000-000000000009"
+	viewerRoleID       = "10000000-0000-0000-0000-000000000002"
+	viewerRoleName     = "playground_viewer"
+	viewerMembershipID = "60000000-0000-0000-0000-00000000000a"
 	// Dos grants:
 	// - "announcements.read" literal: lo entiende el matcher del menú
 	//   (patternTouchesResource solo soporta literales y `prefix.*`,

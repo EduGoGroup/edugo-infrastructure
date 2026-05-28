@@ -37,16 +37,16 @@ import (
 // `ResolveByKeyUseCase`):
 //
 //   - GET /menu              → iam.resources (is_menu_visible=true) +
-//                              ui_config.resource_screens, filtrando
-//                              por las resource_keys que asoma alguno
-//                              de los permisos del rol; los padres del
-//                              árbol se marcan visibles por
-//                              propagación (ver
-//                              `core/usecase/menu/get_user_menu.go::propagateVisibility`).
+//     ui_config.resource_screens, filtrando
+//     por las resource_keys que asoma alguno
+//     de los permisos del rol; los padres del
+//     árbol se marcan visibles por
+//     propagación (ver
+//     `core/usecase/menu/get_user_menu.go::propagateVisibility`).
 //   - screen-config/resolve  → ui_config.screen_instances filtrado por
-//                              screen_key + parse del slot_data JSON
-//                              (mismo flujo que
-//                              `ResolveByKeyUseCase.Execute`).
+//     screen_key + parse del slot_data JSON
+//     (mismo flujo que
+//     `ResolveByKeyUseCase.Execute`).
 //
 // Detección de drift: la matriz expected = computeAccessMatrix() se
 // construye PROGRAMÁTICAMENTE al inicio del test desde la BD; los

@@ -156,7 +156,7 @@ func TestComposer_Apply_EmptyScenario_NoDB(t *testing.T) {
 
 type emptyScenario struct{}
 
-func (emptyScenario) Manifest() ScenarioManifest         { return ScenarioManifest{Name: "empty"} }
+func (emptyScenario) Manifest() ScenarioManifest            { return ScenarioManifest{Name: "empty"} }
 func (emptyScenario) BuildFixtures(*ApplyContext) []Fixture { return nil }
 
 func TestComposer_Apply_UnknownScenario(t *testing.T) {

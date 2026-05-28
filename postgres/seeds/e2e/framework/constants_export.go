@@ -27,9 +27,9 @@ const DefaultExportPath = "seeds/e2e/exports/fixtures-constants.json"
 
 // ConstantsExport es la representación serializable del JSON.
 type ConstantsExport struct {
-	SchemaVersion string                              `json:"schemaVersion"`
-	GeneratedAt   time.Time                           `json:"generatedAt"`
-	Scenarios     map[string]ConstantsScenarioExport  `json:"scenarios"`
+	SchemaVersion string                             `json:"schemaVersion"`
+	GeneratedAt   time.Time                          `json:"generatedAt"`
+	Scenarios     map[string]ConstantsScenarioExport `json:"scenarios"`
 }
 
 // ConstantsScenarioExport agrupa los datos derivados de un scenario.
@@ -153,12 +153,7 @@ func (e *ConstantsExporter) writeAtomic(export ConstantsExport) error {
 }
 
 // marshalStable serializa el export con claves ordenadas para que el
-// archivo sea estable entre ejecuciones (diff-friendly).
 func marshalStable(export ConstantsExport) ([]byte, error) {
-	type stableEntry struct {
-		Name  string                  `json:"-"`
-		Entry ConstantsScenarioExport `json:"entry"`
-	}
 	// Clonar el map a un slice ordenado, y luego construir un map
 	// nuevo cuyo iteration order... no, el JSON encoder en Go ordena
 	// keys por defecto en encoding/json desde 1.12. Para estar seguros

@@ -6,6 +6,12 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-27
+
+### Added
+- Reinicio de la versión a `v0.1.0` (borrón y cuenta nueva).
+- Estructura limpia y alineación del esquema de base de datos relacional y seeds para PostgreSQL.
+
 ## [0.77.2] - 2026-03-30
 ### Changed
 - fix seeds structure

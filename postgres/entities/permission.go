@@ -15,10 +15,10 @@ type Permission struct {
 	ResourceID  uuid.UUID `db:"resource_id" gorm:"type:uuid;index;not null;constraint:fk_permissions_resource,OnDelete:RESTRICT;uniqueIndex:uq_permissions_resource_action" validate:"required,uuid"`
 	Action      string    `db:"action" gorm:"not null;type:varchar(50);uniqueIndex:uq_permissions_resource_action" validate:"required"`
 	// ENUM: created in pre_gorm.sql
-	Scope       string    `db:"scope" gorm:"not null;type:iam.permission_scope;default:'school'" validate:"required"`
-	IsActive    bool      `db:"is_active" gorm:"not null;default:true;index:idx_permissions_active"`
-	CreatedAt   time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt   time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	Scope     string    `db:"scope" gorm:"not null;type:iam.permission_scope;default:'school'" validate:"required"`
+	IsActive  bool      `db:"is_active" gorm:"not null;default:true;index:idx_permissions_active"`
+	CreatedAt time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
