@@ -6,6 +6,18 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-28
+
+### Added
+- Seeds SDUI de N1.7 (`L4_SEED_VERSION` 1.35.0):
+  - Pantallas nativas `batch-enroll` (inscripción por lote), `enroll-one` (inscripción 1-a-1) y `sessions-by-subject-list` (listado de sesiones por materia).
+  - Entrada de menú "Sesiones de Materia".
+- Master-detail generalizado a N detalles vía `detail_configs` (antes limitado a un único detalle).
+- Playground v2 `n17_secciones`: secciones A/B y un docente con dos sesiones.
+
+### Changed
+- `L4_SEED_VERSION` bumpeado a `1.35.0`.
+
 ## [0.1.0] - 2026-05-27
 
 ### Added
