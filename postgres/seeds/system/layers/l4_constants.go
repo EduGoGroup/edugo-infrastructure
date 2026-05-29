@@ -205,7 +205,53 @@ package layers
 //     JWT, NUNCA por path/query/body (estándar del ecosistema). Misma forma de
 //     respuesta `{"units":[{id, display_name,...}]}`; display_field/value_field
 //     sin cambios. Sin cambios de esquema/permisos.
-const L4_SEED_VERSION = "1.33.0"
+//   - 1.33.1: nueva screen_instance `batch-enroll` (inscripción por lote,
+//     pantalla NATIVA) bajo el recurso `subject_offerings` (N1.7 F1, plan 010 /
+//     ADR 0009). requiredPermission=academic.subject_offerings.read; el botón
+//     "Inscribir" se declara como action en slot_data con
+//     permission=academic.subject_offerings.enroll (ADR 0003). Nuevo mapping en
+//     resource_screens (subject_offerings → batch-enroll, list, default). El
+//     recurso y los permisos ya se sembraron en F0a; aquí solo se consumen.
+//   - 1.33.2: recurso `subject_offerings` pasa a IsMenuVisible=true (N1.7 F1):
+//     ya existe screen_instance + mapping, así que el item de menú "Sesiones de
+//     Materia" abre la pantalla batch-enroll (default del recurso). Sin esto la
+//     pantalla quedaba inalcanzable desde el menú.
+//   - 1.34.0: N1.7 F2 (plan 010 / ADR 0009) — pantallas de sesiones por materia.
+//     Dos screen_instances nuevas bajo el recurso `subject_offerings`:
+//     `enroll-one` (inscripción individual, pantalla NATIVA; action `enroll` con
+//     permission academic.subject_offerings.enroll, ADR 0003) y
+//     `sessions-by-subject-list` (lista hija SDUI; columnas
+//     subject_name/section_label/period_name/teacher_name; readonly). Ambas con
+//     requiredPermission=academic.subject_offerings.read y mapping en
+//     resource_screens (no-default, sort 2 y 3; el default sigue siendo
+//     batch-enroll). Además se añade la row-action `view-sessions` (scope=row,
+//     permission academic.subject_offerings.read, icon event) a `subjects-list`,
+//     que el FE enruta a `sessions-by-subject-list` con param subjectId. No se
+//     tocan columnas ni otras actions de subjects-list ni de subjects-form
+//     (F1 dejó su detail de alumnos intacto). Sin nuevos permisos (ya existen
+//     academic.subject_offerings.*).
+//   - 1.34.1: fix icono row-action view-sessions de subjects-list. El icon-name
+//     "event" NO existe en IconCatalog del KMP y el renderer de row-actions hacía
+//     hard-throw (crash de subjects-list). Se cambia a "list" (sí registrado en
+//     IconCatalog → FormatListBulleted), semántica "ver lista de sesiones". Sin
+//     cambios de permisos, columnas ni otras actions. Acompaña el fix de causa
+//     raíz en ListPatternRenderer (row-actions ahora resuelven vía IconResolver
+//     con fallback, no más throw).
+//   - 1.35.0: N1.7 F2.2 — "Sesiones" como pestaña del master-detail subjects-form
+//     y generalización del contrato a N paneles de detalle. Cambio de ESTRUCTURA
+//     del contrato SDUI: la clave `detail_config` (objeto singular) se reemplaza
+//     por `detail_configs` (array) en TODAS las screen_instances master-detail.
+//     subjects-form ahora declara DOS detalles readonly: "Alumnos"
+//     (students-by-subject-list) y "Sesiones" (sessions-by-subject-list), ambos
+//     con parent_id_param=subjectId. assessments-form migra su detalle único
+//     (assessment-questions-list + modal_screen_key=assessment-question-form) al
+//     array de una entrada, preservando el modal. Se ELIMINA la row-action
+//     `view-sessions` de subjects-list (la sesiones ahora se ven dentro del form
+//     de materia, no navegando a una pantalla aparte). No hay nuevos permisos ni
+//     columnas; sessions-by-subject-list y su mapping en resource_screens se
+//     conservan (la pestaña carga esa pantalla). El singular `detail_config` deja
+//     de existir en el seed y en el contrato KMP (sin legacy).
+const L4_SEED_VERSION = "1.35.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
