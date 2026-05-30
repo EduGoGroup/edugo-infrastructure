@@ -251,7 +251,19 @@ package layers
 //     columnas; sessions-by-subject-list y su mapping en resource_screens se
 //     conservan (la pestaña carga esa pantalla). El singular `detail_config` deja
 //     de existir en el seed y en el contrato KMP (sin legacy).
-const L4_SEED_VERSION = "1.35.0"
+//   - 1.36.0: poda del menú — se eliminan 6 recursos sin pantalla KMP
+//     implementada (el menú los listaba pero al abrirlos daba "screen
+//     instance not found"): `roles`, `permissions_mgmt`, `colors`,
+//     `calendar`, `schedules` y `guardian_relations`. Se retiran de forma
+//     coherente: las 4 screen_instances de roles/permissions
+//     (roles-list/form, permissions-list/form) y sus mappings en
+//     resource_screens; los permisos admin.roles.*, admin.permissions_mgmt.*,
+//     academic.calendar.*, academic.schedules.* y academic.guardian_relations.*;
+//     y los patterns de grant que los citaban en teacher/student/guardian.
+//     Los recursos colors/calendar/schedules/guardian_relations ya tenían sus
+//     pantallas retiradas (poda F2 plan 004) y quedaban huérfanos. El dashboard
+//     del guardian (rol) NO se toca. Sin cambios de esquema.
+const L4_SEED_VERSION = "1.36.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

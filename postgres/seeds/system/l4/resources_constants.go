@@ -29,10 +29,10 @@ const (
 	L4_RESOURCE_REPORTS_KEY   = "reports"
 
 	// Hijos de admin
+	// Poda menú (2026-05-29): se eliminaron los recursos `roles` (…12) y
+	// `permissions_mgmt` (…13); sus UUIDs quedan libres.
 	L4_RESOURCE_USERS_ID             = "b4000000-0000-0000-0000-000000000010"
 	L4_RESOURCE_SCHOOLS_ID           = "b4000000-0000-0000-0000-000000000011"
-	L4_RESOURCE_ROLES_ID             = "b4000000-0000-0000-0000-000000000012"
-	L4_RESOURCE_PERMISSIONS_MGMT_ID  = "b4000000-0000-0000-0000-000000000013"
 	L4_RESOURCE_SCREEN_TEMPLATES_ID  = "b4000000-0000-0000-0000-000000000050"
 	L4_RESOURCE_SCREEN_INSTANCES_ID  = "b4000000-0000-0000-0000-000000000051"
 	L4_RESOURCE_AUDIT_ID             = "b4000000-0000-0000-0000-000000000070"
@@ -40,8 +40,6 @@ const (
 	L4_RESOURCE_SYSTEM_SETTINGS_ID   = "b4000000-0000-0000-0000-000000000090"
 	L4_RESOURCE_USERS_KEY            = "users"
 	L4_RESOURCE_SCHOOLS_KEY          = "schools"
-	L4_RESOURCE_ROLES_KEY            = "roles"
-	L4_RESOURCE_PERMISSIONS_MGMT_KEY = "permissions_mgmt"
 	L4_RESOURCE_SCREEN_TEMPLATES_KEY = "screen_templates"
 	L4_RESOURCE_SCREEN_INSTANCES_KEY = "screen_instances"
 	L4_RESOURCE_AUDIT_KEY            = "audit"
@@ -52,12 +50,11 @@ const (
 	L4_RESOURCE_UNITS_ID              = "b4000000-0000-0000-0000-000000000020"
 	L4_RESOURCE_MEMBERSHIPS_ID        = "b4000000-0000-0000-0000-000000000021"
 	L4_RESOURCE_SUBJECTS_ID           = "b4000000-0000-0000-0000-000000000032"
-	L4_RESOURCE_GUARDIAN_RELATIONS_ID = "b4000000-0000-0000-0000-000000000060"
+	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
+	// (…60), `schedules` (…37) y `calendar` (…39); sus UUIDs quedan libres.
 	L4_RESOURCE_PERIODS_ID            = "b4000000-0000-0000-0000-000000000034"
 	L4_RESOURCE_GRADES_ID             = "b4000000-0000-0000-0000-000000000035"
 	L4_RESOURCE_ATTENDANCE_ID         = "b4000000-0000-0000-0000-000000000036"
-	L4_RESOURCE_SCHEDULES_ID          = "b4000000-0000-0000-0000-000000000037"
-	L4_RESOURCE_CALENDAR_ID           = "b4000000-0000-0000-0000-000000000039"
 	L4_RESOURCE_UNITS_KEY             = "units"
 	L4_RESOURCE_MEMBERSHIPS_KEY       = "memberships"
 	// Recurso de menú "Mis materias" del alumno (plan 006, N1.C). Es un recurso
@@ -76,12 +73,9 @@ const (
 	L4_RESOURCE_SUBJECT_OFFERINGS_ID   = "b4000000-0000-0000-0000-000000000023"
 	L4_RESOURCE_SUBJECT_OFFERINGS_KEY  = "subject_offerings"
 	L4_RESOURCE_SUBJECTS_KEY           = "subjects"
-	L4_RESOURCE_GUARDIAN_RELATIONS_KEY = "guardian_relations"
 	L4_RESOURCE_PERIODS_KEY            = "periods"
 	L4_RESOURCE_GRADES_KEY             = "grades"
 	L4_RESOURCE_ATTENDANCE_KEY         = "attendance"
-	L4_RESOURCE_SCHEDULES_KEY          = "schedules"
-	L4_RESOURCE_CALENDAR_KEY           = "calendar"
 
 	// Onboarding (plan 005, N0.0): invitaciones + solicitudes de ingreso.
 	// IDs libres adyacentes a guardian (…60). join_request_approvals es
@@ -116,10 +110,6 @@ const (
 	L4_RESOURCE_NOTIFICATIONS_KEY = "notifications"
 	L4_RESOURCE_MENU_KEY          = "menu"
 
-	// Demo Fase 3 (SDUI B7b): recurso CRUD plano "colors" para pilotar
-	// `GenericListContract`/`GenericFormContract` sin código Kotlin.
-	// Visible en el menú bajo "admin" para que el playground respectivo
-	// pueda abrirlo desde el navegador del menú dinámico.
-	L4_RESOURCE_COLORS_ID  = "b4000000-0000-0000-0000-0000000000e0"
-	L4_RESOURCE_COLORS_KEY = "colors"
+	// Poda menú (2026-05-29): se eliminó el recurso demo `colors` (…e0); su
+	// UUID queda libre. La pareja colors-list/form ya estaba retirada.
 )

@@ -157,11 +157,9 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-000000000015", resourceID: L4_RESOURCE_SCHOOLS_ID, resourceKey: L4_RESOURCE_SCHOOLS_KEY, screenKey: "schools-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000016", resourceID: L4_RESOURCE_SCHOOLS_ID, resourceKey: L4_RESOURCE_SCHOOLS_KEY, screenKey: "schools-form", screenType: "form", isDefault: false, sortOrder: 2},
 
-		{id: "b4500000-0000-0000-0000-000000000020", resourceID: L4_RESOURCE_ROLES_ID, resourceKey: L4_RESOURCE_ROLES_KEY, screenKey: "roles-list", screenType: "list", isDefault: true, sortOrder: 1},
-		{id: "b4500000-0000-0000-0000-000000000021", resourceID: L4_RESOURCE_ROLES_ID, resourceKey: L4_RESOURCE_ROLES_KEY, screenKey: "roles-form", screenType: "form", isDefault: false, sortOrder: 2},
-
-		{id: "b4500000-0000-0000-0000-000000000025", resourceID: L4_RESOURCE_PERMISSIONS_MGMT_ID, resourceKey: L4_RESOURCE_PERMISSIONS_MGMT_KEY, screenKey: "permissions-list", screenType: "list", isDefault: true, sortOrder: 1},
-		{id: "b4500000-0000-0000-0000-000000000026", resourceID: L4_RESOURCE_PERMISSIONS_MGMT_ID, resourceKey: L4_RESOURCE_PERMISSIONS_MGMT_KEY, screenKey: "permissions-form", screenType: "form", isDefault: false, sortOrder: 2},
+		// Poda menú (2026-05-29): mappings de `roles` (roles-list/form) y
+		// `permissions_mgmt` (permissions-list/form) eliminados junto con sus
+		// recursos y screen_instances.
 
 		// =============================================================
 		// admin → screen_templates / screen_instances

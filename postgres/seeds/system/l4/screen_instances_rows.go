@@ -114,113 +114,11 @@ func schoolsForm() l4ScreenInstanceRow {
 	}
 }
 
-func rolesList() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ROLES_LIST_ID,
-		screenKey:          "roles-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Lista de Roles",
-		description:        "Roles del sistema",
-		scope:              "system",
-		requiredPermission: "admin.roles.read",
-		slotData: `{
-  "title": "Roles",
-  "search_placeholder": "Buscar rol...",
-  "columns": [
-    {"key": "name", "label": "Nombre"},
-    {"key": "code", "label": "Código"},
-    {"key": "scope", "label": "Alcance"}
-  ],
-  "api_prefix": "identity:",
-  "api_base_path": "/api/v1/roles",
-  "resource": "roles",
-  "form_screen_key": "roles-form"
-}`,
-	}
-}
-
-func rolesForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ROLES_FORM_ID,
-		screenKey:          "roles-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Rol",
-		description:        "Crear o editar un rol",
-		scope:              "system",
-		requiredPermission: "admin.roles.read",
-		slotData: `{
-  "title": "Rol",
-  "fields": [
-    {"key": "name", "label": "Nombre", "type": "text", "required": true},
-    {"key": "code", "label": "Código", "type": "text", "required": true},
-    {"key": "description", "label": "Descripción", "type": "textarea"},
-    {"key": "scope", "label": "Alcance", "type": "select", "options": [
-      {"value": "system", "label": "Sistema"},
-      {"value": "school", "label": "Escuela"},
-      {"value": "unit", "label": "Unidad"}
-    ]}
-  ],
-  "api_prefix": "identity:",
-  "api_base_path": "/api/v1/roles",
-  "resource": "roles",
-  "list_screen_key": "roles-list"
-}`,
-	}
-}
-
-func permissionsList() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_PERMISSIONS_LIST_ID,
-		screenKey:          "permissions-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Gestión de Permisos",
-		description:        "Permisos del sistema",
-		scope:              "system",
-		requiredPermission: "admin.permissions_mgmt.read",
-		slotData: `{
-  "title": "Permisos",
-  "search_placeholder": "Buscar permiso...",
-  "filter_ready_label": "Activos",
-  "filter_processing_label": "Inactivos",
-  "columns": [
-    {"key": "name", "label": "Permiso"},
-    {"key": "resource", "label": "Recurso"},
-    {"key": "action", "label": "Acción"}
-  ],
-  "actions_removed": ["delete"],
-  "api_prefix": "identity:",
-  "api_base_path": "/api/v1/permissions",
-  "resource": "permissions_mgmt",
-  "form_screen_key": "permissions-form"
-}`,
-	}
-}
-
-func permissionsForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_PERMISSIONS_FORM_ID,
-		screenKey:          "permissions-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Permiso",
-		description:        "Crear o editar un permiso",
-		scope:              "system",
-		requiredPermission: "admin.permissions_mgmt.read",
-		slotData: `{
-  "title": "Permiso",
-  "fields": [
-    {"key": "name", "label": "Nombre", "type": "text", "required": true},
-    {"key": "resource_id", "label": "Recurso", "type": "remote_select", "required": true},
-    {"key": "action", "label": "Acción", "type": "text", "required": true},
-    {"key": "description", "label": "Descripción", "type": "textarea"}
-  ],
-  "actions_removed": ["delete"],
-  "api_prefix": "identity:",
-  "api_base_path": "/api/v1/permissions",
-  "resource": "permissions_mgmt",
-  "list_screen_key": "permissions-list"
-}`,
-	}
-}
+// Poda menú (2026-05-29): los constructores rolesList(), rolesForm(),
+// permissionsList() y permissionsForm() se eliminaron — el FE KMP no
+// implementa esas pantallas (roles-*, permissions-*) y los recursos
+// `roles`/`permissions_mgmt` fueron retirados del menú. Sus constantes
+// L4_SCREEN_INST_ROLES_*/PERMISSIONS_* también se quitaron.
 
 // ===============================================================
 // ADMIN: screen-config (templates + instances + endpoint screens-form)
