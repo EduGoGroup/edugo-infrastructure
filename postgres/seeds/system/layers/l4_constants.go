@@ -263,7 +263,12 @@ package layers
 //     Los recursos colors/calendar/schedules/guardian_relations ya tenían sus
 //     pantallas retiradas (poda F2 plan 004) y quedaban huérfanos. El dashboard
 //     del guardian (rol) NO se toca. Sin cambios de esquema.
-const L4_SEED_VERSION = "1.36.0"
+//   - 1.37.0 (2026-05-29): scope=unit en los recursos memberships,
+//     subjects y subject_offerings. Sus endpoints exigen unidad activa
+//     (RequireActiveContext → 428 NO_ACTIVE_UNIT), así que el scope del
+//     recurso debe ser "unit" para que el menú/contexto del frontend
+//     pida unidad antes de abrirlos. Coherente con grades/attendance.
+const L4_SEED_VERSION = "1.37.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

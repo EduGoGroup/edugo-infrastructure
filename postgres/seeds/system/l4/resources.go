@@ -208,14 +208,14 @@ var l4Resources = []l4ResourceRow{
 	// Hijos de "academic" (gestión académica y comunicaciones)
 	// -------------------------------------------------------------
 	{ID: L4_RESOURCE_UNITS_ID, Key: "units", DisplayName: "Unidades Académicas", Description: "Gestión de clases", Icon: "layers", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 1, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_MEMBERSHIPS_ID, Key: "memberships", DisplayName: "Miembros", Description: "Asignación de miembros", Icon: "user-plus", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_SUBJECTS_ID, Key: "subjects", DisplayName: "Materias", Description: "Gestión de materias", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_MEMBERSHIPS_ID, Key: "memberships", DisplayName: "Miembros", Description: "Asignación de miembros", Icon: "user-plus", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_SUBJECTS_ID, Key: "subjects", DisplayName: "Materias", Description: "Gestión de materias", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
 	// Plan 010 (N1.7, ADR 0009): sesiones de materia. Recurso de permisos
 	// bajo "academic". IsMenuVisible=true desde F1: ya hay screen_instance
 	// (batch-enroll) y mapping en resource_screens, así que el item de menú
 	// "Sesiones de Materia" abre la pantalla de inscripción por lote (default
 	// del recurso). F2 añadirá más pantallas bajo este mismo recurso.
-	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
 	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
 	// (sort 4), `schedules` (sort 8) y `calendar` (sort 10). Sus pantallas ya
 	// estaban retiradas (poda F2 plan 004) y los recursos quedaban huérfanos:

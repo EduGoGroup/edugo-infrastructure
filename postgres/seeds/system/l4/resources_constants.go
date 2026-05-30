@@ -68,7 +68,8 @@ const (
 	L4_RESOURCE_MY_MEMBERSHIPS_KEY = "my_memberships"
 	// Plan 010 (N1.7, ADR 0009): "sesiones de materia" (oferta = materia +
 	// seccion + periodo + docente como unidad de inscripcion). Recurso bajo
-	// `academic`, scope school (coherente con subjects/memberships). Sufijo
+	// `academic`, scope unit (los endpoints exigen unidad activa vía
+	// RequireActiveContext → 428; coherente con subjects/memberships). Sufijo
 	// …23 (adyacente a memberships …21 / my_memberships …22).
 	L4_RESOURCE_SUBJECT_OFFERINGS_ID   = "b4000000-0000-0000-0000-000000000023"
 	L4_RESOURCE_SUBJECT_OFFERINGS_KEY  = "subject_offerings"
