@@ -47,16 +47,16 @@ const (
 	L4_RESOURCE_SYSTEM_SETTINGS_KEY  = "system_settings"
 
 	// Hijos de academic
-	L4_RESOURCE_UNITS_ID              = "b4000000-0000-0000-0000-000000000020"
-	L4_RESOURCE_MEMBERSHIPS_ID        = "b4000000-0000-0000-0000-000000000021"
-	L4_RESOURCE_SUBJECTS_ID           = "b4000000-0000-0000-0000-000000000032"
+	L4_RESOURCE_UNITS_ID       = "b4000000-0000-0000-0000-000000000020"
+	L4_RESOURCE_MEMBERSHIPS_ID = "b4000000-0000-0000-0000-000000000021"
+	L4_RESOURCE_SUBJECTS_ID    = "b4000000-0000-0000-0000-000000000032"
 	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
 	// (…60), `schedules` (…37) y `calendar` (…39); sus UUIDs quedan libres.
-	L4_RESOURCE_PERIODS_ID            = "b4000000-0000-0000-0000-000000000034"
-	L4_RESOURCE_GRADES_ID             = "b4000000-0000-0000-0000-000000000035"
-	L4_RESOURCE_ATTENDANCE_ID         = "b4000000-0000-0000-0000-000000000036"
-	L4_RESOURCE_UNITS_KEY             = "units"
-	L4_RESOURCE_MEMBERSHIPS_KEY       = "memberships"
+	L4_RESOURCE_PERIODS_ID      = "b4000000-0000-0000-0000-000000000034"
+	L4_RESOURCE_GRADES_ID       = "b4000000-0000-0000-0000-000000000035"
+	L4_RESOURCE_ATTENDANCE_ID   = "b4000000-0000-0000-0000-000000000036"
+	L4_RESOURCE_UNITS_KEY       = "units"
+	L4_RESOURCE_MEMBERSHIPS_KEY = "memberships"
 	// Recurso de menú "Mis materias" del alumno (plan 006, N1.C). Es un recurso
 	// de MENÚ separado de `memberships` (roster de unidad para admin/teacher):
 	// la pantalla default difiere y el path-prefix del gate de menú no
@@ -71,12 +71,12 @@ const (
 	// `academic`, scope unit (los endpoints exigen unidad activa vía
 	// RequireActiveContext → 428; coherente con subjects/memberships). Sufijo
 	// …23 (adyacente a memberships …21 / my_memberships …22).
-	L4_RESOURCE_SUBJECT_OFFERINGS_ID   = "b4000000-0000-0000-0000-000000000023"
-	L4_RESOURCE_SUBJECT_OFFERINGS_KEY  = "subject_offerings"
-	L4_RESOURCE_SUBJECTS_KEY           = "subjects"
-	L4_RESOURCE_PERIODS_KEY            = "periods"
-	L4_RESOURCE_GRADES_KEY             = "grades"
-	L4_RESOURCE_ATTENDANCE_KEY         = "attendance"
+	L4_RESOURCE_SUBJECT_OFFERINGS_ID  = "b4000000-0000-0000-0000-000000000023"
+	L4_RESOURCE_SUBJECT_OFFERINGS_KEY = "subject_offerings"
+	L4_RESOURCE_SUBJECTS_KEY          = "subjects"
+	L4_RESOURCE_PERIODS_KEY           = "periods"
+	L4_RESOURCE_GRADES_KEY            = "grades"
+	L4_RESOURCE_ATTENDANCE_KEY        = "attendance"
 
 	// Onboarding (plan 005, N0.0): invitaciones + solicitudes de ingreso.
 	// IDs libres adyacentes a guardian (…60). join_request_approvals es
