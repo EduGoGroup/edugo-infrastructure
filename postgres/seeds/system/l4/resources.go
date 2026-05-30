@@ -185,11 +185,12 @@ var l4Resources = []l4ResourceRow{
 	// -------------------------------------------------------------
 	{ID: L4_RESOURCE_USERS_ID, Key: "users", DisplayName: "Usuarios", Description: "Gestión de usuarios", Icon: "users", Scope: "school", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 1, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_SCHOOLS_ID, Key: "schools", DisplayName: "Escuelas", Description: "Gestión de escuelas", Icon: "school", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_ROLES_ID, Key: "roles", DisplayName: "Roles", Description: "Gestión de roles", Icon: "shield", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
-	// Key `permissions_mgmt` preservada (no renombrar): el FE la
-	// referencia literalmente en `PermissionsListContract.kt` y
-	// `PermissionsFormContract.kt`. Renombrarla rompería el FE.
-	{ID: L4_RESOURCE_PERMISSIONS_MGMT_ID, Key: "permissions_mgmt", DisplayName: "Permisos", Description: "Gestión de permisos", Icon: "key", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 4, IsMenuVisible: true, IsActive: true},
+	// Poda menú (2026-05-29): se eliminaron los recursos `roles` (sort 3) y
+	// `permissions_mgmt` (sort 4). Sus pantallas (roles-list/form,
+	// permissions-list/form) no las implementa el FE KMP, así que el item
+	// abría con "screen instance not found". Permisos, screen_instances y
+	// resource_screens asociados también se quitaron. Se preserva el gap de
+	// sort_order para no alterar el orden visual del resto.
 	// Icono normalizado de "settings_applications" (Material 2) a
 	// "settings-2" (Lucide) por consistencia con L0/L3.
 	{ID: L4_RESOURCE_SCREEN_TEMPLATES_ID, Key: "screen_templates", DisplayName: "Templates de Pantalla", Description: "Templates base para configuración de pantallas", Icon: "settings-2", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
@@ -197,33 +198,32 @@ var l4Resources = []l4ResourceRow{
 	{ID: L4_RESOURCE_AUDIT_ID, Key: "audit", DisplayName: "Auditoría", Description: "Registro de auditoría del sistema", Icon: "file-search", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_CONCEPT_TYPES_ID, Key: "concept_types", DisplayName: "Tipos de Concepto", Description: "Tipos de institución y terminología", Icon: "tag", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 8, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_SYSTEM_SETTINGS_ID, Key: "system_settings", DisplayName: "Configuración", Description: "Configuración y mantenimiento del sistema", Icon: "settings", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 9, IsMenuVisible: true, IsActive: true},
-	// Demo Fase 3 (SDUI B7b): recurso CRUD plano para validar el
-	// fallback genérico data-driven sin escribir Kotlin nuevo.
-	// Permisos `platform.colors.*` (edugo-shared). Endpoint
-	// `/api/v1/colors` en edugo-api-platform. Icono Lucide `palette`.
-	{ID: L4_RESOURCE_COLORS_ID, Key: "colors", DisplayName: "Colores", Description: "Demo CRUD data-driven (Fase 3)", Icon: "palette", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 10, IsMenuVisible: true, IsActive: true},
+	// Poda menú (2026-05-29): se eliminó el recurso demo `colors` (sort 10).
+	// La pareja colors-list/colors-form ya estaba retirada (poda F2 plan 004);
+	// el recurso quedaba huérfano y abría con error desde el menú. Se eliminan
+	// también sus permisos `platform.colors.*` declarados en edugo-shared no
+	// se tocan (viven fuera del seed); aquí solo se quita el recurso de menú.
 
 	// -------------------------------------------------------------
 	// Hijos de "academic" (gestión académica y comunicaciones)
 	// -------------------------------------------------------------
 	{ID: L4_RESOURCE_UNITS_ID, Key: "units", DisplayName: "Unidades Académicas", Description: "Gestión de clases", Icon: "layers", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 1, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_MEMBERSHIPS_ID, Key: "memberships", DisplayName: "Miembros", Description: "Asignación de miembros", Icon: "user-plus", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_SUBJECTS_ID, Key: "subjects", DisplayName: "Materias", Description: "Gestión de materias", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_MEMBERSHIPS_ID, Key: "memberships", DisplayName: "Miembros", Description: "Asignación de miembros", Icon: "user-plus", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_SUBJECTS_ID, Key: "subjects", DisplayName: "Materias", Description: "Gestión de materias", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
 	// Plan 010 (N1.7, ADR 0009): sesiones de materia. Recurso de permisos
 	// bajo "academic". IsMenuVisible=true desde F1: ya hay screen_instance
 	// (batch-enroll) y mapping en resource_screens, así que el item de menú
 	// "Sesiones de Materia" abre la pantalla de inscripción por lote (default
 	// del recurso). F2 añadirá más pantallas bajo este mismo recurso.
-	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_GUARDIAN_RELATIONS_ID, Key: "guardian_relations", DisplayName: "Vínculos Guardian", Description: "Gestión de vínculos guardian-estudiante", Icon: "user-check", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 4, IsMenuVisible: true, IsActive: true},
+	{ID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, Key: "subject_offerings", DisplayName: "Sesiones de Materia", Description: "Oferta de materia: sección, período y docente", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
+	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
+	// (sort 4), `schedules` (sort 8) y `calendar` (sort 10). Sus pantallas ya
+	// estaban retiradas (poda F2 plan 004) y los recursos quedaban huérfanos:
+	// el menú los listaba pero al abrirlos daba "screen instance not found".
+	// Se quitan también sus permisos y los patterns de grant que los citaban.
 	{ID: L4_RESOURCE_PERIODS_ID, Key: "periods", DisplayName: "Periodos Académicos", Description: "Gestión de periodos académicos", Icon: "calendar-range", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_GRADES_ID, Key: "grades", DisplayName: "Calificaciones", Description: "Gestión de calificaciones", Icon: "award", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_ATTENDANCE_ID, Key: "attendance", DisplayName: "Asistencia", Description: "Registro de asistencia", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_SCHEDULES_ID, Key: "schedules", DisplayName: "Horarios", Description: "Horarios semanales por unidad", Icon: "clock", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 8, IsMenuVisible: true, IsActive: true},
-	// SortOrder=10 en el legacy: el 9 lo ocupaba "announcements" que
-	// vive en L0. Se preserva el gap para que el orden visual del
-	// menú no cambie cuando L0+L4 conviven.
-	{ID: L4_RESOURCE_CALENDAR_ID, Key: "calendar", DisplayName: "Calendario", Description: "Calendario escolar", Icon: "calendar", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 10, IsMenuVisible: true, IsActive: true},
 	// Onboarding (plan 005, N0.0): invitaciones y solicitudes de ingreso.
 	// Menu-visibles bajo "academic" como guardian_relations.
 	{ID: L4_RESOURCE_INVITATIONS_ID, Key: "invitations", DisplayName: "Invitaciones", Description: "Códigos de invitación a colegio/unidad", Icon: "ticket", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 11, IsMenuVisible: true, IsActive: true},

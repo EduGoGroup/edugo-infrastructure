@@ -85,13 +85,11 @@ const (
 // (12=roles, 13=permissions_mgmt, 36=attendance, 80=concept_types).
 // -----------------------------------------------------------------
 const (
-	L4_PERM_ROLES_CREATE_ID            = "b4000000-0002-0012-0000-000000000001"
-	L4_PERM_ROLES_UPDATE_ID            = "b4000000-0002-0012-0000-000000000002"
-	L4_PERM_ROLES_DELETE_ID            = "b4000000-0002-0012-0000-000000000003"
-	L4_PERM_PERMISSIONS_MGMT_CREATE_ID = "b4000000-0002-0013-0000-000000000001"
-	L4_PERM_CONCEPT_TYPES_CREATE_ID    = "b4000000-0002-0080-0000-000000000001"
-	L4_PERM_CONCEPT_TYPES_UPDATE_ID    = "b4000000-0002-0080-0000-000000000002"
-	L4_PERM_ATTENDANCE_UPDATE_ID       = "b4000000-0002-0036-0000-000000000001"
+	// Poda menú (2026-05-29): L4_PERM_ROLES_* y L4_PERM_PERMISSIONS_MGMT_CREATE_ID
+	// eliminados junto con los recursos `roles` y `permissions_mgmt`.
+	L4_PERM_CONCEPT_TYPES_CREATE_ID = "b4000000-0002-0080-0000-000000000001"
+	L4_PERM_CONCEPT_TYPES_UPDATE_ID = "b4000000-0002-0080-0000-000000000002"
+	L4_PERM_ATTENDANCE_UPDATE_ID    = "b4000000-0002-0036-0000-000000000001"
 	// Permiso ÚNICO del feature "mis materias" del alumno (resource 22,
 	// my_memberships). Cubre visibilidad de menú, slot.permission de la
 	// pantalla my-memberships-list y route gate del dato. Vive bajo path

@@ -413,10 +413,9 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		usersForm(),
 		schoolsList(),
 		schoolsForm(),
-		rolesList(),
-		rolesForm(),
-		permissionsList(),
-		permissionsForm(),
+		// Poda menú (2026-05-29): rolesList/rolesForm/permissionsList/permissionsForm
+		// eliminadas — el FE KMP no implementa esas pantallas y los recursos
+		// `roles`/`permissions_mgmt` fueron retirados del menú.
 
 		// ===========================================================
 		// ADMIN: SCREEN-CONFIG (templates + instances + endpoint)

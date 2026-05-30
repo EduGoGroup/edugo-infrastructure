@@ -20,6 +20,7 @@ package playground_v2
 import (
 	"fmt"
 
+	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
 	n1_inscripcion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n1_inscripcion"
 	onboarding "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/onboarding"
@@ -47,6 +48,7 @@ var fixtures = []Fixture{
 	{Name: "onboarding", Apply: onboarding.Apply},
 	{Name: "n1_inscripcion", Apply: n1_inscripcion.Apply},
 	{Name: "n17_secciones", Apply: n17_secciones.Apply},
+	{Name: "multi_unidad", Apply: multi_unidad.Apply},
 }
 
 // Available retorna los nombres de playgrounds v2 disponibles.

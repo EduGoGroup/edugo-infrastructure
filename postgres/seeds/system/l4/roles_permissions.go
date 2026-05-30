@@ -281,10 +281,8 @@ func l4Permissions() []l4PermissionSpec {
 		// sobre el modelo de sesiones.
 		{L4_PERM_MY_MEMBERSHIPS_READ_OWN_ID, L4_RESOURCE_MY_MEMBERSHIPS_ID, "academic.my_memberships.read:own", "Ver Mis Materias", "Ver el item de menú de materias propias del alumno", "read:own", "unit"},
 
-		// --- permissions_mgmt (resource 20000000-…-13) ---
-		{L4_PERM_PERMISSIONS_MGMT_CREATE_ID, L4_RESOURCE_PERMISSIONS_MGMT_ID, "admin.permissions_mgmt.create", "Crear Permiso", "Crear permiso", "create", "system"},
-		{"6cfd0e01-6834-4fde-94e9-536b663b5be4", L4_RESOURCE_PERMISSIONS_MGMT_ID, "admin.permissions_mgmt.read", "Ver Configuración de Permisos", "Ver recursos y permisos del sistema", "read", "system"},
-		{"59da389c-a246-4d43-a6ce-f316584b2be7", L4_RESOURCE_PERMISSIONS_MGMT_ID, "admin.permissions_mgmt.update", "Editar Configuración de Permisos", "Modificar recursos y permisos del sistema", "update", "system"},
+		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
+		// eliminados junto con el recurso `permissions_mgmt`.
 
 		// --- progress (resource 20000000-…-40) ---
 		// NOTA: se descartó `progress:read:own` (zombie + sólo super_admin
@@ -293,11 +291,8 @@ func l4Permissions() []l4PermissionSpec {
 		{"d033dfd0-47a5-476b-b51a-f52f5fc66d7a", L4_RESOURCE_PROGRESS_ID, "reports.progress.read:own", "Ver Progreso Propio", "Ver propio progreso (usado por student)", "read:own", "unit"},
 		{"19d017d1-ee5b-4fc3-828a-2d12056631b4", L4_RESOURCE_PROGRESS_ID, "reports.progress.update", "Actualizar Progreso", "Actualizar progreso de estudiantes", "update", "unit"},
 
-		// --- roles (resource 20000000-…-12) ---
-		{L4_PERM_ROLES_CREATE_ID, L4_RESOURCE_ROLES_ID, "admin.roles.create", "Crear Rol", "Crear rol", "create", "system"},
-		{L4_PERM_ROLES_DELETE_ID, L4_RESOURCE_ROLES_ID, "admin.roles.delete", "Eliminar Rol", "Eliminar rol", "delete", "system"},
-		{"a28c2133-9d49-46ae-8cb7-fe59ff0246df", L4_RESOURCE_ROLES_ID, "admin.roles.read", "Ver Roles", "Ver roles del sistema", "read", "system"},
-		{L4_PERM_ROLES_UPDATE_ID, L4_RESOURCE_ROLES_ID, "admin.roles.update", "Actualizar Rol", "Actualizar rol", "update", "system"},
+		// Poda menú (2026-05-29): permisos `admin.roles.*` eliminados junto
+		// con el recurso `roles`.
 
 		// --- schools (resource 20000000-…-11) ---
 		{"611df7ce-b4cd-474f-901d-9bfd8873a9c1", L4_RESOURCE_SCHOOLS_ID, "admin.schools.create", "Crear Escuelas", "Crear nuevas instituciones educativas", "create", "system"},
@@ -354,11 +349,8 @@ func l4Permissions() []l4PermissionSpec {
 		{"8098577f-e5d8-4e07-aee7-4c1521cbe88b", L4_RESOURCE_USERS_ID, "admin.users.read:own", "Ver Perfil Propio", "Ver propio perfil de usuario", "read:own", "system"},
 		{"668b0d86-f4cb-45cd-a8c4-afa8f6cfe9b6", L4_RESOURCE_USERS_ID, "admin.users.update:own", "Editar Perfil Propio", "Modificar propio perfil", "update:own", "system"},
 
-		// --- guardian_relations (resource 20000000-…-60) ---
-		{"60000000-0000-0000-0000-000000000001", L4_RESOURCE_GUARDIAN_RELATIONS_ID, "academic.guardian_relations.read", "Ver Solicitudes de Vinculación", "Ver solicitudes de vinculación guardian", "read", "school"},
-		{"60000000-0000-0000-0000-000000000002", L4_RESOURCE_GUARDIAN_RELATIONS_ID, "academic.guardian_relations.approve", "Aprobar Vinculación", "Aprobar/rechazar solicitudes de vinculación", "approve", "school"},
-		{"60000000-0000-0000-0000-000000000003", L4_RESOURCE_GUARDIAN_RELATIONS_ID, "academic.guardian_relations.request", "Solicitar Vínculo", "Solicitar vínculo guardian-estudiante", "request", "school"},
-		{"60000000-0000-0000-0000-000000000004", L4_RESOURCE_GUARDIAN_RELATIONS_ID, "academic.guardian_relations.manage", "Gestionar Relaciones de Apoderado", "Gestionar relaciones guardian-estudiante", "manage", "school"},
+		// Poda menú (2026-05-29): permisos `academic.guardian_relations.*`
+		// eliminados junto con el recurso `guardian_relations`.
 
 		// --- invitations (resource …61) ---
 		{"77474519-5e37-4cf4-b594-af6b0b5cd56d", L4_RESOURCE_INVITATIONS_ID, "academic.invitations.create", "Crear Invitación", "Generar códigos de invitación a colegio/unidad", "create", "school"},
@@ -405,17 +397,9 @@ func l4Permissions() []l4PermissionSpec {
 		{"e3000000-0000-0000-0000-000000000002", L4_RESOURCE_ATTENDANCE_ID, "academic.attendance.create", "Registrar Asistencia", "Registrar asistencia de estudiantes", "create", "unit"},
 		{L4_PERM_ATTENDANCE_UPDATE_ID, L4_RESOURCE_ATTENDANCE_ID, "academic.attendance.update", "Actualizar Asistencia", "Actualizar asistencia", "update", "unit"},
 
-		// --- schedules (resource 20000000-…-37) ---
-		{"e4000000-0000-0000-0000-000000000001", L4_RESOURCE_SCHEDULES_ID, "academic.schedules.read", "Ver Horarios", "Ver horarios de clases", "read", "unit"},
-		{"e4000000-0000-0000-0000-000000000002", L4_RESOURCE_SCHEDULES_ID, "academic.schedules.create", "Crear Horario", "Crear bloques de horario", "create", "unit"},
-		{"e4000000-0000-0000-0000-000000000003", L4_RESOURCE_SCHEDULES_ID, "academic.schedules.update", "Editar Horario", "Modificar bloques de horario", "update", "unit"},
-		{"e4000000-0000-0000-0000-000000000004", L4_RESOURCE_SCHEDULES_ID, "academic.schedules.delete", "Eliminar Horario", "Eliminar bloques de horario", "delete", "unit"},
-
-		// --- calendar (resource 20000000-…-39) ---
-		{"e6000000-0000-0000-0000-000000000001", L4_RESOURCE_CALENDAR_ID, "academic.calendar.read", "Ver Calendario", "Ver eventos del calendario escolar", "read", "school"},
-		{"e6000000-0000-0000-0000-000000000002", L4_RESOURCE_CALENDAR_ID, "academic.calendar.create", "Crear Evento", "Crear eventos en el calendario", "create", "school"},
-		{"e6000000-0000-0000-0000-000000000003", L4_RESOURCE_CALENDAR_ID, "academic.calendar.update", "Editar Evento", "Modificar eventos del calendario", "update", "school"},
-		{"e6000000-0000-0000-0000-000000000004", L4_RESOURCE_CALENDAR_ID, "academic.calendar.delete", "Eliminar Evento", "Eliminar eventos del calendario", "delete", "school"},
+		// Poda menú (2026-05-29): permisos `academic.schedules.*` y
+		// `academic.calendar.*` eliminados junto con los recursos `schedules`
+		// y `calendar`.
 
 		// --- reports (resource 20000000-…-05) ---
 		{"e7000000-0000-0000-0000-000000000001", L4_RESOURCE_REPORTS_ID, "reports.read", "Ver Reportes", "Ver reportes y estadísticas generales", "read", "school"},
@@ -529,7 +513,6 @@ func roleGrantPatterns() map[string][]string {
 		"academic.announcements.*",
 		"academic.attendance.*",
 		"academic.grades.*",
-		"academic.calendar.*",
 		// El docente lee membresías para el roster/directorio de su unidad
 		// (unit-directory). Grant LITERAL a `.read`, NO el wildcard
 		// `academic.memberships.*`: el profesor no crea, edita ni elimina
@@ -540,7 +523,6 @@ func roleGrantPatterns() map[string][]string {
 		// también lo usaba se retiró, ver plan 010 N1.7.)
 		"academic.memberships.read",
 		"academic.periods.*",
-		"academic.schedules.*",
 		// Plan 006 (Trozo A): el docente NO gestiona materias por defecto;
 		// solo las ve (decisión del dueño). Grant LITERAL a `.read`, NO el
 		// wildcard `academic.subjects.*`: crear/editar/eliminar materias es
@@ -574,7 +556,6 @@ func roleGrantPatterns() map[string][]string {
 	studentPatterns := []string{
 		"academic.announcements.*",
 		"academic.attendance.*",
-		"academic.calendar.*",
 		"academic.grades.*",
 		// Permiso ÚNICO del feature "mis materias" del alumno (visibilidad de
 		// menú + slot.permission + route gate del dato). Grant LITERAL al
@@ -586,7 +567,6 @@ func roleGrantPatterns() map[string][]string {
 		// 403 en GET /memberships (listar unidad). El dato propio llega vía el
 		// lector A GET /api/v1/me/subject-offerings. Reintroducido en N1.7 F1.
 		"academic.my_memberships.read:own",
-		"academic.schedules.*",
 		"content.assessments.*",
 		"content.assessments_student.*",
 		"content.materials.*",
@@ -600,9 +580,7 @@ func roleGrantPatterns() map[string][]string {
 	guardianPatterns := []string{
 		"academic.announcements.*",
 		"academic.attendance.*",
-		"academic.calendar.*",
 		"academic.grades.*",
-		"academic.guardian_relations.*",
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",
