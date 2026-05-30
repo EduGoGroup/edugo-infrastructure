@@ -14,7 +14,7 @@ Modulo responsable del activo relacional de `edugo-infrastructure`.
 
 - Tests cortos pasan.
 - El paquete `migrations` y el paquete `seeds` son la superficie programatica mas confiable del modulo hoy.
-- La versión actual del módulo es `postgres/v0.2.0` (seeds aditivos de N1.7: pantallas SDUI `batch-enroll`/`enroll-one`/`sessions-by-subject-list`, menú "Sesiones de Materia", master-detail N detalles vía `detail_configs`, `L4_SEED_VERSION` 1.35.0, y playground v2 `n17_secciones`). Detalle en [CHANGELOG.md](CHANGELOG.md).
+- La versión actual del módulo es `postgres/v0.3.0` (scope `unit` en los recursos `memberships`/`subjects`/`subject_offerings`, playground v2 `multi_unidad` para validar el selector de unidad, poda de 6 recursos del menú SDUI sin pantalla KMP, y `L4_SEED_VERSION` 1.37.0). Detalle en [CHANGELOG.md](CHANGELOG.md).
 
 ## Documentacion del modulo
 

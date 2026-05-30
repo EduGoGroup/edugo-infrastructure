@@ -6,6 +6,22 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-30
+
+### Added
+
+- Playground v2 `multi_unidad` para validar el selector de unidad (multi-unidad).
+
+### Changed
+
+- Scope `unit` en los recursos `memberships`, `subjects` y `subject_offerings`
+  (contexto requerido derivado del scope del recurso).
+- `L4_SEED_VERSION` 1.35.0 → 1.37.0.
+
+### Removed
+
+- Poda del menú SDUI: se eliminan 6 recursos sin pantalla KMP asociada.
+
 ## [0.2.0] - 2026-05-28
 
 ### Added
