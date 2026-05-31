@@ -53,8 +53,12 @@ runs:
         echo "Configurando acceso a repos privados de EduGoGroup..."
         echo "::add-mask::${GH_TOKEN}"
         git config --global url."https://${GH_ACTOR}:${GH_TOKEN}@github.com/EduGoGroup/".insteadOf "https://github.com/EduGoGroup/"
+        # Exportar GOPRIVATE al entorno del job (persiste a todos los steps posteriores:
+        # go mod download / go mod verify). GOPRIVATE implica GONOPROXY+GONOSUMDB, asi que
+        # los modulos first-party de la org van directo a git y NO consultan proxy/sumdb
+        # publicos, donde quedaron versiones fantasma inmutables tras limpiezas de historial.
+        echo "GOPRIVATE=github.com/EduGoGroup/*" >> "$GITHUB_ENV"
       env:
-        GOPRIVATE: github.com/EduGoGroup/*
         GH_TOKEN: ${{ inputs.github-token }}
         GH_ACTOR: ${{ github.actor }}
 
@@ -67,9 +71,8 @@ runs:
         echo "Go version: $(go version)"
         echo "GOROOT: $(go env GOROOT)"
         echo "GOPATH: $(go env GOPATH)"
-        echo "GOPRIVATE: $GOPRIVATE"
+        echo "GOPRIVATE (job env): $GOPRIVATE"
+        echo "GOPRIVATE (go env): $(go env GOPRIVATE)"
         echo "Cache enabled: ${{ inputs.cache }}"
         echo "Cache hit: ${{ steps.setup.outputs.cache-hit }}"
         echo "========================================"
-      env:
-        GOPRIVATE: github.com/EduGoGroup/*
