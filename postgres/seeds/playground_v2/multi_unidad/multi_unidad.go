@@ -30,7 +30,8 @@
 // Lo que siembra:
 //  1. academic.schools           — 1 colegio "Colegio Multi-Unidad".
 //  2. academic.academic_units    — 2 unidades: "Sede Norte", "Sede Sur".
-//  3. academic.subjects          — 4 materias (2 por unidad).
+//  3. academic.subjects          — 4 materias de ESCUELA (AcademicUnitID=NULL,
+//     ADR 0016), nombres distintos "… Norte" / "… Sur" → UNIQUE(school_id, name).
 //  4. academic.academic_periods  — 1 período ACTIVO (is_active=true).
 //  5. auth.users                 — 1 admin + 2 docentes + 2 alumnos, password "12345678".
 //  6. iam.user_roles             — admin→school_admin L4, docentes→teacher L4, alumnos→student L4.
@@ -124,17 +125,18 @@ func Apply(tx *gorm.DB) error {
 		return fmt.Errorf("playground_v2/multi_unidad: unit_sur: %w", err)
 	}
 
-	// Materias: 2 por unidad (datos para las pantallas unit-scoped).
-	if err := upsertSubject(tx, subjectNorteMathID, unitNorteID, "Matemáticas Norte", "MAT-N"); err != nil {
+	// Materias de ESCUELA (ADR 0016): catálogo único de la escuela, sin anclar
+	// a unidad. Los 4 nombres son distintos → cumplen UNIQUE(school_id, name).
+	if err := upsertSubject(tx, subjectNorteMathID, "Matemáticas Norte", "MAT-N"); err != nil {
 		return fmt.Errorf("playground_v2/multi_unidad: subject_norte_math: %w", err)
 	}
-	if err := upsertSubject(tx, subjectNorteLangID, unitNorteID, "Lenguaje Norte", "LEN-N"); err != nil {
+	if err := upsertSubject(tx, subjectNorteLangID, "Lenguaje Norte", "LEN-N"); err != nil {
 		return fmt.Errorf("playground_v2/multi_unidad: subject_norte_lang: %w", err)
 	}
-	if err := upsertSubject(tx, subjectSurMathID, unitSurID, "Matemáticas Sur", "MAT-S"); err != nil {
+	if err := upsertSubject(tx, subjectSurMathID, "Matemáticas Sur", "MAT-S"); err != nil {
 		return fmt.Errorf("playground_v2/multi_unidad: subject_sur_math: %w", err)
 	}
-	if err := upsertSubject(tx, subjectSurLangID, unitSurID, "Lenguaje Sur", "LEN-S"); err != nil {
+	if err := upsertSubject(tx, subjectSurLangID, "Lenguaje Sur", "LEN-S"); err != nil {
 		return fmt.Errorf("playground_v2/multi_unidad: subject_sur_lang: %w", err)
 	}
 
@@ -247,7 +249,12 @@ func upsertAcademicUnit(tx *gorm.DB, idStr, name, code string) error {
 	}).Create(&u).Error
 }
 
-func upsertSubject(tx *gorm.DB, idStr, unitIDStr, name, code string) error {
+// upsertSubject siembra una materia con scope de ESCUELA (ADR 0016):
+// AcademicUnitID = nil. Aunque el playground tiene 2 unidades, las 4 materias
+// llevan nombres distintos ("… Norte" / "… Sur"), así que cumplen
+// UNIQUE(school_id, name) sin deduplicar. La materia es catálogo de la escuela
+// (visible en cualquier unidad activa); ya no se ancla a una unidad.
+func upsertSubject(tx *gorm.DB, idStr, name, code string) error {
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		return err
@@ -256,15 +263,11 @@ func upsertSubject(tx *gorm.DB, idStr, unitIDStr, name, code string) error {
 	if err != nil {
 		return err
 	}
-	auid, err := uuid.Parse(unitIDStr)
-	if err != nil {
-		return err
-	}
 	c := code
 	subj := entities.Subject{
 		ID:             id,
 		SchoolID:       sid,
-		AcademicUnitID: &auid,
+		AcademicUnitID: nil,
 		Name:           name,
 		Code:           &c,
 		IsActive:       true,

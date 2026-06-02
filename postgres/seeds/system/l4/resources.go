@@ -191,10 +191,12 @@ var l4Resources = []l4ResourceRow{
 	// abría con "screen instance not found". Permisos, screen_instances y
 	// resource_screens asociados también se quitaron. Se preserva el gap de
 	// sort_order para no alterar el orden visual del resto.
-	// Icono normalizado de "settings_applications" (Material 2) a
-	// "settings-2" (Lucide) por consistencia con L0/L3.
-	{ID: L4_RESOURCE_SCREEN_TEMPLATES_ID, Key: "screen_templates", DisplayName: "Templates de Pantalla", Description: "Templates base para configuración de pantallas", Icon: "settings-2", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
-	{ID: L4_RESOURCE_SCREEN_INSTANCES_ID, Key: "screen_instances", DisplayName: "Instancias de Pantalla", Description: "Instancias configuradas de pantalla por escuela", Icon: "monitor-smartphone", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 6, IsMenuVisible: true, IsActive: true},
+	// Poda menú (2026-06-01): se eliminaron los recursos `screen_templates`
+	// (sort 5) y `screen_instances` (sort 6). Sus pantallas de configuración
+	// SDUI (screen-templates-list, screen-instances-list/form, screens-form)
+	// se reimplementaron en el admin-tool de Go. Permisos, screen_instances y
+	// resource_screens asociados también se quitaron. Se preserva el gap de
+	// sort_order para no alterar el orden visual del resto.
 	{ID: L4_RESOURCE_AUDIT_ID, Key: "audit", DisplayName: "Auditoría", Description: "Registro de auditoría del sistema", Icon: "file-search", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_CONCEPT_TYPES_ID, Key: "concept_types", DisplayName: "Tipos de Concepto", Description: "Tipos de institución y terminología", Icon: "tag", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 8, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_SYSTEM_SETTINGS_ID, Key: "system_settings", DisplayName: "Configuración", Description: "Configuración y mantenimiento del sistema", Icon: "settings", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 9, IsMenuVisible: true, IsActive: true},

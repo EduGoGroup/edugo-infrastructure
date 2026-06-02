@@ -301,17 +301,10 @@ func l4Permissions() []l4PermissionSpec {
 		{"bc15c7a1-f203-46e0-80be-2850fad94b0e", L4_RESOURCE_SCHOOLS_ID, "admin.schools.read", "Ver Escuelas", "Ver información de escuelas", "read", "system"},
 		{"2b823ad1-d875-4951-9c85-3baafa3f1f65", L4_RESOURCE_SCHOOLS_ID, "admin.schools.update", "Editar Escuelas", "Modificar datos de escuelas", "update", "school"},
 
-		// --- screen_instances (resource 20000000-…-51) ---
-		{"fa35b956-665f-48f4-a51e-ad1393e72652", L4_RESOURCE_SCREEN_INSTANCES_ID, "admin.screen_instances.create", "Crear Instancias de Pantalla", "Crear nuevas instancias de pantalla", "create", "system"},
-		{"4096f489-b3f8-49bd-8ecb-6e3588a85f84", L4_RESOURCE_SCREEN_INSTANCES_ID, "admin.screen_instances.delete", "Eliminar Instancias de Pantalla", "Eliminar instancias de pantalla configuradas", "delete", "system"},
-		{"ebfd0911-43bf-42ef-9523-8dd93079db47", L4_RESOURCE_SCREEN_INSTANCES_ID, "admin.screen_instances.read", "Ver Instancias de Pantalla", "Ver instancias de pantalla configuradas", "read", "system"},
-		{"1ad07392-4c86-4ec9-b249-b66be3f97ce8", L4_RESOURCE_SCREEN_INSTANCES_ID, "admin.screen_instances.update", "Actualizar Instancias de Pantalla", "Modificar instancias de pantalla existentes", "update", "system"},
-
-		// --- screen_templates (resource 20000000-…-50) ---
-		{"52011396-5981-4c59-a772-1f353d10a3e9", L4_RESOURCE_SCREEN_TEMPLATES_ID, "admin.screen_templates.create", "Crear Templates de Pantalla", "Crear nuevos templates de pantalla", "create", "system"},
-		{"b6db1991-4a2c-429a-9c45-0ed177b6e3ed", L4_RESOURCE_SCREEN_TEMPLATES_ID, "admin.screen_templates.delete", "Eliminar Templates de Pantalla", "Eliminar templates de pantalla del sistema", "delete", "system"},
-		{"3d89c941-cbe5-4c1b-8cf0-0b55b4aaa313", L4_RESOURCE_SCREEN_TEMPLATES_ID, "admin.screen_templates.read", "Ver Templates de Pantalla", "Ver templates de pantalla del sistema", "read", "system"},
-		{"e5bf88e6-73ff-40d4-93a4-8c787d3930af", L4_RESOURCE_SCREEN_TEMPLATES_ID, "admin.screen_templates.update", "Actualizar Templates de Pantalla", "Modificar templates de pantalla existentes", "update", "system"},
+		// Poda menú (2026-06-01): permisos admin.screen_instances.* y
+		// admin.screen_templates.* eliminados junto con sus recursos — el CRUD
+		// de configuración SDUI se reimplementó en el admin-tool de Go. El
+		// permiso screens.read (lectura de pantallas desde mobile) se conserva.
 
 		// --- screens mobile (resource 20000000-…-52) ---
 		{"2b31df13-4c54-43fc-8bcd-8a9265fba1a0", L4_RESOURCE_SCREENS_ID, "screens.read", "Leer Pantallas (Mobile)", "Leer configuración de pantallas desde mobile", "read", "system"},

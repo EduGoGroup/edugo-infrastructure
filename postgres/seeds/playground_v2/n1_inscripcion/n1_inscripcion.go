@@ -15,7 +15,9 @@
 // Lo que siembra:
 //  1. academic.schools           — 1 colegio "Colegio N1 Inscripción".
 //  2. academic.academic_units    — 1 unidad académica bajo ese colegio.
-//  3. academic.subjects          — 3 materias: Matemáticas, Lenguaje, Ciencias.
+//  3. academic.subjects          — 3 materias de ESCUELA (AcademicUnitID=NULL,
+//     ADR 0016): Matemáticas, Lenguaje, Ciencias. Nombres distintos → cumplen
+//     UNIQUE(school_id, name).
 //  4. academic.academic_periods  — 1 período ACTIVO (is_active=true).
 //  5. auth.users                 — 1 admin + 1 docente + 3 alumnos, password "12345678".
 //  6. iam.user_roles             — admin→school_admin L4, docente→teacher L4, alumnos→student L4.
@@ -259,6 +261,10 @@ func upsertAcademicUnit(tx *gorm.DB) error {
 	}).Create(&u).Error
 }
 
+// upsertSubject siembra una materia con scope de ESCUELA (ADR 0016):
+// AcademicUnitID = nil. La materia es catálogo de la escuela; su ubicación en
+// la unidad la da la sesión (subject_offering). Los 3 nombres del playground
+// son distintos, así que cumplen UNIQUE(school_id, name) sin deduplicar.
 func upsertSubject(tx *gorm.DB, idStr, name, code string) error {
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -268,15 +274,11 @@ func upsertSubject(tx *gorm.DB, idStr, name, code string) error {
 	if err != nil {
 		return err
 	}
-	auid, err := uuid.Parse(unitID)
-	if err != nil {
-		return err
-	}
 	c := code
 	subj := entities.Subject{
 		ID:             id,
 		SchoolID:       sid,
-		AcademicUnitID: &auid,
+		AcademicUnitID: nil,
 		Name:           name,
 		Code:           &c,
 		IsActive:       true,

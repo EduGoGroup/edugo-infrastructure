@@ -120,115 +120,11 @@ func schoolsForm() l4ScreenInstanceRow {
 // `roles`/`permissions_mgmt` fueron retirados del menú. Sus constantes
 // L4_SCREEN_INST_ROLES_*/PERMISSIONS_* también se quitaron.
 
-// ===============================================================
-// ADMIN: screen-config (templates + instances + endpoint screens-form)
-// ===============================================================
-
-func screenTplList() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_SCREEN_TPL_LIST_ID,
-		screenKey:          "screen-templates-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Templates de Pantalla",
-		description:        "Lista de templates base disponibles",
-		scope:              "system",
-		requiredPermission: "admin.screen_templates.read",
-		slotData: `{
-  "title": "Templates",
-  "search_placeholder": "Buscar template...",
-  "columns": [
-    {"key": "name", "label": "Nombre"},
-    {"key": "pattern", "label": "Patrón"},
-    {"key": "version", "label": "Versión"}
-  ],
-  "actions_removed": ["create", "edit", "delete"],
-  "readonly": true,
-  "api_prefix": "platform:"
-}`,
-	}
-}
-
-func screenInstList() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_SCREEN_INST_LIST_ID,
-		screenKey:          "screen-instances-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Instancias de Pantalla",
-		description:        "Lista de instancias configuradas de pantalla",
-		scope:              "system",
-		requiredPermission: "admin.screen_instances.read",
-		slotData: `{
-  "title": "Instancias de Pantalla",
-  "search_placeholder": "Buscar instancia...",
-  "columns": [
-    {"key": "screen_key", "label": "Key"},
-    {"key": "name", "label": "Nombre"},
-    {"key": "scope", "label": "Alcance"}
-  ],
-  "actions_removed": ["delete"],
-  "api_prefix": "identity"
-}`,
-	}
-}
-
-func screenInstForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_SCREEN_INST_FORM_ID,
-		screenKey:          "screen-instances-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Instancia",
-		description:        "Crear o editar una instancia de pantalla",
-		scope:              "system",
-		requiredPermission: "admin.screen_instances.read",
-		slotData: `{
-  "title": "Instancia de Pantalla",
-  "fields": [
-    {"key": "screen_key", "label": "Screen Key", "type": "text", "required": true},
-    {"key": "template_id", "label": "Template", "type": "remote_select", "required": true},
-    {"key": "name", "label": "Nombre", "type": "text", "required": true},
-    {"key": "description", "label": "Descripción", "type": "textarea"},
-    {"key": "scope", "label": "Alcance", "type": "select", "options": [
-      {"value": "system", "label": "Sistema"},
-      {"value": "school", "label": "Escuela"},
-      {"value": "unit", "label": "Unidad"}
-    ]},
-    {"key": "required_permission", "label": "Permiso requerido", "type": "text"},
-    {"key": "is_active", "label": "Activa", "type": "toggle"}
-  ],
-  "api_prefix": "identity"
-}`,
-	}
-}
-
-// screens-form (alias legacy): mismo concepto que screen-instances-form
-// pero el FE lo declara con resource=`screens` (resource API-only en
-// L4 B1). api_prefix=platform documentado en TC-C como acepted.
-func screensForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_SCREENS_FORM_ID,
-		screenKey:          "screens-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Nueva Screen Instance",
-		description:        "Formulario alias para crear screen instances (variante platform)",
-		scope:              "system",
-		requiredPermission: "admin.screen_instances.read",
-		slotData: `{
-  "title": "Nueva Screen Instance",
-  "fields": [
-    {"key": "screen_key", "label": "Screen Key", "type": "text", "required": true},
-    {"key": "template_id", "label": "Template", "type": "remote_select", "required": true},
-    {"key": "name", "label": "Nombre", "type": "text", "required": true},
-    {"key": "scope", "label": "Alcance", "type": "select", "options": [
-      {"value": "system", "label": "Sistema"},
-      {"value": "school", "label": "Escuela"},
-      {"value": "unit", "label": "Unidad"}
-    ]}
-  ],
-  "actions_removed": ["delete"],
-  "api_prefix": "platform"
-}`,
-	}
-}
+// Poda menú (2026-06-01): los constructores screenTplList(), screenInstList(),
+// screenInstForm() y screensForm() se eliminaron — las pantallas de
+// configuración SDUI (screen-templates-list, screen-instances-list/form,
+// screens-form) se reimplementaron en el admin-tool de Go; los recursos
+// `screen_templates`/`screen_instances` se retiraron del menú.
 
 // ===============================================================
 // ADMIN: system-settings + concept-types
@@ -470,9 +366,9 @@ func membershipsForm() l4ScreenInstanceRow {
 
 // subjectsList: hereda los default_actions de list-basic-v1
 // (create/edit/delete sobre $resource$ → academic.subjects.*). Sin deltas:
-// el patrón CRUD estándar es suficiente. Las vistas "alumnos por materia" y
-// "sesiones por materia" no viven aquí sino embebidas como pestañas en
-// subjects-form (master-detail con detail_configs), ver subjectsForm().
+// el patrón CRUD estándar es suficiente. La vista "sesiones por materia" no
+// vive aquí sino embebida como pestaña "Sesiones" en subjects-form
+// (master-detail con detail_configs), ver subjectsForm().
 func subjectsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_SUBJECTS_LIST_ID,
@@ -497,21 +393,28 @@ func subjectsList() l4ScreenInstanceRow {
 	}
 }
 
-// subjectsForm usa master-detail-v1 (plan 006, Trozo A; N1.7 F2.2): hereda los 3
-// defaults de form (save_new/save/delete con scope=form-submit) y, vía
-// detail_configs[], embebe DOS pestañas de detalle readonly:
-//   - "Alumnos"  → students-by-subject-list (lista de alumnos de la materia)
-//   - "Sesiones" → sessions-by-subject-list (sesiones/offerings de la materia)
+// subjectsForm usa master-detail-v1 (plan 006, Trozo A; N1.7 F2.2/F2.3): hereda
+// los 3 defaults de form (save_new/save/delete con scope=form-submit) y, vía
+// detail_configs[], embebe UNA pestaña de detalle:
+//   - "Sesiones" → sessions-by-subject-list (sesiones/offerings de la materia),
+//     CON modal (modal_screen_key="sessions-by-subject-form", N1.7 F2.3): el
+//     botón "+" crea una sesión y el click en fila la edita (asignar/cambiar
+//     docente, sección, estado). El MasterDetailContainer abre el modal pasando
+//     subjectId (parent) y, en edición, id.
 //
-// Ambas sin modal (modal_screen_key=null): son solo lectura. La pestaña
-// "Sesiones" sustituye a la antigua row-action `view-sessions` de subjects-list
-// (eliminada en F2.2): ahora se llega navegando dentro del formulario de materia.
+// La pestaña "Alumnos" (students-by-subject-list) se RETIRÓ: la materia es
+// catálogo; un alumno se inscribe en una SESIÓN, no en la materia, así que el
+// roster de alumnos se gestiona dentro de cada sesión (batch-enroll/enroll-one),
+// no a nivel materia. El detalle de materia queda SOLO con "Sesiones".
 //
-// detail_configs: cada entrada lleva parent_id_param="subjectId" →
+// La pestaña "Sesiones" sustituye a la antigua row-action `view-sessions` de
+// subjects-list (eliminada en F2.2): ahora se llega navegando dentro del
+// formulario de materia.
+//
+// detail_configs: la entrada lleva parent_id_param="subjectId" →
 // MasterDetailContainer carga la pantalla hija pasando subjectId = id de la
-// materia editada; los contratos KMP leen context.params["subjectId"].
-// students-by-subject-list llama al lector B
-// (GET /api/v1/subjects/:id/enrollments); sessions-by-subject-list llama a
+// materia editada; el contrato KMP lee context.params["subjectId"].
+// sessions-by-subject-list llama a
 // GET /api/v1/subject-offerings?subject_id=. child_id_field="id". El frontend
 // KMP interpreta detail_configs; el backend solo lo persiste.
 //
@@ -522,8 +425,8 @@ func subjectsList() l4ScreenInstanceRow {
 // toolbar no aplica y se retira intencionalmente.
 //
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
-// del filtro subject_id sobre membership_subjects; ahora el lector B resuelve
-// las inscripciones por sesión).
+// del filtro subject_id sobre membership_subjects; ahora el lector resuelve
+// las sesiones de la materia).
 func subjectsForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_SUBJECTS_FORM_ID,
@@ -543,8 +446,7 @@ func subjectsForm() l4ScreenInstanceRow {
     {"key": "description", "label": "Descripción", "type": "textarea"}
   ],
   "detail_configs": [
-    {"screen_key": "students-by-subject-list", "modal_screen_key": null, "parent_id_param": "subjectId", "child_id_field": "id", "title": "Alumnos"},
-    {"screen_key": "sessions-by-subject-list", "modal_screen_key": null, "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
+    {"screen_key": "sessions-by-subject-list", "modal_screen_key": "sessions-by-subject-form", "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
   ],
   "actions_removed": ["detail"],
   "api_prefix": "academic"
@@ -578,39 +480,6 @@ func myMembershipsList() l4ScreenInstanceRow {
     {"key": "code", "label": "Código"}
   ],
   "actions_removed": ["create", "edit", "delete"],
-  "api_prefix": "academic"
-}`,
-	}
-}
-
-// studentsBySubjectList (plan 006, N1.B): vista de "alumnos por materia".
-// Espeja unit-directory (scope=unit, readonly). El permiso del slot es
-// academic.memberships.read (única fuente de gateo, ADR-0003). Se alcanza como
-// panel/tab detalle EMBEBIDO de subjects-form (master-detail-v1): el
-// detail_config de subjects-form la carga pasando subjectId = id de la materia;
-// el contrato KMP lee context.params["subjectId"] y llama al lector B
-// (GET /api/v1/subjects/:id/enrollments), que devuelve la misma forma que
-// GET /memberships. actions_removed retira create/edit/delete heredados del
-// template (la pantalla es de solo lectura, igual que unit-directory).
-// Reintroducida en N1.7 F2 sobre el modelo de sesiones.
-func studentsBySubjectList() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_STUDENTS_BY_SUBJECT_ID,
-		screenKey:          "students-by-subject-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Alumnos por Materia",
-		description:        "Listado de alumnos inscritos en una materia",
-		scope:              "unit",
-		requiredPermission: "academic.memberships.read",
-		slotData: `{
-  "title": "Alumnos",
-  "search_placeholder": "Buscar alumno...",
-  "columns": [
-    {"key": "user_name", "label": "Nombre"},
-    {"key": "role", "label": "Rol"}
-  ],
-  "actions_removed": ["create", "edit", "delete"],
-  "readonly": true,
   "api_prefix": "academic"
 }`,
 	}
@@ -868,14 +737,69 @@ func enrollOne() l4ScreenInstanceRow {
 // requiredPermission (slot.permission) = academic.subject_offerings.read.
 func sessionsBySubjectList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_SESSIONS_BY_SUBJECT_ID,
-		screenKey:          "sessions-by-subject-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Sesiones de la Materia",
-		description:        "Listado de sesiones (oferta) de una materia",
-		scope:              "school",
+		id:          L4_SCREEN_INST_SESSIONS_BY_SUBJECT_ID,
+		screenKey:   "sessions-by-subject-list",
+		templateID:  L0_SCREEN_TPL_LIST_ID_REF,
+		name:        "Sesiones de la Materia",
+		description: "Listado de sesiones (oferta) de una materia",
+		// scope=unit (ADR 0016 punto 3): aunque la materia es catalogo de
+		// ESCUELA, la GESTION de sus sesiones es por unidad activa — el backend
+		// filtra las sesiones por la unidad del token. El scope declarado refleja
+		// ese filtro real (antes decia "school", incoherente con el filtro).
+		scope:              "unit",
 		requiredPermission: "academic.subject_offerings.read",
 		slotData:           `{"title":"Sesiones","columns":[{"key":"subject_name","label":"Materia"},{"key":"section_label","label":"Sección"},{"key":"period_name","label":"Período"},{"key":"teacher_name","label":"Docente"}],"actions_removed":["create","edit","delete"],"api_prefix":"academic"}`,
+	}
+}
+
+// sessionsBySubjectForm (N1.7 F2.3): formulario crear/editar de "sesión de
+// materia" (subject offering). Se renderiza como MODAL del master-detail
+// subjects-form: la pestaña "Sesiones" lo enlaza vía detail_configs[].
+// modal_screen_key. El MasterDetailContainer abre el modal con subjectId (parent)
+// en create y con id+subjectId en edición.
+//
+// Campos:
+//   - period_id (remote_select, required): catálogo GET /api/v1/periods, que
+//     responde {"periods":[{id,name,...}]}; el RemoteDataLoader resuelve el
+//     array por fallback (no hay envelope items/data). display_field=name.
+//     En edición es identidad inmutable → el contrato KMP lo marca readonly.
+//   - section_label (text, opcional): etiqueta de sección (máx 10 en el backend).
+//   - teacher_membership_id (remote_select, NO required): docentes de la unidad
+//     activa vía GET /api/v1/memberships/by-role?role_key=teacher, que responde
+//     {"memberships":[{id,full_name,display_name,...}]}; display_field=full_name
+//     (nombre real de la persona; display_name lleva el rol "Profesor").
+//     Asigna o cambia el docente; el backend acepta omitirlo (deja intacto).
+//   - is_active (toggle, default true): el form renderer mapea toggle→SWITCH y
+//     serializa el valor como booleano JSON limpio (no string), alineado al
+//     IsActive *bool del UpdateSubjectOfferingRequest.
+//
+// subject_id NO es un campo del form: el contrato KMP lo inyecta al body en
+// create desde context.params["subjectId"]. requiredPermission =
+// academic.subject_offerings.update (gate del slot de mutación de la sesión).
+func sessionsBySubjectForm() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:          L4_SCREEN_INST_SESSIONS_BY_SUBJECT_FORM_ID,
+		screenKey:   "sessions-by-subject-form",
+		templateID:  L0_SCREEN_TPL_FORM_ID_REF,
+		name:        "Formulario de Sesión",
+		description: "Crear o editar una sesión de materia (período, sección y docente)",
+		// scope=unit (ADR 0016 punto 3): el form gestiona UNA sesión, que el
+		// backend filtra por la unidad activa del token, y su selector de docente
+		// (memberships/by-role) requiere unidad activa. Coherente con
+		// sessions-by-subject-list, ya en scope=unit (antes decía "school",
+		// incoherente con el contexto que el form realmente exige).
+		scope:              "unit",
+		requiredPermission: "academic.subject_offerings.update",
+		slotData: `{
+  "title": "Sesión",
+  "fields": [
+    {"key": "period_id", "label": "Período", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/periods", "display_field": "name", "value_field": "id"},
+    {"key": "section_label", "label": "Sección", "type": "text"},
+    {"key": "teacher_membership_id", "label": "Docente", "type": "remote_select", "remote_endpoint": "academic:/api/v1/memberships/by-role?role_key=teacher", "display_field": "full_name", "value_field": "id"},
+    {"key": "is_active", "label": "Activa", "type": "toggle", "default": "true"}
+  ],
+  "api_prefix": "academic"
+}`,
 	}
 }
 

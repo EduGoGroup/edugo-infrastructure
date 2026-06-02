@@ -345,7 +345,25 @@ import (
 //     desembebe "alumnos por materia" del form de materia (subjects-form
 //     vuelve a form-basic-v1, sin detail_config); se quita el campo
 //     subject_ids del memberships-form. L4_SEED_VERSION → 1.30.0.
-const SchemaVersion = "3.41.0"
+//   - 3.42.0: ADR 0016 (materia = catalogo de ESCUELA) — la entity
+//     academic.subjects gana un unique compuesto uq_subjects_school_name sobre
+//     (school_id, name). GORM lo materializa via tag uniqueIndex en ambas
+//     columnas (mismo patron que uq_subject_offerings_natural; no requiere
+//     post_gorm.sql). Respalda a nivel BD la validacion logica
+//     ExistsByNameInSchool de la API academic e impide materias duplicadas por
+//     nombre dentro de una escuela. Seeds reconciliados a materia=escuela
+//     (academic_unit_id = NULL) en demo + playgrounds v2 n1_inscripcion/
+//     n17_secciones/multi_unidad, deduplicando nombres repetidos por escuela.
+//     L4_SEED_VERSION → 1.31.0 (scope sessions-by-subject-list school → unit).
+//   - 3.43.0: el detalle de materia (subjects-form) queda SOLO con la pestaña
+//     "Sesiones". Se retira la entrada "Alumnos" (students-by-subject-list) del
+//     detail_configs y se ELIMINA esa screen_instance por completo (constructor,
+//     registro en el slice y constante L4_SCREEN_INST_STUDENTS_BY_SUBJECT_ID):
+//     era SOLO ese panel embebido, sin otra referencia (no estaba en menú ni en
+//     resource_screens). Además `sessions-by-subject-form` corrige su scope
+//     school → unit (form unidad-scoped, selector de docente requiere unidad
+//     activa). Sin cambios de esquema/migraciones. L4_SEED_VERSION → 1.41.0.
+const SchemaVersion = "3.43.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
