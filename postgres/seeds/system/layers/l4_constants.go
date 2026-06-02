@@ -268,7 +268,36 @@ package layers
 //     (RequireActiveContext → 428 NO_ACTIVE_UNIT), así que el scope del
 //     recurso debe ser "unit" para que el menú/contexto del frontend
 //     pida unidad antes de abrirlos. Coherente con grades/attendance.
-const L4_SEED_VERSION = "1.37.0"
+//   - 1.38.0 (2026-06-01): poda de los recursos `screen_templates` y
+//     `screen_instances` (CRUD de configuración SDUI reimplementado en el
+//     admin-tool de Go): se retiran sus 2 recursos, 8 permisos, 4
+//     screen_instances (…30..…33) y 4 mappings en resource_screens.
+//   - 1.39.0 (2026-06-02): N1.7 F2.3 — habilitada la creación/edición de sesiones
+//     de materia desde la app. Nueva screen_instance `sessions-by-subject-form`
+//     (…5f) como modal del master-detail subjects-form (detail_configs[] de la
+//     pestaña "Sesiones" pasa modal_screen_key null→sessions-by-subject-form) y
+//     su mapping en resource_screens (…6d, recurso subject_offerings).
+//   - 1.40.0 (2026-06-02): ADR 0016 punto 3 — scope de la screen_instance
+//     `sessions-by-subject-list` corregido school → unit. La materia es catálogo
+//     de escuela, pero la gestión de sus sesiones la filtra el backend por la
+//     unidad activa del token; el scope declarado ahora refleja ese filtro real
+//     (queda alineado con `students-by-subject-list`, ya en scope=unit). El
+//     gating por RequiredContext del menú no cambia (deriva de resource.scope,
+//     no de esta screen_instance).
+//   - 1.41.0 (2026-06-02): el detalle de materia queda SOLO con la pestaña
+//     "Sesiones". Cambios: (C) se quita la entrada "Alumnos"
+//     (students-by-subject-list) del detail_configs de `subjects-form` — un
+//     alumno se inscribe en una SESIÓN, no en la materia, así que el roster se
+//     gestiona dentro de cada sesión (batch-enroll/enroll-one), no a nivel
+//     materia. La screen_instance `students-by-subject-list` se ELIMINA por
+//     completo (constructor, registro en el slice y constante
+//     L4_SCREEN_INST_STUDENTS_BY_SUBJECT_ID, UUID …c1 libre): era SOLO ese panel
+//     embebido, sin otra referencia (no estaba en menú ni en resource_screens).
+//     (D) la screen_instance `sessions-by-subject-form` corrige su scope
+//     school → unit: el form gestiona UNA sesión (filtrada por unidad activa) y
+//     su selector de docente requiere unidad activa, alineándose con
+//     `sessions-by-subject-list`.
+const L4_SEED_VERSION = "1.41.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

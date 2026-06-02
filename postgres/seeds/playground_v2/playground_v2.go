@@ -21,16 +21,21 @@ import (
 	"fmt"
 
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
+	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
 	n1_inscripcion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n1_inscripcion"
 	onboarding "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/onboarding"
-	v2_screens_catalog "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/v2_screens_catalog"
 	"gorm.io/gorm"
 )
 
 // SeedVersion declara la versión semántica del paquete playground_v2.
 // Bumpear al cambiar la forma de un fixture existente.
-const SeedVersion = "v0.1.0"
+//
+// v0.2.0 (2026-06-02, ADR 0016): materia = catálogo de ESCUELA. Los fixtures
+// n1_inscripcion, n17_secciones y multi_unidad dejan de anclar sus materias a
+// una unidad (AcademicUnitID = NULL); n0n1_escuelas ya estaba alineado. Cumplen
+// UNIQUE(school_id, name) sin deduplicar (nombres distintos por escuela).
+const SeedVersion = "v0.2.0"
 
 // ApplyFunc es la firma estable de la función Apply de cada playground v2.
 type ApplyFunc func(*gorm.DB) error
@@ -44,11 +49,11 @@ type Fixture struct {
 // fixtures es el registry declarativo de playgrounds v2 disponibles.
 // El orden se respeta cuando se aplica "all".
 var fixtures = []Fixture{
-	{Name: "v2_screens_catalog", Apply: v2_screens_catalog.Apply},
 	{Name: "onboarding", Apply: onboarding.Apply},
 	{Name: "n1_inscripcion", Apply: n1_inscripcion.Apply},
 	{Name: "n17_secciones", Apply: n17_secciones.Apply},
 	{Name: "multi_unidad", Apply: multi_unidad.Apply},
+	{Name: "n0n1_escuelas", Apply: n0n1_escuelas.Apply},
 }
 
 // Available retorna los nombres de playgrounds v2 disponibles.

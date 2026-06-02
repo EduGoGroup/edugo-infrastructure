@@ -161,16 +161,11 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// `permissions_mgmt` (permissions-list/form) eliminados junto con sus
 		// recursos y screen_instances.
 
-		// =============================================================
-		// admin → screen_templates / screen_instances
-		// =============================================================
-		{id: "b4500000-0000-0000-0000-000000000030", resourceID: L4_RESOURCE_SCREEN_TEMPLATES_ID, resourceKey: L4_RESOURCE_SCREEN_TEMPLATES_KEY, screenKey: "screen-templates-list", screenType: "list", isDefault: true, sortOrder: 1},
-
-		{id: "b4500000-0000-0000-0000-000000000035", resourceID: L4_RESOURCE_SCREEN_INSTANCES_ID, resourceKey: L4_RESOURCE_SCREEN_INSTANCES_KEY, screenKey: "screen-instances-list", screenType: "list", isDefault: true, sortOrder: 1},
-		{id: "b4500000-0000-0000-0000-000000000036", resourceID: L4_RESOURCE_SCREEN_INSTANCES_ID, resourceKey: L4_RESOURCE_SCREEN_INSTANCES_KEY, screenKey: "screen-instances-form", screenType: "form", isDefault: false, sortOrder: 2},
-		// screens-form: alias platform/legacy del form de screen
-		// instances. Se mantiene como `create-form` (legacy preservado).
-		{id: "b4500000-0000-0000-0000-000000000037", resourceID: L4_RESOURCE_SCREEN_INSTANCES_ID, resourceKey: L4_RESOURCE_SCREEN_INSTANCES_KEY, screenKey: "screens-form", screenType: "create-form", isDefault: false, sortOrder: 3},
+		// Poda menú (2026-06-01): mappings de `screen_templates`
+		// (screen-templates-list) y `screen_instances` (screen-instances-list/
+		// form, screens-form) eliminados junto con sus recursos y
+		// screen_instances — ese CRUD de configuración SDUI se reimplementó en
+		// el admin-tool de Go.
 
 		// =============================================================
 		// admin → audit / concept_types / system_settings
@@ -222,6 +217,11 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// sí solas.
 		{id: "b4500000-0000-0000-0000-00000000006b", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "enroll-one", screenType: "list", isDefault: false, sortOrder: 2},
 		{id: "b4500000-0000-0000-0000-00000000006c", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "sessions-by-subject-list", screenType: "list", isDefault: false, sortOrder: 3},
+		// N1.7 F2.3: sessions-by-subject-form, formulario crear/editar de sesión
+		// (modal del master-detail subjects-form). Bajo el mismo recurso
+		// subject_offerings para satisfacer la FK screen_key; no es default ni
+		// visible en menú (se alcanza desde la pestaña "Sesiones").
+		{id: "b4500000-0000-0000-0000-00000000006d", resourceID: L4_RESOURCE_SUBJECT_OFFERINGS_ID, resourceKey: L4_RESOURCE_SUBJECT_OFFERINGS_KEY, screenKey: "sessions-by-subject-form", screenType: "form", isDefault: false, sortOrder: 4},
 
 		{id: "b4500000-0000-0000-0000-000000000070", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000071", resourceID: L4_RESOURCE_SUBJECTS_ID, resourceKey: L4_RESOURCE_SUBJECTS_KEY, screenKey: "subjects-form", screenType: "form", isDefault: false, sortOrder: 2},

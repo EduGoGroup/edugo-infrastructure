@@ -50,11 +50,11 @@ const (
 	L4_SCREEN_INST_SCHOOLS_LIST_ID = "b4400000-0000-0000-0000-000000000022"
 	L4_SCREEN_INST_SCHOOLS_FORM_ID = "b4400000-0000-0000-0000-000000000023"
 
-	// admin: screen-config, system-settings, concept-types
-	L4_SCREEN_INST_SCREEN_TPL_LIST_ID    = "b4400000-0000-0000-0000-000000000030"
-	L4_SCREEN_INST_SCREEN_INST_LIST_ID   = "b4400000-0000-0000-0000-000000000031"
-	L4_SCREEN_INST_SCREEN_INST_FORM_ID   = "b4400000-0000-0000-0000-000000000032"
-	L4_SCREEN_INST_SCREENS_FORM_ID       = "b4400000-0000-0000-0000-000000000033"
+	// admin: system-settings, concept-types
+	// Poda menú (2026-06-01): las instancias …30..…33 (screen-templates-list,
+	// screen-instances-list/form, screens-form) se eliminaron junto con los
+	// recursos `screen_templates`/`screen_instances` — ese CRUD de
+	// configuración SDUI se reimplementó en el admin-tool de Go. UUIDs libres.
 	L4_SCREEN_INST_SYSTEM_SETTINGS_ID    = "b4400000-0000-0000-0000-000000000034"
 	L4_SCREEN_INST_CONCEPT_TYPES_LIST_ID = "b4400000-0000-0000-0000-000000000035"
 	L4_SCREEN_INST_CONCEPT_TYPES_FORM_ID = "b4400000-0000-0000-0000-000000000036"
@@ -108,6 +108,14 @@ const (
 	// Pantalla SDUI list estándar (columns subject/section/period/teacher).
 	// Sufijo …5e, adyacente a enroll-one …5d.
 	L4_SCREEN_INST_SESSIONS_BY_SUBJECT_ID = "b4400000-0000-0000-0000-00000000005e"
+	// sessions-by-subject-form (N1.7 F2.3): formulario crear/editar de "sesión de
+	// materia". Se renderiza como modal del master-detail subjects-form (la
+	// pestaña "Sesiones" lo declara en detail_configs[].modal_screen_key). El
+	// contenedor inyecta subjectId (parent) y, en edición, id; el contrato KMP
+	// inyecta subject_id al body en create y consume POST/PUT
+	// /api/v1/subject-offerings. Pantalla SDUI form estándar. Sufijo …5f,
+	// adyacente a sessions-by-subject-list …5e.
+	L4_SCREEN_INST_SESSIONS_BY_SUBJECT_FORM_ID = "b4400000-0000-0000-0000-00000000005f"
 
 	// academic: guardian / calendar / schedules
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de
@@ -146,12 +154,10 @@ const (
 
 	// directories & misc
 	L4_SCREEN_INST_UNIT_DIRECTORY_ID = "b4400000-0000-0000-0000-0000000000c0"
-	// students-by-subject-list ("alumnos por materia", plan 006). Reintroducida
-	// en N1.7 F2 sobre el modelo de sesiones: panel detalle EMBEBIDO de
-	// subjects-form (master-detail). El contrato KMP consume el lector B
-	// GET /api/v1/subjects/:id/enrollments (misma forma que GET /memberships).
-	// slot.permission academic.memberships.read.
-	L4_SCREEN_INST_STUDENTS_BY_SUBJECT_ID = "b4400000-0000-0000-0000-0000000000c1"
+	// L4_SCREEN_INST_STUDENTS_BY_SUBJECT_ID (UUID …c1) eliminado (2026-06-02):
+	// su screen_instance `students-by-subject-list` era SOLO el panel detalle
+	// "Alumnos" embebido en subjects-form, retirado porque un alumno se inscribe
+	// en una SESIÓN, no en la materia. UUID …c1 queda libre para reuso futuro.
 	// L4_SCREEN_INST_NOTIFICATIONS_LIST_ID retirado en B7-fix: FE no
 	// implementa NotificationsListContract.kt aún. Re-sembrar al
 	// agregar el Contract correspondiente.

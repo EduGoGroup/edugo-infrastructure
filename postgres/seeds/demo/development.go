@@ -16,7 +16,10 @@ import (
 )
 
 const (
-	SeedVersion         = "development-gorm-v3"
+	// v4 (ADR 0016): materias migradas a scope de ESCUELA (academic_unit_id =
+	// NULL) y deduplicadas por (school_id, name); referencias en offerings/
+	// grades/attendance/schedules repuntadas al id sobreviviente.
+	SeedVersion         = "development-gorm-v4"
 	defaultPasswordHash = "$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau"
 )
 
@@ -467,16 +470,26 @@ func seedUserGrants(tx *gorm.DB) error {
 	return nil
 }
 
+// seedSubjects siembra el catálogo de materias de ESCUELA (ADR 0016):
+// academic_unit_id = NULL en todas. Una materia es catálogo de la escuela
+// (reutilizable en cualquier unidad vía sus sesiones), y cumple
+// UNIQUE(school_id, name) — no puede repetirse el mismo nombre dentro de una
+// escuela. Por eso se eliminaron las materias duplicadas del modelo viejo
+// materia=unidad: en San Ignacio (b1…01) "Matematicas" y "Ciencias Naturales"
+// existían dos veces (5A y 5B). Quedan una sola de cada (dd…01 Matematicas,
+// dd…02 Ciencias Naturales); las antiguas dd…03 (Matematicas 5B) y dd…08
+// (Ciencias 5B) se colapsan en ellas y sus referencias (offerings/grades/
+// attendance) se repuntan al id sobreviviente. La diferencia de unidad que antes
+// distinguía 5A de 5B la aporta ahora la sesión (subject_offering.academic_unit_id),
+// no la materia.
 func seedSubjects(tx *gorm.DB) error {
 	rows := []map[string]any{
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "name": "Matematicas", "code": "MAT-5A", "description": "Matematicas para 5to A", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "name": "Ciencias Naturales", "code": "SCI-5A", "description": "Ciencias Naturales para 5to A", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000003"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "name": "Matematicas", "code": "MAT-5B", "description": "Matematicas para 5to B", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "name": "Historia", "code": "HIS-6A", "description": "Historia de Chile para 6to A", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "name": "Tecnicas de Pintura", "code": "PINT-GM", "description": "Taller de tecnicas de pintura", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000011"), "name": "Fundamentos de Escultura", "code": "ESCL-GT", "description": "Taller de fundamentos de escultura", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "name": "English Basics A2", "code": "ENG-A2", "description": "English course for level A2", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "name": "Ciencias Naturales", "code": "SCI-5B", "description": "Ciencias Naturales para 5to B", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Matematicas", "code": "MAT-5A", "description": "Matematicas (5to A/B)", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Ciencias Naturales", "code": "SCI-5A", "description": "Ciencias Naturales (5to A/B)", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Historia", "code": "HIS-6A", "description": "Historia de Chile para 6to A", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "name": "Tecnicas de Pintura", "code": "PINT-GM", "description": "Taller de tecnicas de pintura", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "name": "Fundamentos de Escultura", "code": "ESCL-GT", "description": "Taller de fundamentos de escultura", "is_active": true},
+		{"id": mustUUID("dd000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": nil, "name": "English Basics A2", "code": "ENG-A2", "description": "English course for level A2", "is_active": true},
 	}
 	return upsertMaps(tx, "academic.subjects", rows, []string{"id"}, nil, false)
 }
@@ -730,8 +743,13 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 	offerings := []map[string]any{
 		{"id": mustUUID(offMat5A), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "is_active": true, "metadata": mustJSON(`{}`)},
 		{"id": mustUUID(offEngA2), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000005"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000009"), "is_active": true, "metadata": mustJSON(`{}`)},
-		{"id": mustUUID(offMat5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
-		{"id": mustUUID(offSci5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000008"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
+		// offMat5B/offSci5B repuntan a la materia ESCUELA sobreviviente (dd…01/
+		// dd…02) tras colapsar las duplicadas 5B (ADR 0016). La unidad 5to B
+		// (ac…04) la lleva la sesión, NO la materia; la natural key de la oferta
+		// (school+subject+unit+section+period) no colisiona con la sesión 5A
+		// (offMat5A/dd…01) porque la unidad difiere (ac…03 vs ac…04).
+		{"id": mustUUID(offMat5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
+		{"id": mustUUID(offSci5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
 		{"id": mustUUID(offHis6A), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000004"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000011"), "is_active": true, "metadata": mustJSON(`{}`)},
 		{"id": mustUUID(offPint), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000005"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000012"), "is_active": true, "metadata": mustJSON(`{}`)},
 		{"id": mustUUID(offEscl), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000006"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000011"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000013"), "is_active": true, "metadata": mustJSON(`{}`)},
@@ -807,7 +825,10 @@ func seedGrades(tx *gorm.DB) error {
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000001"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 6.5, "grade_letter": "B+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Buen rendimiento", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 5.8, "grade_letter": "B", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": nil, "finalized_at": nil},
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 7.0, "grade_letter": "A-", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Excelente", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
-		{"id": mustUUID("a0000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000003"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 5.0, "grade_letter": "C+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "notes": "Debe mejorar", "finalized_at": nil},
+		// Repuntada a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
+		// (ADR 0016). grades_unique=(membership,subject,period): membership bb…04
+		// es único en esta materia/periodo → sin colisión.
+		{"id": mustUUID("a0000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 5.0, "grade_letter": "C+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "notes": "Debe mejorar", "finalized_at": nil},
 	}
 
 	return upsertMaps(tx, "academic.grades", rows, []string{"id"}, nil, false)
@@ -829,8 +850,11 @@ func seedAttendance(tx *gorm.DB) error {
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000005"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000006"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "absent", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
-		{"id": mustUUID("a1000000-0000-0000-0000-000000000007"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000003"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000006")},
-		{"id": mustUUID("a1000000-0000-0000-0000-000000000008"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000003"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000006")},
+		// Repuntadas a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
+		// (ADR 0016). attendance_unique=(membership,subject,date): membership
+		// bb…04 no tiene otra asistencia en dd…01 → sin colisión.
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000007"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000006")},
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000008"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000006")},
 	}
 
 	return upsertMaps(tx, "academic.attendance", rows, []string{"id"}, nil, false)
@@ -848,7 +872,10 @@ func seedSchedules(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("a2000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "day_of_week": 1, "start_time": mustTimestamp("2026-03-03 08:00:00+00"), "end_time": mustTimestamp("2026-03-03 09:30:00+00"), "room": "Sala 101", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
 		{"id": mustUUID("a2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "day_of_week": 3, "start_time": mustTimestamp("2026-03-05 10:00:00+00"), "end_time": mustTimestamp("2026-03-05 11:30:00+00"), "room": "Sala 102", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
-		{"id": mustUUID("a2000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000003"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "day_of_week": 2, "start_time": mustTimestamp("2026-03-04 08:00:00+00"), "end_time": mustTimestamp("2026-03-04 09:30:00+00"), "room": "Sala 103", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
+		// Repuntada a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
+		// (ADR 0016). schedules no tiene unique natural → repunte directo seguro;
+		// la unidad 5to B (ac…04) sigue en la propia fila de horario.
+		{"id": mustUUID("a2000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "day_of_week": 2, "start_time": mustTimestamp("2026-03-04 08:00:00+00"), "end_time": mustTimestamp("2026-03-04 09:30:00+00"), "room": "Sala 103", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
 	}
 
 	return upsertMaps(tx, "academic.schedules", rows, []string{"id"}, nil, false)

@@ -417,17 +417,10 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// eliminadas — el FE KMP no implementa esas pantallas y los recursos
 		// `roles`/`permissions_mgmt` fueron retirados del menú.
 
-		// ===========================================================
-		// ADMIN: SCREEN-CONFIG (templates + instances + endpoint)
-		// ===========================================================
-		// screen_templates-list: solo read; permission *_read.
-		// screen_instances-list/form: read + create/update.
-		// screens-form (alias legacy): conservado, permisos sobre
-		// screens:* (resource API-only que vive en L4 B1).
-		screenTplList(),
-		screenInstList(),
-		screenInstForm(),
-		screensForm(),
+		// Poda menú (2026-06-01): screenTplList/screenInstList/screenInstForm/
+		// screensForm eliminadas — las pantallas de configuración SDUI se
+		// reimplementaron en el admin-tool de Go y los recursos
+		// `screen_templates`/`screen_instances` se retiraron del menú.
 
 		// ===========================================================
 		// ADMIN: SYSTEM SETTINGS + CONCEPT TYPES
@@ -463,6 +456,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		subjectOfferingsBatchEnroll(), // inscripción por lote (pantalla nativa), N1.7 F1
 		enrollOne(),                   // inscripción individual (pantalla nativa), N1.7 F2
 		sessionsBySubjectList(),       // sesiones por materia (lista hija SDUI), N1.7 F2
+		sessionsBySubjectForm(),       // crear/editar sesión de materia (modal SDUI), N1.7 F2.3
 
 		// ===========================================================
 		// ACADEMIC: GUARDIAN / CALENDAR / SCHEDULES
@@ -523,11 +517,11 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// la reportaba como screen_key_dead. Re-sembrar cuando el FE
 		// agregue NotificationsListContract.kt.
 		unitDirectory(),
-		// students-by-subject-list (plan 006, N1.B): vista de alumnos por
-		// materia. Panel detalle EMBEBIDO de subjects-form (master-detail).
-		// Reintroducida en N1.7 F2 sobre el modelo de sesiones (lector B:
-		// GET /api/v1/subjects/:id/enrollments).
-		studentsBySubjectList(),
+		// students-by-subject-list eliminada (2026-06-02): era SOLO el panel
+		// detalle "Alumnos" embebido en subjects-form, retirado porque un alumno
+		// se inscribe en una SESIÓN, no en la materia. Sin otras referencias
+		// (no estaba en menú ni en resource_screens). Su constructor y constante
+		// se eliminaron.
 
 		// ===========================================================
 		// PHANTOM-NUEVAS NO-ASSESSMENT (4 adicionales)
