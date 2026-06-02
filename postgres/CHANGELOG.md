@@ -6,6 +6,26 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-02
+
+### Added
+
+- Playground v2 `n0n1_escuelas`: 3 escuelas, 13 docentes y una solicitud N0 pendiente
+  (InglesLab), para validar el flujo de aprobación N0/N1.
+
+### Changed
+
+- `sessions-by-subject-form` pasa de scope `school` a `unit`; se elimina la pestaña *Alumnos*
+  del detalle de materia y la instancia `studentsBySubjectList` asociada.
+- Ajustes en los playgrounds v2 `multi_unidad`, `n17_secciones` y `n1_inscripcion`, y en la
+  entidad `subject`.
+- `L4_SEED_VERSION` 1.37.0 → 1.41.0; `SchemaVersion` 3.41.0 → 3.43.0; demo `SeedVersion`
+  `development-gorm-v3` → `development-gorm-v4`.
+
+### Removed
+
+- `v2_screens_catalog`: el CRUD de los 4 recursos meta SDUI se migró al admin-tool de Go.
+
 ## [0.3.0] - 2026-05-30
 
 ### Added
