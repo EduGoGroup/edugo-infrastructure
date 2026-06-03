@@ -297,7 +297,17 @@ package layers
 //     school → unit: el form gestiona UNA sesión (filtrada por unidad activa) y
 //     su selector de docente requiere unidad activa, alineándose con
 //     `sessions-by-subject-list`.
-const L4_SEED_VERSION = "1.41.0"
+//   - 1.42.0 (2026-06-02): se retira el camino de CREACIÓN DIRECTA de membresías
+//     (redundante con el flujo invitación→solicitud→doble-gate→aprobación, que ya
+//     crea la membresía). Cambios: se ELIMINAN las screen_instances
+//     `memberships-form` (…53) y `membership-add` (…d2) — sus constructores,
+//     registros en el slice y constantes (UUIDs …53 y …d2 libres). Se quitan sus
+//     2 mappings en resource_screens (recurso memberships): quedan `memberships-list`
+//     y `unit-directory`. A `memberships-list` se le agrega
+//     `actions_removed:["create"]` para que el admin ya no navegue al form
+//     eliminado; se conservan edit/delete/expire. Leer/editar/expirar/borrar
+//     membresías sigue intacto. Sin cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.42.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

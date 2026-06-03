@@ -190,11 +190,12 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-000000000061", resourceID: L4_RESOURCE_UNITS_ID, resourceKey: L4_RESOURCE_UNITS_KEY, screenKey: "units-form", screenType: "form", isDefault: false, sortOrder: 2},
 
 		{id: "b4500000-0000-0000-0000-000000000065", resourceID: L4_RESOURCE_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MEMBERSHIPS_KEY, screenKey: "memberships-list", screenType: "list", isDefault: true, sortOrder: 1},
+		// memberships-form queda como pantalla de SOLO EDICIÓN (editar una membresía
+		// existente desde la acción "editar" de la lista). La creación directa se
+		// retiró: sin FAB de crear en la lista (actions_removed:["create"]), sin POST
+		// en el backend y membership-add eliminado.
 		{id: "b4500000-0000-0000-0000-000000000066", resourceID: L4_RESOURCE_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MEMBERSHIPS_KEY, screenKey: "memberships-form", screenType: "form", isDefault: false, sortOrder: 2},
 		{id: "b4500000-0000-0000-0000-000000000067", resourceID: L4_RESOURCE_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MEMBERSHIPS_KEY, screenKey: "unit-directory", screenType: "directory", isDefault: false, sortOrder: 3},
-		// membership-add (phantom B4): variante simplificada del form
-		// para agregar un miembro a una unidad puntual. Sub-flujo.
-		{id: "b4500000-0000-0000-0000-000000000068", resourceID: L4_RESOURCE_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MEMBERSHIPS_KEY, screenKey: "membership-add", screenType: "add", isDefault: false, sortOrder: 4},
 
 		// academic → my_memberships (plan 006, N1.C ETAPA 2): default del
 		// item de menú "Mis materias" del alumno. Recurso separado de

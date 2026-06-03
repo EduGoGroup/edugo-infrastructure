@@ -298,6 +298,10 @@ func unitsForm() l4ScreenInstanceRow {
 	}
 }
 
+// membershipsList: hereda los default_actions de list-basic-v1 pero RETIRA
+// "create" — la creación directa de membresías se eliminó (redundante con el
+// flujo invitación→solicitud→doble-gate→aprobación, que ya crea la membresía).
+// Las acciones edit/delete/expire se conservan.
 func membershipsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_MEMBERSHIPS_LIST_ID,
@@ -315,25 +319,30 @@ func membershipsList() l4ScreenInstanceRow {
     {"key": "unit_name", "label": "Unidad"},
     {"key": "role", "label": "Rol"}
   ],
+  "actions_removed": ["create"],
   "api_prefix": "academic"
 }`,
 	}
 }
 
-// membershipsForm: form-basic-v1 con los campos del CreateMembershipRequest del
-// backend. Las keys/tipos cuadran con el contrato real (academic):
-//   - user_email (text): el backend acepta user_id O user_email; usamos el
-//     email para no depender de un selector remoto de usuarios. Tipo `text`
-//     (NO `email`) para evitar un ControlType incierto en el renderer.
+// membershipsForm: form-basic-v1 reservado para SOLO EDICIÓN de una membresía
+// existente. La creación directa de membresías se retiró (redundante con el flujo
+// invitación→solicitud→doble-gate→aprobación): no hay FAB de crear en
+// memberships-list, no hay POST en el backend y membership-add se eliminó. Esta
+// pantalla solo se alcanza desde la acción "editar" de la lista; carga por id
+// (LOAD_DATA → GET /memberships/:id) y guarda con PUT.
+//   - actions_removed=["save_new"]: retira el "guardar como nuevo" (action
+//     save_new, condition=create-only, permission $resource$.create) heredado del
+//     template form-basic-v1; queda solo `save` (condition=edit-only,
+//     $resource$.update → PUT) y `delete`. Así la pantalla NUNCA puede crear.
+//   - user_email (text): el usuario NO se reasigna editando; el contrato KMP lo
+//     muestra read-only en edición. Las keys/tipos cuadran con el contrato real.
 //   - academic_unit_id (remote_select): el FormFieldsResolver del KMP DESCARTA
 //     todo remote_select sin remote_endpoint, así que aquí SÍ lo declaramos.
 //     Endpoint academic:/api/v1/units → {"units":[{id, display_name,...}]}; la
 //     escuela se resuelve de la escuela activa del JWT (NUNCA por path/query/
-//     body, estándar del ecosistema). El campo visible es
-//     display_field=display_name (NO `name`), value_field=id.
+//     body, estándar del ecosistema). display_field=display_name, value_field=id.
 //   - role_key (select estático): enum del backend (NO remote, NO role_id).
-//     Misma forma textual que invitations-form: type "select" + options con
-//     {value,label}.
 //
 // NO lleva subject_ids ni materias (retirado en F0b, no se reintroduce).
 func membershipsForm() l4ScreenInstanceRow {
@@ -341,12 +350,12 @@ func membershipsForm() l4ScreenInstanceRow {
 		id:                 L4_SCREEN_INST_MEMBERSHIPS_FORM_ID,
 		screenKey:          "memberships-form",
 		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Membresía",
-		description:        "Asignar usuario a unidad",
+		name:               "Editar Membresía",
+		description:        "Editar la membresía de un usuario en una unidad",
 		scope:              "school",
 		requiredPermission: "academic.memberships.read",
 		slotData: `{
-  "title": "Membresía",
+  "title": "Editar Membresía",
   "fields": [
     {"key": "user_email", "label": "Email del usuario", "type": "text", "required": true},
     {"key": "academic_unit_id", "label": "Unidad", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/units", "display_field": "display_name", "value_field": "id"},
@@ -359,6 +368,7 @@ func membershipsForm() l4ScreenInstanceRow {
       {"value": "admin", "label": "Administrador"}
     ]}
   ],
+  "actions_removed": ["save_new"],
   "api_prefix": "academic"
 }`,
 	}
@@ -1380,30 +1390,6 @@ func schoolConceptsForm() l4ScreenInstanceRow {
     ]}
   ],
   "actions_removed": ["delete"],
-  "api_prefix": "academic"
-}`,
-	}
-}
-
-// membership-add: form simplificado para vincular un usuario a una
-// unidad sin pasar por el form completo. El FE lo usa como flow
-// abreviado (`MembershipAddContract.kt`).
-func membershipAdd() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_MEMBERSHIP_ADD_ID,
-		screenKey:          "membership-add",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Vincular Miembro",
-		description:        "Form simplificado de vinculación usuario-unidad",
-		scope:              "school",
-		requiredPermission: "academic.memberships.read",
-		slotData: `{
-  "title": "Vincular Miembro",
-  "fields": [
-    {"key": "email", "label": "Email del usuario", "type": "email", "required": true},
-    {"key": "role_id", "label": "Rol", "type": "remote_select", "required": true}
-  ],
-  "actions_removed": ["save", "delete"],
   "api_prefix": "academic"
 }`,
 	}

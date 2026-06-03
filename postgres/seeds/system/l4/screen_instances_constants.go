@@ -25,8 +25,7 @@ package l4
 //	00A0..00AF → reports: progress, stats, report-card
 //	00B0..00BF → guardian: children/requests
 //	00C0..00CF → notifications & directories
-//	00D0..00DF → phantom-nuevas (B4: school-concepts, membership-add,
-//	                               user-roles)
+//	00D0..00DF → phantom-nuevas (B4: school-concepts, user-roles)
 const (
 	// auth & shell
 	L4_SCREEN_INST_APP_LOGIN_ID      = "b4400000-0000-0000-0000-000000000001"
@@ -67,6 +66,10 @@ const (
 	L4_SCREEN_INST_UNITS_LIST_ID       = "b4400000-0000-0000-0000-000000000050"
 	L4_SCREEN_INST_UNITS_FORM_ID       = "b4400000-0000-0000-0000-000000000051"
 	L4_SCREEN_INST_MEMBERSHIPS_LIST_ID = "b4400000-0000-0000-0000-000000000052"
+	// memberships-form queda como pantalla de SOLO EDICIÓN (editar una membresía
+	// existente). La creación directa se retiró (sin FAB de crear, sin POST, sin
+	// membership-add), pero el form de edición se conserva — lo alcanza la acción
+	// "editar" de memberships-list (LOAD_DATA por id + submit PUT).
 	L4_SCREEN_INST_MEMBERSHIPS_FORM_ID = "b4400000-0000-0000-0000-000000000053"
 	// "Mis materias" del alumno (plan 006, N1.C ETAPA 2). Reintroducida en
 	// N1.7 F1 sobre el modelo de sesiones: el contrato KMP consume
@@ -165,8 +168,10 @@ const (
 	// phantom-nuevas (B4): no presentes en legacy, exigidas por el FE
 	L4_SCREEN_INST_SCHOOL_CONCEPTS_LIST_ID = "b4400000-0000-0000-0000-0000000000d0"
 	L4_SCREEN_INST_SCHOOL_CONCEPTS_FORM_ID = "b4400000-0000-0000-0000-0000000000d1"
-	L4_SCREEN_INST_MEMBERSHIP_ADD_ID       = "b4400000-0000-0000-0000-0000000000d2"
-	L4_SCREEN_INST_USER_ROLES_ID           = "b4400000-0000-0000-0000-0000000000d3"
+	// L4_SCREEN_INST_MEMBERSHIP_ADD_ID (…d2) retirado: la creación directa de
+	// membresías se eliminó (redundante con invitación→solicitud→aprobación).
+	// UUID …d2 queda libre para reuso futuro.
+	L4_SCREEN_INST_USER_ROLES_ID = "b4400000-0000-0000-0000-0000000000d3"
 
 	// Fase 3 (B7b) — demo CRUD data-driven sin Kotlin.
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de

@@ -444,7 +444,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		unitsList(),
 		unitsForm(),
 		membershipsList(),
-		membershipsForm(),
+		membershipsForm(),   // SOLO EDICIÓN (sin save_new): editar una membresía existente; la creación directa se retiró
 		myMembershipsList(), // "Mis materias" (alumno), reintroducida en N1.7 F1 sobre sesiones
 		subjectsList(),
 		subjectsForm(),
@@ -524,21 +524,20 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// se eliminaron.
 
 		// ===========================================================
-		// PHANTOM-NUEVAS NO-ASSESSMENT (4 adicionales)
+		// PHANTOM-NUEVAS NO-ASSESSMENT (3 adicionales)
 		// ===========================================================
 		// school-concepts-list / school-concepts-form: variante del
 		// CRUD de concept_types con scope=school (overrides locales).
 		// El FE las trata como pantallas separadas del concept-types-*
 		// de scope=system.
-		// membership-add: pantalla simplificada para vincular un
-		// usuario a una unidad sin pasar por el form completo.
+		// membership-add se retiró: la creación directa de membresías se
+		// eliminó (redundante con invitación→solicitud→aprobación).
 		// user-roles: edicion de roles asignados a un usuario.
 		// Decisiones de permisos documentadas en contract-check-NOTES.md
 		// (TC-A): user-roles usa users:update; no se crean permisos
 		// nuevos.
 		schoolConceptsList(),
 		schoolConceptsForm(),
-		membershipAdd(),
 		userRoles(),
 
 		// ===========================================================

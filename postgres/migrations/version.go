@@ -363,7 +363,14 @@ import (
 //     resource_screens). Además `sessions-by-subject-form` corrige su scope
 //     school → unit (form unidad-scoped, selector de docente requiere unidad
 //     activa). Sin cambios de esquema/migraciones. L4_SEED_VERSION → 1.41.0.
-const SchemaVersion = "3.43.0"
+//   - 3.44.0: se retira el camino de CREACIÓN DIRECTA de membresías (redundante
+//     con invitación→solicitud→doble-gate→aprobación). Se ELIMINAN las
+//     screen_instances `memberships-form` y `membership-add` (constructores,
+//     registros y constantes …53/…d2) y sus 2 mappings en resource_screens;
+//     `memberships-list` gana actions_removed:["create"] (conserva edit/delete/
+//     expire). Leer/editar/expirar/borrar membresías intacto. Sin cambios de
+//     esquema/migraciones. L4_SEED_VERSION → 1.42.0.
+const SchemaVersion = "3.44.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
