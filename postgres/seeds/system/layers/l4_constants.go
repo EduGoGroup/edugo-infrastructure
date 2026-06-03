@@ -307,7 +307,16 @@ package layers
 //     `actions_removed:["create"]` para que el admin ya no navegue al form
 //     eliminado; se conservan edit/delete/expire. Leer/editar/expirar/borrar
 //     membresías sigue intacto. Sin cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.0"
+//   - 1.42.1 (2026-06-03): se reparan los campos faltantes del form
+//     `periods-form`. El DTO `CreatePeriodRequest` exige `type` (string enum) y
+//     `academic_year` (int) como required, pero el form sólo declaraba
+//     name/start_date/end_date/is_active → el backend respondía 400 "invalid
+//     request body" al crear un período desde el iPad. Se AGREGAN dos campos al
+//     slot_data (después de `name`): `type` (select, required, options =
+//     semester/trimester/bimester/quarter, los 4 valores válidos del CHECK de la
+//     tabla academic_periods) y `academic_year` (number, required). Sin cambios de
+//     esquema ni de permisos.
+const L4_SEED_VERSION = "1.42.1"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

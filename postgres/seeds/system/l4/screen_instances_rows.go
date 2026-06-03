@@ -532,6 +532,13 @@ func periodsForm() l4ScreenInstanceRow {
   "title": "Periodo Académico",
   "fields": [
     {"key": "name", "label": "Nombre", "type": "text", "required": true},
+    {"key": "type", "label": "Tipo", "type": "select", "required": true, "options": [
+      {"value": "semester", "label": "Semestre"},
+      {"value": "trimester", "label": "Trimestre"},
+      {"value": "bimester", "label": "Bimestre"},
+      {"value": "quarter", "label": "Cuatrimestre"}
+    ]},
+    {"key": "academic_year", "label": "Año académico", "type": "number", "required": true},
     {"key": "start_date", "label": "Inicio", "type": "date", "required": true},
     {"key": "end_date", "label": "Fin", "type": "date", "required": true},
     {"key": "is_active", "label": "Activo", "type": "toggle"}
