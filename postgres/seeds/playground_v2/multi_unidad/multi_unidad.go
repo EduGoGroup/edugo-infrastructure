@@ -82,7 +82,10 @@ const (
 	subjectSurMathID   = "68000000-0000-0000-0000-000000000006"
 	subjectSurLangID   = "68000000-0000-0000-0000-000000000007"
 
-	periodID = "68000000-0000-0000-0000-000000000008"
+	// Un período ACTIVO por unidad: el índice único parcial de período activo
+	// es por (school_id, academic_unit_id), así que cada sede lleva el suyo.
+	periodNorteID = "68000000-0000-0000-0000-000000000008"
+	periodSurID   = "68000000-0000-0000-0000-000000000009"
 
 	adminUserID        = "68000000-0000-0000-0000-000000000010"
 	teacherNorteUserID = "68000000-0000-0000-0000-000000000011"
@@ -140,8 +143,12 @@ func Apply(tx *gorm.DB) error {
 		return fmt.Errorf("playground_v2/multi_unidad: subject_sur_lang: %w", err)
 	}
 
-	if err := upsertActivePeriod(tx); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: academic_period: %w", err)
+	// Un período ACTIVO por unidad (la exclusividad del activo es por unidad).
+	if err := upsertActivePeriod(tx, periodNorteID, unitNorteID, "MULTI-N-2026-S1"); err != nil {
+		return fmt.Errorf("playground_v2/multi_unidad: academic_period_norte: %w", err)
+	}
+	if err := upsertActivePeriod(tx, periodSurID, unitSurID, "MULTI-S-2026-S1"); err != nil {
+		return fmt.Errorf("playground_v2/multi_unidad: academic_period_sur: %w", err)
 	}
 
 	// Usuarios.
@@ -278,12 +285,12 @@ func upsertSubject(tx *gorm.DB, idStr, name, code string) error {
 	}).Create(&subj).Error
 }
 
-// upsertActivePeriod siembra un período académico ACTIVO (is_active=true)
-// para el colegio. Hay un índice único parcial por school_id WHERE is_active,
-// así que sólo puede haber uno activo por colegio (cumplido: único período).
-// Como es OTRA escuela distinta a los demás playgrounds, no colisiona.
-func upsertActivePeriod(tx *gorm.DB) error {
-	id, err := uuid.Parse(periodID)
+// upsertActivePeriod siembra un período académico ACTIVO (is_active=true) para
+// una unidad del colegio. El índice único parcial de período activo es por
+// (school_id, academic_unit_id), así que cada sede puede tener su propio
+// período activo sin colisionar.
+func upsertActivePeriod(tx *gorm.DB, periodIDStr, unitIDStr, code string) error {
+	id, err := uuid.Parse(periodIDStr)
 	if err != nil {
 		return err
 	}
@@ -291,18 +298,22 @@ func upsertActivePeriod(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	code := "MULTI-2026-S1"
+	auid, err := uuid.Parse(unitIDStr)
+	if err != nil {
+		return err
+	}
 	p := entities.AcademicPeriod{
-		ID:           id,
-		SchoolID:     sid,
-		Name:         "Semestre 1 2026",
-		Code:         &code,
-		Type:         "semester",
-		StartDate:    time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:      time.Date(2026, 7, 31, 0, 0, 0, 0, time.UTC),
-		IsActive:     true,
-		AcademicYear: academicYear,
-		SortOrder:    1,
+		ID:             id,
+		SchoolID:       sid,
+		AcademicUnitID: auid,
+		Name:           "Semestre 1 2026",
+		Code:           &code,
+		Type:           "semester",
+		StartDate:      time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:        time.Date(2026, 7, 31, 0, 0, 0, 0, time.UTC),
+		IsActive:       true,
+		AcademicYear:   academicYear,
+		SortOrder:      1,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

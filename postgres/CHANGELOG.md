@@ -6,6 +6,18 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+### Changed
+
+- `academic.academic_periods` gana la columna `academic_unit_id` (uuid, NOT NULL, con índice
+  y FK a `academic.academic_units(id)` ON DELETE CASCADE), espejo de `school_id`: el período
+  queda atado además a la unidad académica.
+- El índice único parcial `idx_academic_periods_active` pasa de `(school_id)` a
+  `(school_id, academic_unit_id) WHERE is_active = true`; la exclusividad del período activo
+  ahora es por unidad, no por escuela.
+- `SchemaVersion` 3.44.0 → 3.45.0. Seeds que insertan períodos (demo y playgrounds v2
+  `n1_inscripcion` / `n17_secciones` / `multi_unidad`, más la fixture e2e `screen_only`)
+  propagan `academic_unit_id`.
+
 ## [0.4.0] - 2026-06-02
 
 ### Added

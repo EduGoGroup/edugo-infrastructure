@@ -19,7 +19,9 @@ const (
 	// v4 (ADR 0016): materias migradas a scope de ESCUELA (academic_unit_id =
 	// NULL) y deduplicadas por (school_id, name); referencias en offerings/
 	// grades/attendance/schedules repuntadas al id sobreviviente.
-	SeedVersion         = "development-gorm-v4"
+	// v5: los academic_periods ganan academic_unit_id (período atado a la
+	// unidad raíz de cada colegio); el activo es exclusivo por (school, unit).
+	SeedVersion         = "development-gorm-v5"
 	defaultPasswordHash = "$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau"
 )
 
@@ -802,11 +804,11 @@ func seedAcademicPeriods(tx *gorm.DB) error {
 	}
 
 	rows := []map[string]any{
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "Primer Semestre 2026", "code": "S1-2026", "type": "semester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-07-15"), "is_active": true, "academic_year": 2026, "sort_order": 1},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "Segundo Semestre 2026", "code": "S2-2026", "type": "semester", "start_date": mustDate("2026-08-01"), "end_date": mustDate("2026-12-15"), "is_active": false, "academic_year": 2026, "sort_order": 2},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000003"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Primer Trimestre 2026", "code": "T1-2026", "type": "trimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-05-31"), "is_active": true, "academic_year": 2026, "sort_order": 1},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Segundo Trimestre 2026", "code": "T2-2026", "type": "trimester", "start_date": mustDate("2026-06-01"), "end_date": mustDate("2026-08-31"), "is_active": false, "academic_year": 2026, "sort_order": 2},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Bimestre 1", "code": "B1-2026", "type": "bimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-04-30"), "is_active": true, "academic_year": 2026, "sort_order": 1},
+		{"id": mustUUID("ff000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "name": "Primer Semestre 2026", "code": "S1-2026", "type": "semester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-07-15"), "is_active": true, "academic_year": 2026, "sort_order": 1},
+		{"id": mustUUID("ff000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "name": "Segundo Semestre 2026", "code": "S2-2026", "type": "semester", "start_date": mustDate("2026-08-01"), "end_date": mustDate("2026-12-15"), "is_active": false, "academic_year": 2026, "sort_order": 2},
+		{"id": mustUUID("ff000000-0000-0000-0000-000000000003"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "name": "Primer Trimestre 2026", "code": "T1-2026", "type": "trimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-05-31"), "is_active": true, "academic_year": 2026, "sort_order": 1},
+		{"id": mustUUID("ff000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "name": "Segundo Trimestre 2026", "code": "T2-2026", "type": "trimester", "start_date": mustDate("2026-06-01"), "end_date": mustDate("2026-08-31"), "is_active": false, "academic_year": 2026, "sort_order": 2},
+		{"id": mustUUID("ff000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000012"), "name": "Bimestre 1", "code": "B1-2026", "type": "bimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-04-30"), "is_active": true, "academic_year": 2026, "sort_order": 1},
 	}
 
 	return upsertMaps(tx, "academic.academic_periods", rows, []string{"id"}, nil, false)

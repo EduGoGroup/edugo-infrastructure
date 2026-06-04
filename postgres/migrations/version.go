@@ -370,7 +370,15 @@ import (
 //     `memberships-list` gana actions_removed:["create"] (conserva edit/delete/
 //     expire). Leer/editar/expirar/borrar membresías intacto. Sin cambios de
 //     esquema/migraciones. L4_SEED_VERSION → 1.42.0.
-const SchemaVersion = "3.44.0"
+//   - 3.45.0: el período académico se ata además a la unidad. La entity
+//     academic.academic_periods gana la columna `academic_unit_id` (uuid,
+//     NOT NULL, index, FK a academic.academic_units(id) ON DELETE CASCADE,
+//     espejo de school_id). El índice único parcial idx_academic_periods_active
+//     pasa de (school_id) a (school_id, academic_unit_id) WHERE is_active=true,
+//     por lo que la exclusividad del período activo es por unidad. Seeds que
+//     insertan períodos (demo + playgrounds v2 n1_inscripcion/n17_secciones/
+//     multi_unidad + fixture e2e screen_only) propagan academic_unit_id.
+const SchemaVersion = "3.45.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -597,7 +597,7 @@ CREATE INDEX IF NOT EXISTS idx_memberships_unit_role_active
     ON academic.memberships (academic_unit_id, role) WHERE is_active = true;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_academic_periods_active
-    ON academic.academic_periods (school_id) WHERE is_active = true;
+    ON academic.academic_periods (school_id, academic_unit_id) WHERE is_active = true;
 
 CREATE INDEX IF NOT EXISTS idx_concept_types_active
     ON academic.concept_types (is_active) WHERE is_active = true;

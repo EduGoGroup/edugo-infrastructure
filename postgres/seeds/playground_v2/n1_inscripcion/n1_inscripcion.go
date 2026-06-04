@@ -301,18 +301,23 @@ func upsertActivePeriod(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	auid, err := uuid.Parse(unitID)
+	if err != nil {
+		return err
+	}
 	code := "N1-2026-S1"
 	p := entities.AcademicPeriod{
-		ID:           id,
-		SchoolID:     sid,
-		Name:         "Semestre 1 2026",
-		Code:         &code,
-		Type:         "semester",
-		StartDate:    time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:      time.Date(2026, 7, 31, 0, 0, 0, 0, time.UTC),
-		IsActive:     true,
-		AcademicYear: academicYear,
-		SortOrder:    1,
+		ID:             id,
+		SchoolID:       sid,
+		AcademicUnitID: auid,
+		Name:           "Semestre 1 2026",
+		Code:           &code,
+		Type:           "semester",
+		StartDate:      time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:        time.Date(2026, 7, 31, 0, 0, 0, 0, time.UTC),
+		IsActive:       true,
+		AcademicYear:   academicYear,
+		SortOrder:      1,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

@@ -55,6 +55,7 @@ func (f *ScreenOnly) Manifest() framework.FixtureManifest {
 			"academic.memberships",
 			"auth.users",
 			"academic.academic_periods",
+			"academic.academic_units",
 			"academic.subjects",
 		},
 		Constants: map[string]string{
@@ -170,7 +171,8 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 // 0a55e5500111..115 dentro del namespace del scenario:
 //
 //   - 1 academic.subjects
-//   - 1 academic.academic_periods
+//   - 1 academic.academic_units
+//   - 1 academic.academic_periods (atado a la unidad anterior)
 //   - 1 auth.users (alumno)
 //   - 1 academic.memberships (alumno)
 //   - 1 academic.grades (apunta al teacher provisto por role_only si
@@ -205,7 +207,32 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 		return err
 	}
 
-	// 2) AcademicPeriod
+	// 2) AcademicUnit (el período se ata a la unidad además de la escuela).
+	unitIDStr := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500110")
+	if err := framework.AssertNotProductionNamespace(unitIDStr); err != nil {
+		return err
+	}
+	unitID, err := uuid.Parse(unitIDStr)
+	if err != nil {
+		return fmt.Errorf("screen_only: unit UUID inválido (%q): %w", unitIDStr, err)
+	}
+	unit := entities.AcademicUnit{
+		ID:           unitID,
+		SchoolID:     schoolUUID,
+		Name:         "ScreenOnly Sample Unit",
+		Code:         "SCREENONLY-UNIT",
+		Type:         "class",
+		AcademicYear: 2026,
+		IsActive:     true,
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&unit).Error; err != nil {
+		return fmt.Errorf("screen_only: insert academic_unit: %w", err)
+	}
+
+	// 3) AcademicPeriod
 	periodIDStr := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500112")
 	if err := framework.AssertNotProductionNamespace(periodIDStr); err != nil {
 		return err
@@ -215,14 +242,15 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 		return fmt.Errorf("screen_only: period UUID inválido (%q): %w", periodIDStr, err)
 	}
 	period := entities.AcademicPeriod{
-		ID:           periodID,
-		SchoolID:     schoolUUID,
-		Name:         "ScreenOnly Sample Period",
-		Type:         "semester",
-		StartDate:    time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:      time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC),
-		AcademicYear: 2026,
-		IsActive:     true,
+		ID:             periodID,
+		SchoolID:       schoolUUID,
+		AcademicUnitID: unitID,
+		Name:           "ScreenOnly Sample Period",
+		Type:           "semester",
+		StartDate:      time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:        time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC),
+		AcademicYear:   2026,
+		IsActive:       true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -358,7 +386,7 @@ func (f *ScreenOnly) Cleanup(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	}
 	prefix := ctx.SchemaPrefix
 	// Orden de borrado: respetamos las FKs. Para grades-list:
-	// grades → memberships → users → academic_periods → subjects.
+	// grades → memberships → users → academic_periods → academic_units → subjects.
 	// Para assessments-list: sólo assessment.assessment. Las tablas que
 	// no tienen filas en el scenario simplemente devuelven 0 rows.
 	tables := []struct {
@@ -369,6 +397,7 @@ func (f *ScreenOnly) Cleanup(tx *gorm.DB, ctx *framework.ApplyContext) error {
 		{"academic.memberships", "id"},
 		{"auth.users", "id"},
 		{"academic.academic_periods", "id"},
+		{"academic.academic_units", "id"},
 		{"academic.subjects", "id"},
 		{"assessment.assessment", "id"},
 	}
