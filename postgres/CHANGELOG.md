@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-03
+
 ### Changed
 
 - `academic.academic_periods` gana la columna `academic_unit_id` (uuid, NOT NULL, con índice
