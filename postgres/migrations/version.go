@@ -394,7 +394,13 @@ import (
 //     form/query) y se ELIMINA el screen huérfano `attendance-form` (no mapeado
 //     en resource_screens; solo lo respaldaba el contrato KMP, también
 //     eliminado) — cierre del latente bug 0034. L4_SEED_VERSION → 1.42.6.
-const SchemaVersion = "3.47.0"
+//   - 3.47.1: N2 feature de asistencia (plan 008, cambio seed-only, sin DDL,
+//     igual que 3.47.0). (1) Las 3 instancias `attendance-*` corrigen
+//     `api_prefix` de "learning" a "academic" (D5). (2) Entry-point "Pasar
+//     lista": action `take-attendance` en `subjects-form` que navega a
+//     `attendance-batch` con subjectId, gateada por `academic.attendance.create`
+//     (D2). L4_SEED_VERSION → 1.42.7. Sin cambios de permisos.
+const SchemaVersion = "3.47.1"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

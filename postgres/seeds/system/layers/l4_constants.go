@@ -354,7 +354,15 @@ package layers
 //     y solo lo respaldaba el contrato KMP, también eliminado. Cierre del
 //     latente bug 0034 (attendance-form.student_id) por eliminación. Sin
 //     cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.6"
+//   - 1.42.7 (2026-06-05, N2 plan 008 — feature de asistencia): (1) se corrige
+//     el `api_prefix` de las 3 instancias `attendance-*` (list/batch/summary) de
+//     "learning" a "academic": la asistencia vive en la API academic (:8060) y
+//     el contrato KMP ya usa `academic:` (D5). (2) Entry-point "Pasar lista" en
+//     el form `subjects-form`: action `take-attendance` (scope resource-toolbar,
+//     condition edit-only) que navega a `attendance-batch` con subjectId, gateada
+//     por `academic.attendance.create` (D2). Sin cambios de esquema ni de
+//     permisos (el permiso ya estaba sembrado).
+const L4_SEED_VERSION = "1.42.7"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

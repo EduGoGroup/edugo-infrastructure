@@ -440,6 +440,20 @@ func subjectsList() l4ScreenInstanceRow {
 // destino ni handler view-detail en SubjectsFormContract), así que el botón de
 // toolbar no aplica y se retira intencionalmente.
 //
+// actions_added "take-attendance" (N2, plan 008 D2): entry-point "Pasar lista"
+// de la materia del docente. Es una acción de toolbar del formulario (scope
+// resource-toolbar, igual que las de assessments-form, también master-detail),
+// condition=edit-only porque la asistencia se pasa sobre una materia ya
+// existente (necesita su id). Navega a la pantalla nativa attendance-batch
+// pasando subjectId = id de la materia editada (parámetro de navegación de
+// CONTENIDO, no tenant; el colegio/unidad sale del JWT — ADR 0008). El permiso
+// del botón es academic.attendance.create (ADR 0003: slot.permission, leído de
+// la key `permission`; ya sembrado y cubierto por academic.attendance.*). El
+// destino del evento (event_id "take-attendance" → NavigateTo("attendance-batch",
+// {subjectId}) en SubjectsFormContract) y la ruta KMP attendance-batch se
+// registran en S2; declarar aquí la acción es correcto (seed-first), aunque la
+// ruta del front aún no exista.
+//
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
 // las sesiones de la materia).
@@ -465,6 +479,9 @@ func subjectsForm() l4ScreenInstanceRow {
     {"screen_key": "sessions-by-subject-list", "modal_screen_key": "sessions-by-subject-form", "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
   ],
   "actions_removed": ["detail"],
+  "actions_added": [
+    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20}
+  ],
   "api_prefix": "academic"
 }`,
 	}
@@ -909,7 +926,7 @@ func attendanceList() l4ScreenInstanceRow {
   "actions_added": [
     {"id": "batch", "scope": "header", "label": "Registrar día", "icon": "plus", "permission": "academic.attendance.create", "condition": "always", "event_id": "batch", "style": "icon", "order": 10}
   ],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -930,7 +947,7 @@ func attendanceBatch() l4ScreenInstanceRow {
     {"key": "entries", "label": "Asistencias", "type": "table"}
   ],
   "actions_removed": ["save", "delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -955,7 +972,7 @@ func attendanceSummary() l4ScreenInstanceRow {
   ],
   "actions_removed": ["create", "edit", "delete"],
   "readonly": true,
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
