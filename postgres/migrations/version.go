@@ -408,7 +408,16 @@ import (
 //     `enroll` de batch-enroll, y activa el gate cliente del botón (antes quedaba
 //     null por falta de action de submit). L4_SEED_VERSION → 1.42.8. Sin cambios
 //     de permisos.
-const SchemaVersion = "3.47.2"
+//   - 3.47.3: N2.S3 (plan 008, cambio seed-only, sin DDL, igual que 3.47.2). El
+//     form `subjects-form` suma dos entry-points de consulta de asistencia espejo
+//     de "take-attendance": `view-attendance` ("Historial", event_id
+//     view-attendance, order 21) y `view-attendance-summary` ("Resumen", event_id
+//     view-attendance-summary, order 22), ambos scope resource-toolbar,
+//     condition edit-only, permission academic.attendance.read. Navegan a las
+//     pantallas SDUI genéricas attendance-list / attendance-summary pasando
+//     subjectId; el destino del evento vive en SubjectsFormContract del KMP.
+//     L4_SEED_VERSION → 1.42.9. Sin cambios de permisos.
+const SchemaVersion = "3.47.3"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

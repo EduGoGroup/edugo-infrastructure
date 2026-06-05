@@ -371,7 +371,18 @@ package layers
 //     seed no declaraba ninguna action de submit). El permiso ya estaba sembrado
 //     (cubierto por el wildcard academic.attendance.* de teacher). Sin cambios de
 //     esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.8"
+//   - 1.42.9 (2026-06-05, N2.S3 plan 008 — entry-points de consulta): el form
+//     `subjects-form` suma dos actions de toolbar espejo de "take-attendance":
+//     `view-attendance` ("Historial", icon history, order 21) y
+//     `view-attendance-summary` ("Resumen", icon bar_chart, order 22). Ambas con
+//     scope resource-toolbar, condition edit-only y permission
+//     academic.attendance.read; navegan a las pantallas SDUI genéricas
+//     attendance-list / attendance-summary pasando subjectId. El destino del
+//     evento (event_id view-attendance / view-attendance-summary) vive en
+//     SubjectsFormContract del KMP. El permiso ya estaba sembrado (cubierto por el
+//     wildcard academic.attendance.* de teacher). Sin cambios de esquema ni de
+//     permisos.
+const L4_SEED_VERSION = "1.42.9"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

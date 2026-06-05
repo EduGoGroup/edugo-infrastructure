@@ -454,6 +454,20 @@ func subjectsList() l4ScreenInstanceRow {
 // registran en S2; declarar aquí la acción es correcto (seed-first), aunque la
 // ruta del front aún no exista.
 //
+// actions_added "view-attendance" y "view-attendance-summary" (N2.S3, plan 008):
+// entry-points "Historial" y "Resumen" de asistencia de la materia del docente,
+// espejo de "take-attendance". Ambas son acciones de toolbar del formulario
+// (scope resource-toolbar), condition=edit-only porque la asistencia se consulta
+// sobre una materia ya existente (necesita su id). Navegan a las pantallas SDUI
+// genéricas attendance-list / attendance-summary pasando subjectId = id de la
+// materia editada (parámetro de navegación de CONTENIDO, no tenant; el
+// colegio/unidad sale del JWT — ADR 0008). El permiso de ambos botones es
+// academic.attendance.read (ADR 0003: slot.permission, leído de la key
+// `permission`; ya sembrado y cubierto por el wildcard academic.attendance.* de
+// teacher). El destino de cada evento (event_id "view-attendance" /
+// "view-attendance-summary" → NavigateTo con {subjectId} en SubjectsFormContract)
+// vive en el contrato KMP; declarar aquí las acciones es correcto (seed-first).
+//
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
 // las sesiones de la materia).
@@ -480,7 +494,9 @@ func subjectsForm() l4ScreenInstanceRow {
   ],
   "actions_removed": ["detail"],
   "actions_added": [
-    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20}
+    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20},
+    {"id": "view-attendance", "scope": "resource-toolbar", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance", "style": "icon", "order": 21},
+    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22}
   ],
   "api_prefix": "academic"
 }`,
