@@ -6,6 +6,28 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.1] - 2026-06-05
+
+### Added
+
+- Invariante "una oferta por materia": `subject_offering_enrollments` gana `subject_id`
+  (copia denormalizada e inmutable del `subject_id` de la oferta) + uniqueIndex
+  `uq_enrollment_student_subject (student_membership_id, subject_id)` + FK. Sostiene el guard
+  del usecase de inscripción que rechaza doble inscripción de un alumno en la misma materia
+  (bug 0036, PRE 1b).
+
+### Changed
+
+- Asistencia token-scoped (tenant→JWT, plan 012, PRE 1a): el form `attendance-batch` pierde el
+  campo tenant `unit_id` (la unidad se deriva del JWT) y se elimina el screen huérfano
+  `attendance-form` (cierra 2 de los latentes del bug 0034).
+- Seeds L4 de asistencia por sesión de materia (N2, plan 008): `api_prefix` `learning → academic`
+  en las instancias `attendance-*`; entry-point `take-attendance` (pasar lista) y acciones
+  `submit-batch` / `view-attendance` / `view-attendance-summary` en `subjects-form`.
+- `SchemaVersion` 3.45.0 → 3.47.3; `L4_SEED_VERSION` 1.42.4 → 1.42.9.
+
+## [0.900.0] - 2026-06-05
+
 ### Changed
 
 - El form `sessions-by-subject-form` limita el campo `section_label` a 10 caracteres
