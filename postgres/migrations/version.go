@@ -417,7 +417,25 @@ import (
 //     pantallas SDUI genéricas attendance-list / attendance-summary pasando
 //     subjectId; el destino del evento vive en SubjectsFormContract del KMP.
 //     L4_SEED_VERSION → 1.42.9. Sin cambios de permisos.
-const SchemaVersion = "3.47.3"
+//   - 3.48.0: plan 013 F1 — esquema de notas + invariante multi-período. (1)
+//     academic.grades.teacher_id pasa a FK real → academic.memberships(id) ON
+//     DELETE SET NULL: GORM no la materializa desde el tag
+//     `constraint:grades_teacher_fkey` sin campo de relación, así que se declara
+//     en post_gorm.sql (mismo patrón/política que subject_offerings_teacher_fkey;
+//     teacher_id es nullable, el docente se desvincula sin borrar la nota). (2)
+//     academic.subject_offering_enrollments gana la columna `period_id` (uuid,
+//     NOT NULL, index; copia denormalizada e INMUTABLE del period_id de la
+//     oferta, FK ya cubierta por CASCADE del propio offering_id). El uniqueIndex
+//     uq_enrollment_student_subject pasa de 2 a 3 columnas
+//     (student_membership_id, subject_id, period_id), por lo que el invariante
+//     cambia de "una oferta por materia (ever)" a "una oferta por materia POR
+//     PERÍODO" (D4): habilita Matemática-2025 + Matemática-2026, sigue
+//     prohibiendo 2 secciones del mismo período (bug 0036). El guard de enroll
+//     en academic (FindConflictingSubjectEnrollments) y el insert pasan a
+//     considerar period_id. Seeds que insertan enrollments (demo + playgrounds v2
+//     n1_inscripcion/n17_secciones) propagan period_id desde la oferta. EduGo no
+//     está en producción → sin backfill.
+const SchemaVersion = "3.48.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

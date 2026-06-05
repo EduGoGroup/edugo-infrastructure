@@ -488,15 +488,20 @@ func upsertOffering(tx *gorm.DB, idStr, subjectIDStr, teacherMembIDStr string) e
 
 // upsertEnrollment inscribe al alumno (membership) en una sesión de materia
 // (subject_offering_enrollment). La PK es compuesta (offering_id,
-// student_membership_id); OnConflict sobre ambas → idempotente. subjectIDStr es
-// el subject_id de la oferta (copia denormalizada e inmutable que respalda el
-// invariante una-oferta-por-materia, bug 0036).
+// student_membership_id); OnConflict sobre ambas → idempotente. subjectIDStr y
+// el periodID del playground son el subject_id y period_id de la oferta (copias
+// denormalizadas e inmutables que respaldan el invariante una-oferta-por-materia-
+// por-período, bug 0036). El playground tiene un único período activo.
 func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr string) error {
 	oid, err := uuid.Parse(offeringIDStr)
 	if err != nil {
 		return err
 	}
 	subjID, err := uuid.Parse(subjectIDStr)
+	if err != nil {
+		return err
+	}
+	pid, err := uuid.Parse(periodID)
 	if err != nil {
 		return err
 	}
@@ -507,6 +512,7 @@ func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr
 	e := entities.SubjectOfferingEnrollment{
 		OfferingID:          oid,
 		SubjectID:           subjID,
+		PeriodID:            pid,
 		StudentMembershipID: smid,
 	}
 	return tx.Clauses(clause.OnConflict{

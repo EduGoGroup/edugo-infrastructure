@@ -18,17 +18,21 @@ import (
 // migrations/sql/post_gorm.sql (GORM no crea FKs desde el tag `constraint:`
 // sin campo de relacion; mismo caso que academic.membership_subjects).
 //
-// subject_id es una COPIA DENORMALIZADA E INMUTABLE del subject_id de la oferta
-// (subject_offerings.subject_id nunca cambia: UpdateSubjectOfferingInput solo
-// toca docente/seccion/activo). Esta presente para garantizar a nivel BD el
-// invariante "una oferta por materia por alumno" via el uniqueIndex compuesto
-// uq_enrollment_student_subject (student_membership_id, subject_id): un alumno
-// no puede inscribirse en dos ofertas de la MISMA materia (bug 0036). Tambien
-// habilita queries directas por materia sin JOIN a subject_offerings.
+// subject_id y period_id son COPIAS DENORMALIZADAS E INMUTABLES de la oferta
+// (subject_offerings.subject_id / subject_offerings.period_id nunca cambian:
+// UpdateSubjectOfferingInput solo toca docente/seccion/activo). Estan presentes
+// para garantizar a nivel BD el invariante "una oferta por materia POR PERIODO"
+// via el uniqueIndex compuesto uq_enrollment_student_subject
+// (student_membership_id, subject_id, period_id): un alumno no puede inscribirse
+// en dos ofertas de la MISMA materia DENTRO DEL MISMO PERIODO (bug 0036), pero SI
+// puede cursar la misma materia en periodos distintos (Matematica-2025 y
+// Matematica-2026 conviven). Tambien habilitan queries directas por materia/
+// periodo sin JOIN a subject_offerings.
 type SubjectOfferingEnrollment struct {
 	OfferingID          uuid.UUID `db:"offering_id" gorm:"type:uuid;primaryKey;constraint:subject_offering_enrollments_offering_fkey,OnDelete:CASCADE;index:idx_subject_offering_enrollments_offering" validate:"required,uuid"`
 	StudentMembershipID uuid.UUID `db:"student_membership_id" gorm:"type:uuid;primaryKey;constraint:subject_offering_enrollments_student_fkey,OnDelete:CASCADE;index:idx_subject_offering_enrollments_student;uniqueIndex:uq_enrollment_student_subject,priority:1" validate:"required,uuid"`
 	SubjectID           uuid.UUID `db:"subject_id" gorm:"type:uuid;not null;index;uniqueIndex:uq_enrollment_student_subject,priority:2" validate:"required,uuid"`
+	PeriodID            uuid.UUID `db:"period_id" gorm:"type:uuid;not null;index;uniqueIndex:uq_enrollment_student_subject,priority:3" validate:"required,uuid"`
 	EnrolledAt          time.Time `db:"enrolled_at" gorm:"not null;autoCreateTime" validate:"-"`
 }
 
