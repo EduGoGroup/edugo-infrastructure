@@ -926,42 +926,10 @@ func attendanceBatch() l4ScreenInstanceRow {
 		slotData: `{
   "title": "Registrar Asistencia",
   "fields": [
-    {"key": "unit_id", "label": "Unidad", "type": "remote_select", "required": true},
     {"key": "date", "label": "Fecha", "type": "date", "required": true},
     {"key": "entries", "label": "Asistencias", "type": "table"}
   ],
   "actions_removed": ["save", "delete"],
-  "api_prefix": "learning"
-}`,
-	}
-}
-
-// attendance-form (phantom legítimo): el FE
-// (AttendanceFormContract.kt) declara este screenKey y el legacy lo
-// tenia con MISMO slot que attendance-batch. Conservado aqui como
-// variante simple (un solo estudiante).
-func attendanceForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ATTENDANCE_FORM_ID,
-		screenKey:          "attendance-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Asistencia",
-		description:        "Formulario individual de asistencia",
-		scope:              "unit",
-		requiredPermission: "academic.attendance.read",
-		slotData: `{
-  "title": "Asistencia",
-  "fields": [
-    {"key": "student_id", "label": "Estudiante", "type": "remote_select", "required": true},
-    {"key": "date", "label": "Fecha", "type": "date", "required": true},
-    {"key": "status", "label": "Estado", "type": "select", "options": [
-      {"value": "present", "label": "Presente"},
-      {"value": "absent", "label": "Ausente"},
-      {"value": "late", "label": "Tarde"},
-      {"value": "excused", "label": "Justificado"}
-    ]}
-  ],
-  "actions_removed": ["delete"],
   "api_prefix": "learning"
 }`,
 	}

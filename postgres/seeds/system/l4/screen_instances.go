@@ -30,11 +30,14 @@ import (
 //   - membership-add, user-roles (admin).
 //   - school-concepts-list, school-concepts-form (concept_types
 //     a nivel escuela).
-//   - Las 5 phantom restantes (app-login, app-settings,
-//     attendance-form, guardian-relations-list, guardian_relations-form)
+//   - Las 4 phantom restantes (app-login, app-settings,
+//     guardian-relations-list, guardian_relations-form)
 //     SI existian en legacy y figuran como phantom solo porque
 //     Layer_Legacy esta desactivado desde Fase 2 (ADR-6); B4 las
-//     siembra como parte del set de 61.
+//     siembra como parte del set base. (El alias `attendance-form` —
+//     que tambien venia de aqui— se eliminó en el PRE 1a tenant→JWT
+//     de asistencia: era un screen huérfano no mapeado en
+//     resource_screens; cierre del latente bug 0034.)
 //
 // Descartes vs legacy (12 keys), todos documentados:
 //   - `announcements-list`, `materials-list` → ya en L0/L3.
@@ -477,7 +480,6 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		gradesForm(),
 		attendanceList(),
 		attendanceBatch(),
-		attendanceForm(),
 		attendanceSummary(),
 
 		// ===========================================================

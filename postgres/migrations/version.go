@@ -388,7 +388,13 @@ import (
 //     DELETE CASCADE (GORM no la materializa sin campo de relacion). Los seeds
 //     que insertan enrollments (demo + playgrounds v2 n1_inscripcion/
 //     n17_secciones + fixture integration academic_seed) propagan subject_id.
-const SchemaVersion = "3.46.0"
+//   - 3.47.0: PRE 1a tenant→JWT de asistencia (cambio seed-only, sin DDL, igual
+//     que 3.43.0/3.44.0). El form `attendance-batch` pierde el campo tenant
+//     `unit_id` (la unidad sale del JWT vía RequireActiveContext, nunca del
+//     form/query) y se ELIMINA el screen huérfano `attendance-form` (no mapeado
+//     en resource_screens; solo lo respaldaba el contrato KMP, también
+//     eliminado) — cierre del latente bug 0034. L4_SEED_VERSION → 1.42.6.
+const SchemaVersion = "3.47.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

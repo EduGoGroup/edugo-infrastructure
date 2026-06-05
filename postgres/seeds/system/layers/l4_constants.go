@@ -344,7 +344,17 @@ package layers
 //     binding:"required"). Se AGREGA el endpoint espejando `memberships-form`:
 //     remote_endpoint=academic:/api/v1/units, display_field=display_name,
 //     value_field=id. Sin cambios de esquema ni de permisos. Ver bug 0034.
-const L4_SEED_VERSION = "1.42.5"
+//   - 1.42.6 (2026-06-05, PRE 1a tenant→JWT de asistencia): el endpoint
+//     /attendance pasa a scope=unit (RequireActiveContext) y deriva la unidad
+//     del JWT. (1) Se QUITA el campo tenant `unit_id` del slot_data del form
+//     `attendance-batch` (la unidad sale del token, no es campo de form); el
+//     form queda con date + entries. (2) Se ELIMINA por completo el screen
+//     huérfano `attendance-form` (constructor, registro en el slice y constante
+//     L4_SCREEN_INST_ATTENDANCE_FORM_ID): no estaba mapeado en resource_screens
+//     y solo lo respaldaba el contrato KMP, también eliminado. Cierre del
+//     latente bug 0034 (attendance-form.student_id) por eliminación. Sin
+//     cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.42.6"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
