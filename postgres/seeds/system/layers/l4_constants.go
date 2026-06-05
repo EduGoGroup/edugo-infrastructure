@@ -382,7 +382,11 @@ package layers
 //     SubjectsFormContract del KMP. El permiso ya estaba sembrado (cubierto por el
 //     wildcard academic.attendance.* de teacher). Sin cambios de esquema ni de
 //     permisos.
-const L4_SEED_VERSION = "1.42.9"
+//   - 1.42.10 (2026-06-05, F0.5 plan 013 — bug 0034): corrige el `api_prefix` de
+//     las pantallas `grades-list` y `grades-form` de "learning" a "academic". El
+//     endpoint de notas vive en la API academic (:8060), no learning. Sin cambios
+//     de esquema ni de permisos.
+const L4_SEED_VERSION = "1.42.10"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

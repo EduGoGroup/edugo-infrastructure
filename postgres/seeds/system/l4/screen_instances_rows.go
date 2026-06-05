@@ -893,7 +893,7 @@ func gradesList() l4ScreenInstanceRow {
     {"key": "period", "label": "Periodo"}
   ],
   "actions_removed": ["delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -916,7 +916,7 @@ func gradesForm() l4ScreenInstanceRow {
     {"key": "comment", "label": "Comentario", "type": "textarea"}
   ],
   "actions_removed": ["delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
