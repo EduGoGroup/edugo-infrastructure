@@ -195,19 +195,19 @@ func Apply(tx *gorm.DB) error {
 	//  - alumno 1: Matemáticas + Lenguaje.
 	//  - alumno 2: las 3 materias.
 	//  - alumno 3: SIN inscribir (no se crea ninguna fila).
-	if err := upsertEnrollment(tx, offeringMathID, student1MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMathID, subjectMathID, student1MembID); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_enroll_math: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLangID, student1MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringLangID, subjectLangID, student1MembID); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_enroll_lang: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringMathID, student2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMathID, subjectMathID, student2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_math: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLangID, student2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringLangID, subjectLangID, student2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_lang: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringScienceID, student2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringScienceID, subjectScienceID, student2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_science: %w", err)
 	}
 
@@ -488,9 +488,15 @@ func upsertOffering(tx *gorm.DB, idStr, subjectIDStr, teacherMembIDStr string) e
 
 // upsertEnrollment inscribe al alumno (membership) en una sesión de materia
 // (subject_offering_enrollment). La PK es compuesta (offering_id,
-// student_membership_id); OnConflict sobre ambas → idempotente.
-func upsertEnrollment(tx *gorm.DB, offeringIDStr, studentMembIDStr string) error {
+// student_membership_id); OnConflict sobre ambas → idempotente. subjectIDStr es
+// el subject_id de la oferta (copia denormalizada e inmutable que respalda el
+// invariante una-oferta-por-materia, bug 0036).
+func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr string) error {
 	oid, err := uuid.Parse(offeringIDStr)
+	if err != nil {
+		return err
+	}
+	subjID, err := uuid.Parse(subjectIDStr)
 	if err != nil {
 		return err
 	}
@@ -500,6 +506,7 @@ func upsertEnrollment(tx *gorm.DB, offeringIDStr, studentMembIDStr string) error
 	}
 	e := entities.SubjectOfferingEnrollment{
 		OfferingID:          oid,
+		SubjectID:           subjID,
 		StudentMembershipID: smid,
 	}
 	return tx.Clauses(clause.OnConflict{

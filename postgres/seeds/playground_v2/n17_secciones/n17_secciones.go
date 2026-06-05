@@ -246,22 +246,22 @@ func Apply(tx *gorm.DB) error {
 	//  - Mat-B: alumno B1, alumno B2.
 	//  - Len-A: alumno A1, alumno A2 (alumno en 2 sesiones).
 	//  - alumno Libre: SIN inscribir (no se crea ninguna fila).
-	if err := upsertEnrollment(tx, offeringMatAID, studentA1MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMatAID, subjectMathID, studentA1MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_mat_a_a1: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringMatAID, studentA2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMatAID, subjectMathID, studentA2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_mat_a_a2: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringMatBID, studentB1MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMatBID, subjectMathID, studentB1MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_mat_b_b1: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringMatBID, studentB2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringMatBID, subjectMathID, studentB2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_mat_b_b2: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLenAID, studentA1MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringLenAID, subjectLangID, studentA1MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_len_a_a1: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLenAID, studentA2MembID); err != nil {
+	if err := upsertEnrollment(tx, offeringLenAID, subjectLangID, studentA2MembID); err != nil {
 		return fmt.Errorf("playground_v2/n17_secciones: enroll_len_a_a2: %w", err)
 	}
 
@@ -555,9 +555,15 @@ func upsertOffering(tx *gorm.DB, idStr, subjectIDStr, teacherMembIDStr, sectionL
 
 // upsertEnrollment inscribe al alumno (membership) en una sesión de materia
 // (subject_offering_enrollment). La PK es compuesta (offering_id,
-// student_membership_id); OnConflict sobre ambas → idempotente.
-func upsertEnrollment(tx *gorm.DB, offeringIDStr, studentMembIDStr string) error {
+// student_membership_id); OnConflict sobre ambas → idempotente. subjectIDStr es
+// el subject_id de la oferta (copia denormalizada e inmutable que respalda el
+// invariante una-oferta-por-materia, bug 0036).
+func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr string) error {
 	oid, err := uuid.Parse(offeringIDStr)
+	if err != nil {
+		return err
+	}
+	subjID, err := uuid.Parse(subjectIDStr)
 	if err != nil {
 		return err
 	}
@@ -567,6 +573,7 @@ func upsertEnrollment(tx *gorm.DB, offeringIDStr, studentMembIDStr string) error
 	}
 	e := entities.SubjectOfferingEnrollment{
 		OfferingID:          oid,
+		SubjectID:           subjID,
 		StudentMembershipID: smid,
 	}
 	return tx.Clauses(clause.OnConflict{

@@ -378,7 +378,17 @@ import (
 //     por lo que la exclusividad del período activo es por unidad. Seeds que
 //     insertan períodos (demo + playgrounds v2 n1_inscripcion/n17_secciones/
 //     multi_unidad + fixture e2e screen_only) propagan academic_unit_id.
-const SchemaVersion = "3.45.0"
+//   - 3.46.0: invariante "una oferta por materia por alumno" (bug 0036). La
+//     entity academic.subject_offering_enrollments gana la columna `subject_id`
+//     (uuid, NOT NULL, index; copia denormalizada e INMUTABLE del subject_id de
+//     la oferta) con uniqueIndex compuesto uq_enrollment_student_subject
+//     (student_membership_id, subject_id) que impide a un alumno inscribirse en
+//     dos ofertas de la MISMA materia. post_gorm.sql agrega la FK
+//     subject_offering_enrollments_subject_fkey → academic.subjects(id) ON
+//     DELETE CASCADE (GORM no la materializa sin campo de relacion). Los seeds
+//     que insertan enrollments (demo + playgrounds v2 n1_inscripcion/
+//     n17_secciones + fixture integration academic_seed) propagan subject_id.
+const SchemaVersion = "3.46.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
