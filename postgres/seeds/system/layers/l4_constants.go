@@ -336,7 +336,15 @@ package layers
 //     description/parent_unit_id/metadata) y el contrato KMP `UnitsFormContract`
 //     los descartaba silenciosamente → el form "mentía". El form queda con
 //     name + type (ambos required). Sin cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.4"
+//   - 1.42.5 (2026-06-04): se repara el campo `academic_unit_id` del form
+//     `invitations-form`. Estaba declarado como `remote_select required` pero SIN
+//     `remote_endpoint`, así que el FormFieldsResolver del KMP lo DESCARTA (no se
+//     renderiza el selector de unidad) → el submit iba sin `academic_unit_id` y el
+//     backend respondía 400 "invalid request body" (el DTO lo exige con
+//     binding:"required"). Se AGREGA el endpoint espejando `memberships-form`:
+//     remote_endpoint=academic:/api/v1/units, display_field=display_name,
+//     value_field=id. Sin cambios de esquema ni de permisos. Ver bug 0034.
+const L4_SEED_VERSION = "1.42.5"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

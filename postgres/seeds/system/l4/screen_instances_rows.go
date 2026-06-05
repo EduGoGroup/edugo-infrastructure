@@ -617,7 +617,7 @@ func invitationsForm() l4ScreenInstanceRow {
 		slotData: `{
   "title": "Nueva Invitación",
   "fields": [
-    {"key": "academic_unit_id", "label": "Unidad", "type": "remote_select", "required": true},
+    {"key": "academic_unit_id", "label": "Unidad", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/units", "display_field": "display_name", "value_field": "id"},
     {"key": "role", "label": "Rol", "type": "select", "required": true, "options": [
       {"value": "student", "label": "Estudiante"},
       {"value": "teacher", "label": "Profesor"},
