@@ -400,7 +400,15 @@ import (
 //     lista": action `take-attendance` en `subjects-form` que navega a
 //     `attendance-batch` con subjectId, gateada por `academic.attendance.create`
 //     (D2). L4_SEED_VERSION → 1.42.7. Sin cambios de permisos.
-const SchemaVersion = "3.47.1"
+//   - 3.47.2: N2.S2 cierre (plan 008 D5, cambio seed-only, sin DDL, igual que
+//     3.47.1). El form `attendance-batch` (override nativo "pasar lista") declara
+//     la action de submit `submit-batch` (scope header, permission
+//     academic.attendance.create, event_id submit-batch) en su slot_data: es el
+//     permiso del botón del override nativo (ADR 0003), espejo de la action
+//     `enroll` de batch-enroll, y activa el gate cliente del botón (antes quedaba
+//     null por falta de action de submit). L4_SEED_VERSION → 1.42.8. Sin cambios
+//     de permisos.
+const SchemaVersion = "3.47.2"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

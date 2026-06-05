@@ -931,6 +931,22 @@ func attendanceList() l4ScreenInstanceRow {
 	}
 }
 
+// attendanceBatch (N2.S2, plan 008 D5): pantalla "pasar lista" por sesión.
+// Es OVERRIDE NATIVO en el FE (Compose, NO SDUI): MainScreen intercepta el
+// screen_key `attendance-batch` y pinta AttendanceBatchViewModel/Screen
+// (selección masiva de presentes/ausentes + upsert), que el motor SDUI form
+// no expresa. El slot_data NO lo renderiza el SDUI genérico; se conserva
+// mínimo y válido (form-basic-v1) por higiene de contrato.
+//
+// La action `submit-batch` declara el permiso del botón "Pasar lista" del
+// override nativo (ADR 0003: única fuente del permiso del botón). NO es una
+// action que el SDUI genérico pinte: la pantalla nativa la lee del contrato y
+// gatea su botón con `permission`. El `event_id` debe ser `submit-batch` (la
+// pantalla nativa busca la action cuyo event_id/id ∈ {submit-batch, save,
+// take-attendance}); el permiso `academic.attendance.create` ya está sembrado y
+// lo cubre el wildcard `academic.attendance.*` del rol teacher. Espeja la
+// action `enroll` de subjectOfferingsBatchEnroll (mismas keys: id, scope,
+// label, icon, permission, condition, event_id, style, order).
 func attendanceBatch() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ATTENDANCE_BATCH_ID,
@@ -947,6 +963,9 @@ func attendanceBatch() l4ScreenInstanceRow {
     {"key": "entries", "label": "Asistencias", "type": "table"}
   ],
   "actions_removed": ["save", "delete"],
+  "actions_added": [
+    {"id": "submit-batch", "scope": "header", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "always", "event_id": "submit-batch", "style": "filled", "order": 10}
+  ],
   "api_prefix": "academic"
 }`,
 	}
