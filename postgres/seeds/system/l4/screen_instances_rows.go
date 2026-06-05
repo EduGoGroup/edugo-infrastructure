@@ -440,6 +440,34 @@ func subjectsList() l4ScreenInstanceRow {
 // destino ni handler view-detail en SubjectsFormContract), así que el botón de
 // toolbar no aplica y se retira intencionalmente.
 //
+// actions_added "take-attendance" (N2, plan 008 D2): entry-point "Pasar lista"
+// de la materia del docente. Es una acción de toolbar del formulario (scope
+// resource-toolbar, igual que las de assessments-form, también master-detail),
+// condition=edit-only porque la asistencia se pasa sobre una materia ya
+// existente (necesita su id). Navega a la pantalla nativa attendance-batch
+// pasando subjectId = id de la materia editada (parámetro de navegación de
+// CONTENIDO, no tenant; el colegio/unidad sale del JWT — ADR 0008). El permiso
+// del botón es academic.attendance.create (ADR 0003: slot.permission, leído de
+// la key `permission`; ya sembrado y cubierto por academic.attendance.*). El
+// destino del evento (event_id "take-attendance" → NavigateTo("attendance-batch",
+// {subjectId}) en SubjectsFormContract) y la ruta KMP attendance-batch se
+// registran en S2; declarar aquí la acción es correcto (seed-first), aunque la
+// ruta del front aún no exista.
+//
+// actions_added "view-attendance" y "view-attendance-summary" (N2.S3, plan 008):
+// entry-points "Historial" y "Resumen" de asistencia de la materia del docente,
+// espejo de "take-attendance". Ambas son acciones de toolbar del formulario
+// (scope resource-toolbar), condition=edit-only porque la asistencia se consulta
+// sobre una materia ya existente (necesita su id). Navegan a las pantallas SDUI
+// genéricas attendance-list / attendance-summary pasando subjectId = id de la
+// materia editada (parámetro de navegación de CONTENIDO, no tenant; el
+// colegio/unidad sale del JWT — ADR 0008). El permiso de ambos botones es
+// academic.attendance.read (ADR 0003: slot.permission, leído de la key
+// `permission`; ya sembrado y cubierto por el wildcard academic.attendance.* de
+// teacher). El destino de cada evento (event_id "view-attendance" /
+// "view-attendance-summary" → NavigateTo con {subjectId} en SubjectsFormContract)
+// vive en el contrato KMP; declarar aquí las acciones es correcto (seed-first).
+//
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
 // las sesiones de la materia).
@@ -465,6 +493,11 @@ func subjectsForm() l4ScreenInstanceRow {
     {"screen_key": "sessions-by-subject-list", "modal_screen_key": "sessions-by-subject-form", "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
   ],
   "actions_removed": ["detail"],
+  "actions_added": [
+    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20},
+    {"id": "view-attendance", "scope": "resource-toolbar", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance", "style": "icon", "order": 21},
+    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22}
+  ],
   "api_prefix": "academic"
 }`,
 	}
@@ -909,11 +942,27 @@ func attendanceList() l4ScreenInstanceRow {
   "actions_added": [
     {"id": "batch", "scope": "header", "label": "Registrar día", "icon": "plus", "permission": "academic.attendance.create", "condition": "always", "event_id": "batch", "style": "icon", "order": 10}
   ],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
 
+// attendanceBatch (N2.S2, plan 008 D5): pantalla "pasar lista" por sesión.
+// Es OVERRIDE NATIVO en el FE (Compose, NO SDUI): MainScreen intercepta el
+// screen_key `attendance-batch` y pinta AttendanceBatchViewModel/Screen
+// (selección masiva de presentes/ausentes + upsert), que el motor SDUI form
+// no expresa. El slot_data NO lo renderiza el SDUI genérico; se conserva
+// mínimo y válido (form-basic-v1) por higiene de contrato.
+//
+// La action `submit-batch` declara el permiso del botón "Pasar lista" del
+// override nativo (ADR 0003: única fuente del permiso del botón). NO es una
+// action que el SDUI genérico pinte: la pantalla nativa la lee del contrato y
+// gatea su botón con `permission`. El `event_id` debe ser `submit-batch` (la
+// pantalla nativa busca la action cuyo event_id/id ∈ {submit-batch, save,
+// take-attendance}); el permiso `academic.attendance.create` ya está sembrado y
+// lo cubre el wildcard `academic.attendance.*` del rol teacher. Espeja la
+// action `enroll` de subjectOfferingsBatchEnroll (mismas keys: id, scope,
+// label, icon, permission, condition, event_id, style, order).
 func attendanceBatch() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ATTENDANCE_BATCH_ID,
@@ -926,43 +975,14 @@ func attendanceBatch() l4ScreenInstanceRow {
 		slotData: `{
   "title": "Registrar Asistencia",
   "fields": [
-    {"key": "unit_id", "label": "Unidad", "type": "remote_select", "required": true},
     {"key": "date", "label": "Fecha", "type": "date", "required": true},
     {"key": "entries", "label": "Asistencias", "type": "table"}
   ],
   "actions_removed": ["save", "delete"],
-  "api_prefix": "learning"
-}`,
-	}
-}
-
-// attendance-form (phantom legítimo): el FE
-// (AttendanceFormContract.kt) declara este screenKey y el legacy lo
-// tenia con MISMO slot que attendance-batch. Conservado aqui como
-// variante simple (un solo estudiante).
-func attendanceForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ATTENDANCE_FORM_ID,
-		screenKey:          "attendance-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Asistencia",
-		description:        "Formulario individual de asistencia",
-		scope:              "unit",
-		requiredPermission: "academic.attendance.read",
-		slotData: `{
-  "title": "Asistencia",
-  "fields": [
-    {"key": "student_id", "label": "Estudiante", "type": "remote_select", "required": true},
-    {"key": "date", "label": "Fecha", "type": "date", "required": true},
-    {"key": "status", "label": "Estado", "type": "select", "options": [
-      {"value": "present", "label": "Presente"},
-      {"value": "absent", "label": "Ausente"},
-      {"value": "late", "label": "Tarde"},
-      {"value": "excused", "label": "Justificado"}
-    ]}
+  "actions_added": [
+    {"id": "submit-batch", "scope": "header", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "always", "event_id": "submit-batch", "style": "filled", "order": 10}
   ],
-  "actions_removed": ["delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -987,7 +1007,7 @@ func attendanceSummary() l4ScreenInstanceRow {
   ],
   "actions_removed": ["create", "edit", "delete"],
   "readonly": true,
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }

@@ -344,7 +344,45 @@ package layers
 //     binding:"required"). Se AGREGA el endpoint espejando `memberships-form`:
 //     remote_endpoint=academic:/api/v1/units, display_field=display_name,
 //     value_field=id. Sin cambios de esquema ni de permisos. Ver bug 0034.
-const L4_SEED_VERSION = "1.42.5"
+//   - 1.42.6 (2026-06-05, PRE 1a tenant→JWT de asistencia): el endpoint
+//     /attendance pasa a scope=unit (RequireActiveContext) y deriva la unidad
+//     del JWT. (1) Se QUITA el campo tenant `unit_id` del slot_data del form
+//     `attendance-batch` (la unidad sale del token, no es campo de form); el
+//     form queda con date + entries. (2) Se ELIMINA por completo el screen
+//     huérfano `attendance-form` (constructor, registro en el slice y constante
+//     L4_SCREEN_INST_ATTENDANCE_FORM_ID): no estaba mapeado en resource_screens
+//     y solo lo respaldaba el contrato KMP, también eliminado. Cierre del
+//     latente bug 0034 (attendance-form.student_id) por eliminación. Sin
+//     cambios de esquema ni de permisos.
+//   - 1.42.7 (2026-06-05, N2 plan 008 — feature de asistencia): (1) se corrige
+//     el `api_prefix` de las 3 instancias `attendance-*` (list/batch/summary) de
+//     "learning" a "academic": la asistencia vive en la API academic (:8060) y
+//     el contrato KMP ya usa `academic:` (D5). (2) Entry-point "Pasar lista" en
+//     el form `subjects-form`: action `take-attendance` (scope resource-toolbar,
+//     condition edit-only) que navega a `attendance-batch` con subjectId, gateada
+//     por `academic.attendance.create` (D2). Sin cambios de esquema ni de
+//     permisos (el permiso ya estaba sembrado).
+//   - 1.42.8 (2026-06-05, N2.S2 plan 008 D5 — cierre): el form
+//     `attendance-batch` (override nativo "pasar lista") declara la action de
+//     submit `submit-batch` (scope header, permission academic.attendance.create,
+//     event_id submit-batch) en su slot_data. Es el permiso del botón del
+//     override nativo (ADR 0003), espejo de la action `enroll` de batch-enroll;
+//     activa el gate cliente del botón (antes el permiso quedaba null porque el
+//     seed no declaraba ninguna action de submit). El permiso ya estaba sembrado
+//     (cubierto por el wildcard academic.attendance.* de teacher). Sin cambios de
+//     esquema ni de permisos.
+//   - 1.42.9 (2026-06-05, N2.S3 plan 008 — entry-points de consulta): el form
+//     `subjects-form` suma dos actions de toolbar espejo de "take-attendance":
+//     `view-attendance` ("Historial", icon history, order 21) y
+//     `view-attendance-summary` ("Resumen", icon bar_chart, order 22). Ambas con
+//     scope resource-toolbar, condition edit-only y permission
+//     academic.attendance.read; navegan a las pantallas SDUI genéricas
+//     attendance-list / attendance-summary pasando subjectId. El destino del
+//     evento (event_id view-attendance / view-attendance-summary) vive en
+//     SubjectsFormContract del KMP. El permiso ya estaba sembrado (cubierto por el
+//     wildcard academic.attendance.* de teacher). Sin cambios de esquema ni de
+//     permisos.
+const L4_SEED_VERSION = "1.42.9"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

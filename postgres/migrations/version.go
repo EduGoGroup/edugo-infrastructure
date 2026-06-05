@@ -378,7 +378,46 @@ import (
 //     por lo que la exclusividad del período activo es por unidad. Seeds que
 //     insertan períodos (demo + playgrounds v2 n1_inscripcion/n17_secciones/
 //     multi_unidad + fixture e2e screen_only) propagan academic_unit_id.
-const SchemaVersion = "3.45.0"
+//   - 3.46.0: invariante "una oferta por materia por alumno" (bug 0036). La
+//     entity academic.subject_offering_enrollments gana la columna `subject_id`
+//     (uuid, NOT NULL, index; copia denormalizada e INMUTABLE del subject_id de
+//     la oferta) con uniqueIndex compuesto uq_enrollment_student_subject
+//     (student_membership_id, subject_id) que impide a un alumno inscribirse en
+//     dos ofertas de la MISMA materia. post_gorm.sql agrega la FK
+//     subject_offering_enrollments_subject_fkey → academic.subjects(id) ON
+//     DELETE CASCADE (GORM no la materializa sin campo de relacion). Los seeds
+//     que insertan enrollments (demo + playgrounds v2 n1_inscripcion/
+//     n17_secciones + fixture integration academic_seed) propagan subject_id.
+//   - 3.47.0: PRE 1a tenant→JWT de asistencia (cambio seed-only, sin DDL, igual
+//     que 3.43.0/3.44.0). El form `attendance-batch` pierde el campo tenant
+//     `unit_id` (la unidad sale del JWT vía RequireActiveContext, nunca del
+//     form/query) y se ELIMINA el screen huérfano `attendance-form` (no mapeado
+//     en resource_screens; solo lo respaldaba el contrato KMP, también
+//     eliminado) — cierre del latente bug 0034. L4_SEED_VERSION → 1.42.6.
+//   - 3.47.1: N2 feature de asistencia (plan 008, cambio seed-only, sin DDL,
+//     igual que 3.47.0). (1) Las 3 instancias `attendance-*` corrigen
+//     `api_prefix` de "learning" a "academic" (D5). (2) Entry-point "Pasar
+//     lista": action `take-attendance` en `subjects-form` que navega a
+//     `attendance-batch` con subjectId, gateada por `academic.attendance.create`
+//     (D2). L4_SEED_VERSION → 1.42.7. Sin cambios de permisos.
+//   - 3.47.2: N2.S2 cierre (plan 008 D5, cambio seed-only, sin DDL, igual que
+//     3.47.1). El form `attendance-batch` (override nativo "pasar lista") declara
+//     la action de submit `submit-batch` (scope header, permission
+//     academic.attendance.create, event_id submit-batch) en su slot_data: es el
+//     permiso del botón del override nativo (ADR 0003), espejo de la action
+//     `enroll` de batch-enroll, y activa el gate cliente del botón (antes quedaba
+//     null por falta de action de submit). L4_SEED_VERSION → 1.42.8. Sin cambios
+//     de permisos.
+//   - 3.47.3: N2.S3 (plan 008, cambio seed-only, sin DDL, igual que 3.47.2). El
+//     form `subjects-form` suma dos entry-points de consulta de asistencia espejo
+//     de "take-attendance": `view-attendance` ("Historial", event_id
+//     view-attendance, order 21) y `view-attendance-summary` ("Resumen", event_id
+//     view-attendance-summary, order 22), ambos scope resource-toolbar,
+//     condition edit-only, permission academic.attendance.read. Navegan a las
+//     pantallas SDUI genéricas attendance-list / attendance-summary pasando
+//     subjectId; el destino del evento vive en SubjectsFormContract del KMP.
+//     L4_SEED_VERSION → 1.42.9. Sin cambios de permisos.
+const SchemaVersion = "3.47.3"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

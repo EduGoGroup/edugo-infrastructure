@@ -211,6 +211,16 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- subject_id denormalizado (copia inmutable de la oferta) → materia. Respalda el
+-- invariante "una oferta por materia por alumno" (uniqueIndex
+-- uq_enrollment_student_subject, materializado por GORM); bug 0036.
+DO $$ BEGIN
+    ALTER TABLE academic.subject_offering_enrollments
+        ADD CONSTRAINT subject_offering_enrollments_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- ============================================================
 -- Triggers (CREATE OR REPLACE TRIGGER — PostgreSQL 14+)
 -- ============================================================

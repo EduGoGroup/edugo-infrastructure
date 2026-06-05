@@ -55,11 +55,6 @@ import (
 //     controla por permisos (assessments:read), no duplicando la
 //     fila en resource_screens. Cambio documentado en
 //     phase-6-layer-l4/decisions-log.md.
-//   - attendance-form: B4 sembró el alias `attendance-form` además
-//     del canónico `attendance-batch` para preservar el contrato FE
-//     histórico, pero `attendance-batch` ya ocupa
-//     (attendance, screen_type=form). NO se mapea `attendance-form`
-//     aquí — el FE lo resuelve directo por screen_key.
 //   - guardian_relations-form: alias underscore del FE legacy. Mismo
 //     razonamiento — `guardian-relations-form` ya ocupa
 //     (guardian_relations, form). NO se mapea el alias.
@@ -265,9 +260,7 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-000000000086", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-form", screenType: "form", isDefault: false, sortOrder: 2},
 
 		{id: "b4500000-0000-0000-0000-000000000090", resourceID: L4_RESOURCE_ATTENDANCE_ID, resourceKey: L4_RESOURCE_ATTENDANCE_KEY, screenKey: "attendance-list", screenType: "list", isDefault: true, sortOrder: 1},
-		// attendance-batch ocupa screen_type=form para el recurso
-		// attendance. attendance-form (alias) NO se mapea aquí (ver
-		// docstring de ApplyResourceScreens).
+		// attendance-batch ocupa screen_type=form para el recurso attendance.
 		{id: "b4500000-0000-0000-0000-000000000091", resourceID: L4_RESOURCE_ATTENDANCE_ID, resourceKey: L4_RESOURCE_ATTENDANCE_KEY, screenKey: "attendance-batch", screenType: "form", isDefault: false, sortOrder: 2},
 		{id: "b4500000-0000-0000-0000-000000000092", resourceID: L4_RESOURCE_ATTENDANCE_ID, resourceKey: L4_RESOURCE_ATTENDANCE_KEY, screenKey: "attendance-summary", screenType: "summary", isDefault: false, sortOrder: 3},
 
