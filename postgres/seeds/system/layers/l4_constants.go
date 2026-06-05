@@ -316,7 +316,27 @@ package layers
 //     semester/trimester/bimester/quarter, los 4 valores válidos del CHECK de la
 //     tabla academic_periods) y `academic_year` (number, required). Sin cambios de
 //     esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.1"
+//   - 1.42.2 (2026-06-03): el form `sessions-by-subject-form` ahora limita la
+//     entrada del campo `section_label` a 10 caracteres (atributo `max_length: 10`).
+//     El backend valida `section_label max=10`; antes el usuario escribía de más y
+//     el guardado fallaba con 400. El SDUI gana soporte de `max_length`: el renderer
+//     KMP (SlotRenderer.applyMaxLength) trunca la entrada en `onValueChange` para
+//     PREVENIR la sobreescritura en lugar de mostrar el error tras guardar. Sin
+//     cambios de esquema ni de permisos.
+//   - 1.42.3 (2026-06-04): se repara el campo faltante del form `units-form`. El
+//     DTO `CreateUnitRequest` exige `type` (string enum) como required, pero el
+//     form sólo declaraba name/level/period_id → el backend respondía 400
+//     "invalid request body" al crear una unidad desde el iPad/web. Se AGREGA un
+//     campo al slot_data (después de `name`): `type` (select, required, options =
+//     school/grade/class/section/club/department, los 6 valores válidos de
+//     domain.ValidUnitTypes). Sin cambios de esquema ni de permisos.
+//   - 1.42.4 (2026-06-04, plan 011 Eje C): se SANEA el contrato del form
+//     `units-form`. Se QUITAN los campos `level` y `period_id` del slot_data: el
+//     DTO `CreateUnitRequest` no los acepta (solo display_name/code/type/
+//     description/parent_unit_id/metadata) y el contrato KMP `UnitsFormContract`
+//     los descartaba silenciosamente → el form "mentía". El form queda con
+//     name + type (ambos required). Sin cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.42.4"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

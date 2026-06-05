@@ -290,8 +290,14 @@ func unitsForm() l4ScreenInstanceRow {
   "title": "Unidad",
   "fields": [
     {"key": "name", "label": "Nombre", "type": "text", "required": true},
-    {"key": "level", "label": "Nivel", "type": "text"},
-    {"key": "period_id", "label": "Periodo", "type": "remote_select", "required": true}
+    {"key": "type", "label": "Tipo", "type": "select", "required": true, "options": [
+      {"value": "school", "label": "Colegio"},
+      {"value": "grade", "label": "Grado"},
+      {"value": "class", "label": "Clase"},
+      {"value": "section", "label": "Sección"},
+      {"value": "club", "label": "Club"},
+      {"value": "department", "label": "Departamento"}
+    ]}
   ],
   "api_prefix": "academic"
 }`,
@@ -811,7 +817,7 @@ func sessionsBySubjectForm() l4ScreenInstanceRow {
   "title": "Sesión",
   "fields": [
     {"key": "period_id", "label": "Período", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/periods", "display_field": "name", "value_field": "id"},
-    {"key": "section_label", "label": "Sección", "type": "text"},
+    {"key": "section_label", "label": "Sección", "type": "text", "max_length": 10},
     {"key": "teacher_membership_id", "label": "Docente", "type": "remote_select", "remote_endpoint": "academic:/api/v1/memberships/by-role?role_key=teacher", "display_field": "full_name", "value_field": "id"},
     {"key": "is_active", "label": "Activa", "type": "toggle", "default": "true"}
   ],

@@ -6,6 +6,23 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+### Changed
+
+- El form `sessions-by-subject-form` limita el campo `section_label` a 10 caracteres
+  (atributo `max_length: 10` en su `slot_data`), alineado con la validación del backend
+  (`section_label max=10`): el SDUI ahora previene la entrada de más de 10 caracteres en
+  lugar de fallar el guardado con 400. Soporte de `max_length` añadido al SDUI del KMP
+  (modelo `Slot.maxLength` + `FormFieldsResolver` + `SlotRenderer.applyMaxLength`).
+- El form `units-form` gana el campo `type` (select required, options
+  school/grade/class/section/club/department): el DTO `CreateUnitRequest` lo exige
+  `binding:"required"` y sin él el backend respondía 400 al crear una unidad.
+- El form `units-form` se sanea (plan 011 Eje C): se QUITAN los campos `level` y
+  `period_id`, que el DTO `CreateUnitRequest` no acepta y el contrato KMP
+  `UnitsFormContract` descartaba en silencio. El form queda con `name` + `type`. El
+  `UnitsFormContract` del KMP migra además de `/api/v1/schools/{schoolId}/units` al
+  endpoint JWT-only `/api/v1/units` (school_id del token, no del path; bug 0015).
+- `L4_SEED_VERSION` 1.42.1 → 1.42.4. Sin cambios de esquema (`SchemaVersion` intacto) ni de permisos.
+
 ## [0.5.0] - 2026-06-03
 
 ### Changed
