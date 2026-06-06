@@ -1153,8 +1153,8 @@ func assessmentsList() l4ScreenInstanceRow {
   "search_placeholder": "Buscar evaluación...",
   "columns": [
     {"key": "title", "label": "Título"},
-    {"key": "subject", "label": "Materia"},
-    {"key": "scheduled_at", "label": "Fecha"}
+    {"key": "subject_name", "label": "Materia"},
+    {"key": "status", "label": "Estado"}
   ],
   "actions_removed": ["delete"],
   "api_prefix": "learning"
@@ -1173,6 +1173,14 @@ func assessmentsList() l4ScreenInstanceRow {
 // detail_configs[] describe los paneles detalle (aquí uno solo: "Preguntas"
 // con modal de crear/editar). El frontend KMP es quien lo interpreta; el
 // backend solo lo persiste como blob.
+//
+// Contrato N4 (plan 015): POST/GET /api/v1/assessments, GET/PUT/DELETE
+// /assessments/:assessment_id (read/update/delete), POST .../publish y
+// .../archive. El cuerpo de crear NO lleva school_id ni autor (del JWT); el
+// `subject_id` SÍ va en el cuerpo (FK al catálogo de materias). `modality`
+// se eliminó (no existe en el esquema nuevo). `subject_id` se llena con un
+// remote_select al catálogo de materias de academic (GET /api/v1/subjects,
+// display=name, value=id).
 func assessmentsForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_FORM_ID,
@@ -1188,6 +1196,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   "edit_title": "Editar evaluación",
   "fields": [
     {"key": "title", "label": "Título", "type": "text", "required": true},
+    {"key": "subject_id", "label": "Materia", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
     {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number"},
     {"key": "max_attempts", "label": "Intentos máximos", "type": "number"},
@@ -1203,6 +1212,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   ],
   "actions_added": [
     {"id": "detail",  "scope": "resource-toolbar", "icon": "help_outline", "label": "Preguntas", "permission": "content.assessments.read",   "condition": "edit-only", "event_id": "view-questions", "style": "icon", "order": 15},
+    {"id": "assign",  "scope": "resource-toolbar", "icon": "assignment",   "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20},
     {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30},
     {"id": "archive", "scope": "resource-toolbar", "icon": "archive",      "label": "Archivar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "archive",        "style": "icon", "order": 40}
   ],
@@ -1231,9 +1241,8 @@ func assessmentsMgmtList() l4ScreenInstanceRow {
   "search_placeholder": "Buscar...",
   "columns": [
     {"key": "title", "label": "Título"},
-    {"key": "subject", "label": "Materia"},
-    {"key": "modality", "label": "Modalidad"},
-    {"key": "scheduled_at", "label": "Fecha"},
+    {"key": "subject_name", "label": "Materia"},
+    {"key": "questions_count", "label": "Preguntas"},
     {"key": "status", "label": "Estado"}
   ],
   "api_prefix": "learning"
@@ -1241,6 +1250,10 @@ func assessmentsMgmtList() l4ScreenInstanceRow {
 	}
 }
 
+// assessmentTake: F3 (el alumno presenta la evaluación). Pendiente de
+// re-apuntar a los endpoints de intento del backend nuevo (start/save/submit
+// por student_membership_id) en F3.1/F3.2 — aquí queda MÍNIMO, no se inventa
+// el contrato. Permiso del alumno: content.assessments_student.read.
 func assessmentTake() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_TAKE_ID,
@@ -1258,6 +1271,8 @@ func assessmentTake() l4ScreenInstanceRow {
 	}
 }
 
+// assessmentResult: F3 (resultado/revisión del intento, vista alumno).
+// Pendiente de re-apuntar al backend nuevo en F3.1 — queda MÍNIMO.
 func assessmentResult() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_RESULT_ID,
@@ -1289,9 +1304,9 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
   "title": "Preguntas",
   "page_title": "Preguntas",
   "columns": [
-    {"key": "statement", "label": "Pregunta"},
-    {"key": "kind", "label": "Tipo"},
-    {"key": "score", "label": "Puntaje"}
+    {"key": "question_text", "label": "Pregunta"},
+    {"key": "question_type", "label": "Tipo"},
+    {"key": "points", "label": "Puntaje"}
   ],
   "actions_added": [
     {"id": "create", "scope": "header", "label": "Nuevo",    "icon": "plus",  "permission": "content.assessments.update", "condition": "always", "event_id": "create", "style": "icon",        "order": 10},
@@ -1302,6 +1317,18 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
 	}
 }
 
+// assessmentQuestionForm — F2.6 (plan 015): editor de preguntas alineado al
+// contrato nuevo de N4. El field `options` (type=option-list) es el que faltaba
+// y causaba el bug original (el editor no mostraba opciones); lo consume el
+// componente KMP DynamicOptionListField (shape {option_id, option_text} por
+// opción). `correct_answer_field` apunta al campo `correct_answer`: el
+// radio-button de la lista de opciones marca la opción correcta y escribe ese
+// valor, por eso NO se declara un field `correct_answer` separado (sería un
+// control duplicado sobre el mismo dato). question_type se restringe a los 4
+// tipos válidos del CHECK del esquema nuevo. Endpoints (resueltos por el
+// AssessmentQuestionFormContract del KMP): GET/POST
+// /api/v1/assessments/:assessment_id/questions y PUT/DELETE .../:question_id,
+// bajo api_prefix=learning.
 func assessmentQuestionForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:          L4_SCREEN_INST_ASSESS_QUESTION_FORM_ID,
@@ -1310,7 +1337,9 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
 		name:        "Formulario de Pregunta",
 		description: "Crear o editar una pregunta",
 		scope:       "unit",
-		// TC-A del baseline.
+		// slot.permission del editor: ver la pantalla con read; las mutaciones
+		// (POST/PUT/DELETE de preguntas) son content.assessments.update y se
+		// gatean en las acciones de la lista de preguntas + el submit del form.
 		requiredPermission: "content.assessments.read",
 		slotData: `{
   "title": "Pregunta",
@@ -1324,8 +1353,8 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
       {"value": "short_answer", "label": "Respuesta corta"},
       {"value": "open_ended", "label": "Respuesta abierta"}
     ]},
+    {"key": "options", "type": "option-list", "correct_answer_field": "correct_answer"},
     {"key": "points", "label": "Puntaje", "type": "number", "required": true},
-    {"key": "correct_answer", "label": "Respuesta correcta", "type": "text"},
     {"key": "explanation", "label": "Explicación", "type": "textarea"},
     {"key": "difficulty", "label": "Dificultad", "type": "select", "options": [
       {"value": "easy", "label": "Fácil"},
@@ -1338,59 +1367,50 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
 	}
 }
 
-// assessmentAssignment: phantom-nueva. Pantalla para asignar una
-// evaluación creada a las unidades destino.
+// assessmentAssignment: pantalla para asignar una evaluación a UNA sesión de
+// materia (subject_offering). Contrato N4 (plan 015): POST
+// /api/v1/assessments/:assessment_id/assignments. El cuerpo lleva SOLO
+// `subject_offering_id` (+ `due_date` opcional) — NUNCA alumnos: la entrega
+// resuelve los inscritos de la oferta por construcción. El `assessment_id`
+// llega por el param de navegación (se entra desde la acción "Asignar" del
+// form de evaluación), no es un campo del form. slot.permission =
+// content.assessments.assign (única fuente del permiso, ADR 0003).
+// `subject_offering_id` es un remote_select sobre las sesiones de materia
+// (GET /api/v1/subject-offerings de academic, display=subject_name).
 func assessmentAssignment() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_ASSIGNMENT_ID,
 		screenKey:          "assessment-assignment",
 		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
 		name:               "Asignación de Evaluación",
-		description:        "Asignar una evaluación a unidades destino",
+		description:        "Asignar una evaluación a una sesión de materia",
 		scope:              "unit",
-		requiredPermission: "content.assessments.update",
+		requiredPermission: "content.assessments.assign",
 		slotData: `{
   "title": "Asignar Evaluación",
   "fields": [
-    {"key": "assessment_id", "label": "Evaluación", "type": "remote_select", "required": true},
-    {"key": "units", "label": "Unidades", "type": "multi_select", "required": true},
-    {"key": "starts_at", "label": "Inicio", "type": "datetime"},
-    {"key": "ends_at", "label": "Fin", "type": "datetime"}
+    {"key": "subject_offering_id", "label": "Sesión", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/subject-offerings", "display_field": "subject_name", "value_field": "id"},
+    {"key": "due_date", "label": "Fecha de entrega", "type": "datetime"}
   ],
   "actions_removed": ["save", "delete"],
   "actions_added": [
-    {"id": "save_new", "scope": "form-submit", "label": "Asignar", "icon": "save", "permission": "content.assessments.update", "condition": "create-only", "event_id": "submit-form", "style": "filled", "order": 10}
+    {"id": "save_new", "scope": "form-submit", "label": "Asignar", "icon": "save", "permission": "content.assessments.assign", "condition": "create-only", "event_id": "submit-form", "style": "filled", "order": 10}
   ],
   "api_prefix": "learning"
 }`,
 	}
 }
 
-// assessmentModality: phantom-nueva. Selector previo al form de
-// creación de evaluación (modalidad: quiz, examen, tarea).
-func assessmentModality() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ASSESS_MODALITY_ID,
-		screenKey:          "assessment-modality",
-		templateID:         L0_SCREEN_TPL_DETAIL_ID_REF,
-		name:               "Modalidad de Evaluación",
-		description:        "Selección de modalidad antes de crear una evaluación",
-		scope:              "unit",
-		requiredPermission: "content.assessments.create",
-		slotData: `{
-  "title": "Modalidad de Evaluación",
-  "options": [
-    {"value": "quiz", "label": "Quiz", "icon": "zap"},
-    {"value": "exam", "label": "Examen", "icon": "clipboard"},
-    {"value": "assignment", "label": "Tarea", "icon": "file-text"}
-  ],
-  "api_prefix": "learning"
-}`,
-	}
-}
+// assessmentModality ELIMINADA (plan 015, F2.6): la "modalidad"
+// (quiz/examen/tarea) no existe en el esquema nuevo de N4 — el assessment solo
+// tiene `source_type` (manual/ai_generated). El flujo de creación va directo al
+// form de evaluación, sin selector previo. Concepto muerto, no deprecado.
+// Deuda front: AssessmentModalityContract.kt + su test quedan inertes (sin
+// screen_instance que los resuelva); limpiar en el re-apuntado de UI de F3.1.
 
-// assessmentReviewDashboard: phantom-nueva. Dashboard de revisión
-// de intentos por evaluación (docente).
+// assessmentReviewDashboard: F3 (revisión docente). Dashboard de revisión de
+// intentos por evaluación. Pendiente de re-apuntar a los endpoints de revisión
+// del backend nuevo en F3.1 — aquí queda MÍNIMO (no se inventa el contrato).
 func assessmentReviewDashboard() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_REVIEW_DASH_ID,
@@ -1413,8 +1433,11 @@ func assessmentReviewDashboard() l4ScreenInstanceRow {
 	}
 }
 
-// assignedAssessmentsList: phantom-nueva. Lista para el estudiante
-// de las evaluaciones asignadas.
+// assignedAssessmentsList: lista para el estudiante de las evaluaciones
+// asignadas. Contrato N4 (plan 015): GET /api/v1/me/assigned-assessments
+// (resuelto por oferta→inscritos), permiso content.assessments_student.read.
+// Solo lectura (sin create/edit/delete). Las columnas se alinean a los campos
+// del esquema nuevo (subject_name, due_date).
 func assignedAssessmentsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_ASSIGNED_LIST_ID,
@@ -1429,8 +1452,8 @@ func assignedAssessmentsList() l4ScreenInstanceRow {
   "search_placeholder": "Buscar...",
   "columns": [
     {"key": "title", "label": "Título"},
-    {"key": "subject", "label": "Materia"},
-    {"key": "due_at", "label": "Vence"},
+    {"key": "subject_name", "label": "Materia"},
+    {"key": "due_date", "label": "Vence"},
     {"key": "status", "label": "Estado"}
   ],
   "actions_removed": ["create", "edit", "delete"],
@@ -1439,8 +1462,8 @@ func assignedAssessmentsList() l4ScreenInstanceRow {
 	}
 }
 
-// attemptReviewDetail: phantom-nueva. Detalle de un intento de
-// evaluación (vista revisión).
+// attemptReviewDetail: F3 (detalle de un intento, vista revisión docente).
+// Pendiente de re-apuntar al backend nuevo en F3.1 — queda MÍNIMO.
 func attemptReviewDetail() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ATTEMPT_REVIEW_DETAIL_ID,

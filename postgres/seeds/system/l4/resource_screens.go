@@ -39,9 +39,9 @@ import (
 // originales):
 //   - +6 mappings nuevos para las screen_keys phantom seedadas por B4:
 //     user-roles, membership-add, school-concepts-{list,form},
-//     assessment-assignment, assessment-modality,
-//     assessment-review-dashboard, attempt-review-detail,
-//     assigned-assessments-list, notifications-list.
+//     assessment-assignment, assessment-review-dashboard,
+//     attempt-review-detail, assigned-assessments-list,
+//     notifications-list. (assessment-modality se eliminó en plan 015.)
 //     (Cada phantom legítima del baseline cross-checker queda
 //     accesible vía menú o sub-flujo.)
 //   - -3 mappings descartados por dead-screens (cross-checker
@@ -296,7 +296,7 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-0000000000b6", resourceID: L4_RESOURCE_ASSESSMENTS_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_KEY, screenKey: "assessment-result", screenType: "result", isDefault: false, sortOrder: 7},
 		// Phantom-nuevas B4:
 		{id: "b4500000-0000-0000-0000-0000000000b7", resourceID: L4_RESOURCE_ASSESSMENTS_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_KEY, screenKey: "assessment-assignment", screenType: "assignment", isDefault: false, sortOrder: 8},
-		{id: "b4500000-0000-0000-0000-0000000000b8", resourceID: L4_RESOURCE_ASSESSMENTS_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_KEY, screenKey: "assessment-modality", screenType: "modality", isDefault: false, sortOrder: 9},
+		// b8/assessment-modality eliminado en plan 015 (concepto muerto).
 		{id: "b4500000-0000-0000-0000-0000000000b9", resourceID: L4_RESOURCE_ASSESSMENTS_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_KEY, screenKey: "assessment-review-dashboard", screenType: "review-dashboard", isDefault: false, sortOrder: 10},
 		{id: "b4500000-0000-0000-0000-0000000000ba", resourceID: L4_RESOURCE_ASSESSMENTS_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_KEY, screenKey: "attempt-review-detail", screenType: "attempt-review", isDefault: false, sortOrder: 11},
 
