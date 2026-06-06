@@ -386,7 +386,16 @@ package layers
 //     las pantallas `grades-list` y `grades-form` de "learning" a "academic". El
 //     endpoint de notas vive en la API academic (:8060), no learning. Sin cambios
 //     de esquema ni de permisos.
-const L4_SEED_VERSION = "1.42.10"
+//   - 1.42.11 (2026-06-05, N3 F3 plan 013): seed SDUI de la pantalla nativa
+//     "Poner notas". Agrega la action `put-grades` (entry-point en subjects-form,
+//     scope resource-toolbar, condition edit-only, permission
+//     academic.grades.create, event_id put-grades → NavigateTo("grades-batch",
+//     {subjectId})) y el screen instance `grades-batch` (override nativo Compose,
+//     scope unit, requiredPermission academic.grades.read, selector de período
+//     remote_select a academic:/api/v1/periods). Espejo de attendance-batch (N2).
+//     Los permisos ya estaban sembrados (cubiertos por el wildcard
+//     academic.grades.* de teacher). Sin cambios de esquema.
+const L4_SEED_VERSION = "1.42.11"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

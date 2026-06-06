@@ -468,6 +468,19 @@ func subjectsList() l4ScreenInstanceRow {
 // "view-attendance-summary" → NavigateTo con {subjectId} en SubjectsFormContract)
 // vive en el contrato KMP; declarar aquí las acciones es correcto (seed-first).
 //
+// actions_added "put-grades" (N3 F3): entry-point "Poner notas" de la materia
+// del docente, espejo de "take-attendance". Es una acción de toolbar del
+// formulario (scope resource-toolbar), condition=edit-only porque las notas se
+// registran sobre una materia ya existente (necesita su id). Navega a la
+// pantalla nativa grades-batch pasando subjectId = id de la materia editada
+// (parámetro de navegación de CONTENIDO, no tenant; el colegio/unidad sale del
+// JWT — ADR 0008). El permiso del botón es academic.grades.create (ADR 0003:
+// slot.permission, leído de la key `permission`; ya sembrado y cubierto por el
+// wildcard academic.grades.* de teacher). El destino del evento (event_id
+// "put-grades" → NavigateTo("grades-batch", {subjectId}) en SubjectsFormContract)
+// y la ruta KMP grades-batch se registran en el lado KMP; declarar aquí la
+// acción es correcto (seed-first), aunque la ruta del front aún no exista.
+//
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
 // las sesiones de la materia).
@@ -496,7 +509,8 @@ func subjectsForm() l4ScreenInstanceRow {
   "actions_added": [
     {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20},
     {"id": "view-attendance", "scope": "resource-toolbar", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance", "style": "icon", "order": 21},
-    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22}
+    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22},
+    {"id": "put-grades", "scope": "resource-toolbar", "label": "Poner notas", "icon": "star", "permission": "academic.grades.create", "condition": "edit-only", "event_id": "put-grades", "style": "icon", "order": 23}
   ],
   "api_prefix": "academic"
 }`,
@@ -981,6 +995,48 @@ func attendanceBatch() l4ScreenInstanceRow {
   "actions_removed": ["save", "delete"],
   "actions_added": [
     {"id": "submit-batch", "scope": "header", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "always", "event_id": "submit-batch", "style": "filled", "order": 10}
+  ],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// gradesBatch (N3 F3): pantalla "poner notas" por sesión, espejo de
+// attendanceBatch. Es OVERRIDE NATIVO en el FE (Compose, NO SDUI): MainScreen
+// intercepta el screen_key `grades-batch` y pinta el ViewModel/Screen de
+// registro masivo de calificaciones, que el motor SDUI form no expresa. El
+// slot_data NO lo renderiza el SDUI genérico; se conserva mínimo y válido
+// (form-basic-v1) por higiene de contrato, análogo a attendance-batch.
+//
+// La action `submit-batch` declara el permiso del botón "Guardar notas" del
+// override nativo (ADR 0003: única fuente del permiso del botón). NO es una
+// action que el SDUI genérico pinte: la pantalla nativa la lee del contrato y
+// gatea su botón con `permission`. El permiso `academic.grades.create` ya está
+// sembrado y lo cubre el wildcard `academic.grades.*` del rol teacher.
+//
+// El entry-point vive en subjects-form (action `put-grades`, event_id
+// `put-grades` → NavigateTo("grades-batch", {subjectId})). requiredPermission
+// = academic.grades.read abre la pantalla (espejo de attendance-batch). El
+// selector de período se declara como remote_select a academic:/api/v1/periods
+// (mismo endpoint que sessions-by-subject-form).
+func gradesBatch() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_GRADES_BATCH_ID,
+		screenKey:          "grades-batch",
+		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
+		name:               "Registrar Calificaciones",
+		description:        "Formulario para registrar calificaciones por período",
+		scope:              "unit",
+		requiredPermission: "academic.grades.read",
+		slotData: `{
+  "title": "Registrar Calificaciones",
+  "fields": [
+    {"key": "period_id", "label": "Período", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/periods", "display_field": "name", "value_field": "id"},
+    {"key": "entries", "label": "Calificaciones", "type": "table"}
+  ],
+  "actions_removed": ["save", "delete"],
+  "actions_added": [
+    {"id": "submit-batch", "scope": "header", "label": "Guardar notas", "icon": "star", "permission": "academic.grades.create", "condition": "always", "event_id": "submit-batch", "style": "filled", "order": 10}
   ],
   "api_prefix": "academic"
 }`,

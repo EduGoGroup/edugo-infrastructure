@@ -478,6 +478,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// ===========================================================
 		gradesList(),
 		gradesForm(),
+		gradesBatch(),
 		attendanceList(),
 		attendanceBatch(),
 		attendanceSummary(),
