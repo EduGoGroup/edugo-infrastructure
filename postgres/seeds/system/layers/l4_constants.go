@@ -382,7 +382,45 @@ package layers
 //     SubjectsFormContract del KMP. El permiso ya estaba sembrado (cubierto por el
 //     wildcard academic.attendance.* de teacher). Sin cambios de esquema ni de
 //     permisos.
-const L4_SEED_VERSION = "1.42.9"
+//   - 1.42.10 (2026-06-05, F0.5 plan 013 — bug 0034): corrige el `api_prefix` de
+//     las pantallas `grades-list` y `grades-form` de "learning" a "academic". El
+//     endpoint de notas vive en la API academic (:8060), no learning. Sin cambios
+//     de esquema ni de permisos.
+//   - 1.42.11 (2026-06-05, N3 F3 plan 013): seed SDUI de la pantalla nativa
+//     "Poner notas". Agrega la action `put-grades` (entry-point en subjects-form,
+//     scope resource-toolbar, condition edit-only, permission
+//     academic.grades.create, event_id put-grades → NavigateTo("grades-batch",
+//     {subjectId})) y el screen instance `grades-batch` (override nativo Compose,
+//     scope unit, requiredPermission academic.grades.read, selector de período
+//     remote_select a academic:/api/v1/periods). Espejo de attendance-batch (N2).
+//     Los permisos ya estaban sembrados (cubiertos por el wildcard
+//     academic.grades.* de teacher). Sin cambios de esquema.
+//   - 1.44.0 (2026-06-06, N3 F4 plan 013 — consulta de notas): seed SDUI de la
+//     consulta de notas. (1) Action `view-grades-summary` ("Resumen de notas",
+//     icon pie_chart, scope row, condition always, permission academic.grades.read,
+//     event_id view-grades-summary → grades-subject-summary) como 5ª row-action de
+//     la card de sesión (sessions-by-subject-list). (2) Screen instance
+//     `grades-subject-summary` (resumen de notas por sesión, vista docente;
+//     readonly, scope unit, requiredPermission academic.grades.read; espejo de
+//     attendance-summary) + su mapping en resource_screens (recurso grades,
+//     screen_type summary). (3) Feature self del alumno "Mis notas": recurso
+//     `my_grades`, permiso nuevo `academic.my_grades.read:own` con grant LITERAL
+//     al rol student, screen instance `my-grades-list` (readonly, requiredPermission
+//     academic.my_grades.read:own; el contrato KMP consume GET /api/v1/me/grades),
+//     mapping resource_screens my_grades→my-grades-list (is_default) e item de menú
+//     "Mis notas" (recurso my_grades, IsMenuVisible). Espejo de my_memberships. Sin
+//     cambios de esquema. Los permisos de docente (academic.grades.read) ya estaban
+//     sembrados.
+//   - 1.45.0 (2026-06-06, N3 F4.1 — cierre deuda de privacidad, decisión del
+//     dueño): se ELIMINA el grant amplio `academic.grades.*` del rol `student`.
+//     Ese wildcard era CRUD docente y dejaba al alumno ver/crear/editar notas
+//     ajenas vía GET/POST /grades y ver el menú "Calificaciones" (grades-list).
+//     El alumno conserva el feature self `academic.my_grades.read:own` (1.44.0),
+//     que sirve solo sus propias notas vía GET /api/v1/me/grades → su única vista
+//     de notas pasa a ser "Mis Notas". El grant de `guardian` (`academic.grades.*`)
+//     queda intacto (deuda separada: el acudiente necesita ver notas de sus
+//     acudidos). Sin cambios de esquema (cambia solo el output del seed).
+const L4_SEED_VERSION = "1.45.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

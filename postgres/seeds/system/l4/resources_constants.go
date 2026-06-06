@@ -72,10 +72,17 @@ const (
 	// …23 (adyacente a memberships …21 / my_memberships …22).
 	L4_RESOURCE_SUBJECT_OFFERINGS_ID  = "b4000000-0000-0000-0000-000000000023"
 	L4_RESOURCE_SUBJECT_OFFERINGS_KEY = "subject_offerings"
-	L4_RESOURCE_SUBJECTS_KEY          = "subjects"
-	L4_RESOURCE_PERIODS_KEY           = "periods"
-	L4_RESOURCE_GRADES_KEY            = "grades"
-	L4_RESOURCE_ATTENDANCE_KEY        = "attendance"
+	// Recurso de menú "Mis notas" del alumno (N3 F4, consulta de notas). Espejo
+	// de my_memberships: recurso de MENÚ separado de `grades` (CRUD docente) con
+	// path propio academic.my_grades para que el gate de menú por path-prefix NO
+	// le filtre el item admin "grades" ni dependa del wildcard academic.grades.*.
+	// Sufijo …24 (adyacente a subject_offerings …23 / my_memberships …22).
+	L4_RESOURCE_MY_GRADES_ID   = "b4000000-0000-0000-0000-000000000024"
+	L4_RESOURCE_MY_GRADES_KEY  = "my_grades"
+	L4_RESOURCE_SUBJECTS_KEY   = "subjects"
+	L4_RESOURCE_PERIODS_KEY    = "periods"
+	L4_RESOURCE_GRADES_KEY     = "grades"
+	L4_RESOURCE_ATTENDANCE_KEY = "attendance"
 
 	// Onboarding (plan 005, N0.0): invitaciones + solicitudes de ingreso.
 	// IDs libres adyacentes a guardian (…60). join_request_approvals es

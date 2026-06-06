@@ -781,17 +781,19 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 	// el autoCreateTime de la entity solo aplica en inserts via struct (no via
 	// map, como hace upsertMaps). Mismo valor que el enrolled_at de las
 	// membresias de alumnos: inicio del periodo academico activo (2026-03-01 UTC).
-	// subject_id se copia del subject_id de la oferta correspondiente (mismo
-	// archivo, slice offerings de arriba): es denormalizado e inmutable y
-	// respalda el invariante una-oferta-por-materia (bug 0036).
+	// subject_id y period_id se copian de la oferta correspondiente (mismo
+	// archivo, slice offerings de arriba): son denormalizados e inmutables y
+	// respaldan el invariante una-oferta-por-materia-por-período (bug 0036).
+	// Periodos: offMat5A/offMat5B/offSci5B/offHis6A → ff…01; offEngA2 → ff…05;
+	// offPint → ff…03.
 	enrollments := []map[string]any{
-		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (5to A, Matematicas)
-		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Sofia (5to A, Matematicas)
-		{"offering_id": mustUUID(offMat5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Matematicas)
-		{"offering_id": mustUUID(offSci5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Ciencias)
-		{"offering_id": mustUUID(offHis6A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000004"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000005"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (6to A, Historia)
-		{"offering_id": mustUUID(offEngA2), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000006"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (Global English)
-		{"offering_id": mustUUID(offPint), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000005"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000007"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")},  // Mateo (CreArte pintura)
+		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (5to A, Matematicas)
+		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Sofia (5to A, Matematicas)
+		{"offering_id": mustUUID(offMat5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Matematicas)
+		{"offering_id": mustUUID(offSci5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Ciencias)
+		{"offering_id": mustUUID(offHis6A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000005"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (6to A, Historia)
+		{"offering_id": mustUUID(offEngA2), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000005"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000006"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (Global English)
+		{"offering_id": mustUUID(offPint), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000005"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000007"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")},  // Mateo (CreArte pintura)
 	}
 
 	return upsertMaps(tx, "academic.subject_offering_enrollments", enrollments, []string{"offering_id", "student_membership_id"}, nil, false)

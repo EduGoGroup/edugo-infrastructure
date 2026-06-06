@@ -76,12 +76,19 @@ const (
 	// GET /api/v1/me/subject-offerings (lector A); el seed solo declara
 	// columnas/título/permiso. Permiso propio academic.my_memberships.read:own.
 	L4_SCREEN_INST_MY_MEMBERSHIPS_LIST_ID = "b4400000-0000-0000-0000-00000000005b"
-	L4_SCREEN_INST_SUBJECTS_LIST_ID       = "b4400000-0000-0000-0000-000000000054"
-	L4_SCREEN_INST_SUBJECTS_FORM_ID       = "b4400000-0000-0000-0000-000000000055"
-	L4_SCREEN_INST_PERIODS_LIST_ID        = "b4400000-0000-0000-0000-000000000056"
-	L4_SCREEN_INST_PERIODS_FORM_ID        = "b4400000-0000-0000-0000-000000000057"
-	L4_SCREEN_INST_INVITATIONS_LIST_ID    = "b4400000-0000-0000-0000-000000000058"
-	L4_SCREEN_INST_INVITATIONS_FORM_ID    = "b4400000-0000-0000-0000-000000000059"
+	// "Mis notas" del alumno (N3 F4, consulta de notas). Lista readonly de
+	// las notas propias por sesión de materia. El contrato KMP consume
+	// GET /api/v1/me/grades; el seed solo declara columnas/título/permiso.
+	// Permiso propio academic.my_grades.read:own. Espejo de my-memberships-list.
+	// Sufijo …0068 (slot libre del bloque academic structure; los …0060..0067
+	// quedaron libres tras la poda de guardian).
+	L4_SCREEN_INST_MY_GRADES_LIST_ID   = "b4400000-0000-0000-0000-000000000068"
+	L4_SCREEN_INST_SUBJECTS_LIST_ID    = "b4400000-0000-0000-0000-000000000054"
+	L4_SCREEN_INST_SUBJECTS_FORM_ID    = "b4400000-0000-0000-0000-000000000055"
+	L4_SCREEN_INST_PERIODS_LIST_ID     = "b4400000-0000-0000-0000-000000000056"
+	L4_SCREEN_INST_PERIODS_FORM_ID     = "b4400000-0000-0000-0000-000000000057"
+	L4_SCREEN_INST_INVITATIONS_LIST_ID = "b4400000-0000-0000-0000-000000000058"
+	L4_SCREEN_INST_INVITATIONS_FORM_ID = "b4400000-0000-0000-0000-000000000059"
 	// join-requests-inbox (N0.4-B): instancia mínima requerida por la FK
 	// resource_screens.screen_key → screen_instances.screen_key. La
 	// pantalla se renderiza NATIVA en el FE (no SDUI), así que el
@@ -132,7 +139,12 @@ const (
 	L4_SCREEN_INST_GRADES_FORM_ID        = "b4400000-0000-0000-0000-000000000071"
 	L4_SCREEN_INST_ATTENDANCE_LIST_ID    = "b4400000-0000-0000-0000-000000000072"
 	L4_SCREEN_INST_ATTENDANCE_BATCH_ID   = "b4400000-0000-0000-0000-000000000073"
+	L4_SCREEN_INST_GRADES_BATCH_ID       = "b4400000-0000-0000-0000-000000000074"
 	L4_SCREEN_INST_ATTENDANCE_SUMMARY_ID = "b4400000-0000-0000-0000-000000000075"
+	// grades-subject-summary (N3 F4, consulta de notas): resumen de notas por
+	// sesión (vista del docente). Espejo de attendance-summary. Sufijo …0076,
+	// adyacente a attendance-summary …0075.
+	L4_SCREEN_INST_GRADES_SUBJECT_SUMMARY_ID = "b4400000-0000-0000-0000-000000000076"
 
 	// content: assessments (gestión + estudiante)
 	L4_SCREEN_INST_ASSESS_LIST_ID           = "b4400000-0000-0000-0000-000000000080"

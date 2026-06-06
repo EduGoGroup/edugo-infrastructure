@@ -241,6 +241,16 @@ var l4Resources = []l4ResourceRow{
 	// de su unidad activa). Reintroducido en N1.7 F1 sobre el modelo de sesiones
 	// (lector A: GET /api/v1/me/subject-offerings).
 	{ID: L4_RESOURCE_MY_MEMBERSHIPS_ID, Key: "my_memberships", DisplayName: "Mis Materias", Description: "Materias en las que el alumno está inscrito", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 13, IsMenuVisible: true, IsActive: true},
+	// "Mis notas" (recurso my_grades, N3 F4 — consulta de notas) — item de menú
+	// del alumno que abre la lista readonly de sus notas por sesión de materia.
+	// Recurso separado de `grades` (CRUD docente): la pantalla default y el gate
+	// de visibilidad difieren. Path `academic.my_grades`; solo lo tocan grants
+	// que matcheen ese path → student (grant dedicado
+	// academic.my_grades.read:own) y school_admin (academic.*). El teacher
+	// (literales academic.grades.* sin my_) NO toca este path, así que no lo ve.
+	// Scope=unit (el alumno lee dentro de su unidad activa). El contrato KMP
+	// consume GET /api/v1/me/grades. Espejo de my_memberships.
+	{ID: L4_RESOURCE_MY_GRADES_ID, Key: "my_grades", DisplayName: "Mis Notas", Description: "Notas del alumno por sesión de materia", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
 
 	// -------------------------------------------------------------
 	// Hijos de "content" (evaluaciones y materiales)

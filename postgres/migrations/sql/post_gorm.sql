@@ -221,6 +221,19 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- academic.grades.teacher_id → academic.memberships (docente que califica).
+-- GORM no materializa esta FK desde el tag `constraint:grades_teacher_fkey` de la
+-- entity Grade porque no declara campo de relacion (mismo caso que
+-- subject_offerings.teacher_membership_id). teacher_id es nullable, asi que el
+-- docente que califica se desvincula con SET NULL al borrar/expirar su membresia:
+-- la nota persiste sin docente asignado (paridad con subject_offerings_teacher_fkey).
+DO $$ BEGIN
+    ALTER TABLE academic.grades
+        ADD CONSTRAINT grades_teacher_fkey
+            FOREIGN KEY (teacher_id) REFERENCES academic.memberships(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- ============================================================
 -- Triggers (CREATE OR REPLACE TRIGGER — PostgreSQL 14+)
 -- ============================================================

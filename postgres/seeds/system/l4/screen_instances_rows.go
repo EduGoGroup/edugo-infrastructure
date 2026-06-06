@@ -440,33 +440,15 @@ func subjectsList() l4ScreenInstanceRow {
 // destino ni handler view-detail en SubjectsFormContract), así que el botón de
 // toolbar no aplica y se retira intencionalmente.
 //
-// actions_added "take-attendance" (N2, plan 008 D2): entry-point "Pasar lista"
-// de la materia del docente. Es una acción de toolbar del formulario (scope
-// resource-toolbar, igual que las de assessments-form, también master-detail),
-// condition=edit-only porque la asistencia se pasa sobre una materia ya
-// existente (necesita su id). Navega a la pantalla nativa attendance-batch
-// pasando subjectId = id de la materia editada (parámetro de navegación de
-// CONTENIDO, no tenant; el colegio/unidad sale del JWT — ADR 0008). El permiso
-// del botón es academic.attendance.create (ADR 0003: slot.permission, leído de
-// la key `permission`; ya sembrado y cubierto por academic.attendance.*). El
-// destino del evento (event_id "take-attendance" → NavigateTo("attendance-batch",
-// {subjectId}) en SubjectsFormContract) y la ruta KMP attendance-batch se
-// registran en S2; declarar aquí la acción es correcto (seed-first), aunque la
-// ruta del front aún no exista.
-//
-// actions_added "view-attendance" y "view-attendance-summary" (N2.S3, plan 008):
-// entry-points "Historial" y "Resumen" de asistencia de la materia del docente,
-// espejo de "take-attendance". Ambas son acciones de toolbar del formulario
-// (scope resource-toolbar), condition=edit-only porque la asistencia se consulta
-// sobre una materia ya existente (necesita su id). Navegan a las pantallas SDUI
-// genéricas attendance-list / attendance-summary pasando subjectId = id de la
-// materia editada (parámetro de navegación de CONTENIDO, no tenant; el
-// colegio/unidad sale del JWT — ADR 0008). El permiso de ambos botones es
-// academic.attendance.read (ADR 0003: slot.permission, leído de la key
-// `permission`; ya sembrado y cubierto por el wildcard academic.attendance.* de
-// teacher). El destino de cada evento (event_id "view-attendance" /
-// "view-attendance-summary" → NavigateTo con {subjectId} en SubjectsFormContract)
-// vive en el contrato KMP; declarar aquí las acciones es correcto (seed-first).
+// Entry-points de asistencia/notas REUBICADOS (N3.5 F1, plan 014 / ADR 0018):
+// las 4 acciones del docente — "Pasar lista" (take-attendance), "Historial"
+// (view-attendance), "Resumen" (view-attendance-summary) y "Poner notas"
+// (put-grades) — YA NO cuelgan de subjects-form. Colgaban de la materia (scope
+// resource-toolbar, condition edit-only) y eso mezclaba el roster de un docente
+// que dicta la misma materia en dos secciones (A/B). Ahora viven en la card de
+// cada SESIÓN, como row-actions de sessions-by-subject-list (scope row): el id de
+// la fila es el offering_id, así que cada acción opera sobre una sección concreta.
+// Es reubicación, no convivencia: se BORRARON de aquí. Ver sessionsBySubjectList.
 //
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
@@ -493,11 +475,6 @@ func subjectsForm() l4ScreenInstanceRow {
     {"screen_key": "sessions-by-subject-list", "modal_screen_key": "sessions-by-subject-form", "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
   ],
   "actions_removed": ["detail"],
-  "actions_added": [
-    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20},
-    {"id": "view-attendance", "scope": "resource-toolbar", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance", "style": "icon", "order": 21},
-    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22}
-  ],
   "api_prefix": "academic"
 }`,
 	}
@@ -527,6 +504,38 @@ func myMembershipsList() l4ScreenInstanceRow {
   "columns": [
     {"key": "name", "label": "Materia"},
     {"key": "code", "label": "Código"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// myGradesList (N3 F4, consulta de notas): pantalla "Mis notas" del alumno.
+// Lista readonly de sus notas por sesión de materia. Espejo de
+// myMembershipsList: el contrato KMP consume el lector self
+// GET /api/v1/me/grades (el seed solo declara columnas/título/permiso).
+// requiredPermission = academic.my_grades.read:own (permiso ÚNICO del feature
+// self del alumno: slot.permission de la pantalla, route gate del dato y
+// visibilidad del item de menú). Sin acciones de mutación: actions_removed =
+// [create, edit, delete]. Columnas: subject_name (materia), period_name
+// (período) y grade (nota propia).
+func myGradesList() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_MY_GRADES_LIST_ID,
+		screenKey:          "my-grades-list",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Mis Notas",
+		description:        "Notas del alumno por sesión de materia",
+		scope:              "unit",
+		requiredPermission: "academic.my_grades.read:own",
+		slotData: `{
+  "title": "Mis Notas",
+  "search_placeholder": "Buscar materia...",
+  "columns": [
+    {"key": "subject_name", "label": "Materia"},
+    {"key": "period_name", "label": "Período"},
+    {"key": "grade", "label": "Nota"}
   ],
   "actions_removed": ["create", "edit", "delete"],
   "api_prefix": "academic"
@@ -787,8 +796,29 @@ func enrollOne() l4ScreenInstanceRow {
 // detail_configs[]); el contenedor le inyecta subjectId = id de la materia
 // editada y consume el endpoint
 // GET /api/v1/subject-offerings?subject_id={subjectId} (lo resuelve el handler
-// KMP; el seed solo declara columnas/título/permiso). Columnas
-// subject_name/section_label/period_name/teacher_name. Solo lectura:
+// KMP; el seed solo declara columnas/título/permiso). El id de cada fila es el
+// offering_id (la sesión concreta).
+//
+// Columnas (reordenadas en N3.5 F1): section_label primero — es el headline que
+// distingue la sección A de la B —, luego period_name y teacher_name. Se quitó
+// subject_name: es redundante porque todas las filas son la MISMA materia (ya
+// estamos dentro de su detalle).
+//
+// Row-actions de asistencia/notas (N3.5 F1, plan 014 / ADR 0018; +consulta de
+// notas en N3 F4): la card de cada sesión lleva las 5 acciones del docente —
+// "Pasar lista" (take-attendance), "Poner notas" (put-grades), "Historial"
+// (view-attendance), "Resumen" (view-attendance-summary) y "Resumen de notas"
+// (view-grades-summary) —, todas scope row (se materializan como RowAction en
+// el KMP). Vinieron de subjects-form (antes scope resource-toolbar, mezclaban el
+// roster de un docente con dos secciones de la misma materia); ahora operan sobre
+// la sesión concreta. condition=always: la fila SIEMPRE es una sesión existente
+// (no hay modo create/edit como en la toolbar del form). El id de la fila
+// (offering_id) viajará como offeringId al evento (mapeo en el contrato KMP, F2).
+// Cada permiso es slot.permission (ADR 0003): take-attendance →
+// academic.attendance.create, put-grades → academic.grades.create, view-attendance/
+// view-attendance-summary → academic.attendance.read, view-grades-summary →
+// academic.grades.read (navega a grades-subject-summary; ya sembrados, cubiertos
+// por el wildcard academic.* de teacher). Solo lectura del CRUD de sesiones:
 // actions_removed retira create/edit/delete heredados del template.
 // requiredPermission (slot.permission) = academic.subject_offerings.read.
 func sessionsBySubjectList() l4ScreenInstanceRow {
@@ -804,7 +834,23 @@ func sessionsBySubjectList() l4ScreenInstanceRow {
 		// ese filtro real (antes decia "school", incoherente con el filtro).
 		scope:              "unit",
 		requiredPermission: "academic.subject_offerings.read",
-		slotData:           `{"title":"Sesiones","columns":[{"key":"subject_name","label":"Materia"},{"key":"section_label","label":"Sección"},{"key":"period_name","label":"Período"},{"key":"teacher_name","label":"Docente"}],"actions_removed":["create","edit","delete"],"api_prefix":"academic"}`,
+		slotData: `{
+  "title": "Sesiones",
+  "columns": [
+    {"key": "section_label", "label": "Sección"},
+    {"key": "period_name", "label": "Período"},
+    {"key": "teacher_name", "label": "Docente"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "actions_added": [
+    {"id": "take-attendance", "scope": "row", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "always", "event_id": "take-attendance", "style": "icon", "order": 20},
+    {"id": "put-grades", "scope": "row", "label": "Poner notas", "icon": "star", "permission": "academic.grades.create", "condition": "always", "event_id": "put-grades", "style": "icon", "order": 21},
+    {"id": "view-attendance", "scope": "row", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "always", "event_id": "view-attendance", "style": "icon", "order": 22},
+    {"id": "view-attendance-summary", "scope": "row", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "always", "event_id": "view-attendance-summary", "style": "icon", "order": 23},
+    {"id": "view-grades-summary", "scope": "row", "label": "Resumen de notas", "icon": "pie_chart", "permission": "academic.grades.read", "condition": "always", "event_id": "view-grades-summary", "style": "icon", "order": 24}
+  ],
+  "api_prefix": "academic"
+}`,
 	}
 }
 
@@ -893,7 +939,7 @@ func gradesList() l4ScreenInstanceRow {
     {"key": "period", "label": "Periodo"}
   ],
   "actions_removed": ["delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -916,7 +962,7 @@ func gradesForm() l4ScreenInstanceRow {
     {"key": "comment", "label": "Comentario", "type": "textarea"}
   ],
   "actions_removed": ["delete"],
-  "api_prefix": "learning"
+  "api_prefix": "academic"
 }`,
 	}
 }
@@ -987,6 +1033,48 @@ func attendanceBatch() l4ScreenInstanceRow {
 	}
 }
 
+// gradesBatch (N3 F3): pantalla "poner notas" por sesión, espejo de
+// attendanceBatch. Es OVERRIDE NATIVO en el FE (Compose, NO SDUI): MainScreen
+// intercepta el screen_key `grades-batch` y pinta el ViewModel/Screen de
+// registro masivo de calificaciones, que el motor SDUI form no expresa. El
+// slot_data NO lo renderiza el SDUI genérico; se conserva mínimo y válido
+// (form-basic-v1) por higiene de contrato, análogo a attendance-batch.
+//
+// La action `submit-batch` declara el permiso del botón "Guardar notas" del
+// override nativo (ADR 0003: única fuente del permiso del botón). NO es una
+// action que el SDUI genérico pinte: la pantalla nativa la lee del contrato y
+// gatea su botón con `permission`. El permiso `academic.grades.create` ya está
+// sembrado y lo cubre el wildcard `academic.grades.*` del rol teacher.
+//
+// El entry-point vive en subjects-form (action `put-grades`, event_id
+// `put-grades` → NavigateTo("grades-batch", {subjectId})). requiredPermission
+// = academic.grades.read abre la pantalla (espejo de attendance-batch). El
+// selector de período se declara como remote_select a academic:/api/v1/periods
+// (mismo endpoint que sessions-by-subject-form).
+func gradesBatch() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_GRADES_BATCH_ID,
+		screenKey:          "grades-batch",
+		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
+		name:               "Registrar Calificaciones",
+		description:        "Formulario para registrar calificaciones por período",
+		scope:              "unit",
+		requiredPermission: "academic.grades.read",
+		slotData: `{
+  "title": "Registrar Calificaciones",
+  "fields": [
+    {"key": "period_id", "label": "Período", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/periods", "display_field": "name", "value_field": "id"},
+    {"key": "entries", "label": "Calificaciones", "type": "table"}
+  ],
+  "actions_removed": ["save", "delete"],
+  "actions_added": [
+    {"id": "submit-batch", "scope": "header", "label": "Guardar notas", "icon": "star", "permission": "academic.grades.create", "condition": "always", "event_id": "submit-batch", "style": "filled", "order": 10}
+  ],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
 func attendanceSummary() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ATTENDANCE_SUMMARY_ID,
@@ -1004,6 +1092,41 @@ func attendanceSummary() l4ScreenInstanceRow {
     {"key": "present", "label": "Presentes"},
     {"key": "absent", "label": "Ausentes"},
     {"key": "rate", "label": "% Asistencia"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "readonly": true,
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// gradesSubjectSummary (N3 F4, consulta de notas): resumen de notas por sesión
+// de materia (vista del docente). Lista readonly espejo de attendanceSummary:
+// template list, actions_removed=[create,edit,delete] + readonly, api_prefix
+// academic, scope unit. El contrato KMP consume el endpoint de resumen ya
+// existente GET /api/v1/grades/subject-summary (el seed solo declara
+// columnas/título/permiso); el destino del evento view-grades-summary de la
+// card de sesión (sessions-by-subject-list) es esta pantalla. Columnas:
+// student_name + nota (grade_value numérico y grade_letter literal) + graded
+// (indicador "sin nota"/ungraded cuando el alumno aún no tiene calificación).
+// requiredPermission = academic.grades.read (slot.permission, ADR 0003; ya
+// sembrado, cubierto por el wildcard academic.grades.* de teacher).
+func gradesSubjectSummary() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_GRADES_SUBJECT_SUMMARY_ID,
+		screenKey:          "grades-subject-summary",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Resumen de Notas",
+		description:        "Resumen de notas por sesión de materia",
+		scope:              "unit",
+		requiredPermission: "academic.grades.read",
+		slotData: `{
+  "title": "Resumen de notas",
+  "columns": [
+    {"key": "student_name", "label": "Estudiante"},
+    {"key": "grade_value", "label": "Nota"},
+    {"key": "grade_letter", "label": "Letra"},
+    {"key": "graded", "label": "Calificado"}
   ],
   "actions_removed": ["create", "edit", "delete"],
   "readonly": true,

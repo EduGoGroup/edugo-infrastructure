@@ -198,6 +198,11 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// Reintroducido en N1.7 F1 sobre el modelo de sesiones.
 		{id: "b4500000-0000-0000-0000-000000000069", resourceID: L4_RESOURCE_MY_MEMBERSHIPS_ID, resourceKey: L4_RESOURCE_MY_MEMBERSHIPS_KEY, screenKey: "my-memberships-list", screenType: "list", isDefault: true, sortOrder: 1},
 
+		// academic → my_grades (N3 F4, consulta de notas): default del item de
+		// menú "Mis notas" del alumno. Recurso separado de grades (CRUD docente);
+		// abre la lista readonly de notas propias. Espejo de my_memberships.
+		{id: "b4500000-0000-0000-0000-000000000068", resourceID: L4_RESOURCE_MY_GRADES_ID, resourceKey: L4_RESOURCE_MY_GRADES_KEY, screenKey: "my-grades-list", screenType: "list", isDefault: true, sortOrder: 1},
+
 		// academic → subject_offerings (sesiones de materia, plan 010 / ADR
 		// 0009). batch-enroll = "inscripción por lote", pantalla NATIVA del FE
 		// (Compose, NO SDUI). Único mapping del recurso (list, is_default=true):
@@ -258,6 +263,11 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 
 		{id: "b4500000-0000-0000-0000-000000000085", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000086", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-form", screenType: "form", isDefault: false, sortOrder: 2},
+		// grades-subject-summary (N3 F4, consulta de notas): resumen de notas por
+		// sesión (vista docente). Espejo del mapping attendance-summary; screen_type
+		// distinto ("summary") para satisfacer UNIQUE (resource_id, screen_type). No
+		// es default (se alcanza desde la card de sesión vía event view-grades-summary).
+		{id: "b4500000-0000-0000-0000-000000000087", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-subject-summary", screenType: "summary", isDefault: false, sortOrder: 3},
 
 		{id: "b4500000-0000-0000-0000-000000000090", resourceID: L4_RESOURCE_ATTENDANCE_ID, resourceKey: L4_RESOURCE_ATTENDANCE_KEY, screenKey: "attendance-list", screenType: "list", isDefault: true, sortOrder: 1},
 		// attendance-batch ocupa screen_type=form para el recurso attendance.
