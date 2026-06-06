@@ -411,7 +411,16 @@ package layers
 //     "Mis notas" (recurso my_grades, IsMenuVisible). Espejo de my_memberships. Sin
 //     cambios de esquema. Los permisos de docente (academic.grades.read) ya estaban
 //     sembrados.
-const L4_SEED_VERSION = "1.44.0"
+//   - 1.45.0 (2026-06-06, N3 F4.1 — cierre deuda de privacidad, decisión del
+//     dueño): se ELIMINA el grant amplio `academic.grades.*` del rol `student`.
+//     Ese wildcard era CRUD docente y dejaba al alumno ver/crear/editar notas
+//     ajenas vía GET/POST /grades y ver el menú "Calificaciones" (grades-list).
+//     El alumno conserva el feature self `academic.my_grades.read:own` (1.44.0),
+//     que sirve solo sus propias notas vía GET /api/v1/me/grades → su única vista
+//     de notas pasa a ser "Mis Notas". El grant de `guardian` (`academic.grades.*`)
+//     queda intacto (deuda separada: el acudiente necesita ver notas de sus
+//     acudidos). Sin cambios de esquema (cambia solo el output del seed).
+const L4_SEED_VERSION = "1.45.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

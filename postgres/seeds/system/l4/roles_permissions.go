@@ -560,7 +560,12 @@ func roleGrantPatterns() map[string][]string {
 	studentPatterns := []string{
 		"academic.announcements.*",
 		"academic.attendance.*",
-		"academic.grades.*",
+		// El alumno NO recibe el wildcard `academic.grades.*` (CRUD docente):
+		// ese grant lo dejaba ver/crear/editar notas ajenas vía GET/POST /grades
+		// y ver el menú "Calificaciones" (grades-list) — fuga de privacidad
+		// (N3 F4.1, decisión del dueño 2026-06-06). Su única lectura de notas es
+		// el feature self `academic.my_grades.read:own` (abajo), que sirve solo
+		// sus propias notas vía GET /api/v1/me/grades.
 		// Permiso ÚNICO del feature "mis materias" del alumno (visibilidad de
 		// menú + slot.permission + route gate del dato). Grant LITERAL al
 		// recurso my_memberships, bajo un path PROPIO (academic.my_memberships.*)
