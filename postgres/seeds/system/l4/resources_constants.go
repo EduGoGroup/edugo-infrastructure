@@ -77,12 +77,12 @@ const (
 	// path propio academic.my_grades para que el gate de menú por path-prefix NO
 	// le filtre el item admin "grades" ni dependa del wildcard academic.grades.*.
 	// Sufijo …24 (adyacente a subject_offerings …23 / my_memberships …22).
-	L4_RESOURCE_MY_GRADES_ID  = "b4000000-0000-0000-0000-000000000024"
-	L4_RESOURCE_MY_GRADES_KEY = "my_grades"
-	L4_RESOURCE_SUBJECTS_KEY          = "subjects"
-	L4_RESOURCE_PERIODS_KEY           = "periods"
-	L4_RESOURCE_GRADES_KEY            = "grades"
-	L4_RESOURCE_ATTENDANCE_KEY        = "attendance"
+	L4_RESOURCE_MY_GRADES_ID   = "b4000000-0000-0000-0000-000000000024"
+	L4_RESOURCE_MY_GRADES_KEY  = "my_grades"
+	L4_RESOURCE_SUBJECTS_KEY   = "subjects"
+	L4_RESOURCE_PERIODS_KEY    = "periods"
+	L4_RESOURCE_GRADES_KEY     = "grades"
+	L4_RESOURCE_ATTENDANCE_KEY = "attendance"
 
 	// Onboarding (plan 005, N0.0): invitaciones + solicitudes de ingreso.
 	// IDs libres adyacentes a guardian (…60). join_request_approvals es
