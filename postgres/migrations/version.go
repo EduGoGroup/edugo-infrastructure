@@ -435,6 +435,20 @@ import (
 //     considerar period_id. Seeds que insertan enrollments (demo + playgrounds v2
 //     n1_inscripcion/n17_secciones) propagan period_id desde la oferta. EduGo no
 //     está en producción → sin backfill.
+//   - 3.48.0 (seed-only, sin DDL → SchemaVersion sin bump): N3.5 F1 (plan 014 /
+//     ADR 0018). Reubicación de los entry-points de asistencia/notas de la materia
+//     a la card de la sesión. Las 4 acciones del docente (take-attendance,
+//     put-grades, view-attendance, view-attendance-summary) se BORRAN de
+//     subjects-form (donde eran scope resource-toolbar y mezclaban el roster de un
+//     docente con dos secciones de la misma materia) y se AÑADEN a
+//     sessions-by-subject-list como row-actions (scope row, condition always): el
+//     id de la fila es el offering_id, así cada acción opera sobre la sección
+//     concreta. Mismos permisos (academic.attendance.create/read,
+//     academic.grades.create; ya sembrados, cubiertos por el wildcard academic.*
+//     de teacher). Además se reordenan las columnas de sessions-by-subject-list:
+//     section_label pasa primero (headline que distingue A/B) y se quita
+//     subject_name (redundante dentro del detalle de la materia). Reubicación, no
+//     convivencia. L4_SEED_VERSION → 1.43.0.
 const SchemaVersion = "3.48.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos

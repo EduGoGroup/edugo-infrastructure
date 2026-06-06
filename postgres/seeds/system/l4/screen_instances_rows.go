@@ -440,46 +440,15 @@ func subjectsList() l4ScreenInstanceRow {
 // destino ni handler view-detail en SubjectsFormContract), así que el botón de
 // toolbar no aplica y se retira intencionalmente.
 //
-// actions_added "take-attendance" (N2, plan 008 D2): entry-point "Pasar lista"
-// de la materia del docente. Es una acción de toolbar del formulario (scope
-// resource-toolbar, igual que las de assessments-form, también master-detail),
-// condition=edit-only porque la asistencia se pasa sobre una materia ya
-// existente (necesita su id). Navega a la pantalla nativa attendance-batch
-// pasando subjectId = id de la materia editada (parámetro de navegación de
-// CONTENIDO, no tenant; el colegio/unidad sale del JWT — ADR 0008). El permiso
-// del botón es academic.attendance.create (ADR 0003: slot.permission, leído de
-// la key `permission`; ya sembrado y cubierto por academic.attendance.*). El
-// destino del evento (event_id "take-attendance" → NavigateTo("attendance-batch",
-// {subjectId}) en SubjectsFormContract) y la ruta KMP attendance-batch se
-// registran en S2; declarar aquí la acción es correcto (seed-first), aunque la
-// ruta del front aún no exista.
-//
-// actions_added "view-attendance" y "view-attendance-summary" (N2.S3, plan 008):
-// entry-points "Historial" y "Resumen" de asistencia de la materia del docente,
-// espejo de "take-attendance". Ambas son acciones de toolbar del formulario
-// (scope resource-toolbar), condition=edit-only porque la asistencia se consulta
-// sobre una materia ya existente (necesita su id). Navegan a las pantallas SDUI
-// genéricas attendance-list / attendance-summary pasando subjectId = id de la
-// materia editada (parámetro de navegación de CONTENIDO, no tenant; el
-// colegio/unidad sale del JWT — ADR 0008). El permiso de ambos botones es
-// academic.attendance.read (ADR 0003: slot.permission, leído de la key
-// `permission`; ya sembrado y cubierto por el wildcard academic.attendance.* de
-// teacher). El destino de cada evento (event_id "view-attendance" /
-// "view-attendance-summary" → NavigateTo con {subjectId} en SubjectsFormContract)
-// vive en el contrato KMP; declarar aquí las acciones es correcto (seed-first).
-//
-// actions_added "put-grades" (N3 F3): entry-point "Poner notas" de la materia
-// del docente, espejo de "take-attendance". Es una acción de toolbar del
-// formulario (scope resource-toolbar), condition=edit-only porque las notas se
-// registran sobre una materia ya existente (necesita su id). Navega a la
-// pantalla nativa grades-batch pasando subjectId = id de la materia editada
-// (parámetro de navegación de CONTENIDO, no tenant; el colegio/unidad sale del
-// JWT — ADR 0008). El permiso del botón es academic.grades.create (ADR 0003:
-// slot.permission, leído de la key `permission`; ya sembrado y cubierto por el
-// wildcard academic.grades.* de teacher). El destino del evento (event_id
-// "put-grades" → NavigateTo("grades-batch", {subjectId}) en SubjectsFormContract)
-// y la ruta KMP grades-batch se registran en el lado KMP; declarar aquí la
-// acción es correcto (seed-first), aunque la ruta del front aún no exista.
+// Entry-points de asistencia/notas REUBICADOS (N3.5 F1, plan 014 / ADR 0018):
+// las 4 acciones del docente — "Pasar lista" (take-attendance), "Historial"
+// (view-attendance), "Resumen" (view-attendance-summary) y "Poner notas"
+// (put-grades) — YA NO cuelgan de subjects-form. Colgaban de la materia (scope
+// resource-toolbar, condition edit-only) y eso mezclaba el roster de un docente
+// que dicta la misma materia en dos secciones (A/B). Ahora viven en la card de
+// cada SESIÓN, como row-actions de sessions-by-subject-list (scope row): el id de
+// la fila es el offering_id, así que cada acción opera sobre una sección concreta.
+// Es reubicación, no convivencia: se BORRARON de aquí. Ver sessionsBySubjectList.
 //
 // Reintroducido en N1.7 F2 sobre el modelo de sesiones (antes de F0b dependía
 // del filtro subject_id sobre membership_subjects; ahora el lector resuelve
@@ -506,12 +475,6 @@ func subjectsForm() l4ScreenInstanceRow {
     {"screen_key": "sessions-by-subject-list", "modal_screen_key": "sessions-by-subject-form", "parent_id_param": "subjectId", "child_id_field": "id", "title": "Sesiones"}
   ],
   "actions_removed": ["detail"],
-  "actions_added": [
-    {"id": "take-attendance", "scope": "resource-toolbar", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "edit-only", "event_id": "take-attendance", "style": "icon", "order": 20},
-    {"id": "view-attendance", "scope": "resource-toolbar", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance", "style": "icon", "order": 21},
-    {"id": "view-attendance-summary", "scope": "resource-toolbar", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "edit-only", "event_id": "view-attendance-summary", "style": "icon", "order": 22},
-    {"id": "put-grades", "scope": "resource-toolbar", "label": "Poner notas", "icon": "star", "permission": "academic.grades.create", "condition": "edit-only", "event_id": "put-grades", "style": "icon", "order": 23}
-  ],
   "api_prefix": "academic"
 }`,
 	}
@@ -801,9 +764,28 @@ func enrollOne() l4ScreenInstanceRow {
 // detail_configs[]); el contenedor le inyecta subjectId = id de la materia
 // editada y consume el endpoint
 // GET /api/v1/subject-offerings?subject_id={subjectId} (lo resuelve el handler
-// KMP; el seed solo declara columnas/título/permiso). Columnas
-// subject_name/section_label/period_name/teacher_name. Solo lectura:
-// actions_removed retira create/edit/delete heredados del template.
+// KMP; el seed solo declara columnas/título/permiso). El id de cada fila es el
+// offering_id (la sesión concreta).
+//
+// Columnas (reordenadas en N3.5 F1): section_label primero — es el headline que
+// distingue la sección A de la B —, luego period_name y teacher_name. Se quitó
+// subject_name: es redundante porque todas las filas son la MISMA materia (ya
+// estamos dentro de su detalle).
+//
+// Row-actions de asistencia/notas (N3.5 F1, plan 014 / ADR 0018): la card de cada
+// sesión lleva las 4 acciones del docente — "Pasar lista" (take-attendance),
+// "Poner notas" (put-grades), "Historial" (view-attendance) y "Resumen"
+// (view-attendance-summary) —, todas scope row (se materializan como RowAction en
+// el KMP). Vinieron de subjects-form (antes scope resource-toolbar, mezclaban el
+// roster de un docente con dos secciones de la misma materia); ahora operan sobre
+// la sesión concreta. condition=always: la fila SIEMPRE es una sesión existente
+// (no hay modo create/edit como en la toolbar del form). El id de la fila
+// (offering_id) viajará como offeringId al evento (mapeo en el contrato KMP, F2).
+// Cada permiso es slot.permission (ADR 0003): take-attendance →
+// academic.attendance.create, put-grades → academic.grades.create, view-* →
+// academic.attendance.read (ya sembrados, cubiertos por el wildcard academic.* de
+// teacher). Solo lectura del CRUD de sesiones: actions_removed retira
+// create/edit/delete heredados del template.
 // requiredPermission (slot.permission) = academic.subject_offerings.read.
 func sessionsBySubjectList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
@@ -818,7 +800,22 @@ func sessionsBySubjectList() l4ScreenInstanceRow {
 		// ese filtro real (antes decia "school", incoherente con el filtro).
 		scope:              "unit",
 		requiredPermission: "academic.subject_offerings.read",
-		slotData:           `{"title":"Sesiones","columns":[{"key":"subject_name","label":"Materia"},{"key":"section_label","label":"Sección"},{"key":"period_name","label":"Período"},{"key":"teacher_name","label":"Docente"}],"actions_removed":["create","edit","delete"],"api_prefix":"academic"}`,
+		slotData: `{
+  "title": "Sesiones",
+  "columns": [
+    {"key": "section_label", "label": "Sección"},
+    {"key": "period_name", "label": "Período"},
+    {"key": "teacher_name", "label": "Docente"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "actions_added": [
+    {"id": "take-attendance", "scope": "row", "label": "Pasar lista", "icon": "checklist", "permission": "academic.attendance.create", "condition": "always", "event_id": "take-attendance", "style": "icon", "order": 20},
+    {"id": "put-grades", "scope": "row", "label": "Poner notas", "icon": "star", "permission": "academic.grades.create", "condition": "always", "event_id": "put-grades", "style": "icon", "order": 21},
+    {"id": "view-attendance", "scope": "row", "label": "Historial", "icon": "history", "permission": "academic.attendance.read", "condition": "always", "event_id": "view-attendance", "style": "icon", "order": 22},
+    {"id": "view-attendance-summary", "scope": "row", "label": "Resumen", "icon": "bar_chart", "permission": "academic.attendance.read", "condition": "always", "event_id": "view-attendance-summary", "style": "icon", "order": 23}
+  ],
+  "api_prefix": "academic"
+}`,
 	}
 }
 

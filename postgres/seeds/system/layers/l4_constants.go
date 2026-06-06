@@ -395,7 +395,7 @@ package layers
 //     remote_select a academic:/api/v1/periods). Espejo de attendance-batch (N2).
 //     Los permisos ya estaban sembrados (cubiertos por el wildcard
 //     academic.grades.* de teacher). Sin cambios de esquema.
-const L4_SEED_VERSION = "1.42.11"
+const L4_SEED_VERSION = "1.43.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
