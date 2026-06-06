@@ -51,30 +51,13 @@ func ApplyDemo(gdb *gorm.DB) error {
 		if err := seedSubjects(tx); err != nil {
 			return err
 		}
-		if err := seedMaterials(tx); err != nil {
-			return err
-		}
-		if err := seedAssessments(tx); err != nil {
-			return err
-		}
-		if err := seedAssessmentMaterials(tx); err != nil {
-			return err
-		}
-		if err := seedQuestions(tx); err != nil {
-			return err
-		}
-		if err := seedQuestionOptions(tx); err != nil {
-			return err
-		}
-		if err := seedAssessmentAssignments(tx); err != nil {
-			return err
-		}
-		if err := seedAssessmentAttempts(tx); err != nil {
-			return err
-		}
-		if err := seedAssessmentAttemptAnswers(tx); err != nil {
-			return err
-		}
+		// N4 F1 (plan 015 / ADR 0019): los datos demo de evaluación/contenido
+		// (materials, assessments, assessment_materials, questions,
+		// question_options, assignments, attempts, attempt_answers, progress)
+		// se ELIMINARON: sembraban el contrato viejo (created_by_user_id,
+		// subject/grade texto-libre, student_id→auth.users), ahora demolido. Su
+		// reconstrucción sobre el esquema nuevo (FKs a memberships/subjects/
+		// subject_offerings) es DATA, no esquema → F2/F4.
 		if err := seedGuardianRelations(tx); err != nil {
 			return err
 		}
@@ -82,9 +65,6 @@ func ApplyDemo(gdb *gorm.DB) error {
 			return err
 		}
 		if err := seedSchoolConcepts(tx); err != nil {
-			return err
-		}
-		if err := seedProgress(tx); err != nil {
 			return err
 		}
 		if err := seedAcademicPeriods(tx); err != nil {
@@ -119,8 +99,6 @@ func ApplyDemo(gdb *gorm.DB) error {
 
 func truncateDevelopmentData(tx *gorm.DB) error {
 	guarded := []string{
-		"assessment.attempt_analytics",
-		"assessment.assessment_stats",
 		// Sesiones de materia (plan 010 N1.7). Se truncan ANTES que
 		// academic.memberships (mas abajo, con CASCADE): enrollments primero
 		// (FK a offerings) y offerings despues (FK a memberships/periods).
@@ -133,11 +111,22 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 		}
 	}
 
+	// N4 F1: las tablas analíticas viejas (assessment.attempt_analytics /
+	// assessment_stats) se eliminaron del esquema; ya no se truncan. Las tablas
+	// de evaluación/contenido se renombraron (assessment.question(_option),
+	// assessment.assessment_material) y ya no llevan datos demo (reconstrucción
+	// en F2). Se truncan igual por idempotencia ante datos previos.
 	required := []string{
+		"assessment.attempt_review",
 		"assessment.assessment_attempt_answer",
 		"assessment.assessment_attempt",
-		"assessment.assessment_materials",
+		"assessment.assessment_assignment",
+		"assessment.assessment_material",
+		"assessment.question_option",
+		"assessment.question",
 		"assessment.assessment",
+		"content.progress",
+		"content.material_version",
 		"content.materials",
 		"academic.memberships",
 		"iam.user_grants",
@@ -496,133 +485,6 @@ func seedSubjects(tx *gorm.DB) error {
 	return upsertMaps(tx, "academic.subjects", rows, []string{"id"}, nil, false)
 }
 
-func seedMaterials(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"id": mustUUID("aa100000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "uploaded_by_teacher_id": mustUUID("00000000-0000-0000-0000-000000000005"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "title": "Introduccion a las Fracciones", "description": "Material introductorio sobre fracciones simples, equivalentes y operaciones basicas.", "subject": "Matematicas", "grade": "5to Basico", "file_url": "s3://edugo-dev/materials/mat001.pdf", "file_type": "application/pdf", "file_size_bytes": 2048000, "status": "ready", "processing_started_at": mustTimestamp("2026-02-10 10:00:00+00"), "processing_completed_at": mustTimestamp("2026-02-10 10:05:32+00"), "is_public": true},
-		{"id": mustUUID("aa100000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "uploaded_by_teacher_id": mustUUID("00000000-0000-0000-0000-000000000006"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "title": "El Sistema Solar", "description": "Descripcion de los planetas, el Sol y sus caracteristicas principales.", "subject": "Ciencias Naturales", "grade": "5to Basico", "file_url": "s3://edugo-dev/materials/mat002.pdf", "file_type": "application/pdf", "file_size_bytes": 3145728, "status": "ready", "processing_started_at": mustTimestamp("2026-02-12 11:00:00+00"), "processing_completed_at": mustTimestamp("2026-02-12 11:04:18+00"), "is_public": true},
-		{"id": mustUUID("aa100000-0000-0000-0000-000000000003"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "uploaded_by_teacher_id": mustUUID("00000000-0000-0000-0000-000000000006"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "title": "Historia de Chile: Independencia", "description": "Resumen de los principales procesos de la independencia de Chile.", "subject": "Historia", "grade": "6to Basico", "file_url": "s3://edugo-dev/materials/mat003.pdf", "file_type": "application/pdf", "file_size_bytes": 5242880, "status": "ready", "processing_started_at": mustTimestamp("2026-02-15 14:00:00+00"), "processing_completed_at": mustTimestamp("2026-02-15 14:06:45+00"), "is_public": false},
-		{"id": mustUUID("aa100000-0000-0000-0000-000000000004"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "uploaded_by_teacher_id": mustUUID("00000000-0000-0000-0000-000000000007"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "title": "Teoria del Color", "description": "Fundamentos de la teoria del color: colores primarios, secundarios, complementarios.", "subject": "Pintura", "grade": "Modulo Pintura", "file_url": "s3://edugo-dev/materials/mat004.pdf", "file_type": "application/pdf", "file_size_bytes": 1800000, "status": "ready", "processing_started_at": mustTimestamp("2026-02-14 09:00:00+00"), "processing_completed_at": mustTimestamp("2026-02-14 09:03:22+00"), "is_public": true},
-		{"id": mustUUID("aa100000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "uploaded_by_teacher_id": mustUUID("00000000-0000-0000-0000-000000000005"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "title": "English Grammar Basics", "description": "Introduction to basic English grammar: articles, pronouns, simple tenses.", "subject": "English", "grade": "Level A2", "file_url": "s3://edugo-dev/materials/mat005.pdf", "file_type": "application/pdf", "file_size_bytes": 1500000, "status": "ready", "processing_started_at": mustTimestamp("2026-02-16 10:00:00+00"), "processing_completed_at": mustTimestamp("2026-02-16 10:04:10+00"), "is_public": true},
-	}
-	return upsertMaps(tx, "content.materials", rows, []string{"id"}, []string{
-		"title", "description", "subject", "grade", "file_url", "file_type", "file_size_bytes",
-		"status", "processing_started_at", "processing_completed_at", "is_public",
-	}, true)
-}
-
-func seedAssessments(tx *gorm.DB) error {
-	now := time.Now().UTC()
-	rows := []map[string]any{
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000001"), "mongo_document_id": "aaaaaa000000000000000001", "source_type": "ai_generated", "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "title": "Examen Fracciones", "description": "Evaluacion sobre operaciones basicas con fracciones: suma, resta y equivalencias.", "questions_count": 5, "pass_threshold": 60.0, "max_attempts": 3, "time_limit_minutes": 30.0, "is_timed": true, "shuffle_questions": true, "show_correct_answers": true, "available_from": now.AddDate(0, 0, -7), "available_until": now.AddDate(0, 0, 30), "status": "published"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000002"), "mongo_document_id": "aaaaaa000000000000000002", "source_type": "ai_generated", "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000006"), "title": "Quiz Ciencias: Sistema Solar", "description": "Quiz rapido sobre los planetas del sistema solar y sus caracteristicas.", "questions_count": 4, "pass_threshold": 50.0, "max_attempts": 2, "time_limit_minutes": nil, "is_timed": false, "shuffle_questions": false, "show_correct_answers": false, "available_from": nil, "available_until": nil, "status": "published"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000003"), "mongo_document_id": "aaaaaa000000000000000003", "source_type": "ai_generated", "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000007"), "title": "Ejercicio Color y Forma", "description": "Ejercicio practico sobre teoria del color y composicion visual.", "questions_count": 3, "pass_threshold": 70.0, "max_attempts": 2, "time_limit_minutes": nil, "is_timed": false, "shuffle_questions": false, "show_correct_answers": true, "available_from": now.AddDate(0, 0, -5), "available_until": now.AddDate(0, 0, 60), "status": "published"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000004"), "mongo_document_id": "aaaaaa000000000000000004", "source_type": "ai_generated", "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "title": "English Grammar Test", "description": "Test on basic English grammar: articles, pronouns, and simple tenses.", "questions_count": 4, "pass_threshold": 60.0, "max_attempts": 2, "time_limit_minutes": 20.0, "is_timed": true, "shuffle_questions": true, "show_correct_answers": true, "available_from": now.AddDate(0, 0, -3), "available_until": now.AddDate(0, 0, 30), "status": "published"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000005"), "mongo_document_id": "aaaaaa000000000000000005", "source_type": "ai_generated", "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000006"), "title": "Evaluacion Historia Chile", "description": "Evaluacion sobre los principales procesos de la independencia de Chile.", "questions_count": 3, "pass_threshold": 70.0, "max_attempts": nil, "time_limit_minutes": 45.0, "is_timed": true, "shuffle_questions": false, "show_correct_answers": true, "available_from": now.AddDate(0, 0, 7), "available_until": nil, "status": "draft"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000006"), "mongo_document_id": "aaaaaa000000000000000006", "source_type": "ai_generated", "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000007"), "title": "Proyecto Final Escultura", "description": "Proyecto final del modulo de escultura: crear una pieza original.", "questions_count": 0, "pass_threshold": 60.0, "max_attempts": 1, "time_limit_minutes": nil, "is_timed": false, "shuffle_questions": false, "show_correct_answers": false, "available_from": nil, "available_until": nil, "status": "draft"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000007"), "mongo_document_id": nil, "source_type": "manual", "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "title": "Evaluacion Manual: Operaciones Basicas", "description": "Evaluacion manual creada por la profesora Maria. Incluye 4 tipos de pregunta: opcion multiple, verdadero/falso, respuesta corta y abierta.", "questions_count": 4, "pass_threshold": 60.0, "max_attempts": 2, "time_limit_minutes": 25.0, "is_timed": true, "shuffle_questions": false, "show_correct_answers": true, "available_from": now.AddDate(0, 0, -2), "available_until": now.AddDate(0, 0, 14), "status": "published"},
-		{"id": mustUUID("aa200000-0000-0000-0000-000000000008"), "mongo_document_id": nil, "source_type": "manual", "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "created_by_user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "title": "Quiz Manual: Ciencias Naturales", "description": "Quiz manual en borrador sobre fotosintesis y ecosistemas.", "questions_count": 2, "pass_threshold": 50.0, "max_attempts": 1, "time_limit_minutes": nil, "is_timed": false, "shuffle_questions": false, "show_correct_answers": true, "available_from": nil, "available_until": nil, "status": "draft"},
-	}
-
-	return upsertMaps(tx, "assessment.assessment", rows, []string{"id"}, []string{
-		"title", "description", "source_type", "questions_count", "pass_threshold", "max_attempts",
-		"time_limit_minutes", "is_timed", "shuffle_questions", "show_correct_answers",
-		"available_from", "available_until", "status",
-	}, true)
-}
-
-func seedAssessmentMaterials(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"assessment_id": mustUUID("aa200000-0000-0000-0000-000000000001"), "material_id": mustUUID("aa100000-0000-0000-0000-000000000001"), "sort_order": 0},
-		{"assessment_id": mustUUID("aa200000-0000-0000-0000-000000000002"), "material_id": mustUUID("aa100000-0000-0000-0000-000000000002"), "sort_order": 0},
-		{"assessment_id": mustUUID("aa200000-0000-0000-0000-000000000003"), "material_id": mustUUID("aa100000-0000-0000-0000-000000000004"), "sort_order": 0},
-		{"assessment_id": mustUUID("aa200000-0000-0000-0000-000000000004"), "material_id": mustUUID("aa100000-0000-0000-0000-000000000005"), "sort_order": 0},
-		{"assessment_id": mustUUID("aa200000-0000-0000-0000-000000000005"), "material_id": mustUUID("aa100000-0000-0000-0000-000000000003"), "sort_order": 0},
-	}
-	return upsertMaps(tx, "assessment.assessment_materials", rows, []string{"assessment_id", "material_id"}, []string{"sort_order"}, false)
-}
-
-func seedQuestions(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000001"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "question_text": "Cuanto es 15 + 27?", "question_type": "multiple_choice", "correct_answer": "42", "explanation": "Se suman las unidades (5+7=12, llevamos 1) y las decenas (1+2+1=4). Resultado: 42.", "points": 2.0, "difficulty": "easy", "sort_order": 0},
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000002"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "question_text": "El resultado de multiplicar cualquier numero por cero es cero.", "question_type": "true_false", "correct_answer": "Verdadero", "explanation": "La propiedad absorbente de la multiplicacion establece que a x 0 = 0 para todo numero a.", "points": 1.0, "difficulty": "easy", "sort_order": 1},
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000003"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "question_text": "Como se llama el resultado de una resta?", "question_type": "short_answer", "correct_answer": "diferencia", "explanation": "El resultado de una resta se denomina diferencia.", "points": 1.5, "difficulty": "medium", "sort_order": 2},
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000004"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "question_text": "Explica con un ejemplo de la vida cotidiana donde usarias la multiplicacion.", "question_type": "open_ended", "correct_answer": nil, "explanation": "Respuesta abierta. Se evalua la capacidad de relacionar operaciones matematicas con situaciones reales.", "points": 5.0, "difficulty": "hard", "sort_order": 3},
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000005"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000008"), "question_text": "Que gas absorben las plantas durante la fotosintesis?", "question_type": "multiple_choice", "correct_answer": "Dioxido de carbono", "explanation": "Las plantas absorben CO2 y liberan O2 durante la fotosintesis.", "points": 2.0, "difficulty": "easy", "sort_order": 0},
-		{"id": mustUUID("ba000000-0000-0000-0000-000000000006"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000008"), "question_text": "Como se llama la capa de la atmosfera donde vivimos?", "question_type": "short_answer", "correct_answer": "troposfera", "explanation": "La troposfera es la capa mas baja de la atmosfera terrestre.", "points": 2.0, "difficulty": "medium", "sort_order": 1},
-	}
-	return upsertMaps(tx, "assessment.questions", rows, []string{"id"}, nil, false)
-}
-
-func seedQuestionOptions(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000001"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000001"), "option_text": "32", "sort_order": 0},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000002"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000001"), "option_text": "42", "sort_order": 1},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000003"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000001"), "option_text": "52", "sort_order": 2},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000004"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000001"), "option_text": "41", "sort_order": 3},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000005"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000005"), "option_text": "Oxigeno", "sort_order": 0},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000006"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000005"), "option_text": "Dioxido de carbono", "sort_order": 1},
-		{"id": mustUUID("bf000000-0000-0000-0000-000000000007"), "question_id": mustUUID("ba000000-0000-0000-0000-000000000005"), "option_text": "Nitrogeno", "sort_order": 2},
-	}
-	return upsertMaps(tx, "assessment.question_options", rows, []string{"id"}, nil, false)
-}
-
-func seedAssessmentAssignments(tx *gorm.DB) error {
-	now := time.Now().UTC()
-	rows := []map[string]any{
-		{"id": mustUUID("ab000000-0000-0000-0000-000000000001"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "assigned_by": mustUUID("00000000-0000-0000-0000-000000000005"), "assigned_at": now.Add(-24 * time.Hour)},
-		{"id": mustUUID("ab000000-0000-0000-0000-000000000002"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "student_id": mustUUID("00000000-0000-0000-0000-000000000009"), "assigned_by": mustUUID("00000000-0000-0000-0000-000000000005"), "assigned_at": now.Add(-24 * time.Hour)},
-		{"id": mustUUID("ab000000-0000-0000-0000-000000000003"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000007"), "student_id": mustUUID("00000000-0000-0000-0000-000000000010"), "assigned_by": mustUUID("00000000-0000-0000-0000-000000000005"), "assigned_at": now.Add(-24 * time.Hour)},
-	}
-	return upsertMaps(tx, "assessment.assessment_assignments", rows, []string{"id"}, nil, false)
-}
-
-func seedAssessmentAttempts(tx *gorm.DB) error {
-	now := time.Now().UTC()
-
-	start1 := now.Add(-72 * time.Hour)
-	start2 := now.Add(-48 * time.Hour)
-	start3 := now.Add(-52 * time.Hour)
-	start4 := now.Add(-30 * time.Hour)
-	start5 := now.Add(-26 * time.Hour)
-	start6 := now.Add(-24 * time.Hour)
-	start7 := now.Add(-12 * time.Hour)
-	start10 := now.Add(-5 * time.Minute)
-
-	rows := []map[string]any{
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000001"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000001"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "started_at": start1, "completed_at": start1.Add(25 * time.Minute), "score": 80.0, "max_score": 100.0, "percentage": 80.0, "status": "completed", "time_spent_seconds": 1520, "idempotency_key": "idem_att001_carlos_ass001_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000002"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000001"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "started_at": start2, "completed_at": start2.Add(20 * time.Minute), "score": 92.0, "max_score": 100.0, "percentage": 92.0, "status": "completed", "time_spent_seconds": 1200, "idempotency_key": "idem_att002_carlos_ass001_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000003"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000001"), "student_id": mustUUID("00000000-0000-0000-0000-000000000009"), "started_at": start3, "completed_at": start3.Add(30 * time.Minute), "score": 68.0, "max_score": 100.0, "percentage": 68.0, "status": "completed", "time_spent_seconds": 1800, "idempotency_key": "idem_att003_sofia_ass001_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000004"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000002"), "student_id": mustUUID("00000000-0000-0000-0000-000000000010"), "started_at": start4, "completed_at": start4.Add(15 * time.Minute), "score": 75.0, "max_score": 80.0, "percentage": 93.75, "status": "completed", "time_spent_seconds": 900, "idempotency_key": "idem_att004_diego_ass002_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000005"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000003"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "started_at": start5, "completed_at": start5.Add(20 * time.Minute), "score": 60.0, "max_score": 100.0, "percentage": 60.0, "status": "completed", "time_spent_seconds": 1200, "idempotency_key": "idem_att005_carlos_ass003_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000006"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000003"), "student_id": mustUUID("00000000-0000-0000-0000-000000000012"), "started_at": start6, "completed_at": start6.Add(10 * time.Minute), "score": 90.0, "max_score": 100.0, "percentage": 90.0, "status": "completed", "time_spent_seconds": 600, "idempotency_key": "idem_att006_mateo_ass003_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000007"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000004"), "student_id": mustUUID("00000000-0000-0000-0000-000000000011"), "started_at": start7, "completed_at": start7.Add(15 * time.Minute), "score": 85.0, "max_score": 100.0, "percentage": 85.0, "status": "completed", "time_spent_seconds": 1100, "idempotency_key": "idem_att007_valentina_ass004_v2"},
-		{"id": mustUUID("aa300000-0000-0000-0000-000000000010"), "assessment_id": mustUUID("aa200000-0000-0000-0000-000000000001"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "started_at": start10, "completed_at": nil, "score": nil, "max_score": nil, "percentage": nil, "status": "in_progress", "time_spent_seconds": nil, "idempotency_key": "idem_att010_carlos_ass001_inprogress"},
-	}
-
-	return upsertMaps(tx, "assessment.assessment_attempt", rows, []string{"idempotency_key"}, []string{
-		"score", "max_score", "percentage", "status", "completed_at", "time_spent_seconds",
-	}, true)
-}
-
-func seedAssessmentAttemptAnswers(tx *gorm.DB) error {
-	now := time.Now().UTC()
-	attemptStart := now.Add(-72 * time.Hour)
-
-	rows := []map[string]any{
-		{"attempt_id": mustUUID("aa300000-0000-0000-0000-000000000001"), "question_index": 0, "student_answer": "1/2", "is_correct": true, "points_earned": 20.0, "max_points": 20.0, "time_spent_seconds": 280, "answered_at": attemptStart.Add(5 * time.Minute)},
-		{"attempt_id": mustUUID("aa300000-0000-0000-0000-000000000001"), "question_index": 1, "student_answer": "3/4", "is_correct": true, "points_earned": 20.0, "max_points": 20.0, "time_spent_seconds": 310, "answered_at": attemptStart.Add(10 * time.Minute)},
-		{"attempt_id": mustUUID("aa300000-0000-0000-0000-000000000001"), "question_index": 2, "student_answer": "2/6", "is_correct": false, "points_earned": 0.0, "max_points": 20.0, "time_spent_seconds": 420, "answered_at": attemptStart.Add(17 * time.Minute)},
-		{"attempt_id": mustUUID("aa300000-0000-0000-0000-000000000001"), "question_index": 3, "student_answer": "2/5", "is_correct": true, "points_earned": 20.0, "max_points": 20.0, "time_spent_seconds": 265, "answered_at": attemptStart.Add(21 * time.Minute)},
-		{"attempt_id": mustUUID("aa300000-0000-0000-0000-000000000001"), "question_index": 4, "student_answer": "3/8", "is_correct": true, "points_earned": 20.0, "max_points": 20.0, "time_spent_seconds": 245, "answered_at": attemptStart.Add(25 * time.Minute)},
-		{"id": mustUUID("aa000000-0000-0000-0000-000000000020"), "attempt_id": mustUUID("aa300000-0000-0000-0000-000000000010"), "question_index": 0, "student_answer": "A", "is_correct": nil, "points_earned": nil, "max_points": nil, "time_spent_seconds": 5, "answered_at": now.Add(-4 * time.Minute)},
-		{"id": mustUUID("aa000000-0000-0000-0000-000000000021"), "attempt_id": mustUUID("aa300000-0000-0000-0000-000000000010"), "question_index": 1, "student_answer": "B", "is_correct": nil, "points_earned": nil, "max_points": nil, "time_spent_seconds": 8, "answered_at": now.Add(-3 * time.Minute)},
-	}
-
-	return upsertMaps(tx, "assessment.assessment_attempt_answer", rows, []string{"attempt_id", "question_index"}, []string{
-		"student_answer", "is_correct", "points_earned", "max_points", "time_spent_seconds",
-	}, true)
-}
-
 func seedGuardianRelations(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("ee000000-0000-0000-0000-000000000001"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000013"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "relationship_type": "parent", "is_primary": true, "is_active": true, "status": "active"},
@@ -693,22 +555,6 @@ func seedSchoolConcepts(tx *gorm.DB) error {
 	}
 
 	return upsertMaps(tx, "academic.school_concepts", rows, []string{"school_id", "term_key"}, nil, false)
-}
-
-func seedProgress(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000001"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "progress_percentage": 100.0, "last_position": mustJSON(`{"page":24,"section":"ejercicios-finales"}`), "completed_at": mustTimestamp("2026-03-10 15:30:00+00")},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "progress_percentage": 65.0, "last_position": mustJSON(`{"page":12,"section":"planetas-exteriores"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000004"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "progress_percentage": 30.0, "last_position": mustJSON(`{"page":5,"section":"colores-primarios"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000001"), "user_id": mustUUID("00000000-0000-0000-0000-000000000009"), "progress_percentage": 80.0, "last_position": mustJSON(`{"page":19,"section":"fracciones-equivalentes"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000009"), "progress_percentage": 45.0, "last_position": mustJSON(`{"page":8,"section":"planetas-interiores"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000010"), "progress_percentage": 90.0, "last_position": mustJSON(`{"page":20,"section":"resumen"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000005"), "user_id": mustUUID("00000000-0000-0000-0000-000000000011"), "progress_percentage": 70.0, "last_position": mustJSON(`{"page":14,"section":"simple-tenses"}`), "completed_at": nil},
-		{"material_id": mustUUID("aa100000-0000-0000-0000-000000000004"), "user_id": mustUUID("00000000-0000-0000-0000-000000000012"), "progress_percentage": 55.0, "last_position": mustJSON(`{"page":9,"section":"colores-secundarios"}`), "completed_at": nil},
-	}
-	return upsertMaps(tx, "content.progress", rows, []string{"material_id", "user_id"}, []string{
-		"progress_percentage", "last_position", "completed_at",
-	}, true)
 }
 
 // seedSubjectOfferings siembra las "sesiones de materia" (subject_offerings)

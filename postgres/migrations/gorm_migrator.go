@@ -66,20 +66,25 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.CalendarEvent{},
 		&entities.Color{},
 
-		// Content
+		// Content (N4 / ADR 0019: material gana subject_id; progress por membership).
+		// content.courses queda FUERA de alcance de N4: se deja intacto tal cual
+		// estaba (no se toca ni se reconstruye), por eso su entity sigue registrada.
 		&entities.Course{},
 		&entities.Material{},
 		&entities.MaterialVersion{},
 		&entities.Progress{},
 
-		// Assessment (assessment first, then dependents)
+		// Assessment (N4 / ADR 0019: llaveado al modelo de sesion). assessment
+		// primero; question antes de question_option/attempt_answer; attempt antes
+		// de attempt_answer; attempt_answer antes de attempt_review;
+		// assessment_material despues de Material (FK a content.materials).
 		&entities.Assessment{},
-		&entities.AssessmentAttempt{},
-		&entities.AssessmentAttemptAnswer{},
-		&entities.AssessmentMaterial{},
 		&entities.Question{},
 		&entities.QuestionOption{},
+		&entities.AssessmentMaterial{},
 		&entities.AssessmentAssignment{},
+		&entities.AssessmentAttempt{},
+		&entities.AssessmentAttemptAnswer{},
 		&entities.AttemptReview{},
 
 		// UI Config (templates before instances due to FK)

@@ -162,20 +162,24 @@ func TestIntegration(t *testing.T) {
 
 	t.Run("CRUD_Materials_GORM", func(t *testing.T) {
 		seedSchoolID := mustUUID(t, "b1000000-0000-0000-0000-000000000001")
-		seedTeacherID := mustUUID(t, "00000000-0000-0000-0000-000000000005")
+		// N4 (ADR 0019): content.materials.uploaded_by_membership_id es FK a
+		// academic.memberships (era uploaded_by_teacher_id → auth.users). Se usa
+		// la membresía docente bb…08 (user …05, school b1…01, unidad ac…03) del
+		// demo seed.
+		seedTeacherMembershipID := mustUUID(t, "bb000000-0000-0000-0000-000000000008")
 		seedUnitID := mustUUID(t, "ac000000-0000-0000-0000-000000000003")
 
 		material := entities.Material{
-			ID:                  uuid.New(),
-			SchoolID:            seedSchoolID,
-			UploadedByTeacherID: seedTeacherID,
-			AcademicUnitID:      &seedUnitID,
-			Title:               "Material Integración",
-			FileURL:             "s3://integration/material.pdf",
-			FileType:            "application/pdf",
-			FileSizeBytes:       2048,
-			Status:              "ready",
-			IsPublic:            true,
+			ID:                     uuid.New(),
+			SchoolID:               seedSchoolID,
+			UploadedByMembershipID: seedTeacherMembershipID,
+			AcademicUnitID:         &seedUnitID,
+			Title:                  "Material Integración",
+			FileURL:                "s3://integration/material.pdf",
+			FileType:               "application/pdf",
+			FileSizeBytes:          2048,
+			Status:                 "ready",
+			IsPublic:               true,
 		}
 
 		if err := gdb.Create(&material).Error; err != nil {

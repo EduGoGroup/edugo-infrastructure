@@ -7,58 +7,12 @@
 -- ============================================================
 
 -- ============================================================
--- Tables without entity files (created here instead of AutoMigrate)
+-- Analitica de evaluacion: DIFERIDA en N4 (ADR 0019).
+-- Las tablas viejas assessment.attempt_analytics y assessment.assessment_stats
+-- (llaveadas a auth.users, modelo global muerto) se ELIMINAN. El resumen del
+-- docente se computa on-the-fly; si luego se requiere analitica materializada,
+-- se rehace por membership (deuda anotada).
 -- ============================================================
-
--- assessment.attempt_analytics: analytics data derived from attempts by the worker
-CREATE TABLE IF NOT EXISTS assessment.attempt_analytics (
-    id             uuid         NOT NULL,
-    attempt_id     uuid         NOT NULL,
-    assessment_id  uuid         NOT NULL,
-    student_id     uuid         NOT NULL,
-    school_id      uuid         NOT NULL,
-    score          numeric(5,2) NOT NULL,
-    total_points   numeric(5,2) NOT NULL,
-    percentage     numeric(5,2),
-    duration_seconds integer,
-    submitted_at   timestamptz  NOT NULL,
-    created_at     timestamptz  DEFAULT now() NOT NULL,
-    CONSTRAINT attempt_analytics_pkey PRIMARY KEY (id),
-    CONSTRAINT attempt_analytics_attempt_unique UNIQUE (attempt_id),
-    CONSTRAINT attempt_analytics_attempt_fkey    FOREIGN KEY (attempt_id)    REFERENCES assessment.assessment_attempt(id) ON DELETE CASCADE,
-    CONSTRAINT attempt_analytics_assessment_fkey FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id)         ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_analytics_assessment ON assessment.attempt_analytics(assessment_id);
-CREATE INDEX IF NOT EXISTS idx_analytics_student    ON assessment.attempt_analytics(student_id);
-CREATE INDEX IF NOT EXISTS idx_analytics_school     ON assessment.attempt_analytics(school_id);
-CREATE INDEX IF NOT EXISTS idx_analytics_submitted  ON assessment.attempt_analytics(submitted_at DESC);
-
--- Cross-schema FKs for attempt_analytics (idempotent via DO blocks)
-DO $$ BEGIN
-    ALTER TABLE assessment.attempt_analytics
-        ADD CONSTRAINT attempt_analytics_student_fkey FOREIGN KEY (student_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE assessment.attempt_analytics
-        ADD CONSTRAINT attempt_analytics_school_fkey FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
--- assessment.assessment_stats: cumulative statistics per assessment, updated by the worker
-CREATE TABLE IF NOT EXISTS assessment.assessment_stats (
-    id                  uuid         NOT NULL,
-    assessment_id       uuid         NOT NULL,
-    attempt_count       integer      DEFAULT 0  NOT NULL,
-    average_score       numeric(5,2) DEFAULT 0  NOT NULL,
-    average_percentage  numeric(5,2) DEFAULT 0  NOT NULL,
-    updated_at          timestamptz  DEFAULT now() NOT NULL,
-    CONSTRAINT assessment_stats_pkey               PRIMARY KEY (id),
-    CONSTRAINT assessment_stats_assessment_unique  UNIQUE (assessment_id),
-    CONSTRAINT assessment_stats_assessment_fkey    FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE
-);
 
 -- ============================================================
 -- Extra FK that GORM cannot express (cross-schema, non-entity-annotated)
@@ -235,6 +189,205 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ============================================================
+-- assessment.* y content.* (N4 / ADR 0019) — esquema de evaluacion/contenido
+-- anclado al modelo de sesion. GORM no materializa FKs desde el tag
+-- `constraint:` sin campo de relacion (mismo caso que subject_offerings),
+-- por eso TODAS las FKs cross-schema y el UNIQUE de assignment se declaran
+-- aqui, espejando los nombres de constraint anotados en las entities.
+-- Idempotente.
+-- ============================================================
+
+-- content.materials → schools (CASCADE) / subjects (SET NULL, nullable) /
+-- academic_units (SET NULL, nullable) / membership autor (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE content.materials
+        ADD CONSTRAINT materials_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.materials
+        ADD CONSTRAINT materials_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.materials
+        ADD CONSTRAINT materials_unit_fkey
+            FOREIGN KEY (academic_unit_id) REFERENCES academic.academic_units(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.materials
+        ADD CONSTRAINT materials_membership_fkey
+            FOREIGN KEY (uploaded_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- content.material_version → materials (CASCADE) / membership autor (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE content.material_version
+        ADD CONSTRAINT material_version_material_fkey
+            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_version
+        ADD CONSTRAINT material_version_membership_fkey
+            FOREIGN KEY (changed_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- content.progress → materials (CASCADE) / membership del alumno (CASCADE)
+DO $$ BEGIN
+    ALTER TABLE content.progress
+        ADD CONSTRAINT progress_material_fkey
+            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.progress
+        ADD CONSTRAINT progress_student_fkey
+            FOREIGN KEY (student_membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.assessment → schools (CASCADE) / membership autor (RESTRICT) /
+-- subjects (RESTRICT, catalogo de escuela)
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment
+        ADD CONSTRAINT assessment_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment
+        ADD CONSTRAINT assessment_created_by_fkey
+            FOREIGN KEY (created_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment
+        ADD CONSTRAINT assessment_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.question → assessment (CASCADE)
+DO $$ BEGIN
+    ALTER TABLE assessment.question
+        ADD CONSTRAINT question_assessment_fkey
+            FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.question_option → question (CASCADE)
+DO $$ BEGIN
+    ALTER TABLE assessment.question_option
+        ADD CONSTRAINT question_option_question_fkey
+            FOREIGN KEY (question_id) REFERENCES assessment.question(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.assessment_material (N:N) → assessment (CASCADE) / materials (CASCADE)
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_material
+        ADD CONSTRAINT assessment_material_assessment_fkey
+            FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_material
+        ADD CONSTRAINT assessment_material_material_fkey
+            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.assessment_assignment → assessment (CASCADE) / subject_offering
+-- (CASCADE, la sesion/grupo) / membership que asigna (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_assignment
+        ADD CONSTRAINT assessment_assignment_assessment_fkey
+            FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_assignment
+        ADD CONSTRAINT assessment_assignment_offering_fkey
+            FOREIGN KEY (subject_offering_id) REFERENCES academic.subject_offerings(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_assignment
+        ADD CONSTRAINT assessment_assignment_assigned_by_fkey
+            FOREIGN KEY (assigned_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- No duplicar la misma evaluacion a la misma sesion.
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_assignment
+        ADD CONSTRAINT uq_assignment_assessment_offering
+            UNIQUE (assessment_id, subject_offering_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.assessment_attempt → assessment (CASCADE) / membership del alumno (CASCADE)
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_attempt
+        ADD CONSTRAINT assessment_attempt_assessment_fkey
+            FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_attempt
+        ADD CONSTRAINT assessment_attempt_student_fkey
+            FOREIGN KEY (student_membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.assessment_attempt_answer → attempt (CASCADE) / question (SET NULL)
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_attempt_answer
+        ADD CONSTRAINT assessment_attempt_answer_attempt_fkey
+            FOREIGN KEY (attempt_id) REFERENCES assessment.assessment_attempt(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.assessment_attempt_answer
+        ADD CONSTRAINT assessment_attempt_answer_question_fkey
+            FOREIGN KEY (question_id) REFERENCES assessment.question(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.attempt_review → attempt_answer (CASCADE) / membership revisor (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE assessment.attempt_review
+        ADD CONSTRAINT attempt_review_answer_fkey
+            FOREIGN KEY (attempt_answer_id) REFERENCES assessment.assessment_attempt_answer(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.attempt_review
+        ADD CONSTRAINT attempt_review_reviewer_fkey
+            FOREIGN KEY (reviewer_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
 -- Triggers (CREATE OR REPLACE TRIGGER — PostgreSQL 14+)
 -- ============================================================
 
@@ -387,14 +540,34 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON assessment.assessment
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- assessment.question
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.question
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- assessment.question_option
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.question_option
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- assessment.assessment_assignment
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.assessment_assignment
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- assessment.assessment_attempt
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON assessment.assessment_attempt
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- assessment.questions
+-- assessment.assessment_attempt_answer
 CREATE OR REPLACE TRIGGER set_updated_at
-    BEFORE UPDATE ON assessment.questions
+    BEFORE UPDATE ON assessment.assessment_attempt_answer
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- assessment.attempt_review
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.attempt_review
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- ui_config.screen_templates
@@ -633,24 +806,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_join_requests_pending_unique
 CREATE INDEX IF NOT EXISTS idx_materials_status_active
     ON content.materials (status) WHERE deleted_at IS NULL;
 
--- assessment
+-- assessment (N4 / ADR 0019: llaveado al modelo de sesion)
 CREATE INDEX IF NOT EXISTS idx_attempt_completed
     ON assessment.assessment_attempt (assessment_id, percentage) WHERE status = 'completed';
 
 CREATE INDEX IF NOT EXISTS idx_attempt_pending_review
     ON assessment.assessment_attempt (assessment_id) WHERE status = 'pending_review';
 
-CREATE INDEX IF NOT EXISTS idx_assignment_student
-    ON assessment.assessment_assignments (student_id) WHERE student_id IS NOT NULL;
+-- Un solo intento ACTIVO por (evaluacion, alumno): soporta "reusar intento
+-- in_progress". Reemplaza los indices viejos por student_id/academic_unit_id
+-- (modelo global muerto) que ya no existen.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_attempt_active_unique
+    ON assessment.assessment_attempt (assessment_id, student_membership_id) WHERE status = 'in_progress';
 
-CREATE INDEX IF NOT EXISTS idx_assignment_unit
-    ON assessment.assessment_assignments (academic_unit_id) WHERE academic_unit_id IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_student_assignment
-    ON assessment.assessment_assignments (assessment_id, student_id) WHERE student_id IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_unit_assignment
-    ON assessment.assessment_assignments (assessment_id, academic_unit_id) WHERE academic_unit_id IS NOT NULL;
+-- evaluacion activa (soft delete)
+CREATE INDEX IF NOT EXISTS idx_assessment_active
+    ON assessment.assessment (id) WHERE deleted_at IS NULL;
 
 -- ui_config
 CREATE INDEX IF NOT EXISTS idx_screen_templates_active

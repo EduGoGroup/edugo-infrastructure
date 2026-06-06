@@ -449,7 +449,47 @@ import (
 //     section_label pasa primero (headline que distingue A/B) y se quita
 //     subject_name (redundante dentro del detalle de la materia). Reubicación, no
 //     convivencia. L4_SEED_VERSION → 1.43.0.
-const SchemaVersion = "3.48.0"
+//   - 3.49.0: N4 F1 (plan 015 / ADR 0019) — DEMOLICIÓN + RECONSTRUCCIÓN del
+//     esquema de evaluación/contenido, anclado al modelo de sesión. EduGo no
+//     está en producción → recrear BD sin backfill.
+//     DEMOLIDO: el esquema viejo llaveado a auth.users + subject/grade texto-libre.
+//   - entities borradas y reescritas: assessment, question, question_option,
+//     assessment_material, assessment_assignment, assessment_attempt,
+//     assessment_attempt_answer, attempt_review (schema assessment); material,
+//     material_version, progress (schema content).
+//   - post_gorm.sql: ELIMINADAS las tablas analíticas viejas
+//     assessment.attempt_analytics y assessment.assessment_stats (llaveadas a
+//     auth.users; analítica DIFERIDA en N4) y los índices de assignment por
+//     student_id/academic_unit_id (modelo global muerto).
+//     NUEVO (anclado a sesión):
+//   - assessment.assessment: created_by_user_id → created_by_membership_id
+//     (→academic.memberships RESTRICT), subject/grade texto → subject_id
+//     (→academic.subjects RESTRICT), school_id NOT NULL (CASCADE), status
+//     in (draft,published,archived), mongo_document_id reservado para V2.
+//   - assessment.question / question_option: renombradas a singular; la opción
+//     correcta vive en question.correct_answer (sin is_correct en la opción).
+//   - assessment.assessment_material: N:N con PK compuesta (assessment_id,
+//     material_id) → content.materials (arregla A4: lector deja de asumir 1:1).
+//   - assessment.assessment_assignment: el PUENTE a la sesión. Se elimina
+//     student_id XOR academic_unit_id + CHECK; target = subject_offering_id
+//     (→academic.subject_offerings CASCADE) + UNIQUE (assessment_id,
+//     subject_offering_id). Destinatarios se resuelven de
+//     subject_offering_enrollments (arregla A2).
+//   - assessment.assessment_attempt: student_id → student_membership_id
+//     (→academic.memberships); UNIQUE parcial (assessment_id,
+//     student_membership_id) WHERE status='in_progress' (un solo intento activo).
+//   - assessment.attempt_review: reviewer_id → reviewer_membership_id.
+//   - content.materials: subject/grade texto → subject_id (→academic.subjects
+//     SET NULL, nullable), uploaded_by_teacher_id → uploaded_by_membership_id
+//     (→academic.memberships RESTRICT).
+//   - content.material_version: changed_by → changed_by_membership_id.
+//   - content.progress: PK (material_id, user_id) → (material_id,
+//     student_membership_id).
+//     Todas las FKs cross-schema y el UNIQUE de assignment en post_gorm.sql
+//     (GORM no las materializa sin campo de relación). content.courses queda
+//     FUERA de alcance (intacto). Seeds de evaluación (demo + playground
+//     focal_evaluacion*) y SDUI viejos de evaluación NO migrados aún: son F2/F4.
+const SchemaVersion = "3.49.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -115,7 +115,99 @@ func (f *ScreenOnly) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 
 // applyAssessmentsList crea 1 assessment de prueba para que la pantalla
 // `assessments-list` muestre datos en el scenario.
+//
+// N4 (ADR 0019): el esquema nuevo de assessment.assessment está anclado al
+// modelo de sesión. La evaluación exige tres FKs NOT NULL: school_id, subject_id
+// (→academic.subjects, catálogo de escuela) y created_by_membership_id
+// (→academic.memberships del docente autor). La fixture compone subject + docente
+// (user + membership) con UUIDs determinísticos sufijo 0a55e5500002..0a55e5500004
+// dentro del namespace del scenario, antes de insertar la evaluación.
 func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyContext, schoolUUID uuid.UUID) error {
+	// 1) Subject (catálogo de escuela; FK RESTRICT de assessment.subject_id).
+	subjectIDStr := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500002")
+	if err := framework.AssertNotProductionNamespace(subjectIDStr); err != nil {
+		return err
+	}
+	subjectID, err := uuid.Parse(subjectIDStr)
+	if err != nil {
+		return fmt.Errorf("screen_only: subject UUID inválido (%q): %w", subjectIDStr, err)
+	}
+	subject := entities.Subject{
+		ID:       subjectID,
+		SchoolID: schoolUUID,
+		Name:     "ScreenOnly Sample Assessment Subject",
+		IsActive: true,
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&subject).Error; err != nil {
+		return fmt.Errorf("screen_only: insert subject: %w", err)
+	}
+	if err := framework.UpsertBool(tx, subject.TableName(), "id", subject.ID, "is_active", true); err != nil {
+		return err
+	}
+
+	// 2) Teacher user + membership (autor; FK RESTRICT de created_by_membership_id).
+	teacherUserIDStr := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500003")
+	if err := framework.AssertNotProductionNamespace(teacherUserIDStr); err != nil {
+		return err
+	}
+	teacherUserID, err := uuid.Parse(teacherUserIDStr)
+	if err != nil {
+		return fmt.Errorf("screen_only: teacher user UUID inválido (%q): %w", teacherUserIDStr, err)
+	}
+	teacherEmail := framework.MakeEmail(ctx, "teacher", "screen_only_assessments")
+	hashed, err := bcrypt.GenerateFromPassword([]byte("E2EUser2026!"), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("screen_only: bcrypt: %w", err)
+	}
+	teacherUser := entities.User{
+		ID:           teacherUserID,
+		Email:        teacherEmail,
+		PasswordHash: string(hashed),
+		FirstName:    "ScreenOnly",
+		LastName:     "Teacher",
+		IsActive:     true,
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "email"}},
+		DoNothing: true,
+	}).Create(&teacherUser).Error; err != nil {
+		return fmt.Errorf("screen_only: insert teacher user: %w", err)
+	}
+	if err := framework.UpsertBool(tx, teacherUser.TableName(), "id", teacherUser.ID, "is_active", true); err != nil {
+		return err
+	}
+
+	teacherMembershipIDStr := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500004")
+	if err := framework.AssertNotProductionNamespace(teacherMembershipIDStr); err != nil {
+		return err
+	}
+	teacherMembershipID, err := uuid.Parse(teacherMembershipIDStr)
+	if err != nil {
+		return fmt.Errorf("screen_only: teacher membership UUID inválido (%q): %w", teacherMembershipIDStr, err)
+	}
+	teacherMembership := entities.Membership{
+		ID:         teacherMembershipID,
+		UserID:     teacherUser.ID,
+		SchoolID:   schoolUUID,
+		Role:       "teacher",
+		Metadata:   json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"assessments-list"}`),
+		IsActive:   true,
+		EnrolledAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&teacherMembership).Error; err != nil {
+		return fmt.Errorf("screen_only: insert teacher membership: %w", err)
+	}
+	if err := framework.UpsertBool(tx, teacherMembership.TableName(), "id", teacherMembership.ID, "is_active", true); err != nil {
+		return err
+	}
+
+	// 3) Assessment (esquema nuevo: school_id + subject_id + created_by_membership_id).
 	assessmentID := framework.MakeUUID(ctx, "0000-0000-0000-0a55e5500001")
 	if err := framework.AssertNotProductionNamespace(assessmentID); err != nil {
 		return err
@@ -127,20 +219,21 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 
 	title := "ScreenOnly Sample Assessment"
 	desc := "Assessment de prueba creada por la fixture screen_only para poblar la pantalla assessments-list."
-	threshold := 70.0
 
 	assessment := entities.Assessment{
-		ID:                 parsed,
-		SourceType:         "manual",
-		SchoolID:           &schoolUUID,
-		QuestionsCount:     0,
-		Title:              &title,
-		Description:        &desc,
-		PassThreshold:      &threshold,
-		IsTimed:            false,
-		ShuffleQuestions:   false,
-		ShowCorrectAnswers: true,
-		Status:             "draft",
+		ID:                    parsed,
+		SchoolID:              schoolUUID,
+		CreatedByMembershipID: teacherMembership.ID,
+		SubjectID:             subject.ID,
+		Title:                 title,
+		Description:           &desc,
+		SourceType:            "manual",
+		Status:                "draft",
+		QuestionsCount:        0,
+		PassThreshold:         70,
+		IsTimed:               false,
+		ShuffleQuestions:      false,
+		ShowCorrectAnswers:    true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -159,6 +252,8 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 	})
 	ctx.SetConstant("E2EFixtureScreenOnlyAssessmentID", assessmentID)
 	ctx.SetConstant("E2EFixtureScreenOnlyAssessmentTitle", title)
+	ctx.SetConstant("E2EFixtureScreenOnlyAssessmentSubjectID", subjectIDStr)
+	ctx.SetConstant("E2EFixtureScreenOnlyAssessmentAuthorMembershipID", teacherMembershipIDStr)
 	return nil
 }
 
@@ -387,19 +482,20 @@ func (f *ScreenOnly) Cleanup(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	prefix := ctx.SchemaPrefix
 	// Orden de borrado: respetamos las FKs. Para grades-list:
 	// grades → memberships → users → academic_periods → academic_units → subjects.
-	// Para assessments-list: sólo assessment.assessment. Las tablas que
-	// no tienen filas en el scenario simplemente devuelven 0 rows.
+	// Para assessments-list (N4): assessment.assessment PRIMERO (FK RESTRICT a
+	// subjects y memberships del docente autor) → memberships → users → subjects.
+	// Las tablas que no tienen filas en el scenario devuelven 0 rows.
 	tables := []struct {
 		name string
 		col  string
 	}{
+		{"assessment.assessment", "id"},
 		{"academic.grades", "id"},
 		{"academic.memberships", "id"},
 		{"auth.users", "id"},
 		{"academic.academic_periods", "id"},
 		{"academic.academic_units", "id"},
 		{"academic.subjects", "id"},
-		{"assessment.assessment", "id"},
 	}
 	for _, t := range tables {
 		if _, err := framework.DeleteByPrefix(tx, t.name, t.col, prefix); err != nil {
