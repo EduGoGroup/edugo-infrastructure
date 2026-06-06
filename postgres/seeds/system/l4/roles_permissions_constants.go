@@ -97,4 +97,10 @@ const (
 	// "memberships" por el gate path-prefix. Reintroducido en N1.7 F1 sobre
 	// sesiones.
 	L4_PERM_MY_MEMBERSHIPS_READ_OWN_ID = "b4000000-0002-0022-0000-000000000001"
+	// Permiso ÚNICO del feature "mis notas" del alumno (resource 24, my_grades).
+	// Cubre visibilidad de menú, slot.permission de la pantalla my-grades-list y
+	// route gate del dato. Vive bajo path propio (academic.my_grades.*) para no
+	// filtrar el item de menú admin "grades" por el gate path-prefix ni depender
+	// del wildcard academic.grades.*. N3 F4 (consulta de notas).
+	L4_PERM_MY_GRADES_READ_OWN_ID = "b4000000-0002-0024-0000-000000000001"
 )

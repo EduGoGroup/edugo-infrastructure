@@ -281,6 +281,17 @@ func l4Permissions() []l4PermissionSpec {
 		// sobre el modelo de sesiones.
 		{L4_PERM_MY_MEMBERSHIPS_READ_OWN_ID, L4_RESOURCE_MY_MEMBERSHIPS_ID, "academic.my_memberships.read:own", "Ver Mis Materias", "Ver el item de menú de materias propias del alumno", "read:own", "unit"},
 
+		// --- my_grades (resource 20000000-…-24) ---
+		// Permiso único del feature "mis notas" del alumno (N3 F4 — consulta de
+		// notas). Vive bajo un path PROPIO (academic.my_grades.*) — NO bajo
+		// academic.grades.* — para que el gate de menú por path-prefix NO le filtre
+		// el item admin "grades" (CRUD docente). Cubre las tres caras del feature
+		// self del student: visibilidad del item de menú "Mis notas",
+		// slot.permission de la pantalla my-grades-list y route gate del dato. El
+		// contrato KMP consume el lector self GET /api/v1/me/grades. Espejo de
+		// academic.my_memberships.read:own.
+		{L4_PERM_MY_GRADES_READ_OWN_ID, L4_RESOURCE_MY_GRADES_ID, "academic.my_grades.read:own", "Ver Mis Notas", "Ver el item de menú de notas propias del alumno", "read:own", "unit"},
+
 		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
 		// eliminados junto con el recurso `permissions_mgmt`.
 
@@ -560,6 +571,14 @@ func roleGrantPatterns() map[string][]string {
 		// 403 en GET /memberships (listar unidad). El dato propio llega vía el
 		// lector A GET /api/v1/me/subject-offerings. Reintroducido en N1.7 F1.
 		"academic.my_memberships.read:own",
+		// Permiso ÚNICO del feature "mis notas" del alumno (N3 F4 — consulta de
+		// notas). Grant LITERAL al recurso my_grades, bajo un path PROPIO
+		// (academic.my_grades.*) — NO el wildcard `academic.grades.*` (eso
+		// permanece como CRUD docente, no es el lector self del alumno). Cubre la
+		// visibilidad del item de menú "Mis notas", slot.permission de
+		// my-grades-list y route gate del dato propio (GET /api/v1/me/grades).
+		// Espejo de academic.my_memberships.read:own.
+		"academic.my_grades.read:own",
 		"content.assessments.*",
 		"content.assessments_student.*",
 		"content.materials.*",

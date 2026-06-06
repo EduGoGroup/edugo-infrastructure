@@ -449,6 +449,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		membershipsList(),
 		membershipsForm(),   // SOLO EDICIÓN (sin save_new): editar una membresía existente; la creación directa se retiró
 		myMembershipsList(), // "Mis materias" (alumno), reintroducida en N1.7 F1 sobre sesiones
+		myGradesList(),      // "Mis notas" (alumno), consulta de notas N3 F4
 		subjectsList(),
 		subjectsForm(),
 		periodsList(),
@@ -482,6 +483,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		attendanceList(),
 		attendanceBatch(),
 		attendanceSummary(),
+		gradesSubjectSummary(), // resumen de notas por sesión (vista docente), consulta de notas N3 F4
 
 		// ===========================================================
 		// CONTENT: ASSESSMENTS (gestion + estudiante + nuevas)
