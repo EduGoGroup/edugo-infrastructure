@@ -6,6 +6,38 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.2] - 2026-06-06
+
+### Added
+
+- Campo `PeriodID uuid.UUID` (`period_id`, NOT NULL, indexado) en la entity exportada
+  `entities.SubjectOfferingEnrollment`: copia denormalizada del período de la oferta que habilita
+  queries por materia/período sin JOIN a `subject_offerings` y completa el invariante de inscripción.
+  Lo consume `edugo-api-academic`.
+- FK `grades_teacher_fkey` en `academic.grades.teacher_id` → `academic.memberships(id)`
+  ON DELETE SET NULL (materializada en `post_gorm.sql`; `teacher_id` nullable, la nota persiste sin
+  docente al expirar su membresía). Notas por sesión de materia (N3, plan 013).
+- Seeds L4 de notas/asistencia por sesión (N3 / N3.5, planes 012/013/014): entry-points
+  `take-attendance`, `view-attendance`, `view-attendance-summary` y `put-grades` reubicados como
+  row-actions en la card de cada sesión (`sessions-by-subject-list`, scope `row`); acción
+  `view-grades-summary` + instancia `grades-subject-summary` (resumen de notas por sesión del docente);
+  instancia `grades-batch` (pantalla "Poner notas"). Recurso `my_grades` ("Mis Notas") + permiso
+  `academic.my_grades.read:own` con grant al rol student + instancia `my-grades-list`. `L4_SEED_VERSION`
+  1.42.9 → 1.45.0.
+
+### Changed
+
+- Invariante de inscripción ampliado a período: el uniqueIndex `uq_enrollment_student_subject` pasa de
+  `(student_membership_id, subject_id)` a `(student_membership_id, subject_id, period_id)`. Un alumno no
+  puede inscribirse dos veces en la misma materia dentro del mismo período (bug 0036), pero sí puede
+  cursarla en períodos distintos.
+- `SchemaVersion` 3.47.3 → 3.48.0.
+- SDUI de notas (`grades-*`): `api_prefix` `learning → academic` — las calificaciones viven en la API
+  academic, no learning (plan 012, bug 0034).
+- Tightening de privacidad: se quita el wildcard `academic.grades.*` del rol student (recibía notas
+  ajenas vía `GET /grades`); el alumno queda solo con `academic.my_grades.read:own` ("Mis Notas"). El rol
+  guardian conserva `academic.grades.*` a propósito.
+
 ## [0.900.1] - 2026-06-05
 
 ### Added
