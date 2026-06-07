@@ -495,14 +495,14 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		assessmentsList(),
 		assessmentsForm(),
 		assessmentsMgmtList(),
-		assessmentTake(),            // F3 (mínima)
-		assessmentResult(),          // F3 (mínima)
+		assessmentTake(),   // F3 (mínima)
+		assessmentResult(), // F3 (mínima)
 		assessmentQuestionsList(),
 		assessmentQuestionForm(),
 		assessmentAssignment(),
 		assessmentReviewDashboard(), // F3 (mínima)
 		assignedAssessmentsList(),
-		attemptReviewDetail(),       // F3 (mínima)
+		attemptReviewDetail(), // F3 (mínima)
 
 		// ===========================================================
 		// REPORTS (detalles + report-card)

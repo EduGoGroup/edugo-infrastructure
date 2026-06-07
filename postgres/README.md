@@ -14,7 +14,7 @@ Modulo responsable del activo relacional de `edugo-infrastructure`.
 
 - Tests cortos pasan.
 - El paquete `migrations` y el paquete `seeds` son la superficie programatica mas confiable del modulo hoy.
-- La versión actual del módulo es `postgres/v0.900.2` (N3 evaluación/notas + N3.5 operación por sesión, planes 012/013/014): campo `PeriodID` en `entities.SubjectOfferingEnrollment`, FK `grades_teacher_fkey` → `memberships`, invariante de inscripción por `(student, subject, period)`, seeds L4 de notas/asistencia por sesión + recurso `my_grades` (`L4_SEED_VERSION` 1.45.0), `SchemaVersion` 3.48.0. Detalle en [CHANGELOG.md](CHANGELOG.md).
+- La versión actual del módulo es `postgres/v0.900.3` (N4 evaluación/contenido sobre la sesión + notas con procedencia, plan 015 / ADR 0019/0020): reconstrucción del subsistema `assessment.*`/`content.*` anclado a `memberships`/`subjects`/`subject_offerings`, tablas `academic.grade_item` y `academic.grade_history`, columnas `grades.source` y `schools.grade_profile`, recurso + permisos `grades_detail` (modo detallado), seed SDUI de evaluación alineado al contrato nuevo y playground v2 `n4_evaluacion` (`L4_SEED_VERSION` 1.47.0), `SchemaVersion` 3.50.0. Detalle en [CHANGELOG.md](CHANGELOG.md).
 
 ## Documentacion del modulo
 

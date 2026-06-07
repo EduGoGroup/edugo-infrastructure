@@ -23,8 +23,8 @@ import (
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
-	n4_evaluacion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n4_evaluacion"
 	n1_inscripcion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n1_inscripcion"
+	n4_evaluacion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n4_evaluacion"
 	onboarding "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/onboarding"
 	"gorm.io/gorm"
 )

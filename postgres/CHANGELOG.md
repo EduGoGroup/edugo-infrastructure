@@ -6,6 +6,72 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.3] - 2026-06-07
+
+Cierre de N4 (evaluación/contenido sobre la sesión + notas con procedencia). Planes 015 /
+ADR 0019 / ADR 0020. `SchemaVersion` 3.48.0 → 3.50.0; `L4_SEED_VERSION` 1.45.0 → 1.47.0.
+
+### Added
+
+- Tabla `academic.grade_item` (N4 / ADR 0020 — modo detallado): componente de nota anclado a
+  `(membership_id, subject_id, period_id)` con autor (`created_by_membership_id`) y trazabilidad al
+  origen automático (`source_attempt_id` → `assessment.assessment_attempt`, `source_assessment_id` →
+  `assessment.assessment`, ambas FK `ON DELETE SET NULL`). FKs académicas a `memberships`/`subjects`/
+  `academic_periods` y UNIQUE parcial `uq_grade_item_attempt (membership_id, subject_id, period_id,
+  source_attempt_id) WHERE source_attempt_id IS NOT NULL` (un solo componente `auto_scored` por intento
+  de origen; los manuales quedan fuera del índice). Trigger `set_updated_at`.
+- Tabla `academic.grade_history` (N4 / ADR 0020): auditoría append-only de override de notas, con FKs a
+  `grades`/`grade_item` (CASCADE) y al `changed_by_membership_id` (RESTRICT), y CHECK XOR
+  `grade_history_target_xor_check` (cada fila apunta a EXACTAMENTE uno de `grade_id`/`grade_item_id`).
+  Sin `updated_at`/trigger (es append-only; `changed_at` lo fija el insert).
+- Columna `academic.grades.source` (`varchar(20)` NOT NULL, default `'manual'`, CHECK
+  `source IN ('auto_scored','manual','auto_llm')`): procedencia de la nota unificada (N4 / ADR 0020).
+- Columna `academic.schools.grade_profile` (`varchar(20)` NOT NULL, default `'basic'`, CHECK
+  `grade_profile IN ('basic','detailed')`): perfil de notas de la escuela (básico/detallado).
+- Recurso L4 `grades_detail` ("Desglose de Notas", no menú-visible, scope `unit`) + 4 permisos
+  `academic.grades_detail.{create,read,update,delete}`: catálogo del modo detallado de notas. Recurso
+  propio (no comparte `resource_id` con `grades` por el unique `(resource_id, action)`); el grant es
+  condicional por `schools.grade_profile` y lo inyecta identity en runtime (no se otorga vía
+  `roleGrantPatterns`).
+- Playground v2 `n4_evaluacion` (N4 F5.1): escuela "Colegio N4 Evaluacion" con
+  `grade_profile='detailed'`, oferta de Ciencias Naturales, docente, alumnas (Ana/Bruno/Caro) y período
+  activo; registrado en `playground_v2.go`. Soporta el E2E de cierre de N4.
+
+### Changed
+
+- Reconstrucción del subsistema de evaluación/contenido sobre el modelo de sesión (N4 F1, ADR 0019).
+  Demolición + recreación sin backfill (EduGo no está en producción). Las tablas viejas llaveadas a
+  `auth.users` y a subject/grade texto-libre se reescriben ancladas a
+  `memberships`/`subjects`/`subject_offerings`:
+  - `assessment.assessment`: `created_by_user_id` → `created_by_membership_id` (RESTRICT), subject/grade
+    texto → `subject_id` (→ `academic.subjects` RESTRICT), `school_id` NOT NULL (CASCADE), `status IN
+    (draft,published,archived)`.
+  - `assessment.question` / `question_option` (renombradas a singular): la opción correcta vive en
+    `question.correct_answer` (sin `is_correct` en la opción).
+  - `assessment.assessment_material`: N:N con PK compuesta `(assessment_id, material_id)` → `content.materials`.
+  - `assessment.assessment_assignment`: puente a la sesión — se elimina `student_id` XOR
+    `academic_unit_id`; target = `subject_offering_id` (→ `academic.subject_offerings` CASCADE) + UNIQUE
+    `(assessment_id, subject_offering_id)`.
+  - `assessment.assessment_attempt`: `student_id` → `student_membership_id`; UNIQUE parcial
+    `(assessment_id, student_membership_id) WHERE status='in_progress'` (un solo intento activo).
+  - `assessment.attempt_review`: `reviewer_id` → `reviewer_membership_id`.
+  - `content.materials`: subject/grade texto → `subject_id` (SET NULL, nullable), `uploaded_by_teacher_id`
+    → `uploaded_by_membership_id` (RESTRICT); `content.material_version`: `changed_by` →
+    `changed_by_membership_id`; `content.progress`: PK `(material_id, user_id)` →
+    `(material_id, student_membership_id)`.
+  - ELIMINADAS las tablas analíticas viejas `assessment.attempt_analytics` y `assessment.assessment_stats`
+    (llaveadas a `auth.users`; analítica diferida) y los índices de assignment por
+    `student_id`/`academic_unit_id`. Todas las FKs cross-schema y los UNIQUE viven en `post_gorm.sql`
+    (GORM no los materializa sin campo de relación). `content.courses` queda fuera de alcance (intacto).
+  - Se podan los playgrounds muertos `focal_evaluacion` / `focal_evaluacion_v2` / `focal_botonera` /
+    `focal_static_screens` y se sanea el seed demo de evaluación.
+- Seed SDUI de evaluación alineado al contrato nuevo (N4 F2.6): `assessment-question-form` gana el field
+  `option-list` (`correct_answer` por opción); `assessments-form` / assignment / listas alineadas a
+  `content.assessments.*` y al esquema nuevo (`subject_id`, `subject_offering`); `assessment-modality`
+  eliminada (concepto muerto). `L4_SEED_VERSION` 1.45.0 → 1.46.0.
+- `SchemaVersion` 3.48.0 → 3.50.0 (F1: 3.48.0 → 3.49.0; F4a: 3.49.0 → 3.50.0).
+- `L4_SEED_VERSION` 1.45.0 → 1.47.0 (F2.6: → 1.46.0; F4a catálogo modo detallado: → 1.47.0).
+
 ## [0.900.2] - 2026-06-06
 
 ### Added

@@ -499,7 +499,7 @@ import (
 //     vía idx_grade_item_grain; value/weight decimal(5,2) nullable (weight
 //     informativo gen 1); source con el mismo CHECK; trazabilidad opcional al
 //     origen auto vía source_attempt_id (FK→assessment.assessment_attempt SET NULL)
-//     + source_assessment_id (FK→assessment.assessment SET NULL); created_by_
+//   - source_assessment_id (FK→assessment.assessment SET NULL); created_by_
 //     membership_id (FK→memberships RESTRICT); UNIQUE PARCIAL uq_grade_item_attempt
 //     (membership_id, subject_id, period_id, source_attempt_id) WHERE
 //     source_attempt_id IS NOT NULL (no duplicar el auto_scored por intento). (3)

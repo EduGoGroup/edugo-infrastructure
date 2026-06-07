@@ -30,12 +30,12 @@ type School struct {
 	// (nota unica por sesion) o 'detailed' (componentes/grade_item). Gateado por
 	// permisos en el FE; el CHECK inline vive en el tag GORM (mismo patron que
 	// subscription_tier, misma tabla).
-	GradeProfile string `db:"grade_profile" gorm:"not null;type:varchar(20);default:'basic';check:schools_grade_profile_check,grade_profile IN ('basic','detailed')" validate:"required,oneof=basic detailed"`
-	MaxTeachers      int             `db:"max_teachers" gorm:"not null;default:0" validate:"required"`
-	MaxStudents      int             `db:"max_students" gorm:"not null;default:0" validate:"required"`
-	CreatedAt        time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt        time.Time       `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
-	DeletedAt        gorm.DeletedAt  `db:"deleted_at" gorm:"index" validate:"-"`
+	GradeProfile string         `db:"grade_profile" gorm:"not null;type:varchar(20);default:'basic';check:schools_grade_profile_check,grade_profile IN ('basic','detailed')" validate:"required,oneof=basic detailed"`
+	MaxTeachers  int            `db:"max_teachers" gorm:"not null;default:0" validate:"required"`
+	MaxStudents  int            `db:"max_students" gorm:"not null;default:0" validate:"required"`
+	CreatedAt    time.Time      `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt    time.Time      `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	DeletedAt    gorm.DeletedAt `db:"deleted_at" gorm:"index" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
