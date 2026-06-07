@@ -60,6 +60,12 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.SubjectOffering{},
 		&entities.SubjectOfferingEnrollment{},
 		&entities.Grade{},
+		// Notas N4 / ADR 0020: grade_item (componentes de nota) antes de
+		// grade_history (auditoria) por la FK grade_history.grade_item_id.
+		// Ambas referencian memberships/subjects/periods (migradas arriba) y
+		// grades; grade_history ademas referencia grade_item.
+		&entities.GradeItem{},
+		&entities.GradeHistory{},
 		&entities.Attendance{},
 		&entities.Schedule{},
 		&entities.Announcement{},

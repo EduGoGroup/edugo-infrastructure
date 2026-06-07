@@ -26,6 +26,11 @@ type School struct {
 	Metadata         json.RawMessage `db:"metadata" gorm:"type:jsonb;default:'{}'"`
 	IsActive         bool            `db:"is_active" gorm:"not null;default:true"`
 	SubscriptionTier string          `db:"subscription_tier" gorm:"not null;type:varchar(50);check:schools_subscription_tier_check,subscription_tier IN ('free','basic','premium','enterprise')" validate:"required,oneof=free basic premium enterprise"`
+	// GradeProfile es el perfil de notas de la escuela (N4 / ADR 0020): 'basic'
+	// (nota unica por sesion) o 'detailed' (componentes/grade_item). Gateado por
+	// permisos en el FE; el CHECK inline vive en el tag GORM (mismo patron que
+	// subscription_tier, misma tabla).
+	GradeProfile string `db:"grade_profile" gorm:"not null;type:varchar(20);default:'basic';check:schools_grade_profile_check,grade_profile IN ('basic','detailed')" validate:"required,oneof=basic detailed"`
 	MaxTeachers      int             `db:"max_teachers" gorm:"not null;default:0" validate:"required"`
 	MaxStudents      int             `db:"max_students" gorm:"not null;default:0" validate:"required"`
 	CreatedAt        time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`

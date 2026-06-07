@@ -189,6 +189,91 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ============================================================
+-- academic.grade_item / academic.grade_history (N4 / ADR 0020) — componentes de
+-- nota, procedencia y auditoria de override. GORM no materializa FKs desde el tag
+-- `constraint:` sin campo de relacion (mismo patron que academic.grades.teacher_id),
+-- por eso TODAS las FKs (academic y cross-schema a assessment.*), el CHECK XOR y el
+-- UNIQUE parcial viven aqui. Idempotente.
+-- ============================================================
+
+-- academic.grade_item → memberships (CASCADE) / subjects (CASCADE) / periods
+-- (CASCADE) / membership autor (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_membership_fkey
+            FOREIGN KEY (membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_period_fkey
+            FOREIGN KEY (period_id) REFERENCES academic.academic_periods(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_created_by_fkey
+            FOREIGN KEY (created_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Cross-schema: trazabilidad al origen auto_scored/auto_llm (SET NULL: la nota
+-- persiste si se borra el intento/evaluacion de origen).
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_source_attempt_fkey
+            FOREIGN KEY (source_attempt_id) REFERENCES assessment.assessment_attempt(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_item
+        ADD CONSTRAINT grade_item_source_assessment_fkey
+            FOREIGN KEY (source_assessment_id) REFERENCES assessment.assessment(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- academic.grade_history → grades (CASCADE) / grade_item (CASCADE) / membership
+-- que cambia (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE academic.grade_history
+        ADD CONSTRAINT grade_history_grade_fkey
+            FOREIGN KEY (grade_id) REFERENCES academic.grades(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_history
+        ADD CONSTRAINT grade_history_item_fkey
+            FOREIGN KEY (grade_item_id) REFERENCES academic.grade_item(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.grade_history
+        ADD CONSTRAINT grade_history_changed_by_fkey
+            FOREIGN KEY (changed_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- XOR: cada fila de auditoria apunta a EXACTAMENTE UNO de grade_id / grade_item_id.
+DO $$ BEGIN
+    ALTER TABLE academic.grade_history
+        ADD CONSTRAINT grade_history_target_xor_check
+            CHECK (((grade_id IS NOT NULL)::int + (grade_item_id IS NOT NULL)::int) = 1);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
 -- assessment.* y content.* (N4 / ADR 0019) — esquema de evaluacion/contenido
 -- anclado al modelo de sesion. GORM no materializa FKs desde el tag
 -- `constraint:` sin campo de relacion (mismo caso que subject_offerings),
@@ -484,6 +569,12 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- academic.grades
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.grades
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- academic.grade_item (N4 / ADR 0020). grade_history no tiene updated_at (es
+-- append-only: changed_at lo fija el insert), por eso no lleva trigger.
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.grade_item
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- academic.schedules
@@ -801,6 +892,12 @@ CREATE INDEX IF NOT EXISTS idx_concept_types_active
 -- Una sola solicitud de ingreso pendiente por (usuario, colegio, unidad).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_join_requests_pending_unique
     ON academic.school_join_requests (user_id, school_id, academic_unit_id) WHERE status = 'pending';
+
+-- Un solo componente auto_scored por (alumno, materia, periodo, intento de origen):
+-- previene duplicar el grade_item derivado del mismo intento (N4 / ADR 0020). Los
+-- componentes manuales (source_attempt_id NULL) quedan fuera del indice parcial.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_grade_item_attempt
+    ON academic.grade_item (membership_id, subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL;
 
 -- content
 CREATE INDEX IF NOT EXISTS idx_materials_status_active
