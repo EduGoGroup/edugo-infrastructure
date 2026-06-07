@@ -23,6 +23,7 @@ import (
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
+	n4_evaluacion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n4_evaluacion"
 	n1_inscripcion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n1_inscripcion"
 	onboarding "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/onboarding"
 	"gorm.io/gorm"
@@ -52,6 +53,7 @@ var fixtures = []Fixture{
 	{Name: "onboarding", Apply: onboarding.Apply},
 	{Name: "n1_inscripcion", Apply: n1_inscripcion.Apply},
 	{Name: "n17_secciones", Apply: n17_secciones.Apply},
+	{Name: "n4_evaluacion", Apply: n4_evaluacion.Apply},
 	{Name: "multi_unidad", Apply: multi_unidad.Apply},
 	{Name: "n0n1_escuelas", Apply: n0n1_escuelas.Apply},
 }
