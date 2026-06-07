@@ -396,6 +396,20 @@ func l4Permissions() []l4PermissionSpec {
 		{"e2000000-0000-0000-0000-000000000003", L4_RESOURCE_GRADES_ID, "academic.grades.update", "Editar Calificación", "Modificar calificaciones", "update", "unit"},
 		{"e2000000-0000-0000-0000-000000000004", L4_RESOURCE_GRADES_ID, "academic.grades.finalize", "Finalizar Calificación", "Finalizar y cerrar calificaciones", "finalize", "unit"},
 
+		// --- grades_detail (resource 20000000-…-37, N4 / ADR 0020 — MODO DETALLADO) ---
+		// Componentes de nota (academic.grade_item) + desglose transparente en "Mis
+		// Notas". Recurso PROPIO (grades_detail) — NO comparten resource_id con
+		// `grades` porque el unique (resource_id, action) prohíbe repetir las acciones
+		// create/read/update. Estos permisos se DEFINEN aquí pero NO se otorgan a
+		// roles vía roleGrantPatterns: el grant (teacher academic.grades_detail.* /
+		// student academic.grades_detail.read:own) es CONDICIONAL por perfil de
+		// escuela (academic.schools.grade_profile) y lo inyecta identity en runtime
+		// (F4.5).
+		{"e2000000-0000-0000-0000-000000000005", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.create", "Crear Componente de Nota", "Registrar componentes de nota (desglose)", "create", "unit"},
+		{"e2000000-0000-0000-0000-000000000006", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.read", "Ver Desglose de Nota", "Ver componentes de nota (desglose)", "read", "unit"},
+		{"e2000000-0000-0000-0000-000000000007", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.update", "Editar Componente de Nota", "Modificar componentes de nota (desglose)", "update", "unit"},
+		{"e2000000-0000-0000-0000-000000000008", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.delete", "Eliminar Componente de Nota", "Eliminar componentes de nota (desglose)", "delete", "unit"},
+
 		// --- attendance (resource 20000000-…-36) ---
 		{"e3000000-0000-0000-0000-000000000001", L4_RESOURCE_ATTENDANCE_ID, "academic.attendance.read", "Ver Asistencia", "Ver registros de asistencia", "read", "unit"},
 		{"e3000000-0000-0000-0000-000000000002", L4_RESOURCE_ATTENDANCE_ID, "academic.attendance.create", "Registrar Asistencia", "Registrar asistencia de estudiantes", "create", "unit"},

@@ -449,7 +449,74 @@ import (
 //     section_label pasa primero (headline que distingue A/B) y se quita
 //     subject_name (redundante dentro del detalle de la materia). Reubicación, no
 //     convivencia. L4_SEED_VERSION → 1.43.0.
-const SchemaVersion = "3.48.0"
+//   - 3.49.0: N4 F1 (plan 015 / ADR 0019) — DEMOLICIÓN + RECONSTRUCCIÓN del
+//     esquema de evaluación/contenido, anclado al modelo de sesión. EduGo no
+//     está en producción → recrear BD sin backfill.
+//     DEMOLIDO: el esquema viejo llaveado a auth.users + subject/grade texto-libre.
+//   - entities borradas y reescritas: assessment, question, question_option,
+//     assessment_material, assessment_assignment, assessment_attempt,
+//     assessment_attempt_answer, attempt_review (schema assessment); material,
+//     material_version, progress (schema content).
+//   - post_gorm.sql: ELIMINADAS las tablas analíticas viejas
+//     assessment.attempt_analytics y assessment.assessment_stats (llaveadas a
+//     auth.users; analítica DIFERIDA en N4) y los índices de assignment por
+//     student_id/academic_unit_id (modelo global muerto).
+//     NUEVO (anclado a sesión):
+//   - assessment.assessment: created_by_user_id → created_by_membership_id
+//     (→academic.memberships RESTRICT), subject/grade texto → subject_id
+//     (→academic.subjects RESTRICT), school_id NOT NULL (CASCADE), status
+//     in (draft,published,archived), mongo_document_id reservado para V2.
+//   - assessment.question / question_option: renombradas a singular; la opción
+//     correcta vive en question.correct_answer (sin is_correct en la opción).
+//   - assessment.assessment_material: N:N con PK compuesta (assessment_id,
+//     material_id) → content.materials (arregla A4: lector deja de asumir 1:1).
+//   - assessment.assessment_assignment: el PUENTE a la sesión. Se elimina
+//     student_id XOR academic_unit_id + CHECK; target = subject_offering_id
+//     (→academic.subject_offerings CASCADE) + UNIQUE (assessment_id,
+//     subject_offering_id). Destinatarios se resuelven de
+//     subject_offering_enrollments (arregla A2).
+//   - assessment.assessment_attempt: student_id → student_membership_id
+//     (→academic.memberships); UNIQUE parcial (assessment_id,
+//     student_membership_id) WHERE status='in_progress' (un solo intento activo).
+//   - assessment.attempt_review: reviewer_id → reviewer_membership_id.
+//   - content.materials: subject/grade texto → subject_id (→academic.subjects
+//     SET NULL, nullable), uploaded_by_teacher_id → uploaded_by_membership_id
+//     (→academic.memberships RESTRICT).
+//   - content.material_version: changed_by → changed_by_membership_id.
+//   - content.progress: PK (material_id, user_id) → (material_id,
+//     student_membership_id).
+//     Todas las FKs cross-schema y el UNIQUE de assignment en post_gorm.sql
+//     (GORM no las materializa sin campo de relación). content.courses queda
+//     FUERA de alcance (intacto). Seeds de evaluación (demo + playground
+//     focal_evaluacion*) y SDUI viejos de evaluación NO migrados aún: son F2/F4.
+//   - 3.50.0: N4 F4.1 (plan 015 / ADR 0020) — esquema de notas con procedencia,
+//     componentes, auditoría y perfil de escuela. EduGo no está en producción →
+//     recrear BD sin backfill. (1) academic.grades gana la columna `source`
+//     varchar(20) NOT NULL DEFAULT 'manual' CHECK IN ('auto_scored','manual',
+//     'auto_llm') — procedencia de la nota unificada (CHECK inline en tag GORM,
+//     mismo patrón que schools.subscription_tier). (2) NUEVA academic.grade_item
+//     (componentes de nota): grain no-único (membership_id, subject_id, period_id)
+//     vía idx_grade_item_grain; value/weight decimal(5,2) nullable (weight
+//     informativo gen 1); source con el mismo CHECK; trazabilidad opcional al
+//     origen auto vía source_attempt_id (FK→assessment.assessment_attempt SET NULL)
+//   - source_assessment_id (FK→assessment.assessment SET NULL); created_by_
+//     membership_id (FK→memberships RESTRICT); UNIQUE PARCIAL uq_grade_item_attempt
+//     (membership_id, subject_id, period_id, source_attempt_id) WHERE
+//     source_attempt_id IS NOT NULL (no duplicar el auto_scored por intento). (3)
+//     NUEVA academic.grade_history (auditoría de override, append-only sin
+//     updated_at): apunta a EXACTAMENTE UNO de grade_id (FK→grades CASCADE) /
+//     grade_item_id (FK→grade_item CASCADE) vía CHECK XOR
+//     grade_history_target_xor_check (((grade_id IS NOT NULL)::int + (grade_item_id
+//     IS NOT NULL)::int) = 1); old_value/new_value decimal(5,2); changed_by_
+//     membership_id (FK→memberships RESTRICT); changed_at default now(); reason
+//     text. Índices idx_grade_history_grade / idx_grade_history_item. (4)
+//     academic.schools gana la columna `grade_profile` varchar(20) NOT NULL
+//     DEFAULT 'basic' CHECK IN ('basic','detailed') — perfil de notas básico/
+//     detallado, gate por permisos en FE (CHECK inline en tag GORM, mismo patrón
+//     que subscription_tier, misma tabla). Las FKs cross-schema (a assessment.*),
+//     el CHECK XOR y el UNIQUE parcial viven en post_gorm.sql (GORM no los
+//     materializa sin campo de relación). Sin tocar seeds (F4.6) ni APIs.
+const SchemaVersion = "3.50.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

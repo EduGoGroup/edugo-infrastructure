@@ -420,7 +420,37 @@ package layers
 //     de notas pasa a ser "Mis Notas". El grant de `guardian` (`academic.grades.*`)
 //     queda intacto (deuda separada: el acudiente necesita ver notas de sus
 //     acudidos). Sin cambios de esquema (cambia solo el output del seed).
-const L4_SEED_VERSION = "1.45.0"
+//   - 1.46.0 (2026-06-06, N4 F2.6 — alineación SDUI de evaluación al contrato
+//     nuevo + field option-list): (1) assessment-question-form gana el field
+//     {key:options, type:option-list, correct_answer_field:correct_answer} que
+//     faltaba (bug original: el editor no mostraba opciones; lo consume el
+//     DynamicOptionListField del KMP con shape {option_id, option_text}); se
+//     quita el field correct_answer separado (lo marca el radio de la lista) y
+//     se restringe question_type a los 4 tipos del CHECK nuevo. (2) assessments-form
+//     gana subject_id (remote_select a academic /subjects, FK obligatoria del
+//     esquema nuevo) + acción "Asignar" (event_id=assign, permiso
+//     content.assessments.assign); se quita modality. (3) assessment-assignment
+//     reescrita al contrato nuevo: target = subject_offering_id (remote_select a
+//     /subject-offerings) + due_date opcional, NUNCA alumnos; slot.permission
+//     content.assessments.assign. (4) listas (assessments-list/-management-list/
+//     -questions-list/assigned-assessments-list) alineadas a los campos del
+//     esquema nuevo (subject_name, status, questions_count, question_text/_type/
+//     points, due_date). (5) assessment-modality ELIMINADA (concepto muerto: el
+//     esquema nuevo no tiene modalidad). take/result/review-dashboard/
+//     attempt-review-detail quedan MÍNIMAS (F3, re-apuntado de UI pendiente). Sin
+//     cambios de esquema (cambia solo el output del seed).
+//   - 1.47.0 (2026-06-06, N4 F4.6 — catálogo del modo detallado de notas): se
+//     siembran en iam.permissions los 4 permisos del recurso grades_detail
+//     (academic.grades_detail.create/read/update/delete), espejando el enum de
+//     edugo-shared. Cuelgan de un recurso PROPIO grades_detail (…37, NO
+//     menú-visible): no comparten resource_id con `grades` porque el unique
+//     (resource_id, action) prohíbe repetir create/read/update. Gestionan los
+//     componentes de nota (academic.grade_item) y el desglose transparente en
+//     "Mis Notas". NO se otorgan a roles vía roleGrantPatterns: el grant es
+//     CONDICIONAL por perfil de escuela (academic.schools.grade_profile) y lo
+//     inyecta identity en runtime (F4.5). Sin cambios de esquema (cambia solo el
+//     output del seed).
+const L4_SEED_VERSION = "1.47.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

@@ -18,11 +18,16 @@ type Grade struct {
 	GradeValue       *float64        `db:"grade_value" gorm:"type:decimal(5,2)" validate:"omitempty"`
 	GradeLetter      *string         `db:"grade_letter" gorm:"type:varchar(5)" validate:"omitempty"`
 	AssessmentScores json.RawMessage `db:"assessment_scores" gorm:"type:jsonb;default:'[]'"`
-	TeacherID        *uuid.UUID      `db:"teacher_id" gorm:"type:uuid;constraint:grades_teacher_fkey" validate:"omitempty,uuid"`
-	Notes            *string         `db:"notes" validate:"omitempty"`
-	FinalizedAt      *time.Time      `db:"finalized_at"`
-	CreatedAt        time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt        time.Time       `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// Source es la procedencia de la nota (N4 / ADR 0020): 'manual' (capturada por
+	// el docente), 'auto_scored' (derivada de un intento auto-calificado) o
+	// 'auto_llm' (generada por LLM). El CHECK es inline-expresable, asi que vive en
+	// el tag GORM (mismo patron que schools.subscription_tier).
+	Source      string     `db:"source" gorm:"not null;type:varchar(20);default:'manual';check:grades_source_check,source IN ('auto_scored','manual','auto_llm')" validate:"required,oneof=auto_scored manual auto_llm"`
+	TeacherID   *uuid.UUID `db:"teacher_id" gorm:"type:uuid;constraint:grades_teacher_fkey" validate:"omitempty,uuid"`
+	Notes       *string    `db:"notes" validate:"omitempty"`
+	FinalizedAt *time.Time `db:"finalized_at"`
+	CreatedAt   time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt   time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 func (Grade) TableName() string {

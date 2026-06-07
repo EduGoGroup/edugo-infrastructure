@@ -23,12 +23,8 @@ import (
 	"fmt"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/admin"
-	focal_botonera "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_botonera"
 	focal_colors_demo "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_colors_demo"
-	focal_evaluacion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_evaluacion"
-	focal_evaluacion_v2 "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_evaluacion_v2"
 	focal_pantalla "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_pantalla"
-	focal_static_screens "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_static_screens"
 	"gorm.io/gorm"
 )
 
@@ -51,10 +47,14 @@ type Fixture struct {
 var fixtures = []Fixture{
 	{Name: "admin", Apply: admin.Apply},
 	{Name: "focal-pantalla", Apply: focal_pantalla.Apply},
-	{Name: "focal-evaluacion", Apply: focal_evaluacion.Apply},
-	{Name: "focal-evaluacion-v2", Apply: focal_evaluacion_v2.Apply},
-	{Name: "focal-botonera", Apply: focal_botonera.Apply},
-	{Name: "focal-static-screens", Apply: focal_static_screens.Apply},
+	// ELIMINADOS en N4 F1 (plan 015) — cadena anclada al contrato viejo de
+	// evaluación (entities.Assessment con created_by_user_id / subject texto-libre,
+	// ahora demolido):
+	//   - focal-evaluacion / focal-evaluacion-v2: sembraban la evaluación vieja.
+	//   - focal-botonera (deprecado, plan 004) chainea focal_evaluacion_v2 para su
+	//     tenant; focal-static-screens chainea focal_botonera. Toda la cadena era
+	//     dead-by-transitivity y rompía el build. Se reconstruye en F2 sobre el
+	//     esquema nuevo (assessment.* por sesión) si se necesita.
 	{Name: "focal-colors-demo", Apply: focal_colors_demo.Apply},
 }
 

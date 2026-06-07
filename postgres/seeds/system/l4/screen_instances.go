@@ -24,9 +24,9 @@ import (
 //   - 9 instances NUEVAS exigidas por el FE pero ausentes del legacy
 //     (parte del set de 14 `screen_key_phantom` reportadas por el
 //     cross-checker baseline):
-//   - assessment-assignment, assessment-modality,
-//     assessment-review-dashboard, assigned-assessments-list,
-//     attempt-review-detail (5 pantallas de assessments).
+//   - assessment-assignment, assessment-review-dashboard,
+//     assigned-assessments-list, attempt-review-detail (4 pantallas
+//     de assessments; assessment-modality se eliminó en plan 015).
 //   - membership-add, user-roles (admin).
 //   - school-concepts-list, school-concepts-form (concept_types
 //     a nivel escuela).
@@ -486,25 +486,23 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		gradesSubjectSummary(), // resumen de notas por sesión (vista docente), consulta de notas N3 F4
 
 		// ===========================================================
-		// CONTENT: ASSESSMENTS (gestion + estudiante + nuevas)
+		// CONTENT: ASSESSMENTS (gestion + estudiante)
 		// ===========================================================
-		// Las 5 instancias "phantom-nuevas" (assessment-assignment,
-		// assessment-modality, assessment-review-dashboard,
-		// assigned-assessments-list, attempt-review-detail) son
-		// completamente nuevas en B4 — el legacy no las declara y
-		// el FE las exige. F6-REQ-3.1.
+		// Alineadas al contrato N4 (plan 015). assessment-modality se
+		// ELIMINÓ (concepto muerto: el esquema nuevo no tiene modalidad).
+		// take/result/review-dashboard/attempt-review-detail son F3 y
+		// quedan mínimas (re-apuntado de UI en F3.1).
 		assessmentsList(),
 		assessmentsForm(),
 		assessmentsMgmtList(),
-		assessmentTake(),
-		assessmentResult(),
+		assessmentTake(),   // F3 (mínima)
+		assessmentResult(), // F3 (mínima)
 		assessmentQuestionsList(),
 		assessmentQuestionForm(),
-		assessmentAssignment(),      // phantom-nueva
-		assessmentModality(),        // phantom-nueva
-		assessmentReviewDashboard(), // phantom-nueva
-		assignedAssessmentsList(),   // phantom-nueva
-		attemptReviewDetail(),       // phantom-nueva
+		assessmentAssignment(),
+		assessmentReviewDashboard(), // F3 (mínima)
+		assignedAssessmentsList(),
+		attemptReviewDetail(), // F3 (mínima)
 
 		// ===========================================================
 		// REPORTS (detalles + report-card)

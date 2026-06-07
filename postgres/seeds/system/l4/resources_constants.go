@@ -51,11 +51,21 @@ const (
 	L4_RESOURCE_SUBJECTS_ID    = "b4000000-0000-0000-0000-000000000032"
 	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
 	// (…60), `schedules` (…37) y `calendar` (…39); sus UUIDs quedan libres.
-	L4_RESOURCE_PERIODS_ID      = "b4000000-0000-0000-0000-000000000034"
-	L4_RESOURCE_GRADES_ID       = "b4000000-0000-0000-0000-000000000035"
-	L4_RESOURCE_ATTENDANCE_ID   = "b4000000-0000-0000-0000-000000000036"
-	L4_RESOURCE_UNITS_KEY       = "units"
-	L4_RESOURCE_MEMBERSHIPS_KEY = "memberships"
+	L4_RESOURCE_PERIODS_ID    = "b4000000-0000-0000-0000-000000000034"
+	L4_RESOURCE_GRADES_ID     = "b4000000-0000-0000-0000-000000000035"
+	L4_RESOURCE_ATTENDANCE_ID = "b4000000-0000-0000-0000-000000000036"
+	// grades_detail (N4 / ADR 0020 — MODO DETALLADO). Recurso del desglose por
+	// componente de nota (academic.grade_item). NO es menú-visible (no tiene
+	// pantalla propia: el desglose vive embebido en grades / "Mis Notas"); existe
+	// para colgar los permisos academic.grades_detail.* (que NO pueden compartir
+	// resource_id con `grades` por el unique (resource_id, action)). El grant de
+	// estos permisos es CONDICIONAL por perfil de escuela y lo inyecta identity en
+	// runtime (F4.5). Sufijo …37 (adyacente a grades …35 / attendance …36; UUID
+	// liberado por la poda de `schedules`).
+	L4_RESOURCE_GRADES_DETAIL_ID  = "b4000000-0000-0000-0000-000000000037"
+	L4_RESOURCE_GRADES_DETAIL_KEY = "grades_detail"
+	L4_RESOURCE_UNITS_KEY         = "units"
+	L4_RESOURCE_MEMBERSHIPS_KEY   = "memberships"
 	// Recurso de menú "Mis materias" del alumno (plan 006, N1.C). Es un recurso
 	// de MENÚ separado de `memberships` (roster de unidad para admin/teacher):
 	// la pantalla default difiere y el path-prefix del gate de menú no

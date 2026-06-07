@@ -1,22 +1,20 @@
 package entities
 
-import (
-	"time"
+import "github.com/google/uuid"
 
-	"github.com/google/uuid"
-)
-
-// AssessmentMaterial representa la tabla N:N entre assessments y materiales.
-// Migracion: 053_assessment_materials.sql
+// AssessmentMaterial representa la tabla N:N 'assessment.assessment_material'
+// entre evaluaciones y materiales guia (N4 / ADR 0019).
+//
+// PK compuesta (assessment_id, material_id): el lector deja de asumir 1:1
+// (arregla A4). Las FKs (assessment_id → assessment.assessment,
+// material_id → content.materials) se materializan en post_gorm.sql.
 type AssessmentMaterial struct {
-	ID           uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id" validate:"required,uuid"`
-	AssessmentID uuid.UUID `gorm:"type:uuid;not null;constraint:assessment_materials_assessment_fk,OnDelete:CASCADE;uniqueIndex:assessment_materials_unique;index:idx_assessment_materials_assessment" json:"assessment_id" validate:"required,uuid"`
-	MaterialID   uuid.UUID `gorm:"type:uuid;not null;constraint:assessment_materials_material_fk,OnDelete:CASCADE;uniqueIndex:assessment_materials_unique;index:idx_assessment_materials_material" json:"material_id" validate:"required,uuid"`
-	SortOrder    int       `gorm:"not null;default:0" json:"sort_order" validate:"required"`
-	CreatedAt    time.Time `gorm:"not null;default:now()" json:"created_at" validate:"-"`
+	AssessmentID uuid.UUID `db:"assessment_id" gorm:"type:uuid;primaryKey" json:"assessment_id" validate:"required,uuid"`
+	MaterialID   uuid.UUID `db:"material_id" gorm:"type:uuid;primaryKey" json:"material_id" validate:"required,uuid"`
+	SortOrder    int       `db:"sort_order" gorm:"not null;default:0" json:"sort_order"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (AssessmentMaterial) TableName() string {
-	return "assessment.assessment_materials"
+	return "assessment.assessment_material"
 }

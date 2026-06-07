@@ -7,29 +7,28 @@ import (
 	"github.com/lib/pq"
 )
 
-// Question representa la tabla 'questions' en PostgreSQL.
-// Esta entity es el reflejo exacto del schema de BD.
+// Question representa la tabla 'assessment.question' en PostgreSQL.
+// Esta entity es el reflejo exacto del schema de BD (N4 / ADR 0019).
 //
-// Migraciones: 054_assessment_questions.sql
-// Usada por: api-mobile, worker
+// Pregunta de una evaluacion. Sin cambio estructural respecto al viejo (el
+// modelo era valido): la opcion correcta se referencia en correct_answer
+// (NO hay columna is_correct en la opcion). FK assessment_id en post_gorm.sql.
 type Question struct {
 	ID            uuid.UUID      `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
-	AssessmentID  uuid.UUID      `db:"assessment_id" gorm:"type:uuid;index;not null;constraint:questions_assessment_fkey,OnDelete:CASCADE;index:idx_questions_assessment" validate:"required,uuid"`
-	SortOrder     int            `db:"sort_order" gorm:"not null;default:0;index:idx_questions_assessment" validate:"required"`
+	AssessmentID  uuid.UUID      `db:"assessment_id" gorm:"type:uuid;not null;constraint:question_assessment_fkey,OnDelete:CASCADE;index:idx_question_assessment_order,priority:1" validate:"required,uuid"`
+	SortOrder     int            `db:"sort_order" gorm:"not null;default:0;index:idx_question_assessment_order,priority:2"`
 	QuestionText  string         `db:"question_text" gorm:"not null" validate:"required"`
-	QuestionType  string         `db:"question_type" gorm:"not null;type:varchar(50);check:questions_question_type_check,question_type IN ('multiple_choice','true_false','short_answer','open_ended')" validate:"required,oneof=multiple_choice true_false short_answer open_ended"`
+	QuestionType  string         `db:"question_type" gorm:"not null;type:varchar(20);check:question_type_check,question_type IN ('multiple_choice','true_false','short_answer','open_ended')" validate:"required,oneof=multiple_choice true_false short_answer open_ended"`
 	CorrectAnswer *string        `db:"correct_answer" gorm:"default:null" validate:"omitempty"`
 	Explanation   *string        `db:"explanation" gorm:"default:null" validate:"omitempty"`
-	Points        float64        `db:"points" gorm:"type:numeric(5,2);not null;default:1" validate:"required"`
-	Difficulty    *string        `db:"difficulty" gorm:"type:varchar(20);check:questions_difficulty_check,difficulty IN ('easy','medium','hard')" validate:"omitempty,oneof=easy medium hard"`
+	Points        int            `db:"points" gorm:"not null;default:1"`
+	Difficulty    *string        `db:"difficulty" gorm:"type:varchar(20);default:null" validate:"omitempty"`
 	Tags          pq.StringArray `db:"tags" gorm:"type:text[]" validate:"-"`
 	CreatedAt     time.Time      `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
 	UpdatedAt     time.Time      `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
-
-	Options []QuestionOption `gorm:"foreignKey:QuestionID" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
 func (Question) TableName() string {
-	return "assessment.questions"
+	return "assessment.question"
 }
