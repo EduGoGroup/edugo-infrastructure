@@ -1317,15 +1317,23 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
 	}
 }
 
-// assessmentQuestionForm — F2.6 (plan 015): editor de preguntas alineado al
-// contrato nuevo de N4. El field `options` (type=option-list) es el que faltaba
-// y causaba el bug original (el editor no mostraba opciones); lo consume el
-// componente KMP DynamicOptionListField (shape {option_id, option_text} por
-// opción). `correct_answer_field` apunta al campo `correct_answer`: el
-// radio-button de la lista de opciones marca la opción correcta y escribe ese
-// valor, por eso NO se declara un field `correct_answer` separado (sería un
-// control duplicado sobre el mismo dato). question_type se restringe a los 4
-// tipos válidos del CHECK del esquema nuevo. Endpoints (resueltos por el
+// assessmentQuestionForm — F2.6 (plan 015) + Fase 1 visibilidad condicional:
+// editor de preguntas REACTIVO por tipo. `question_type` es el campo
+// CONTROLADOR (4 tipos del CHECK del esquema nuevo); el resto de campos de
+// respuesta correcta declaran `visible_when` (formato
+// {field, equals|in}) para mostrarse solo cuando aplican:
+//   - multiple_choice → field `options` (type=option-list); lo consume el
+//     componente KMP DynamicOptionListField (shape {option_id, option_text} por
+//     opción). Su `correct_answer_field` apunta a `mc_correct_letter`: el
+//     radio-button de la lista marca la opción correcta y escribe ese valor,
+//     por eso NO hay un field separado para la opción correcta (sería un control
+//     duplicado sobre el mismo dato).
+//   - true_false → field `correct_answer_bool` (select Verdadero/Falso).
+//   - short_answer → field `correct_answer_text` (text).
+//   - open_ended → ningún campo de respuesta correcta (no se evalúa de forma
+//     automática); queda implícito porque ninguno lo incluye en su in/equals.
+// Los campos sin `visible_when` (question_text, question_type, points,
+// explanation, difficulty) son siempre visibles. Endpoints (resueltos por el
 // AssessmentQuestionFormContract del KMP): GET/POST
 // /api/v1/assessments/:assessment_id/questions y PUT/DELETE .../:question_id,
 // bajo api_prefix=learning.
@@ -1353,7 +1361,12 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
       {"value": "short_answer", "label": "Respuesta corta"},
       {"value": "open_ended", "label": "Respuesta abierta"}
     ]},
-    {"key": "options", "type": "option-list", "correct_answer_field": "correct_answer"},
+    {"key": "options", "type": "option-list", "correct_answer_field": "mc_correct_letter", "visible_when": {"field": "question_type", "in": ["multiple_choice"]}},
+    {"key": "correct_answer_bool", "label": "Respuesta correcta", "type": "select", "required": true, "visible_when": {"field": "question_type", "equals": "true_false"}, "options": [
+      {"value": "true", "label": "Verdadero"},
+      {"value": "false", "label": "Falso"}
+    ]},
+    {"key": "correct_answer_text", "label": "Respuesta correcta", "type": "text", "required": true, "visible_when": {"field": "question_type", "equals": "short_answer"}},
     {"key": "points", "label": "Puntaje", "type": "number", "required": true},
     {"key": "explanation", "label": "Explicación", "type": "textarea"},
     {"key": "difficulty", "label": "Dificultad", "type": "select", "options": [

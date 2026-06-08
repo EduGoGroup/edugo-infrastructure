@@ -450,7 +450,20 @@ package layers
 //     CONDICIONAL por perfil de escuela (academic.schools.grade_profile) y lo
 //     inyecta identity en runtime (F4.5). Sin cambios de esquema (cambia solo el
 //     output del seed).
-const L4_SEED_VERSION = "1.47.0"
+//   - 1.48.0 (2026-06-08, Fase 1 — visibilidad condicional de campos SDUI en el
+//     form de pregunta): assessment-question-form se vuelve REACTIVO por
+//     `question_type` (campo controlador). Nuevo contrato SDUI snake_case
+//     `visible_when` ({field, equals|in}; ausencia = siempre visible) en los
+//     campos de respuesta correcta: `options` (option-list) solo en
+//     multiple_choice, su `correct_answer_field` pasa de `correct_answer` a
+//     `mc_correct_letter`; NUEVO field `correct_answer_bool` (select
+//     Verdadero/Falso, required) visible en true_false; NUEVO field
+//     `correct_answer_text` (text, required) visible en short_answer; open_ended
+//     no muestra campo de respuesta correcta. question_text/question_type/points/
+//     explanation/difficulty siguen siempre visibles. Contrato compartido con el
+//     agente FRONT del KMP. Sin cambios de esquema (cambia solo el output del
+//     seed).
+const L4_SEED_VERSION = "1.48.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
