@@ -1290,6 +1290,11 @@ func assessmentResult() l4ScreenInstanceRow {
 	}
 }
 
+// assessmentQuestionsList — detalle (lista) de preguntas de una evaluación.
+// `actions_removed: ["edit"]` poda la row-action `edit` que list-basic-v1 trae
+// por default: en este detalle la edición la abre el botón nativo "Editar" del
+// bottom-sheet (MasterDetailContainer, flujo N3.5), por lo que la acción SDUI
+// quedaba huérfana (sin handler). Mismo criterio que las listas de sesiones.
 func assessmentQuestionsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:          L4_SCREEN_INST_ASSESS_QUESTIONS_LIST_ID,
@@ -1308,6 +1313,7 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
     {"key": "question_type", "label": "Tipo"},
     {"key": "points", "label": "Puntaje"}
   ],
+  "actions_removed": ["edit"],
   "actions_added": [
     {"id": "create", "scope": "header", "label": "Nuevo",    "icon": "plus",  "permission": "content.assessments.update", "condition": "always", "event_id": "create", "style": "icon",        "order": 10},
     {"id": "delete", "scope": "row",    "label": "Eliminar", "icon": "trash", "permission": "content.assessments.update", "condition": "always", "event_id": "delete", "style": "destructive", "order": 20}

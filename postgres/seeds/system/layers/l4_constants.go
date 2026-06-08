@@ -475,7 +475,13 @@ package layers
 //     añade is_correct a question_option. Acompaña el cambio de esquema (CHECK
 //     question_type_check suma 'multiple_select', SchemaVersion → 3.53.0).
 //     Contrato compartido con backend learning y FRONT del KMP. Solo autoría.
-const L4_SEED_VERSION = "1.49.0"
+//   - 1.50.0: assessment-questions-list suma "actions_removed": ["edit"]. El
+//     template list-basic-v1 declara `edit` (scope row) como default_action; en
+//     el detalle de preguntas la edición ya la cubre el botón nativo "Editar"
+//     del bottom-sheet (MasterDetailContainer, flujo N3.5), así que la row-action
+//     SDUI `edit` quedaba huérfana (sin handler → "No custom handler for event:
+//     edit"). Se elimina el duplicado igual que en las listas de sesiones.
+const L4_SEED_VERSION = "1.50.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

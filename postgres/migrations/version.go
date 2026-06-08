@@ -565,7 +565,12 @@ import (
 //     form de pregunta (nuevo slot `options_multi` con selection_mode
 //     multiple, visible_when question_type in [multiple_select]).
 //     L4_SEED_VERSION → 1.49.0.
-const SchemaVersion = "3.53.0"
+//   - 3.54.0: seed-only (sin DDL). assessment-questions-list elimina la
+//     row-action SDUI heredada `edit` (default de list-basic-v1) vía
+//     "actions_removed": ["edit"]: en el detalle de preguntas la edición la
+//     cubre el botón nativo "Editar" del bottom-sheet; la acción SDUI no tenía
+//     handler. L4_SEED_VERSION → 1.50.0.
+const SchemaVersion = "3.54.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
