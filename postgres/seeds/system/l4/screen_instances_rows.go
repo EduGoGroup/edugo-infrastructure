@@ -1344,6 +1344,7 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
 //   - short_answer → field `correct_answer_text` (text).
 //   - open_ended → ningún campo de respuesta correcta (no se evalúa de forma
 //     automática); queda implícito porque ninguno lo incluye en su in/equals.
+//
 // Los campos sin `visible_when` (question_text, question_type, points,
 // explanation, difficulty) son siempre visibles. Endpoints (resueltos por el
 // AssessmentQuestionFormContract del KMP): GET/POST
