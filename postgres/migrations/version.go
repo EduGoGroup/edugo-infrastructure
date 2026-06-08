@@ -554,7 +554,18 @@ import (
 //     mapping → sin FK). L3_SEED_VERSION 1.3.0→1.4.0; +1 fila screen_instances.
 //     Test l3_apply_twice y fixture e2e l3_constants_export ajustados (materials-
 //     list: aserción negativa→positiva; material-form: sigue negativa).
-const SchemaVersion = "3.52.0"
+//   - 3.53.0: Fase 2 — nuevo tipo de pregunta `multiple_select` (opción
+//     múltiple con varias respuestas correctas, solo autoría). El CHECK
+//     inline del entity Question (question_type_check) suma 'multiple_select'
+//     a la lista permitida (de 4 a 5 tipos), igual que su tag `validate`
+//     oneof. Cambia el output del migrador GORM → bump obligatorio. Contrato
+//     de datos: para este tipo, assessment.question.correct_answer guarda un
+//     ARRAY JSON de textos (["Texto A","Texto C"]); NO se añade is_correct a
+//     question_option (los demás tipos no cambian). Acompaña el seed L4 del
+//     form de pregunta (nuevo slot `options_multi` con selection_mode
+//     multiple, visible_when question_type in [multiple_select]).
+//     L4_SEED_VERSION → 1.49.0.
+const SchemaVersion = "3.53.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -463,7 +463,19 @@ package layers
 //     explanation/difficulty siguen siempre visibles. Contrato compartido con el
 //     agente FRONT del KMP. Sin cambios de esquema (cambia solo el output del
 //     seed).
-const L4_SEED_VERSION = "1.48.0"
+//   - 1.49.0 (2026-06-08, Fase 2 — nuevo tipo de pregunta multiple_select):
+//     assessment-question-form gana soporte para opción múltiple con VARIAS
+//     respuestas correctas. (1) El dropdown `question_type` suma la opción
+//     {value: multiple_select, label: "Opción múltiple (varias)"}. (2) Nuevo
+//     field `options_multi` (type=option-list, selection_mode=multiple,
+//     correct_answer_field=ms_correct_letters, visible_when question_type in
+//     [multiple_select], NO required) — key DISTINTA de `options` (single) para
+//     no colisionar el estado del componente. Contrato de datos: para este tipo
+//     assessment.question.correct_answer guarda un ARRAY JSON de textos; NO se
+//     añade is_correct a question_option. Acompaña el cambio de esquema (CHECK
+//     question_type_check suma 'multiple_select', SchemaVersion → 3.53.0).
+//     Contrato compartido con backend learning y FRONT del KMP. Solo autoría.
+const L4_SEED_VERSION = "1.49.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
