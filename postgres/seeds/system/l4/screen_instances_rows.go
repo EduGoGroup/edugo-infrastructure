@@ -1290,6 +1290,11 @@ func assessmentResult() l4ScreenInstanceRow {
 	}
 }
 
+// assessmentQuestionsList — detalle (lista) de preguntas de una evaluación.
+// `actions_removed: ["edit"]` poda la row-action `edit` que list-basic-v1 trae
+// por default: en este detalle la edición la abre el botón nativo "Editar" del
+// bottom-sheet (MasterDetailContainer, flujo N3.5), por lo que la acción SDUI
+// quedaba huérfana (sin handler). Mismo criterio que las listas de sesiones.
 func assessmentQuestionsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:          L4_SCREEN_INST_ASSESS_QUESTIONS_LIST_ID,
@@ -1308,6 +1313,7 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
     {"key": "question_type", "label": "Tipo"},
     {"key": "points", "label": "Puntaje"}
   ],
+  "actions_removed": ["edit"],
   "actions_added": [
     {"id": "create", "scope": "header", "label": "Nuevo",    "icon": "plus",  "permission": "content.assessments.update", "condition": "always", "event_id": "create", "style": "icon",        "order": 10},
     {"id": "delete", "scope": "row",    "label": "Eliminar", "icon": "trash", "permission": "content.assessments.update", "condition": "always", "event_id": "delete", "style": "destructive", "order": 20}
@@ -1317,15 +1323,30 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
 	}
 }
 
-// assessmentQuestionForm — F2.6 (plan 015): editor de preguntas alineado al
-// contrato nuevo de N4. El field `options` (type=option-list) es el que faltaba
-// y causaba el bug original (el editor no mostraba opciones); lo consume el
-// componente KMP DynamicOptionListField (shape {option_id, option_text} por
-// opción). `correct_answer_field` apunta al campo `correct_answer`: el
-// radio-button de la lista de opciones marca la opción correcta y escribe ese
-// valor, por eso NO se declara un field `correct_answer` separado (sería un
-// control duplicado sobre el mismo dato). question_type se restringe a los 4
-// tipos válidos del CHECK del esquema nuevo. Endpoints (resueltos por el
+// assessmentQuestionForm — F2.6 (plan 015) + Fase 1 visibilidad condicional +
+// Fase 2 multiple_select: editor de preguntas REACTIVO por tipo.
+// `question_type` es el campo CONTROLADOR (5 tipos del CHECK del esquema
+// nuevo); el resto de campos de respuesta correcta declaran `visible_when`
+// (formato {field, equals|in}) para mostrarse solo cuando aplican:
+//   - multiple_choice → field `options` (type=option-list); lo consume el
+//     componente KMP DynamicOptionListField (shape {option_id, option_text} por
+//     opción). Su `correct_answer_field` apunta a `mc_correct_letter`: el
+//     radio-button de la lista marca la opción correcta y escribe ese valor,
+//     por eso NO hay un field separado para la opción correcta (sería un control
+//     duplicado sobre el mismo dato).
+//   - multiple_select → field `options_multi` (type=option-list,
+//     selection_mode=multiple): opción múltiple con VARIAS respuestas
+//     correctas. Key DISTINTA de `options` (single) para no colisionar el
+//     estado del componente. `correct_answer_field` apunta a
+//     `ms_correct_letters` (checkboxes de la lista marcan N correctas). En BD,
+//     correct_answer guarda un ARRAY JSON de textos (["Texto A","Texto C"]).
+//   - true_false → field `correct_answer_bool` (select Verdadero/Falso).
+//   - short_answer → field `correct_answer_text` (text).
+//   - open_ended → ningún campo de respuesta correcta (no se evalúa de forma
+//     automática); queda implícito porque ninguno lo incluye en su in/equals.
+//
+// Los campos sin `visible_when` (question_text, question_type, points,
+// explanation, difficulty) son siempre visibles. Endpoints (resueltos por el
 // AssessmentQuestionFormContract del KMP): GET/POST
 // /api/v1/assessments/:assessment_id/questions y PUT/DELETE .../:question_id,
 // bajo api_prefix=learning.
@@ -1349,11 +1370,18 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
     {"key": "question_text", "label": "Enunciado", "type": "textarea", "required": true},
     {"key": "question_type", "label": "Tipo", "type": "select", "required": true, "options": [
       {"value": "multiple_choice", "label": "Opción múltiple"},
+      {"value": "multiple_select", "label": "Opción múltiple (varias)"},
       {"value": "true_false", "label": "Verdadero/Falso"},
       {"value": "short_answer", "label": "Respuesta corta"},
       {"value": "open_ended", "label": "Respuesta abierta"}
     ]},
-    {"key": "options", "type": "option-list", "correct_answer_field": "correct_answer"},
+    {"key": "options", "type": "option-list", "correct_answer_field": "mc_correct_letter", "visible_when": {"field": "question_type", "in": ["multiple_choice"]}},
+    {"key": "options_multi", "type": "option-list", "selection_mode": "multiple", "correct_answer_field": "ms_correct_letters", "visible_when": {"field": "question_type", "in": ["multiple_select"]}},
+    {"key": "correct_answer_bool", "label": "Respuesta correcta", "type": "select", "required": true, "visible_when": {"field": "question_type", "equals": "true_false"}, "options": [
+      {"value": "true", "label": "Verdadero"},
+      {"value": "false", "label": "Falso"}
+    ]},
+    {"key": "correct_answer_text", "label": "Respuesta correcta", "type": "text", "required": true, "visible_when": {"field": "question_type", "equals": "short_answer"}},
     {"key": "points", "label": "Puntaje", "type": "number", "required": true},
     {"key": "explanation", "label": "Explicación", "type": "textarea"},
     {"key": "difficulty", "label": "Dificultad", "type": "select", "options": [

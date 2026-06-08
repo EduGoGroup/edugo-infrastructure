@@ -18,7 +18,7 @@ type Question struct {
 	AssessmentID  uuid.UUID      `db:"assessment_id" gorm:"type:uuid;not null;constraint:question_assessment_fkey,OnDelete:CASCADE;index:idx_question_assessment_order,priority:1" validate:"required,uuid"`
 	SortOrder     int            `db:"sort_order" gorm:"not null;default:0;index:idx_question_assessment_order,priority:2"`
 	QuestionText  string         `db:"question_text" gorm:"not null" validate:"required"`
-	QuestionType  string         `db:"question_type" gorm:"not null;type:varchar(20);check:question_type_check,question_type IN ('multiple_choice','true_false','short_answer','open_ended')" validate:"required,oneof=multiple_choice true_false short_answer open_ended"`
+	QuestionType  string         `db:"question_type" gorm:"not null;type:varchar(20);check:question_type_check,question_type IN ('multiple_choice','multiple_select','true_false','short_answer','open_ended')" validate:"required,oneof=multiple_choice multiple_select true_false short_answer open_ended"`
 	CorrectAnswer *string        `db:"correct_answer" gorm:"default:null" validate:"omitempty"`
 	Explanation   *string        `db:"explanation" gorm:"default:null" validate:"omitempty"`
 	Points        int            `db:"points" gorm:"not null;default:1"`

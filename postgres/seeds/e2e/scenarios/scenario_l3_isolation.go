@@ -12,7 +12,7 @@ import (
 //   - F5-REQ-1.1: resource materials existe con scope=unit.
 //   - F5-REQ-2.1: 3 permisos materials:{read,create,update}; ausencia explícita de :delete.
 //   - F5-REQ-2.2: 3 role_permissions super_admin × materials.
-//   - F5-REQ-3.x: 2 ScreenInstances + 2 resource_screens (list default, form no-default).
+//   - F5-REQ-3.x (post-poda SDUI material): 0 ScreenInstances + 1 resource_screen (list default; pantalla nativa, form podado).
 //   - No-regresión viewer L1: permisos siguen siendo {announcements:read}.
 //
 // Diferidos por Opción A (requieren API server / KMP runtime):
@@ -32,7 +32,7 @@ type L3Isolation struct{}
 func (s *L3Isolation) Manifest() framework.ScenarioManifest {
 	return framework.ScenarioManifest{
 		Name:         "l3_isolation",
-		Description:  "Valida la capa L3 (resource materials con CRUD parcial sin :delete + 2 ScreenInstances + 2 ResourceScreens) del seed system y exporta sus identificadores.",
+		Description:  "Valida la capa L3 (resource materials con CRUD parcial sin :delete + 1 ResourceScreen `list` default; ScreenInstances podadas — pantallas nativas) del seed system y exporta sus identificadores.",
 		FixtureNames: []string{"l3_constants_export"},
 		Tags:         []string{"l3", "system", "rbac", "menu", "screen-config"},
 	}

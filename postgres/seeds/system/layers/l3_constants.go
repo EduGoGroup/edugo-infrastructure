@@ -7,7 +7,19 @@ package layers
 //   - 1.1.0: versión anterior.
 //   - 1.2.0: F3 (plan 004) — materials-list/material-form migradas a
 //     patrón delta (actions_removed; sin cambio semántico).
-const L3_SEED_VERSION = "1.2.0"
+//   - 1.3.0: poda SDUI material (2026-06-07) — eliminadas las 2
+//     ScreenInstances (materials-list, material-form) + slot_data y el
+//     mapping resource_screen `form`. Las pantallas de material son
+//     nativas; esos seeds eran código muerto. El recurso materials sigue
+//     en el menú vía el mapping `materials:list`.
+//   - 1.4.0: corrección F2 (2026-06-08) — la poda 1.3.0 quitó de más:
+//     `materials-list` tiene mapping resource_screen y la FK
+//     fk_resource_screens_screen_key exige su screen_instance, así que un
+//     recreate limpio fallaba en L3 (23503). Se RESTAURA la screen_instance
+//     MÍNIMA `materials-list` (no se renderiza; pantalla NATIVA), mismo
+//     patrón que batch-enroll/join-requests-inbox en L4. `material-form`
+//     SIGUE PODADO (sin mapping → sin FK). +1 fila screen_instances.
+const L3_SEED_VERSION = "1.4.0"
 
 // L3_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
@@ -26,6 +38,16 @@ const (
 	L3_PERM_MATERIALS_CREATE_ID = "b3000000-0000-0000-0000-000000000003"
 	L3_PERM_MATERIALS_UPDATE_ID = "b3000000-0000-0000-0000-000000000004"
 
+	// Identificadores de pantalla de material.
+	//   - materials-list (ID ...0008): RESTAURADA en F2 (2026-06-08) como
+	//     screen_instance MÍNIMA (no se renderiza; pantalla NATIVA Compose).
+	//     Existe SOLO para satisfacer la FK fk_resource_screens_screen_key
+	//     del mapping de menú `materials:list`. La poda 2026-06-07 la había
+	//     eliminado por error y rompía el recreate limpio (23503).
+	//     Ver l3_screens.go.
+	//   - material-form (ID ...0009): SIGUE PODADA — no tiene mapping
+	//     resource_screen → no hay FK que satisfacer. La constante se
+	//     conserva solo como identificador de referencia (export E2E).
 	L3_SCREEN_INSTANCE_MATERIALS_LIST_ID = "b3000000-0000-0000-0000-000000000008"
 	L3_SCREEN_INSTANCE_MATERIAL_FORM_ID  = "b3000000-0000-0000-0000-000000000009"
 	L3_SCREEN_KEY_MATERIALS_LIST         = "materials-list"

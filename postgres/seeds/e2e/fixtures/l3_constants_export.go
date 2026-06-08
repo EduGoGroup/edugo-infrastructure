@@ -1,7 +1,6 @@
 package fixtures
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -36,7 +35,7 @@ type L3IsolationConstants struct{}
 func (f *L3IsolationConstants) Manifest() framework.FixtureManifest {
 	return framework.FixtureManifest{
 		Name:        "l3_constants_export",
-		Description: "Verifica filas L3 sembradas por system.ApplySystem (resource materials + 3 permisos sin :delete + 2 ScreenInstances + 2 ResourceScreens) y exporta sus identificadores al JSON.",
+		Description: "Verifica filas L3 sembradas por system.ApplySystem (resource materials + 3 permisos sin :delete + 1 ResourceScreen `list` default + 1 ScreenInstance mínima materials-list FK-satisfying; material-form podado — pantallas nativas) y exporta sus identificadores al JSON.",
 		Constants: map[string]string{
 			"E2EFixtureL3ResourceMaterialsID":           layers.L3_RESOURCE_MATERIALS_ID,
 			"E2EFixtureL3ResourceMaterialsKey":          layers.L3_RESOURCE_MATERIALS_KEY,
@@ -61,13 +60,13 @@ func (f *L3IsolationConstants) Manifest() framework.FixtureManifest {
 //     explícita de materials:delete.
 //   - F5-REQ-2.2: 3 role_permissions super_admin × materials; ausencia
 //     explícita de super_admin × materials:delete.
-//   - F5-REQ-3.1: ScreenInstance materials-list con slot_data válido —
-//     2 actions (create, edit) sin delete, 2 columns, api_prefix=academic.
-//   - F5-REQ-3.2: ScreenInstance material-form con slot_data válido —
-//     3 fields (title, description, file_url), 2 actions
-//     (SAVE_NEW → :create, SAVE_EXISTING → :update) sin DELETE,
-//     api_prefix=academic.
-//   - F5-REQ-3.3: 2 resource_screens (list default, form no-default).
+//   - F5-REQ-3.1/3.2 (post-poda + F2): `material-form` screen_instance
+//     sigue ELIMINADA (pantalla nativa, sin mapping). `materials-list`
+//     screen_instance se conserva MÍNIMA (no renderizada) por la FK del
+//     mapping de menú. No se verifica su forma de slot_data (es nativa).
+//   - F5-REQ-3.3 (post-poda): 1 resource_screen (list default; el form
+//     fue podado). La pantalla `materials-list` es nativa; su
+//     ScreenInstance mínima existe solo para satisfacer la FK del mapping.
 //   - No-regresión L1: la cadena user_roles → role_permissions →
 //     permissions filtrando por viewer@edugo.demo sigue devolviendo
 //     EXACTAMENTE el set {announcements:read}.
@@ -81,12 +80,11 @@ func (f *L3IsolationConstants) Apply(tx *gorm.DB, ctx *framework.ApplyContext) e
 	if err := f.verifyRolePermissions(tx); err != nil {
 		return err
 	}
-	if err := f.verifyMaterialsListScreen(tx); err != nil {
-		return err
-	}
-	if err := f.verifyMaterialFormScreen(tx); err != nil {
-		return err
-	}
+	// Poda SDUI material (2026-06-07) + corrección F2 (2026-06-08): la
+	// screen_instance `material-form` sigue ELIMINADA (sin mapping). La
+	// `materials-list` se conserva MÍNIMA (no renderizada) por la FK del
+	// mapping de menú. verifyResourceScreens valida 1 mapping (`list`
+	// default); no se verifica la forma del slot_data (pantalla nativa).
 	if err := f.verifyResourceScreens(tx); err != nil {
 		return err
 	}
@@ -279,233 +277,13 @@ WHERE rp.role_id = ?::uuid
 	return nil
 }
 
-// verifyMaterialsListScreen cubre F5-REQ-3.1.
+// verifyResourceScreens cubre F5-REQ-3.3 (post-poda SDUI material).
 //
-// Verifica que existe la fila en ui_config.screen_instances con
-// id=L3_SCREEN_INSTANCE_MATERIALS_LIST_ID, screen_key="materials-list",
-// y que su slot_data es JSON válido con:
-//   - actions[] EXACTAMENTE de tamaño 2 con ids "create" y "edit"
-//     (no "delete" ni permission "content.materials.delete").
-//   - columns[] de tamaño 2 (title, description).
-//   - api_prefix="academic".
-func (f *L3IsolationConstants) verifyMaterialsListScreen(tx *gorm.DB) error {
-	type row struct {
-		ID        string
-		ScreenKey string
-		Name      string
-		SlotData  []byte
-	}
-	const q = `
-SELECT id::text   AS id,
-       screen_key AS screen_key,
-       name       AS name,
-       slot_data  AS slot_data
-FROM ui_config.screen_instances
-WHERE id = ?::uuid
-`
-	var r row
-	if err := tx.Raw(q, layers.L3_SCREEN_INSTANCE_MATERIALS_LIST_ID).Scan(&r).Error; err != nil {
-		return fmt.Errorf("L3IsolationConstants: query screen_instances materials-list: %w", err)
-	}
-	if r.ID == "" {
-		return fmt.Errorf(
-			"L3IsolationConstants: ScreenInstance L3 materials-list ausente id=%s — corré system.ApplySystem (con L3 registrada) antes del scenario",
-			layers.L3_SCREEN_INSTANCE_MATERIALS_LIST_ID,
-		)
-	}
-	if r.ScreenKey != layers.L3_SCREEN_KEY_MATERIALS_LIST {
-		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.1 violado — screen_key=%q, want %q",
-			r.ScreenKey, layers.L3_SCREEN_KEY_MATERIALS_LIST,
-		)
-	}
-	if r.Name == "" {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — screen_instances.name vacío")
-	}
-
-	type action struct {
-		ID         string `json:"id"`
-		Permission string `json:"permission"`
-	}
-	type column struct {
-		Key string `json:"key"`
-	}
-	var slot struct {
-		Actions   []action `json:"actions"`
-		Columns   []column `json:"columns"`
-		APIPrefix string   `json:"api_prefix"`
-	}
-	if err := json.Unmarshal(r.SlotData, &slot); err != nil {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — slot_data materials-list no es JSON válido: %w", err)
-	}
-
-	if got := len(slot.Actions); got != 2 {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — materials-list.actions[]=%d, want 2", got)
-	}
-	wantActions := map[string]bool{"create": false, "edit": false}
-	for _, a := range slot.Actions {
-		if a.ID == "delete" {
-			return fmt.Errorf(
-				"L3IsolationConstants: F5-REQ-3.1 violado — materials-list contiene action id=%q, prohibido por design (sin :delete)",
-				a.ID,
-			)
-		}
-		if a.Permission == "content.materials.delete" {
-			return fmt.Errorf(
-				"L3IsolationConstants: F5-REQ-3.1 violado — materials-list contiene action con permission=materials:delete, prohibido",
-			)
-		}
-		if _, expected := wantActions[a.ID]; expected {
-			wantActions[a.ID] = true
-		}
-	}
-	for k, seen := range wantActions {
-		if !seen {
-			return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — materials-list.actions[].id=%q ausente", k)
-		}
-	}
-
-	if got := len(slot.Columns); got != 2 {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — materials-list.columns[]=%d, want 2 (title, description)", got)
-	}
-	wantCols := map[string]bool{"title": false, "description": false}
-	for _, c := range slot.Columns {
-		if _, expected := wantCols[c.Key]; expected {
-			wantCols[c.Key] = true
-		}
-	}
-	for k, seen := range wantCols {
-		if !seen {
-			return fmt.Errorf("L3IsolationConstants: F5-REQ-3.1 violado — materials-list.columns[].key=%q ausente", k)
-		}
-	}
-
-	if slot.APIPrefix != "academic" {
-		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.1 violado — materials-list.api_prefix=%q, want %q (design §3: prefix por pantalla)",
-			slot.APIPrefix, "academic",
-		)
-	}
-	return nil
-}
-
-// verifyMaterialFormScreen cubre F5-REQ-3.2.
-//
-// Verifica que existe la fila en ui_config.screen_instances con
-// id=L3_SCREEN_INSTANCE_MATERIAL_FORM_ID, screen_key="material-form",
-// y que su slot_data es JSON válido con:
-//   - fields[] de tamaño 3 con keys title, description, file_url.
-//   - actions[] EXACTAMENTE de tamaño 2: SAVE_NEW → :create,
-//     SAVE_EXISTING → :update. Sin event=DELETE.
-//   - api_prefix="academic".
-func (f *L3IsolationConstants) verifyMaterialFormScreen(tx *gorm.DB) error {
-	type row struct {
-		ID        string
-		ScreenKey string
-		SlotData  []byte
-	}
-	const q = `
-SELECT id::text   AS id,
-       screen_key AS screen_key,
-       slot_data  AS slot_data
-FROM ui_config.screen_instances
-WHERE id = ?::uuid
-`
-	var r row
-	if err := tx.Raw(q, layers.L3_SCREEN_INSTANCE_MATERIAL_FORM_ID).Scan(&r).Error; err != nil {
-		return fmt.Errorf("L3IsolationConstants: query screen_instances material-form: %w", err)
-	}
-	if r.ID == "" {
-		return fmt.Errorf(
-			"L3IsolationConstants: ScreenInstance L3 material-form ausente id=%s — corré system.ApplySystem (con L3 registrada) antes del scenario",
-			layers.L3_SCREEN_INSTANCE_MATERIAL_FORM_ID,
-		)
-	}
-	if r.ScreenKey != layers.L3_SCREEN_KEY_MATERIAL_FORM {
-		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.2 violado — screen_key=%q, want %q",
-			r.ScreenKey, layers.L3_SCREEN_KEY_MATERIAL_FORM,
-		)
-	}
-
-	type field struct {
-		Key string `json:"key"`
-	}
-	type action struct {
-		ID         string `json:"id"`
-		Event      string `json:"event"`
-		Permission string `json:"permission"`
-	}
-	var slot struct {
-		Fields    []field  `json:"fields"`
-		Actions   []action `json:"actions"`
-		APIPrefix string   `json:"api_prefix"`
-	}
-	if err := json.Unmarshal(r.SlotData, &slot); err != nil {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.2 violado — slot_data material-form no es JSON válido: %w", err)
-	}
-
-	if got := len(slot.Fields); got != 3 {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.2 violado — material-form.fields[]=%d, want 3 (title, description, file_url)", got)
-	}
-	wantFields := map[string]bool{"title": false, "description": false, "file_url": false}
-	for _, fd := range slot.Fields {
-		if _, expected := wantFields[fd.Key]; expected {
-			wantFields[fd.Key] = true
-		}
-	}
-	for k, seen := range wantFields {
-		if !seen {
-			return fmt.Errorf("L3IsolationConstants: F5-REQ-3.2 violado — material-form.fields[].key=%q ausente", k)
-		}
-	}
-
-	if got := len(slot.Actions); got != 2 {
-		return fmt.Errorf("L3IsolationConstants: F5-REQ-3.2 violado — material-form.actions[]=%d, want 2 (SAVE_NEW, SAVE_EXISTING)", got)
-	}
-
-	wantPerms := map[string]string{
-		"SAVE_NEW":      "content.materials.create",
-		"SAVE_EXISTING": "content.materials.update",
-	}
-	seenPerms := map[string]string{}
-	for _, a := range slot.Actions {
-		if a.Event == "DELETE" {
-			return fmt.Errorf(
-				"L3IsolationConstants: F5-REQ-3.2 violado — material-form contiene action con event=DELETE, prohibido por design",
-			)
-		}
-		if _, expected := wantPerms[a.Event]; expected {
-			seenPerms[a.Event] = a.Permission
-		}
-	}
-	for event, want := range wantPerms {
-		got, ok := seenPerms[event]
-		if !ok {
-			return fmt.Errorf("L3IsolationConstants: F5-REQ-3.2 violado — material-form.actions sin event=%q", event)
-		}
-		if got != want {
-			return fmt.Errorf(
-				"L3IsolationConstants: F5-REQ-3.2 violado — material-form action event=%q permission=%q, want %q",
-				event, got, want,
-			)
-		}
-	}
-
-	if slot.APIPrefix != "academic" {
-		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.2 violado — material-form.api_prefix=%q, want %q",
-			slot.APIPrefix, "academic",
-		)
-	}
-	return nil
-}
-
-// verifyResourceScreens cubre F5-REQ-3.3.
-//
-// Verifica que ui_config.resource_screens tiene EXACTAMENTE 2 filas
-// para resource_id=materials: una con screen_type=list, is_default=true,
-// y otra con screen_type=form, is_default=false.
+// Verifica que ui_config.resource_screens tiene EXACTAMENTE 1 fila para
+// resource_id=materials: screen_type=list, is_default=true (la pantalla
+// es NATIVA, sin ScreenInstance). El mapping `form` fue podado junto con
+// su ScreenInstance (poda SDUI material 2026-06-07). Aserción negativa
+// explícita: NO existe fila screen_type=form.
 func (f *L3IsolationConstants) verifyResourceScreens(tx *gorm.DB) error {
 	const qTotal = `
 SELECT COUNT(*)
@@ -516,9 +294,9 @@ WHERE resource_id = ?::uuid
 	if err := tx.Raw(qTotal, layers.L3_RESOURCE_MATERIALS_ID).Scan(&total).Error; err != nil {
 		return fmt.Errorf("L3IsolationConstants: query resource_screens count: %w", err)
 	}
-	if total != 2 {
+	if total != 1 {
 		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.3 violado — resource_screens para resource=materials = %d, want 2 (list+form)",
+			"L3IsolationConstants: F5-REQ-3.3 violado — resource_screens para resource=materials = %d, want 1 (solo list; form podado)",
 			total,
 		)
 	}
@@ -546,15 +324,14 @@ SELECT COUNT(*)
 FROM ui_config.resource_screens
 WHERE resource_id = ?::uuid
   AND screen_type = ?
-  AND is_default = FALSE
 `
 	var formCount int64
 	if err := tx.Raw(qForm, layers.L3_RESOURCE_MATERIALS_ID, "form").Scan(&formCount).Error; err != nil {
 		return fmt.Errorf("L3IsolationConstants: query resource_screens form: %w", err)
 	}
-	if formCount != 1 {
+	if formCount != 0 {
 		return fmt.Errorf(
-			"L3IsolationConstants: F5-REQ-3.3 violado — resource_screens (resource=materials, screen_type=form, is_default=false) = %d, want 1",
+			"L3IsolationConstants: F5-REQ-3.3 violado — resource_screens (resource=materials, screen_type=form) = %d, want 0 (mapping form podado)",
 			formCount,
 		)
 	}

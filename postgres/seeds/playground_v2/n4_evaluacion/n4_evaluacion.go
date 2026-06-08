@@ -38,6 +38,11 @@
 //  7. academic.memberships       — admin con alcance COLEGIO (AcademicUnitID=NULL); los demás en la unidad.
 //  8. academic.subject_offerings — 1 sesión: Ciencias Naturales, sección "A", docente.
 //  9. academic.subject_offering_enrollments — Ana, Bruno, Caro inscritos en Ciencias.
+//  10. assessment.assessment (+question/+question_option) — 2 evaluaciones de
+//     Ciencias (tema "Sistema Solar"): "Sistema Solar (borrador)" (draft) y
+//     "Sistema Solar" (published), cada una con una pregunta de cada tipo
+//     (multiple_choice, multiple_select, true_false, short_answer, open_ended)
+//     para probar la pantalla de toma con cobertura de los 5 tipos.
 //
 // Credenciales (todas password "12345678"):
 //
@@ -96,6 +101,12 @@ const (
 
 	// Sesión de materia (subject_offering) de Ciencias, sección "A".
 	offeringScienceID = "6a000000-0000-0000-0000-000000000030"
+
+	// Evaluaciones de Ciencias (tema "Sistema Solar"), 5 preguntas cada una
+	// (una por tipo). La borrador (status=draft) la usa el docente para editar;
+	// la publicada (status=published) la pueden tomar Ana/Bruno/Caro.
+	assessmentDraftID     = "6a000000-0000-0000-0000-000000000040"
+	assessmentPublishedID = "6a000000-0000-0000-0000-000000000050"
 
 	schoolCode = "N4-EVALUACION"
 	schoolName = "Colegio N4 Evaluación"
@@ -195,6 +206,22 @@ func Apply(tx *gorm.DB) error {
 	}
 	if err := upsertEnrollment(tx, offeringScienceID, subjectScienceID, studentCaroMembID); err != nil {
 		return fmt.Errorf("playground_v2/n4_evaluacion: enroll_science_caro: %w", err)
+	}
+
+	// Evaluaciones de Ciencias (tema Sistema Solar): una borrador y una
+	// publicada, cada una con una pregunta de cada tipo. Sirven para probar la
+	// pantalla de toma con cobertura de los 5 tipos.
+	if err := upsertAssessment(tx, assessmentDraftID, "Sistema Solar (borrador)", "draft"); err != nil {
+		return fmt.Errorf("playground_v2/n4_evaluacion: assessment_draft: %w", err)
+	}
+	if err := seedQuestions(tx, assessmentDraftID); err != nil {
+		return fmt.Errorf("playground_v2/n4_evaluacion: questions_draft: %w", err)
+	}
+	if err := upsertAssessment(tx, assessmentPublishedID, "Sistema Solar", "published"); err != nil {
+		return fmt.Errorf("playground_v2/n4_evaluacion: assessment_published: %w", err)
+	}
+	if err := seedQuestions(tx, assessmentPublishedID); err != nil {
+		return fmt.Errorf("playground_v2/n4_evaluacion: questions_published: %w", err)
 	}
 
 	return nil
@@ -520,4 +547,158 @@ func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr
 		Columns:   []clause.Column{{Name: "offering_id"}, {Name: "student_membership_id"}},
 		DoNothing: true,
 	}).Create(&e).Error
+}
+
+// strPtr es un helper para campos *string del modelo (correct_answer).
+func strPtr(s string) *string { return &s }
+
+// derivedUUID genera un UUID determinístico a partir de una semilla, para no
+// enumerar a mano los ids de preguntas y opciones manteniendo idempotencia.
+func derivedUUID(seed string) uuid.UUID {
+	return uuid.NewSHA1(uuid.NameSpaceOID, []byte(seed))
+}
+
+// upsertAssessment siembra una evaluación de Ciencias (tema "Sistema Solar")
+// creada por el docente del playground (created_by = teacher membership). El
+// questions_count se fija en 5: las que siembra seedQuestions. Idempotente por id.
+func upsertAssessment(tx *gorm.DB, idStr, title, status string) error {
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return err
+	}
+	sid, err := uuid.Parse(schoolID)
+	if err != nil {
+		return err
+	}
+	mid, err := uuid.Parse(teacherMembID)
+	if err != nil {
+		return err
+	}
+	subjID, err := uuid.Parse(subjectScienceID)
+	if err != nil {
+		return err
+	}
+	a := entities.Assessment{
+		ID:                    id,
+		SchoolID:              sid,
+		CreatedByMembershipID: mid,
+		SubjectID:             subjID,
+		Title:                 title,
+		SourceType:            "manual",
+		Status:                status,
+		QuestionsCount:        5,
+		PassThreshold:         70,
+		ShowCorrectAnswers:    true,
+	}
+	return tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&a).Error
+}
+
+// seedQuestions siembra una pregunta de cada tipo (5) para la evaluación dada,
+// con sus opciones cuando aplica. El formato de correct_answer por tipo replica
+// el que produce el form de autoría y consume la pantalla de toma:
+//   - multiple_choice : correct_answer = texto de la opción correcta (≥2 opciones).
+//   - multiple_select : correct_answer = array JSON de textos (≥2; ≥3 opciones).
+//   - true_false      : correct_answer = "true"/"false" (+ opciones Verdadero/Falso).
+//   - short_answer    : correct_answer = texto (sin opciones).
+//   - open_ended      : sin correct_answer (revisión manual).
+//
+// Ids derivados del assessmentID, así ambas evaluaciones (borrador y publicada)
+// tienen preguntas independientes e idempotentes.
+func seedQuestions(tx *gorm.DB, assessmentIDStr string) error {
+	assessmentID, err := uuid.Parse(assessmentIDStr)
+	if err != nil {
+		return err
+	}
+
+	// Q1 — multiple_choice
+	q1 := derivedUUID(assessmentID.String() + ":q:multiple_choice")
+	if err := upsertQuestion(tx, q1, assessmentID, 0, "multiple_choice",
+		"¿Cuál es el planeta más cercano al Sol?", strPtr("Mercurio"), 10); err != nil {
+		return err
+	}
+	for i, opt := range []string{"Mercurio", "Venus", "Tierra", "Marte"} {
+		if err := upsertQuestionOption(tx, q1, i, opt); err != nil {
+			return err
+		}
+	}
+
+	// Q2 — multiple_select
+	q2 := derivedUUID(assessmentID.String() + ":q:multiple_select")
+	correctMulti, err := json.Marshal([]string{"Marte", "Tierra", "Júpiter"})
+	if err != nil {
+		return err
+	}
+	if err := upsertQuestion(tx, q2, assessmentID, 1, "multiple_select",
+		"¿Cuáles de los siguientes son planetas del sistema solar?", strPtr(string(correctMulti)), 10); err != nil {
+		return err
+	}
+	for i, opt := range []string{"Marte", "Tierra", "Júpiter", "Luna", "Sol"} {
+		if err := upsertQuestionOption(tx, q2, i, opt); err != nil {
+			return err
+		}
+	}
+
+	// Q3 — true_false
+	q3 := derivedUUID(assessmentID.String() + ":q:true_false")
+	if err := upsertQuestion(tx, q3, assessmentID, 2, "true_false",
+		"El Sol es una estrella.", strPtr("true"), 10); err != nil {
+		return err
+	}
+	for i, opt := range []string{"Verdadero", "Falso"} {
+		if err := upsertQuestionOption(tx, q3, i, opt); err != nil {
+			return err
+		}
+	}
+
+	// Q4 — short_answer
+	q4 := derivedUUID(assessmentID.String() + ":q:short_answer")
+	if err := upsertQuestion(tx, q4, assessmentID, 3, "short_answer",
+		"¿En qué planeta vivimos?", strPtr("Tierra"), 10); err != nil {
+		return err
+	}
+
+	// Q5 — open_ended
+	q5 := derivedUUID(assessmentID.String() + ":q:open_ended")
+	if err := upsertQuestion(tx, q5, assessmentID, 4, "open_ended",
+		"Explica por qué Plutón dejó de considerarse un planeta.", nil, 10); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// upsertQuestion siembra una pregunta. Idempotente por id (derivado).
+func upsertQuestion(tx *gorm.DB, id, assessmentID uuid.UUID, sortOrder int, qType, text string, correctAnswer *string, points int) error {
+	q := entities.Question{
+		ID:            id,
+		AssessmentID:  assessmentID,
+		SortOrder:     sortOrder,
+		QuestionText:  text,
+		QuestionType:  qType,
+		CorrectAnswer: correctAnswer,
+		Points:        points,
+	}
+	return tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&q).Error
+}
+
+// upsertQuestionOption siembra una opción de respuesta. Id derivado del
+// question_id + sort_order → idempotente. Solo aplica a multiple_choice,
+// multiple_select y true_false (los demás tipos no llevan opciones).
+func upsertQuestionOption(tx *gorm.DB, questionID uuid.UUID, sortOrder int, text string) error {
+	o := entities.QuestionOption{
+		ID:         derivedUUID(fmt.Sprintf("%s:o:%d", questionID, sortOrder)),
+		QuestionID: questionID,
+		OptionText: text,
+		SortOrder:  sortOrder,
+	}
+	return tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&o).Error
 }

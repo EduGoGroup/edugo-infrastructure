@@ -7,18 +7,25 @@ import (
 	"gorm.io/gorm"
 )
 
-// Material representa la tabla 'content.materials' en PostgreSQL (N4 / ADR 0019).
+// Material representa la tabla 'content.materials' en PostgreSQL
+// (N4 / ADR 0019, rediseño F2 plan 018: maestro-detalle).
 //
-// Cambio vs viejo:
-//   - se elimina subject/grade (varchar libre) y se gana subject_id (→academic.subjects)
-//     nullable: un material puede ser general de la escuela; la guia adjunta a una
-//     evaluacion se valida con subject en la capa de aplicacion (decision F1).
-//   - uploaded_by_teacher_id (→auth.users) → uploaded_by_membership_id (→academic.memberships RESTRICT).
+// F2 (plan 018): el material pasa a ser el TEMA (maestro). Los datos de
+// archivo (file_url/file_type/file_size_bytes) BAJAN al hijo content.material_file
+// (N archivos por tema, DEC-3). Se gana `summary` (markdown a mano del docente,
+// DEC-2; distinto del material_summary de MongoDB que genera la IA del worker).
+// El `status` se queda en el tema (DEC-4): informativo, NO gatea abrir/descargar.
+//
+// Cambio vs N4:
+//   - subject_id (→academic.subjects SET NULL, nullable): tema general de la
+//     escuela o atado a asignatura; la guia de una evaluacion valida subject en
+//     la capa de aplicacion (decision F1).
+//   - uploaded_by_membership_id (→academic.memberships RESTRICT).
 //
 // Se conservan school_id (NOT NULL, CASCADE), academic_unit_id (nullable, SET NULL),
-// title/description/file_*/status/is_public/processing_*, deleted_at. FKs
-// cross-schema (school_id, subject_id, academic_unit_id, uploaded_by_membership_id)
-// y el indice parcial idx_materials_active (WHERE deleted_at IS NULL) en post_gorm.sql.
+// title/description/status/is_public/processing_*, deleted_at. FKs cross-schema
+// (school_id, subject_id, academic_unit_id, uploaded_by_membership_id) y el indice
+// parcial idx_materials_status_active (WHERE deleted_at IS NULL) en post_gorm.sql.
 type Material struct {
 	ID                     uuid.UUID      `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	SchoolID               uuid.UUID      `db:"school_id" gorm:"type:uuid;index;not null;constraint:materials_school_fkey,OnDelete:CASCADE" validate:"required,uuid"`
@@ -27,9 +34,7 @@ type Material struct {
 	AcademicUnitID         *uuid.UUID     `db:"academic_unit_id" gorm:"type:uuid;index;constraint:materials_unit_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	Title                  string         `db:"title" gorm:"not null;size:255" validate:"required,min=2,max=255"`
 	Description            *string        `db:"description" gorm:"default:null" validate:"omitempty"`
-	FileURL                string         `db:"file_url" gorm:"not null;default:''" validate:"required,url"`
-	FileType               string         `db:"file_type" gorm:"not null;size:100" validate:"required,max=100"`
-	FileSizeBytes          int64          `db:"file_size_bytes" gorm:"not null;default:0"`
+	Summary                *string        `db:"summary" gorm:"type:text;default:null" validate:"omitempty"`
 	Status                 string         `db:"status" gorm:"not null;type:varchar(50);index;default:'draft';check:materials_status_check,status IN ('draft','uploaded','processing','ready','failed')" validate:"required,oneof=draft uploaded processing ready failed"`
 	ProcessingStartedAt    *time.Time     `db:"processing_started_at" gorm:"default:null"`
 	ProcessingCompletedAt  *time.Time     `db:"processing_completed_at" gorm:"default:null"`

@@ -9,10 +9,20 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// applyL3ResourceScreens vincula el resource "materials" con sus 2
-// pantallas (F5-REQ-3.3):
+// applyL3ResourceScreens vincula el resource "materials" con su pantalla
+// default (F5-REQ-3.3):
 //   - materials-list (screen_type=list, is_default=true)
-//   - material-form  (screen_type=form, is_default=false)
+//
+// El screen_key `materials-list` apunta a una pantalla NATIVA (Compose)
+// que NO consume slot_data SDUI, pero SÍ requiere una screen_instance
+// MÍNIMA homónima para satisfacer la FK fk_resource_screens_screen_key
+// (resource_screens.screen_key → screen_instances.screen_key). Esa
+// screen_instance la siembra applyL3Screens (debe correr ANTES); mismo
+// patrón que `join-requests-inbox` / `batch-enroll` en L4. El SDUI engine
+// no la renderiza: el FE intercepta el screen_key.
+// El mapping `form` (material-form) fue podado junto con su ScreenInstance
+// (poda SDUI material 2026-06-07; ver l3_screens.go) y NO se resiembra:
+// no tiene mapping → no hay FK que satisfacer.
 //
 // IDs derivados determinísticamente vía SHA1 sobre (resource_id,
 // screen_type) — replica el patrón de upsertL0ResourceScreens. Esto
@@ -27,7 +37,6 @@ func applyL3ResourceScreens(tx *gorm.DB) error {
 	}
 
 	idList := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":list"))
-	idForm := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":form"))
 
 	mappings := []entities.ResourceScreen{
 		{
@@ -38,16 +47,6 @@ func applyL3ResourceScreens(tx *gorm.DB) error {
 			ScreenType:  "list",
 			IsDefault:   true,
 			SortOrder:   0,
-			IsActive:    true,
-		},
-		{
-			ID:          idForm,
-			ResourceID:  materialsID,
-			ResourceKey: L3_RESOURCE_MATERIALS_KEY,
-			ScreenKey:   L3_SCREEN_KEY_MATERIAL_FORM,
-			ScreenType:  "form",
-			IsDefault:   false,
-			SortOrder:   1,
 			IsActive:    true,
 		},
 	}

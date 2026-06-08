@@ -516,7 +516,61 @@ import (
 //     que subscription_tier, misma tabla). Las FKs cross-schema (a assessment.*),
 //     el CHECK XOR y el UNIQUE parcial viven en post_gorm.sql (GORM no los
 //     materializa sin campo de relación). Sin tocar seeds (F4.6) ni APIs.
-const SchemaVersion = "3.50.0"
+//   - 3.51.0 (seed-only, sin DDL): poda SDUI de material. L3 deja de
+//     sembrar las 2 ScreenInstances `materials-list` / `material-form`
+//     (+ slot_data) y el mapping resource_screen `material:form`. Eran
+//     código muerto: las pantallas de material en la app son NATIVAS
+//     (Compose) y no consumen esos seeds SDUI. El recurso materials sigue
+//     en el menú vía el mapping `materials:list` (is_default, SIN
+//     ScreenInstance — mismo patrón que material-detail / pantallas
+//     nativas). L3_SEED_VERSION 1.2.0→1.3.0. Bump de SchemaVersion para
+//     que el migrator recree el dataset (cambia el conteo de filas L3).
+//   - 3.52.0: F2 (plan 018 / f2-spec) — rediseño de material a maestro-detalle.
+//     EduGo no está en producción → recrear BD sin backfill.
+//     MAESTRO content.materials: SE QUITAN las columnas inline de archivo
+//     (file_url, file_type, file_size_bytes) que bajan al hijo; SE AGREGA
+//     `summary` text nullable (markdown a mano del docente, DEC-2; distinto del
+//     material_summary IA de MongoDB). Se conservan status (informativo, del
+//     tema, DEC-4), description, processing_*, is_public, FKs y el índice parcial
+//     idx_materials_status_active.
+//     NUEVA content.material_file (DETALLE, N archivos por tema): id, material_id
+//     (FK→content.materials CASCADE same-schema, la materializa GORM), file_url,
+//     file_name (DEC-1, not null), file_type, file_size_bytes, created_at (DEC-3:
+//     el orden sale de aquí). SIN status (DEC-4), SIN sort_order (DEC-3).
+//     ELIMINADA content.material_version (entity material_version.go, su registro
+//     en gorm_migrator y sus FKs material_version_{material,membership}_fkey en
+//     post_gorm.sql): versionaba el único archivo inline, queda huérfana con N
+//     archivos distintos (Hallazgo 1 — "no deprecar: eliminar"). El truncate del
+//     demo seed sustituye content.material_version por content.material_file.
+//     assessment.assessment_material intacto (el examen sigue apuntando al tema).
+//     Sin tocar permisos: materials.delete sigue solo en L4 (ver nota infra).
+//     FIX seed L3 (mismo bump, la BD nunca se aplicó a 3.52.0): la poda SDUI de
+//     3.51.0 eliminó AMBAS screen_instances L3 (materials-list, material-form),
+//     pero `materials-list` tiene mapping resource_screen (menú) y la FK
+//     fk_resource_screens_screen_key exige su screen_instance → un recreate
+//     limpio fallaba en L3 con violación 23503. Se RESTAURA la screen_instance
+//     MÍNIMA `materials-list` (no renderizada; pantalla NATIVA Compose), patrón
+//     batch-enroll/join-requests-inbox de L4. `material-form` SIGUE PODADO (sin
+//     mapping → sin FK). L3_SEED_VERSION 1.3.0→1.4.0; +1 fila screen_instances.
+//     Test l3_apply_twice y fixture e2e l3_constants_export ajustados (materials-
+//     list: aserción negativa→positiva; material-form: sigue negativa).
+//   - 3.53.0: Fase 2 — nuevo tipo de pregunta `multiple_select` (opción
+//     múltiple con varias respuestas correctas, solo autoría). El CHECK
+//     inline del entity Question (question_type_check) suma 'multiple_select'
+//     a la lista permitida (de 4 a 5 tipos), igual que su tag `validate`
+//     oneof. Cambia el output del migrador GORM → bump obligatorio. Contrato
+//     de datos: para este tipo, assessment.question.correct_answer guarda un
+//     ARRAY JSON de textos (["Texto A","Texto C"]); NO se añade is_correct a
+//     question_option (los demás tipos no cambian). Acompaña el seed L4 del
+//     form de pregunta (nuevo slot `options_multi` con selection_mode
+//     multiple, visible_when question_type in [multiple_select]).
+//     L4_SEED_VERSION → 1.49.0.
+//   - 3.54.0: seed-only (sin DDL). assessment-questions-list elimina la
+//     row-action SDUI heredada `edit` (default de list-basic-v1) vía
+//     "actions_removed": ["edit"]: en el detalle de preguntas la edición la
+//     cubre el botón nativo "Editar" del bottom-sheet; la acción SDUI no tenía
+//     handler. L4_SEED_VERSION → 1.50.0.
+const SchemaVersion = "3.54.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

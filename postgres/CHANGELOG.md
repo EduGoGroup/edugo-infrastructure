@@ -6,6 +6,38 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.4] - 2026-06-08
+
+Material maestro-detalle (material = tema + N archivos), tipo de pregunta `multiple_select`,
+seeds de evaluaciones en playground `n4_evaluacion` y poda de row-action SDUI heredada.
+`SchemaVersion` 3.50.0 → 3.54.0; `L4_SEED_VERSION` 1.47.0 → 1.50.0.
+
+### Added
+
+- Tabla `content.material_file`: relación 1:N entre `content.materials` (ahora «tema») y sus
+  archivos adjuntos (`original_filename`, `file_key`, `file_url`, `mime_type`, `file_size_bytes`,
+  `position`, `uploaded_by_membership_id`). Permite que un material agrupe N recursos descargables.
+- Columna `content.materials.summary` (`text`, nullable): resumen en Markdown del material/tema,
+  editable a mano por el docente.
+- Eliminada la tabla `content.material_version` (reemplazada por `content.material_file` en el
+  modelo maestro-detalle; EduGo no está en producción).
+- Tipo de pregunta `multiple_select` en `assessment.question`: CHECK extendido
+  `question_type IN ('multiple_choice','true_false','short_answer','essay','multiple_select')`
+  con validación que `correct_answer` es un array JSON cuando `question_type='multiple_select'`.
+  Solo disponible en authoring (toma pendiente, deuda 009/010).
+- Playground v2 `n4_evaluacion` gana 2 evaluaciones «Sistema Solar» (draft + published) con los
+  5 tipos de pregunta (`multiple_choice`, `true_false`, `short_answer`, `essay`,
+  `multiple_select`): fixture completa para validar authoring y toma de evaluaciones.
+  `L4_SEED_VERSION` 1.47.0 → 1.50.0.
+
+### Changed
+
+- Poda de la row-action SDUI `edit` heredada en `assessment-questions-list`: la acción era un
+  fantasma (no mapea a ninguna pantalla nativa) y generaba un botón inoperante en la UI.
+  `L4_SEED_VERSION` bump incluido.
+- `SchemaVersion` 3.50.0 → 3.54.0 (material maestro-detalle F1: → 3.52.0;
+  `multiple_select` F2: → 3.54.0).
+
 ## [0.900.3] - 2026-06-07
 
 Cierre de N4 (evaluación/contenido sobre la sesión + notas con procedencia). Planes 015 /

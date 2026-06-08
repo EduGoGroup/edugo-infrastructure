@@ -1,7 +1,6 @@
 package layers
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
@@ -78,68 +77,32 @@ func L3Permissions() ([]entities.Permission, error) {
 // iam.role_permissions ya no existe; los permisos materials.* del
 // super_admin se otorgan vía iam.role_grants (pattern `*`) desde L4.
 
-// L3ScreenInstances retorna las 2 instancias `materials-list` y
-// `material-form` sembradas por L3. Mirror determinístico de
-// applyL3Screens en l3_screens.go.
+// L3ScreenInstances retorna las ScreenInstances sembradas por L3.
+// Mirror determinístico de l3_screens.go.
+//
+// Poda SDUI material (2026-06-07): L3 ya NO siembra screen_instances.
+// Las pantallas `materials-list` / `material-form` eran código muerto
+// (la app las renderiza nativas, no por SDUI) y fueron eliminadas. El
+// recurso materials sigue vivo en el menú vía el mapping resource_screen
+// `materials:list` (SIN ScreenInstance) — ver L3ResourceScreens. Por eso
+// este mirror devuelve un slice vacío.
 func L3ScreenInstances() ([]entities.ScreenInstance, error) {
-	listID, err := uuid.Parse(L3_SCREEN_INSTANCE_MATERIALS_LIST_ID)
-	if err != nil {
-		return nil, fmt.Errorf("L3ScreenInstances: parse list id: %w", err)
-	}
-	formID, err := uuid.Parse(L3_SCREEN_INSTANCE_MATERIAL_FORM_ID)
-	if err != nil {
-		return nil, fmt.Errorf("L3ScreenInstances: parse form id: %w", err)
-	}
-	listTemplateID, err := uuid.Parse(L0_SCREEN_TPL_LIST_ID)
-	if err != nil {
-		return nil, fmt.Errorf("L3ScreenInstances: parse list template id: %w", err)
-	}
-	formTemplateID, err := uuid.Parse(L0_SCREEN_TPL_FORM_ID)
-	if err != nil {
-		return nil, fmt.Errorf("L3ScreenInstances: parse form template id: %w", err)
-	}
-	descList := "Listado de materiales educativos"
-	descForm := "Formulario de creación/edición de materiales"
-	requiredPermissionList := "content.materials.read"
-	requiredPermissionForm := "content.materials.read"
-	return []entities.ScreenInstance{
-		{
-			ID:                 listID,
-			ScreenKey:          L3_SCREEN_KEY_MATERIALS_LIST,
-			TemplateID:         listTemplateID,
-			Name:               "Listado de materiales",
-			Description:        &descList,
-			SlotData:           json.RawMessage([]byte(materialsListSlotData)),
-			Scope:              "unit",
-			RequiredPermission: &requiredPermissionList,
-			HandlerKey:         nil,
-			IsActive:           true,
-		},
-		{
-			ID:                 formID,
-			ScreenKey:          L3_SCREEN_KEY_MATERIAL_FORM,
-			TemplateID:         formTemplateID,
-			Name:               "Formulario de material",
-			Description:        &descForm,
-			SlotData:           json.RawMessage([]byte(materialFormSlotData)),
-			Scope:              "unit",
-			RequiredPermission: &requiredPermissionForm,
-			HandlerKey:         nil,
-			IsActive:           true,
-		},
-	}, nil
+	return []entities.ScreenInstance{}, nil
 }
 
-// L3ResourceScreens retorna los 2 mappings materials ↔ {materials-list,
-// material-form} sembrados por L3. Mirror determinístico de
-// applyL3ResourceScreens en l3_resource_screens.go.
+// L3ResourceScreens retorna el mapping materials ↔ materials-list
+// sembrado por L3. Mirror determinístico de applyL3ResourceScreens en
+// l3_resource_screens.go.
+//
+// El screen_key `materials-list` apunta a una pantalla NATIVA (sin
+// ScreenInstance). El mapping `material-form` fue podado junto con su
+// ScreenInstance (poda SDUI material 2026-06-07).
 func L3ResourceScreens() ([]entities.ResourceScreen, error) {
 	materialsID, err := uuid.Parse(L3_RESOURCE_MATERIALS_ID)
 	if err != nil {
 		return nil, fmt.Errorf("L3ResourceScreens: parse resource_id: %w", err)
 	}
 	idList := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":list"))
-	idForm := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":form"))
 	return []entities.ResourceScreen{
 		{
 			ID:          idList,
@@ -149,16 +112,6 @@ func L3ResourceScreens() ([]entities.ResourceScreen, error) {
 			ScreenType:  "list",
 			IsDefault:   true,
 			SortOrder:   0,
-			IsActive:    true,
-		},
-		{
-			ID:          idForm,
-			ResourceID:  materialsID,
-			ResourceKey: L3_RESOURCE_MATERIALS_KEY,
-			ScreenKey:   L3_SCREEN_KEY_MATERIAL_FORM,
-			ScreenType:  "form",
-			IsDefault:   false,
-			SortOrder:   1,
 			IsActive:    true,
 		},
 	}, nil
