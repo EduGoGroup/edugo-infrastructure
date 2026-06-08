@@ -1213,7 +1213,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   "actions_added": [
     {"id": "detail",  "scope": "resource-toolbar", "icon": "help_outline", "label": "Preguntas", "permission": "content.assessments.read",   "condition": "edit-only", "event_id": "view-questions", "style": "icon", "order": 15},
     {"id": "assign",  "scope": "resource-toolbar", "icon": "assignment",   "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20},
-    {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30},
+    {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.publish", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30},
     {"id": "archive", "scope": "resource-toolbar", "icon": "archive",      "label": "Archivar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "archive",        "style": "icon", "order": 40}
   ],
   "api_prefix": "learning"
@@ -1395,39 +1395,13 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
 	}
 }
 
-// assessmentAssignment: pantalla para asignar una evaluación a UNA sesión de
-// materia (subject_offering). Contrato N4 (plan 015): POST
-// /api/v1/assessments/:assessment_id/assignments. El cuerpo lleva SOLO
-// `subject_offering_id` (+ `due_date` opcional) — NUNCA alumnos: la entrega
-// resuelve los inscritos de la oferta por construcción. El `assessment_id`
-// llega por el param de navegación (se entra desde la acción "Asignar" del
-// form de evaluación), no es un campo del form. slot.permission =
-// content.assessments.assign (única fuente del permiso, ADR 0003).
-// `subject_offering_id` es un remote_select sobre las sesiones de materia
-// (GET /api/v1/subject-offerings de academic, display=subject_name).
-func assessmentAssignment() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_ASSESS_ASSIGNMENT_ID,
-		screenKey:          "assessment-assignment",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Asignación de Evaluación",
-		description:        "Asignar una evaluación a una sesión de materia",
-		scope:              "unit",
-		requiredPermission: "content.assessments.assign",
-		slotData: `{
-  "title": "Asignar Evaluación",
-  "fields": [
-    {"key": "subject_offering_id", "label": "Sesión", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/subject-offerings", "display_field": "subject_name", "value_field": "id"},
-    {"key": "due_date", "label": "Fecha de entrega", "type": "datetime"}
-  ],
-  "actions_removed": ["save", "delete"],
-  "actions_added": [
-    {"id": "save_new", "scope": "form-submit", "label": "Asignar", "icon": "save", "permission": "content.assessments.assign", "condition": "create-only", "event_id": "submit-form", "style": "filled", "order": 10}
-  ],
-  "api_prefix": "learning"
-}`,
-	}
-}
+// assessment-assignment ELIMINADA: la asignación de una evaluación a una sesión
+// de materia (subject_offering) se reemplaza por un modal NATIVO ("nativa
+// prevalece, SDUI solo guía"). El SDUI form-basic-v1 quedaba muerto. Se conserva
+// el recurso L4_RESOURCE_ASSESSMENTS y su permiso content.assessments.assign
+// (lo sigue gateando la action "Asignar" del form de evaluación + la ruta
+// POST /api/v1/assessments/:assessment_id/assignments). Concepto vivo, pantalla
+// SDUI muerta: no se deprecó, se eliminó.
 
 // assessmentModality ELIMINADA (plan 015, F2.6): la "modalidad"
 // (quiz/examen/tarea) no existe en el esquema nuevo de N4 — el assessment solo

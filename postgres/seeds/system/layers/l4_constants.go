@@ -481,7 +481,19 @@ package layers
 //     del bottom-sheet (MasterDetailContainer, flujo N3.5), así que la row-action
 //     SDUI `edit` quedaba huérfana (sin handler → "No custom handler for event:
 //     edit"). Se elimina el duplicado igual que en las listas de sesiones.
-const L4_SEED_VERSION = "1.50.0"
+//   - 1.51.0 (2026-06-08): dos ajustes de evaluación. (1) assessments-form: la
+//     action "Publicar" (event_id=publish) alinea su slot.permission de
+//     content.assessments.update → content.assessments.publish, para igualar el
+//     gate del botón con la ruta POST /api/v1/assessments/:id/publish
+//     (RequirePermission(PermissionAssessmentsPublish)). El rol teacher ya cubre
+//     publish vía wildcard content.assessments.* (no cambian roles). (2) Se
+//     ELIMINA la pantalla SDUI assessment-assignment (form-basic-v1): la
+//     asignación a una sesión de materia pasa a un modal NATIVO ("nativa
+//     prevalece, SDUI solo guía"). Se quita su screen_instance, su mapping en
+//     resource_screens y su constante; se conserva el recurso assessments y el
+//     permiso content.assessments.assign (lo gatean la action "Asignar" del form
+//     + la ruta de assignments).
+const L4_SEED_VERSION = "1.51.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
