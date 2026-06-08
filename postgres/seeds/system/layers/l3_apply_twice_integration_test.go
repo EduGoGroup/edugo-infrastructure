@@ -25,10 +25,12 @@ import (
 // L0+L1+L2) dos veces consecutivas produce exactamente el mismo dataset
 // que aplicarla una sola vez, sin duplicados.
 //
-// Poda SDUI material (2026-06-07): L3 dejó de sembrar las 2
-// ScreenInstances (materials-list, material-form) y el mapping
-// resource_screen `form` — código muerto (pantallas nativas). El recurso
-// materials persiste vía el mapping `materials:list` (sin ScreenInstance).
+// Poda SDUI material (2026-06-07) + corrección F2 (2026-06-08): L3 dejó de
+// sembrar la ScreenInstance `material-form` y el mapping resource_screen
+// `form` (código muerto, sin menú). La ScreenInstance `materials-list` SÍ
+// se conserva (MÍNIMA, no renderizada): el mapping de menú `materials:list`
+// la exige por la FK fk_resource_screens_screen_key — la poda la había
+// quitado por error y el recreate limpio fallaba en L3 (23503).
 //
 // Justificación: la idempotencia de L3 es contrato (todos los inserts
 // usan ON CONFLICT DO NOTHING). Si una de las funciones applyL3_*
@@ -40,8 +42,10 @@ import (
 //   - F5-REQ-2.1: 3 permisos materials:{read,create,update}; NO existe
 //     `materials:delete` en iam.permissions (assertion explícita).
 //   - F5-REQ-2.2: 3 role_permissions super_admin × cada permiso L3.
-//   - F5-REQ-3.x (post-poda): 0 ScreenInstances + 1 ResourceScreen para
-//     materials (solo `list` default; la pantalla es nativa).
+//   - F5-REQ-3.x (post-poda + F2): 1 ScreenInstance MÍNIMA `materials-list`
+//     (FK-satisfying, no renderizada) + 1 ResourceScreen para materials
+//     (solo `list` default; la pantalla es nativa). `material-form` sigue
+//     podado (0 filas, sin mapping).
 //   - Invariantes macro post-L3:
 //   - iam.resources total ≥ 2 (announcements + materials).
 //   - ui_config.resource_screens para announcements sigue siendo 2
@@ -166,18 +170,24 @@ func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
 			},
 			want: 3,
 		},
-		// Poda SDUI material (2026-06-07): L3 ya NO siembra
-		// ScreenInstances. Las pantallas materials-list / material-form
-		// son NATIVAS (ver l3_screens.go); sus screen_instances fueron
-		// eliminadas. Assertion negativa: NO existe fila para esos IDs.
+		// Corrección F2 (2026-06-08): `materials-list` SÍ existe como
+		// screen_instance MÍNIMA (no se renderiza; pantalla NATIVA),
+		// requerida por la FK fk_resource_screens_screen_key del mapping
+		// de menú. La poda 2026-06-07 la había eliminado por error y el
+		// recreate limpio fallaba en L3 (23503). Assertion POSITIVA: 1 fila.
 		{
-			desc:  "ui_config.screen_instances [id IN (L3 materials-list, L3 material-form)] (negativa — podadas)",
-			query: `SELECT COUNT(*) FROM ui_config.screen_instances WHERE id IN (?::uuid, ?::uuid)`,
-			args: []any{
-				layers.L3_SCREEN_INSTANCE_MATERIALS_LIST_ID,
-				layers.L3_SCREEN_INSTANCE_MATERIAL_FORM_ID,
-			},
-			want: 0,
+			desc:  "ui_config.screen_instances [id=L3 materials-list] (positiva — minima FK-satisfying)",
+			query: `SELECT COUNT(*) FROM ui_config.screen_instances WHERE id = ?::uuid`,
+			args:  []any{layers.L3_SCREEN_INSTANCE_MATERIALS_LIST_ID},
+			want:  1,
+		},
+		// `material-form` SIGUE PODADO: no tiene mapping resource_screen
+		// → no hay FK que satisfacer. Assertion negativa: NO existe fila.
+		{
+			desc:  "ui_config.screen_instances [id=L3 material-form] (negativa — sigue podado)",
+			query: `SELECT COUNT(*) FROM ui_config.screen_instances WHERE id = ?::uuid`,
+			args:  []any{layers.L3_SCREEN_INSTANCE_MATERIAL_FORM_ID},
+			want:  0,
 		},
 		// F5-REQ-3.3 (post-poda): 1 resource_screen para materials
 		// (solo el mapping `list` default; el `form` fue podado).

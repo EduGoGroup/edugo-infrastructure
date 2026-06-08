@@ -312,20 +312,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- content.material_version → materials (CASCADE) / membership autor (RESTRICT)
-DO $$ BEGIN
-    ALTER TABLE content.material_version
-        ADD CONSTRAINT material_version_material_fkey
-            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE content.material_version
-        ADD CONSTRAINT material_version_membership_fkey
-            FOREIGN KEY (changed_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- content.material_file (rediseño F2 plan 018): su unica FK material_id →
+-- content.materials(id) ON DELETE CASCADE es same-schema y la materializa GORM
+-- desde el tag `constraint:material_file_material_fkey`, por eso NO se declara
+-- aqui (a diferencia de las FKs cross-schema). La vieja content.material_version
+-- (y sus FKs material_version_material_fkey / material_version_membership_fkey)
+-- fue ELIMINADA en F2.
 
 -- content.progress → materials (CASCADE) / membership del alumno (CASCADE)
 DO $$ BEGIN

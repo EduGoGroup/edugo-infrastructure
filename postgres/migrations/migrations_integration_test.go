@@ -169,15 +169,17 @@ func TestIntegration(t *testing.T) {
 		seedTeacherMembershipID := mustUUID(t, "bb000000-0000-0000-0000-000000000008")
 		seedUnitID := mustUUID(t, "ac000000-0000-0000-0000-000000000003")
 
+		// F2 (plan 018): el material es el TEMA (maestro); los datos de archivo
+		// viven en content.material_file (N por tema). El tema ya no lleva
+		// file_url/file_type/file_size_bytes inline pero sí el `summary` (markdown).
+		summary := "## Resumen\nNotas del docente."
 		material := entities.Material{
 			ID:                     uuid.New(),
 			SchoolID:               seedSchoolID,
 			UploadedByMembershipID: seedTeacherMembershipID,
 			AcademicUnitID:         &seedUnitID,
 			Title:                  "Material Integración",
-			FileURL:                "s3://integration/material.pdf",
-			FileType:               "application/pdf",
-			FileSizeBytes:          2048,
+			Summary:                &summary,
 			Status:                 "ready",
 			IsPublic:               true,
 		}
@@ -186,10 +188,30 @@ func TestIntegration(t *testing.T) {
 			t.Fatalf("Error creando material: %v", err)
 		}
 
+		// El hijo material_file: FK material_id → content.materials ON DELETE CASCADE.
+		file := entities.MaterialFile{
+			ID:            uuid.New(),
+			MaterialID:    material.ID,
+			FileURL:       "s3://integration/material.pdf",
+			FileName:      "material.pdf",
+			FileType:      "application/pdf",
+			FileSizeBytes: 2048,
+		}
+		if err := gdb.Create(&file).Error; err != nil {
+			t.Fatalf("Error creando material_file: %v", err)
+		}
+
 		if err := gdb.Model(&entities.Material{}).
 			Where("id = ?", material.ID).
 			Update("title", "Material Integración Updated").Error; err != nil {
 			t.Fatalf("Error actualizando material: %v", err)
+		}
+
+		// Borrar el tema arrastra el hijo por la FK CASCADE; lo eliminamos
+		// explícitamente primero para no depender del borrado lógico (DeletedAt)
+		// del maestro, que NO cascadea a nivel BD.
+		if err := gdb.Delete(&entities.MaterialFile{}, "id = ?", file.ID).Error; err != nil {
+			t.Fatalf("Error eliminando material_file: %v", err)
 		}
 
 		if err := gdb.Unscoped().Delete(&entities.Material{}, "id = ?", material.ID).Error; err != nil {

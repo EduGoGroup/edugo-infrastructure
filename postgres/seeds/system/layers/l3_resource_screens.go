@@ -13,12 +13,16 @@ import (
 // default (F5-REQ-3.3):
 //   - materials-list (screen_type=list, is_default=true)
 //
-// El screen_key `materials-list` NO tiene ScreenInstance: la pantalla de
-// material en la app es NATIVA (Compose) y no consume slot_data SDUI.
-// El resolver solo necesita que el menú exponga el screen_key — mismo
-// patrón que `material-detail` / `join-requests-inbox` / `batch-enroll`.
+// El screen_key `materials-list` apunta a una pantalla NATIVA (Compose)
+// que NO consume slot_data SDUI, pero SÍ requiere una screen_instance
+// MÍNIMA homónima para satisfacer la FK fk_resource_screens_screen_key
+// (resource_screens.screen_key → screen_instances.screen_key). Esa
+// screen_instance la siembra applyL3Screens (debe correr ANTES); mismo
+// patrón que `join-requests-inbox` / `batch-enroll` en L4. El SDUI engine
+// no la renderiza: el FE intercepta el screen_key.
 // El mapping `form` (material-form) fue podado junto con su ScreenInstance
-// (poda SDUI material 2026-06-07; ver l3_screens.go).
+// (poda SDUI material 2026-06-07; ver l3_screens.go) y NO se resiembra:
+// no tiene mapping → no hay FK que satisfacer.
 //
 // IDs derivados determinísticamente vía SHA1 sobre (resource_id,
 // screen_type) — replica el patrón de upsertL0ResourceScreens. Esto

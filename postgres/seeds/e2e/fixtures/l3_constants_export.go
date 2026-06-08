@@ -35,7 +35,7 @@ type L3IsolationConstants struct{}
 func (f *L3IsolationConstants) Manifest() framework.FixtureManifest {
 	return framework.FixtureManifest{
 		Name:        "l3_constants_export",
-		Description: "Verifica filas L3 sembradas por system.ApplySystem (resource materials + 3 permisos sin :delete + 1 ResourceScreen `list` default; las ScreenInstances materials-list/material-form fueron podadas — pantallas nativas) y exporta sus identificadores al JSON.",
+		Description: "Verifica filas L3 sembradas por system.ApplySystem (resource materials + 3 permisos sin :delete + 1 ResourceScreen `list` default + 1 ScreenInstance mínima materials-list FK-satisfying; material-form podado — pantallas nativas) y exporta sus identificadores al JSON.",
 		Constants: map[string]string{
 			"E2EFixtureL3ResourceMaterialsID":           layers.L3_RESOURCE_MATERIALS_ID,
 			"E2EFixtureL3ResourceMaterialsKey":          layers.L3_RESOURCE_MATERIALS_KEY,
@@ -60,12 +60,13 @@ func (f *L3IsolationConstants) Manifest() framework.FixtureManifest {
 //     explícita de materials:delete.
 //   - F5-REQ-2.2: 3 role_permissions super_admin × materials; ausencia
 //     explícita de super_admin × materials:delete.
-//   - F5-REQ-3.1/3.2 (post-poda SDUI material): las ScreenInstances
-//     materials-list / material-form fueron ELIMINADAS (pantallas
-//     nativas; código muerto en SDUI). Ya no se verifica su forma.
+//   - F5-REQ-3.1/3.2 (post-poda + F2): `material-form` screen_instance
+//     sigue ELIMINADA (pantalla nativa, sin mapping). `materials-list`
+//     screen_instance se conserva MÍNIMA (no renderizada) por la FK del
+//     mapping de menú. No se verifica su forma de slot_data (es nativa).
 //   - F5-REQ-3.3 (post-poda): 1 resource_screen (list default; el form
-//     fue podado). La pantalla `materials-list` es nativa, sin
-//     ScreenInstance.
+//     fue podado). La pantalla `materials-list` es nativa; su
+//     ScreenInstance mínima existe solo para satisfacer la FK del mapping.
 //   - No-regresión L1: la cadena user_roles → role_permissions →
 //     permissions filtrando por viewer@edugo.demo sigue devolviendo
 //     EXACTAMENTE el set {announcements:read}.
@@ -79,11 +80,11 @@ func (f *L3IsolationConstants) Apply(tx *gorm.DB, ctx *framework.ApplyContext) e
 	if err := f.verifyRolePermissions(tx); err != nil {
 		return err
 	}
-	// Poda SDUI material (2026-06-07): las ScreenInstances materials-list
-	// / material-form fueron ELIMINADAS (pantallas nativas; código muerto
-	// en SDUI). Ya no se verifica su presencia/forma. verifyResourceScreens
-	// ahora exige 1 mapping (`list` default, sin ScreenInstance) en vez
-	// de 2.
+	// Poda SDUI material (2026-06-07) + corrección F2 (2026-06-08): la
+	// screen_instance `material-form` sigue ELIMINADA (sin mapping). La
+	// `materials-list` se conserva MÍNIMA (no renderizada) por la FK del
+	// mapping de menú. verifyResourceScreens valida 1 mapping (`list`
+	// default); no se verifica la forma del slot_data (pantalla nativa).
 	if err := f.verifyResourceScreens(tx); err != nil {
 		return err
 	}

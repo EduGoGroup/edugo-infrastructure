@@ -126,7 +126,7 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 		"assessment.question",
 		"assessment.assessment",
 		"content.progress",
-		"content.material_version",
+		"content.material_file",
 		"content.materials",
 		"academic.memberships",
 		"iam.user_grants",
