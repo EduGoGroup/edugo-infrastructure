@@ -14,7 +14,11 @@ import (
 // sembrado por capas anteriores:
 //   - L0: `announcements-list`
 //   - L2: `announcement-form`
-//   - L3: `materials-list`, `material-form`
+//   - L3: ninguna. (Poda SDUI material 2026-06-07: las ScreenInstances
+//     `materials-list` / `material-form` que L3 sembraba fueron
+//     eliminadas — pantallas nativas; ver system/layers/l3_screens.go.)
+//     L4 tampoco las resiembra: `materials-list` es el screen_key de una
+//     pantalla nativa mapeada en resource_screens sin ScreenInstance.
 //
 // Cobertura (F6-REQ-2.1, F6-REQ-3.1):
 //   - 61 instances derivadas del inventario legacy
@@ -40,7 +44,8 @@ import (
 //     resource_screens; cierre del latente bug 0034.)
 //
 // Descartes vs legacy (12 keys), todos documentados:
-//   - `announcements-list`, `materials-list` → ya en L0/L3.
+//   - `announcements-list` → ya en L0. `materials-list` → pantalla
+//     nativa sin ScreenInstance (poda SDUI material; ver L3).
 //   - `announcements-form` (linea 686) → duplicado plural del key L2
 //     `announcement-form`. La forma canonica es singular (FE usa
 //     `announcement-form` en L2 y `announcements-form` no aparece en

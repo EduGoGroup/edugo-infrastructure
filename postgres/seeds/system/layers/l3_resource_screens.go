@@ -9,10 +9,16 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// applyL3ResourceScreens vincula el resource "materials" con sus 2
-// pantallas (F5-REQ-3.3):
+// applyL3ResourceScreens vincula el resource "materials" con su pantalla
+// default (F5-REQ-3.3):
 //   - materials-list (screen_type=list, is_default=true)
-//   - material-form  (screen_type=form, is_default=false)
+//
+// El screen_key `materials-list` NO tiene ScreenInstance: la pantalla de
+// material en la app es NATIVA (Compose) y no consume slot_data SDUI.
+// El resolver solo necesita que el menú exponga el screen_key — mismo
+// patrón que `material-detail` / `join-requests-inbox` / `batch-enroll`.
+// El mapping `form` (material-form) fue podado junto con su ScreenInstance
+// (poda SDUI material 2026-06-07; ver l3_screens.go).
 //
 // IDs derivados determinísticamente vía SHA1 sobre (resource_id,
 // screen_type) — replica el patrón de upsertL0ResourceScreens. Esto
@@ -27,7 +33,6 @@ func applyL3ResourceScreens(tx *gorm.DB) error {
 	}
 
 	idList := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":list"))
-	idForm := uuid.NewSHA1(uuid.NameSpaceOID, []byte(materialsID.String()+":form"))
 
 	mappings := []entities.ResourceScreen{
 		{
@@ -38,16 +43,6 @@ func applyL3ResourceScreens(tx *gorm.DB) error {
 			ScreenType:  "list",
 			IsDefault:   true,
 			SortOrder:   0,
-			IsActive:    true,
-		},
-		{
-			ID:          idForm,
-			ResourceID:  materialsID,
-			ResourceKey: L3_RESOURCE_MATERIALS_KEY,
-			ScreenKey:   L3_SCREEN_KEY_MATERIAL_FORM,
-			ScreenType:  "form",
-			IsDefault:   false,
-			SortOrder:   1,
 			IsActive:    true,
 		},
 	}

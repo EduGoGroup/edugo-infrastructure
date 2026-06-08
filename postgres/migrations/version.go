@@ -516,7 +516,16 @@ import (
 //     que subscription_tier, misma tabla). Las FKs cross-schema (a assessment.*),
 //     el CHECK XOR y el UNIQUE parcial viven en post_gorm.sql (GORM no los
 //     materializa sin campo de relación). Sin tocar seeds (F4.6) ni APIs.
-const SchemaVersion = "3.50.0"
+//   - 3.51.0 (seed-only, sin DDL): poda SDUI de material. L3 deja de
+//     sembrar las 2 ScreenInstances `materials-list` / `material-form`
+//     (+ slot_data) y el mapping resource_screen `material:form`. Eran
+//     código muerto: las pantallas de material en la app son NATIVAS
+//     (Compose) y no consumen esos seeds SDUI. El recurso materials sigue
+//     en el menú vía el mapping `materials:list` (is_default, SIN
+//     ScreenInstance — mismo patrón que material-detail / pantallas
+//     nativas). L3_SEED_VERSION 1.2.0→1.3.0. Bump de SchemaVersion para
+//     que el migrator recree el dataset (cambia el conteo de filas L3).
+const SchemaVersion = "3.51.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -23,9 +23,9 @@ import (
 //   - F5-REQ-2.1: 3 permisos materials:{read,create,update}; ausencia
 //     explícita de materials:delete.
 //   - F5-REQ-2.2: 3 role_permissions super_admin × materials.
-//   - F5-REQ-3.1: ScreenInstance materials-list con slot_data correcto.
-//   - F5-REQ-3.2: ScreenInstance material-form con slot_data correcto.
-//   - F5-REQ-3.3: 2 resource_screens (list default + form no-default).
+//   - F5-REQ-3.1/3.2 (post-poda): las ScreenInstances materials-list /
+//     material-form fueron eliminadas (pantallas nativas).
+//   - F5-REQ-3.3: 1 resource_screen (list default; form podado).
 //   - No-regresión L1: viewer sigue con EXACTAMENTE {announcements:read}.
 //
 // Los sub-tests *_deferred marcan con t.Skip las partes diferidas por
@@ -106,7 +106,9 @@ func TestScenarioL3Isolation_Integration(t *testing.T) {
 		}
 	})
 
-	// F5-REQ-3.3 — total resource_screens para materials = 2.
+	// F5-REQ-3.3 (post-poda SDUI material) — total resource_screens para
+	// materials = 1 (solo el mapping `list` default; el `form` fue podado
+	// junto con su ScreenInstance — la pantalla es nativa).
 	t.Run("F5-REQ-3.3_resource_screens_count_for_materials", func(t *testing.T) {
 		var count int64
 		if err := gdb.Raw(
@@ -115,8 +117,8 @@ func TestScenarioL3Isolation_Integration(t *testing.T) {
 		).Scan(&count).Error; err != nil {
 			t.Fatalf("query resource_screens for materials: %v", err)
 		}
-		if count != 2 {
-			t.Errorf("resource_screens for materials: got %d, want 2 (1 list default + 1 form no-default)", count)
+		if count != 1 {
+			t.Errorf("resource_screens for materials: got %d, want 1 (solo list default; form podado)", count)
 		}
 	})
 

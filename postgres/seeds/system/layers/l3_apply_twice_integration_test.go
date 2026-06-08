@@ -23,7 +23,12 @@ import (
 
 // TestL3_ApplyTwice_Idempotent verifica que aplicar la capa L3 (sobre
 // L0+L1+L2) dos veces consecutivas produce exactamente el mismo dataset
-// que aplicarla una sola vez: 11 filas L3 sin duplicados.
+// que aplicarla una sola vez, sin duplicados.
+//
+// Poda SDUI material (2026-06-07): L3 dejó de sembrar las 2
+// ScreenInstances (materials-list, material-form) y el mapping
+// resource_screen `form` — código muerto (pantallas nativas). El recurso
+// materials persiste vía el mapping `materials:list` (sin ScreenInstance).
 //
 // Justificación: la idempotencia de L3 es contrato (todos los inserts
 // usan ON CONFLICT DO NOTHING). Si una de las funciones applyL3_*
@@ -35,8 +40,8 @@ import (
 //   - F5-REQ-2.1: 3 permisos materials:{read,create,update}; NO existe
 //     `materials:delete` en iam.permissions (assertion explícita).
 //   - F5-REQ-2.2: 3 role_permissions super_admin × cada permiso L3.
-//   - F5-REQ-3.x: 2 ScreenInstances + 2 ResourceScreens para materials
-//     (list default + form no-default).
+//   - F5-REQ-3.x (post-poda): 0 ScreenInstances + 1 ResourceScreen para
+//     materials (solo `list` default; la pantalla es nativa).
 //   - Invariantes macro post-L3:
 //   - iam.resources total ≥ 2 (announcements + materials).
 //   - ui_config.resource_screens para announcements sigue siendo 2
@@ -112,10 +117,11 @@ func TestL3_ApplyTwice_Idempotent(t *testing.T) {
 	assertL3Counts(t, gdb, "after L0+L1+L2+L3 Apply #3")
 }
 
-// assertL3Counts valida los conteos canónicos de L3 (11 filas
-// distribuidas en 5 tablas) filtrados por los IDs específicos de L3,
-// más las invariantes macro post-L3 (cadena viewer, conteo de
-// resource_screens para announcements).
+// assertL3Counts valida los conteos canónicos de L3 (post-poda SDUI:
+// resource + 3 permisos + 3 role_permissions + 1 resource_screen, 0
+// screen_instances) filtrados por los IDs específicos de L3, más las
+// invariantes macro post-L3 (cadena viewer, conteo de resource_screens
+// para announcements).
 func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
 	t.Helper()
 
@@ -160,36 +166,41 @@ func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
 			},
 			want: 3,
 		},
-		// F5-REQ-3.1/3.2: 2 ScreenInstances L3.
+		// Poda SDUI material (2026-06-07): L3 ya NO siembra
+		// ScreenInstances. Las pantallas materials-list / material-form
+		// son NATIVAS (ver l3_screens.go); sus screen_instances fueron
+		// eliminadas. Assertion negativa: NO existe fila para esos IDs.
 		{
-			desc:  "ui_config.screen_instances [id IN (L3 materials-list, L3 material-form)]",
+			desc:  "ui_config.screen_instances [id IN (L3 materials-list, L3 material-form)] (negativa — podadas)",
 			query: `SELECT COUNT(*) FROM ui_config.screen_instances WHERE id IN (?::uuid, ?::uuid)`,
 			args: []any{
 				layers.L3_SCREEN_INSTANCE_MATERIALS_LIST_ID,
 				layers.L3_SCREEN_INSTANCE_MATERIAL_FORM_ID,
 			},
-			want: 2,
+			want: 0,
 		},
-		// F5-REQ-3.3: total 2 resource_screens para materials.
+		// F5-REQ-3.3 (post-poda): 1 resource_screen para materials
+		// (solo el mapping `list` default; el `form` fue podado).
 		{
 			desc:  "ui_config.resource_screens [resource_id=L3 materials]",
 			query: `SELECT COUNT(*) FROM ui_config.resource_screens WHERE resource_id = ?::uuid`,
 			args:  []any{layers.L3_RESOURCE_MATERIALS_ID},
-			want:  2,
+			want:  1,
 		},
-		// F5-REQ-3.3 (list default).
+		// F5-REQ-3.3 (list default — pantalla nativa, sin ScreenInstance).
 		{
 			desc:  "ui_config.resource_screens [resource_id=L3 materials, type=list, default=true]",
 			query: `SELECT COUNT(*) FROM ui_config.resource_screens WHERE resource_id = ?::uuid AND screen_type = ? AND is_default = TRUE`,
 			args:  []any{layers.L3_RESOURCE_MATERIALS_ID, "list"},
 			want:  1,
 		},
-		// F5-REQ-3.3 (form no-default).
+		// Poda SDUI material (2026-06-07): el mapping `form` fue
+		// eliminado. Assertion negativa: NO existe fila form.
 		{
-			desc:  "ui_config.resource_screens [resource_id=L3 materials, type=form, default=false]",
-			query: `SELECT COUNT(*) FROM ui_config.resource_screens WHERE resource_id = ?::uuid AND screen_type = ? AND is_default = FALSE`,
+			desc:  "ui_config.resource_screens [resource_id=L3 materials, type=form] (negativa — podado)",
+			query: `SELECT COUNT(*) FROM ui_config.resource_screens WHERE resource_id = ?::uuid AND screen_type = ?`,
 			args:  []any{layers.L3_RESOURCE_MATERIALS_ID, "form"},
-			want:  1,
+			want:  0,
 		},
 	}
 

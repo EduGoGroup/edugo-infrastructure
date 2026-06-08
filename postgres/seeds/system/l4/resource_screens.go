@@ -17,8 +17,9 @@ import (
 // Excluidos (ya sembrados por capas anteriores):
 //   - announcements:list  → applyL0ResourceScreens (L0)
 //   - announcements:form  → applyL2ResourceScreens (L2)
-//   - materials:list      → applyL3ResourceScreens (L3)
-//   - materials:form      → applyL3ResourceScreens (L3)
+//   - materials:list      → applyL3ResourceScreens (L3) — pantalla nativa
+//     sin ScreenInstance. (materials:form fue podado junto con su
+//     ScreenInstance: poda SDUI material 2026-06-07; ver L3.)
 //
 // Recursos sembrados por L4 (B1) sin pantalla asociada — intencional:
 //   - admin, academic, content       → contenedores puros del árbol
