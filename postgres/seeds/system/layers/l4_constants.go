@@ -492,7 +492,7 @@ package layers
 //     prevalece, SDUI solo guía"). Se quita su screen_instance, su mapping en
 //     resource_screens y su constante; se conserva el recurso assessments y el
 //     permiso content.assessments.assign (lo gatean la action "Asignar" del form
-//     + la ruta de assignments).
+//   - la ruta de assignments).
 const L4_SEED_VERSION = "1.51.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
