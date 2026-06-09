@@ -570,7 +570,15 @@ import (
 //     "actions_removed": ["edit"]: en el detalle de preguntas la edición la
 //     cubre el botón nativo "Editar" del bottom-sheet; la acción SDUI no tenía
 //     handler. L4_SEED_VERSION → 1.50.0.
-const SchemaVersion = "3.54.0"
+//   - 3.55.0: seed-only (sin DDL). Dos ajustes de evaluación: (1) la action
+//     "Publicar" de assessments-form alinea su slot.permission a
+//     content.assessments.publish (antes .update) para igualar el gate del botón
+//     con la ruta POST /assessments/:id/publish; (2) se ELIMINA la pantalla SDUI
+//     assessment-assignment (reemplazada por modal nativo), conservando el
+//     recurso assessments y el permiso content.assessments.assign. Cambia el
+//     slot_data del seed L4 → bump obligatorio para invalidar la caché SDUI por
+//     contenido. L4_SEED_VERSION → 1.51.0.
+const SchemaVersion = "3.55.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

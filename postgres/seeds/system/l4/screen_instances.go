@@ -28,9 +28,10 @@ import (
 //   - 9 instances NUEVAS exigidas por el FE pero ausentes del legacy
 //     (parte del set de 14 `screen_key_phantom` reportadas por el
 //     cross-checker baseline):
-//   - assessment-assignment, assessment-review-dashboard,
-//     assigned-assessments-list, attempt-review-detail (4 pantallas
-//     de assessments; assessment-modality se eliminó en plan 015).
+//   - assessment-review-dashboard, assigned-assessments-list,
+//     attempt-review-detail (3 pantallas de assessments;
+//     assessment-modality se eliminó en plan 015 y assessment-assignment
+//     se reemplazó por un modal nativo).
 //   - membership-add, user-roles (admin).
 //   - school-concepts-list, school-concepts-form (concept_types
 //     a nivel escuela).
@@ -504,7 +505,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		assessmentResult(), // F3 (mínima)
 		assessmentQuestionsList(),
 		assessmentQuestionForm(),
-		assessmentAssignment(),
+		// assessment-assignment ELIMINADA: reemplazada por modal nativo.
 		assessmentReviewDashboard(), // F3 (mínima)
 		assignedAssessmentsList(),
 		attemptReviewDetail(), // F3 (mínima)
