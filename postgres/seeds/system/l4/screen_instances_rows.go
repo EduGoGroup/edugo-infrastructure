@@ -1196,7 +1196,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   "edit_title": "Editar evaluación",
   "fields": [
     {"key": "title", "label": "Título", "type": "text", "required": true},
-    {"key": "subject_id", "label": "Materia", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id"},
+    {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
     {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number"},
     {"key": "max_attempts", "label": "Intentos máximos", "type": "number"},

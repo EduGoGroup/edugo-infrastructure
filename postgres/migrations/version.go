@@ -578,7 +578,12 @@ import (
 //     recurso assessments y el permiso content.assessments.assign. Cambia el
 //     slot_data del seed L4 → bump obligatorio para invalidar la caché SDUI por
 //     contenido. L4_SEED_VERSION → 1.51.0.
-const SchemaVersion = "3.55.0"
+//   - 3.56.0: seed-only (sin DDL). plan 017 F2: assessments-form migra el campo
+//     subject_id de remote_select a entity-picker (modal con búsqueda server-side
+//     + paginación contra academic:/api/v1/subjects). Cambia el slot_data del
+//     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido.
+//     L4_SEED_VERSION → 1.52.0.
+const SchemaVersion = "3.56.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

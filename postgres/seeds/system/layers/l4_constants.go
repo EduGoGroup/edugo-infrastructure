@@ -493,7 +493,16 @@ package layers
 //     resource_screens y su constante; se conserva el recurso assessments y el
 //     permiso content.assessments.assign (lo gatean la action "Asignar" del form
 //   - la ruta de assignments).
-const L4_SEED_VERSION = "1.51.0"
+//   - 1.52.0 (2026-06-09, plan 017 F2 — picker de entidad): assessments-form
+//     migra el campo `subject_id` de `remote_select` a `entity-picker` (control
+//     nuevo del plan 017). El selector de materia abre un modal con búsqueda
+//     server-side + paginación contra academic:/api/v1/subjects (search_param=
+//     search, page_size=20) en vez de cargar todas las opciones al montar. Se
+//     conservan remote_endpoint/display_field/value_field (claves legacy con
+//     fallback en el resolver KMP, FormFieldsResolver). Cambia el slot_data del
+//     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido. Sin
+//     cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.52.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

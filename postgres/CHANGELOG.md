@@ -6,6 +6,16 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+### Changed
+
+- Plan 017 F2 (picker de entidad): `assessments-form` migra el campo `subject_id` de
+  `remote_select` a `entity-picker` (control nuevo). El selector de materia abre un modal con
+  búsqueda server-side + paginación contra `academic:/api/v1/subjects` (`search_param=search`,
+  `page_size=20`) en lugar de cargar todas las opciones al montar. Se conservan
+  `remote_endpoint`/`display_field`/`value_field` (claves legacy con fallback en el resolver KMP
+  `FormFieldsResolver`). Seed-only (sin DDL). `SchemaVersion` 3.55.0 → 3.56.0; `L4_SEED_VERSION`
+  1.51.0 → 1.52.0.
+
 ## [0.900.4] - 2026-06-08
 
 Material maestro-detalle (material = tema + N archivos), tipo de pregunta `multiple_select`,
