@@ -1194,6 +1194,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   "title": "Evaluación",
   "page_title": "Evaluación",
   "edit_title": "Editar evaluación",
+  "view_when": {"field": "status", "in": ["published", "archived"]},
   "fields": [
     {"key": "title", "label": "Título", "type": "text", "required": true},
     {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},

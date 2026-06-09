@@ -8,6 +8,13 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ### Changed
 
+- ADR 0022 (campos estructurales solo en borrador): `assessments-form` declara `view_when`
+  (`{"field":"status","in":["published","archived"]}`) a nivel `slot_data`; el front pone el form en
+  read-only total fuera de borrador. Acompaña el backend `learning`: el update persiste `subject_id`
+  solo en borrador y rechaza el update fuera de borrador con 400 `BUSINESS_ASSESSMENT_NOT_DRAFT`;
+  `AssessmentResponse` añade `subject_name` (subquery a `academic.subjects`) para el label del picker.
+  Seed-only (sin DDL). `SchemaVersion` 3.56.0 → 3.57.0; `L4_SEED_VERSION` 1.52.0 → 1.53.0.
+
 - Plan 017 F2 (picker de entidad): `assessments-form` migra el campo `subject_id` de
   `remote_select` a `entity-picker` (control nuevo). El selector de materia abre un modal con
   búsqueda server-side + paginación contra `academic:/api/v1/subjects` (`search_param=search`,

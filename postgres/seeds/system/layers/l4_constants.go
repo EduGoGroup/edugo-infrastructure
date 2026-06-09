@@ -502,7 +502,14 @@ package layers
 //     fallback en el resolver KMP, FormFieldsResolver). Cambia el slot_data del
 //     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido. Sin
 //     cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.52.0"
+//   - 1.53.0 (2026-06-09, ADR 0022 — edición solo en borrador): assessments-form
+//     declara `view_when {"field":"status","in":["published","archived"]}` a nivel
+//     slot_data; el front pone el form en read-only TOTAL cuando la evaluación no es
+//     borrador (reusa accessMode=view, reactivo al status). Acompaña el backend que
+//     persiste subject_id solo en borrador y rechaza el update con 400 fuera de él.
+//     Cambia el slot_data del seed L4 → bump para invalidar la caché SDUI por
+//     contenido. Sin cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.53.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

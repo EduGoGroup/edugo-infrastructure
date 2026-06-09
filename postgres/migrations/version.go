@@ -583,7 +583,13 @@ import (
 //     + paginación contra academic:/api/v1/subjects). Cambia el slot_data del
 //     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido.
 //     L4_SEED_VERSION → 1.52.0.
-const SchemaVersion = "3.56.0"
+//   - 3.57.0: seed-only (sin DDL). ADR 0022: assessments-form declara view_when a
+//     nivel slot_data → el front pone el form read-only total cuando la evaluación
+//     no es borrador. Acompaña backend learning (subject_id editable solo en
+//     borrador; update fuera de borrador → 400 BUSINESS_ASSESSMENT_NOT_DRAFT).
+//     Cambia el slot_data del seed L4 → bump para invalidar la caché SDUI por
+//     contenido. L4_SEED_VERSION → 1.53.0.
+const SchemaVersion = "3.57.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
