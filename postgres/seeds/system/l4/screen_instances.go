@@ -484,7 +484,8 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// ACADEMIC: GRADES / ATTENDANCE
 		// ===========================================================
 		gradesList(),
-		gradesForm(),
+		// grades-form ELIMINADA (2026-06-09): form SDUI legacy huérfano,
+		// reemplazado por nativas (my-grade-detail alumno / grades-batch docente).
 		gradesBatch(),
 		attendanceList(),
 		attendanceBatch(),
@@ -541,13 +542,11 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// de scope=system.
 		// membership-add se retiró: la creación directa de membresías se
 		// eliminó (redundante con invitación→solicitud→aprobación).
-		// user-roles: edicion de roles asignados a un usuario.
-		// Decisiones de permisos documentadas en contract-check-NOTES.md
-		// (TC-A): user-roles usa users:update; no se crean permisos
-		// nuevos.
+		// user-roles ELIMINADA (2026-06-09): pantalla SDUI legacy huérfana,
+		// sin reemplazo y sin entry-point en el FE (nada la abría). Se quitó
+		// su screen_instance, su mapping en resource_screens y su constante.
 		schoolConceptsList(),
 		schoolConceptsForm(),
-		userRoles(),
 
 		// ===========================================================
 		// FASE 3 (B7b) — DEMO CRUD DATA-DRIVEN SIN KOTLIN

@@ -147,9 +147,9 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// =============================================================
 		{id: "b4500000-0000-0000-0000-000000000010", resourceID: L4_RESOURCE_USERS_ID, resourceKey: L4_RESOURCE_USERS_KEY, screenKey: "users-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000011", resourceID: L4_RESOURCE_USERS_ID, resourceKey: L4_RESOURCE_USERS_KEY, screenKey: "users-form", screenType: "form", isDefault: false, sortOrder: 2},
-		// user-roles (phantom B4): pantalla para asignar roles al
-		// usuario seleccionado. Sub-flujo, no default.
-		{id: "b4500000-0000-0000-0000-000000000012", resourceID: L4_RESOURCE_USERS_ID, resourceKey: L4_RESOURCE_USERS_KEY, screenKey: "user-roles", screenType: "roles", isDefault: false, sortOrder: 3},
+		// user-roles ELIMINADA (2026-06-09): mapping (screen_type "roles", UUID
+		// …0012) retirado junto con su screen_instance — pantalla SDUI legacy
+		// huérfana sin entry-point. UUID …0012 queda libre para reuso futuro.
 
 		{id: "b4500000-0000-0000-0000-000000000015", resourceID: L4_RESOURCE_SCHOOLS_ID, resourceKey: L4_RESOURCE_SCHOOLS_KEY, screenKey: "schools-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000016", resourceID: L4_RESOURCE_SCHOOLS_ID, resourceKey: L4_RESOURCE_SCHOOLS_KEY, screenKey: "schools-form", screenType: "form", isDefault: false, sortOrder: 2},
@@ -264,7 +264,10 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-000000000081", resourceID: L4_RESOURCE_PERIODS_ID, resourceKey: L4_RESOURCE_PERIODS_KEY, screenKey: "periods-form", screenType: "form", isDefault: false, sortOrder: 2},
 
 		{id: "b4500000-0000-0000-0000-000000000085", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-list", screenType: "list", isDefault: true, sortOrder: 1},
-		{id: "b4500000-0000-0000-0000-000000000086", resourceID: L4_RESOURCE_GRADES_ID, resourceKey: L4_RESOURCE_GRADES_KEY, screenKey: "grades-form", screenType: "form", isDefault: false, sortOrder: 2},
+		// grades-form ELIMINADA (2026-06-09): mapping (screen_type "form", UUID
+		// …0086) retirado junto con su screen_instance — form SDUI legacy
+		// reemplazado por nativas (my-grade-detail / grades-batch). UUID …0086
+		// queda libre para reuso futuro.
 		// grades-subject-summary (N3 F4, consulta de notas): resumen de notas por
 		// sesión (vista docente). Espejo del mapping attendance-summary; screen_type
 		// distinto ("summary") para satisfacer UNIQUE (resource_id, screen_type). No

@@ -135,8 +135,10 @@ const (
 	// 0060..0067 quedan libres para reuso futuro.
 
 	// academic: grades / attendance
-	L4_SCREEN_INST_GRADES_LIST_ID        = "b4400000-0000-0000-0000-000000000070"
-	L4_SCREEN_INST_GRADES_FORM_ID        = "b4400000-0000-0000-0000-000000000071"
+	L4_SCREEN_INST_GRADES_LIST_ID = "b4400000-0000-0000-0000-000000000070"
+	// L4_SCREEN_INST_GRADES_FORM_ID (UUID …0071) eliminado (2026-06-09): el
+	// form SDUI legacy grades-form quedó huérfano (reemplazado por nativas
+	// my-grade-detail/grades-batch). UUID …0071 queda libre para reuso futuro.
 	L4_SCREEN_INST_ATTENDANCE_LIST_ID    = "b4400000-0000-0000-0000-000000000072"
 	L4_SCREEN_INST_ATTENDANCE_BATCH_ID   = "b4400000-0000-0000-0000-000000000073"
 	L4_SCREEN_INST_GRADES_BATCH_ID       = "b4400000-0000-0000-0000-000000000074"
@@ -182,7 +184,9 @@ const (
 	// L4_SCREEN_INST_MEMBERSHIP_ADD_ID (…d2) retirado: la creación directa de
 	// membresías se eliminó (redundante con invitación→solicitud→aprobación).
 	// UUID …d2 queda libre para reuso futuro.
-	L4_SCREEN_INST_USER_ROLES_ID = "b4400000-0000-0000-0000-0000000000d3"
+	// L4_SCREEN_INST_USER_ROLES_ID (…d3) eliminado (2026-06-09): la pantalla
+	// SDUI legacy user-roles quedó huérfana (sin reemplazo, sin entry-point en
+	// el FE). UUID …d3 queda libre para reuso futuro.
 
 	// Fase 3 (B7b) — demo CRUD data-driven sin Kotlin.
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de

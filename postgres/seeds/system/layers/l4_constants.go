@@ -509,7 +509,20 @@ package layers
 //     persiste subject_id solo en borrador y rechaza el update con 400 fuera de él.
 //     Cambia el slot_data del seed L4 → bump para invalidar la caché SDUI por
 //     contenido. Sin cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.53.0"
+//   - 1.54.0 (2026-06-09, poda de pantallas SDUI legacy huérfanas): se
+//     ELIMINAN dos screen_instances + sus mappings en resource_screens +
+//     sus constantes. (1) `grades-form` (recurso grades, screen_type "form",
+//     UUID inst …0071 / mapping …0086): form SDUI legacy reemplazado por
+//     pantallas NATIVAS (my-grade-detail para el alumno, grades-batch para el
+//     docente); sin entry-point en el FE; sus campos student_id/subject_id
+//     eran remote_select MUERTOS (sin endpoint). (2) `user-roles` (recurso
+//     users, screen_type "roles", UUID inst …00d3 / mapping …0012): pantalla
+//     SDUI legacy huérfana, sin reemplazo y sin navegación que la abriera; su
+//     campo user_id era remote_select MUERTO. "Nativa prevalece, SDUI solo
+//     guía": se podan los seeds. Cambia el set de screens del seed L4 → bump
+//     para invalidar la caché SDUI por contenido. Sin cambios de esquema ni
+//     de permisos (no se tocan roles ni grants).
+const L4_SEED_VERSION = "1.54.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
