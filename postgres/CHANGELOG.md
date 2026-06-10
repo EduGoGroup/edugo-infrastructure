@@ -4,16 +4,14 @@ Este changelog comienza la nueva serie documental del modulo `postgres`.
 
 Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado en esta fase es `postgres/v0.61.0`, pero el detalle narrativo de versiones anteriores no fue reconstruido aqui.
 
-## [Unreleased]
+## [0.900.5] - 2026-06-09
+
+Despliegue del plan 019: `entity-picker` en `assessments-form.subject_id`, `view_when` read-only
+fuera de borrador (ADR 0022), baja de los forms SDUI legacy `grades-form`/`user-roles` y fixture de
+conformidad del contrato entity-picker. `SchemaVersion` 3.54.0 → 3.58.0; `L4_SEED_VERSION`
+1.50.0 → 1.54.0.
 
 ### Changed
-
-- ADR 0022 (campos estructurales solo en borrador): `assessments-form` declara `view_when`
-  (`{"field":"status","in":["published","archived"]}`) a nivel `slot_data`; el front pone el form en
-  read-only total fuera de borrador. Acompaña el backend `learning`: el update persiste `subject_id`
-  solo en borrador y rechaza el update fuera de borrador con 400 `BUSINESS_ASSESSMENT_NOT_DRAFT`;
-  `AssessmentResponse` añade `subject_name` (subquery a `academic.subjects`) para el label del picker.
-  Seed-only (sin DDL). `SchemaVersion` 3.56.0 → 3.57.0; `L4_SEED_VERSION` 1.52.0 → 1.53.0.
 
 - Plan 017 F2 (picker de entidad): `assessments-form` migra el campo `subject_id` de
   `remote_select` a `entity-picker` (control nuevo). El selector de materia abre un modal con
@@ -22,6 +20,28 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
   `remote_endpoint`/`display_field`/`value_field` (claves legacy con fallback en el resolver KMP
   `FormFieldsResolver`). Seed-only (sin DDL). `SchemaVersion` 3.55.0 → 3.56.0; `L4_SEED_VERSION`
   1.51.0 → 1.52.0.
+
+- ADR 0022 (campos estructurales solo en borrador): `assessments-form` declara `view_when`
+  (`{"field":"status","in":["published","archived"]}`) a nivel `slot_data`; el front pone el form en
+  read-only total fuera de borrador. Acompaña el backend `learning`: el update persiste `subject_id`
+  solo en borrador y rechaza el update fuera de borrador con 400 `BUSINESS_ASSESSMENT_NOT_DRAFT`;
+  `AssessmentResponse` añade `subject_name` (subquery a `academic.subjects`) para el label del picker.
+  Seed-only (sin DDL). `SchemaVersion` 3.56.0 → 3.57.0; `L4_SEED_VERSION` 1.52.0 → 1.53.0.
+
+### Removed
+
+- Poda de dos pantallas SDUI legacy huérfanas: (1) `grades-form` (reemplazada por las nativas
+  `my-grade-detail`/`grades-batch`) y (2) `user-roles` (huérfana, sin reemplazo ni entry-point).
+  Ambas tenían controles `remote_select` MUERTOS (`student_id`/`subject_id`, `user_id`). Se eliminan
+  sus `screen_instances` + mappings en `resource_screens` + constantes. Sin cambios de roles ni
+  permisos. Seed-only (sin DDL). `SchemaVersion` 3.57.0 → 3.58.0; `L4_SEED_VERSION` 1.53.0 → 1.54.0.
+
+### Tests
+
+- Fixture de conformidad del contrato `entity-picker` (plan 019 WI-5): test de validación del
+  `slot_data` sembrado para `assessments-form.subject_id`, asegurando que el control migrado cumple
+  el contrato esperado por el front.
+- `gofmt` sobre `migrations/version.go` para pasar el `fmt-check` de CI (sin cambios semánticos).
 
 ## [0.900.4] - 2026-06-08
 
