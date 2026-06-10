@@ -580,7 +580,7 @@ import (
 //     contenido. L4_SEED_VERSION → 1.51.0.
 //   - 3.56.0: seed-only (sin DDL). plan 017 F2: assessments-form migra el campo
 //     subject_id de remote_select a entity-picker (modal con búsqueda server-side
-//     + paginación contra academic:/api/v1/subjects). Cambia el slot_data del
+//   - paginación contra academic:/api/v1/subjects). Cambia el slot_data del
 //     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido.
 //     L4_SEED_VERSION → 1.52.0.
 //   - 3.57.0: seed-only (sin DDL). ADR 0022: assessments-form declara view_when a
