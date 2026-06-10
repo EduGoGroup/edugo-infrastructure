@@ -944,28 +944,13 @@ func gradesList() l4ScreenInstanceRow {
 	}
 }
 
-func gradesForm() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_GRADES_FORM_ID,
-		screenKey:          "grades-form",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Formulario de Calificación",
-		description:        "Registrar o editar una calificación",
-		scope:              "unit",
-		requiredPermission: "academic.grades.read",
-		slotData: `{
-  "title": "Calificación",
-  "fields": [
-    {"key": "student_id", "label": "Estudiante", "type": "remote_select", "required": true},
-    {"key": "subject_id", "label": "Materia", "type": "remote_select", "required": true},
-    {"key": "score", "label": "Nota", "type": "number", "required": true},
-    {"key": "comment", "label": "Comentario", "type": "textarea"}
-  ],
-  "actions_removed": ["delete"],
-  "api_prefix": "academic"
-}`,
-	}
-}
+// grades-form ELIMINADA (2026-06-09): formulario SDUI legacy huérfano,
+// reemplazado por pantallas nativas (my-grade-detail para el alumno,
+// grades-batch para el docente). No tenía entry-point en el FE y sus
+// campos student_id/subject_id eran remote_select MUERTOS (sin endpoint).
+// Su constructor, su llamada en screen_instances.go, su mapping en
+// resource_screens.go y la constante L4_SCREEN_INST_GRADES_FORM_ID
+// (UUID …0071) se eliminaron. UUID …0071 queda libre para reuso futuro.
 
 func attendanceList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
@@ -1194,9 +1179,10 @@ func assessmentsForm() l4ScreenInstanceRow {
   "title": "Evaluación",
   "page_title": "Evaluación",
   "edit_title": "Editar evaluación",
+  "view_when": {"field": "status", "in": ["published", "archived"]},
   "fields": [
     {"key": "title", "label": "Título", "type": "text", "required": true},
-    {"key": "subject_id", "label": "Materia", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id"},
+    {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
     {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number"},
     {"key": "max_attempts", "label": "Intentos máximos", "type": "number"},
@@ -1586,30 +1572,9 @@ func schoolConceptsForm() l4ScreenInstanceRow {
 // platform.colors queda huérfano (prune-later, ver
 // docs/plans/004-permisologia-mvp/diferido.md).
 
-// user-roles: pantalla para asignar/revocar roles de un usuario.
-// TC-A del baseline: resource=users y permisos users:read/update (no
-// `user_roles:*` que no existen en el seed).
-func userRoles() l4ScreenInstanceRow {
-	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_USER_ROLES_ID,
-		screenKey:          "user-roles",
-		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
-		name:               "Roles del Usuario",
-		description:        "Asignación de roles a un usuario",
-		scope:              "system",
-		requiredPermission: "admin.users.read",
-		slotData: `{
-  "title": "Roles del Usuario",
-  "fields": [
-    {"key": "user_id", "label": "Usuario", "type": "remote_select", "required": true},
-    {"key": "roles", "label": "Roles", "type": "multi_select", "required": true}
-  ],
-  "actions_removed": ["save_new", "save", "delete"],
-  "actions_added": [
-    {"id": "assign-role", "scope": "form-submit", "label": "Asignar", "icon": "plus",  "permission": "admin.users.update", "condition": "always", "event_id": "assign-role", "style": "filled",      "order": 10},
-    {"id": "revoke-role", "scope": "form-submit", "label": "Revocar", "icon": "minus", "permission": "admin.users.update", "condition": "always", "event_id": "revoke-role", "style": "destructive", "order": 20}
-  ],
-  "api_prefix": "identity"
-}`,
-	}
-}
+// user-roles ELIMINADA (2026-06-09): pantalla SDUI legacy huérfana, sin
+// reemplazo y sin navegación que la abriera (ningún entry-point en el FE).
+// Su campo user_id era un remote_select MUERTO (sin endpoint). Su
+// constructor, su llamada en screen_instances.go, su mapping en
+// resource_screens.go y la constante L4_SCREEN_INST_USER_ROLES_ID
+// (UUID …00d3) se eliminaron. UUID …00d3 queda libre para reuso futuro.

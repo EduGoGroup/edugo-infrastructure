@@ -493,7 +493,36 @@ package layers
 //     resource_screens y su constante; se conserva el recurso assessments y el
 //     permiso content.assessments.assign (lo gatean la action "Asignar" del form
 //   - la ruta de assignments).
-const L4_SEED_VERSION = "1.51.0"
+//   - 1.52.0 (2026-06-09, plan 017 F2 — picker de entidad): assessments-form
+//     migra el campo `subject_id` de `remote_select` a `entity-picker` (control
+//     nuevo del plan 017). El selector de materia abre un modal con búsqueda
+//     server-side + paginación contra academic:/api/v1/subjects (search_param=
+//     search, page_size=20) en vez de cargar todas las opciones al montar. Se
+//     conservan remote_endpoint/display_field/value_field (claves legacy con
+//     fallback en el resolver KMP, FormFieldsResolver). Cambia el slot_data del
+//     seed L4 → bump obligatorio para invalidar la caché SDUI por contenido. Sin
+//     cambios de esquema ni de permisos.
+//   - 1.53.0 (2026-06-09, ADR 0022 — edición solo en borrador): assessments-form
+//     declara `view_when {"field":"status","in":["published","archived"]}` a nivel
+//     slot_data; el front pone el form en read-only TOTAL cuando la evaluación no es
+//     borrador (reusa accessMode=view, reactivo al status). Acompaña el backend que
+//     persiste subject_id solo en borrador y rechaza el update con 400 fuera de él.
+//     Cambia el slot_data del seed L4 → bump para invalidar la caché SDUI por
+//     contenido. Sin cambios de esquema ni de permisos.
+//   - 1.54.0 (2026-06-09, poda de pantallas SDUI legacy huérfanas): se
+//     ELIMINAN dos screen_instances + sus mappings en resource_screens +
+//     sus constantes. (1) `grades-form` (recurso grades, screen_type "form",
+//     UUID inst …0071 / mapping …0086): form SDUI legacy reemplazado por
+//     pantallas NATIVAS (my-grade-detail para el alumno, grades-batch para el
+//     docente); sin entry-point en el FE; sus campos student_id/subject_id
+//     eran remote_select MUERTOS (sin endpoint). (2) `user-roles` (recurso
+//     users, screen_type "roles", UUID inst …00d3 / mapping …0012): pantalla
+//     SDUI legacy huérfana, sin reemplazo y sin navegación que la abriera; su
+//     campo user_id era remote_select MUERTO. "Nativa prevalece, SDUI solo
+//     guía": se podan los seeds. Cambia el set de screens del seed L4 → bump
+//     para invalidar la caché SDUI por contenido. Sin cambios de esquema ni
+//     de permisos (no se tocan roles ni grants).
+const L4_SEED_VERSION = "1.54.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
