@@ -4,6 +4,8 @@ Este changelog comienza la nueva serie documental del modulo `postgres`.
 
 Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado en esta fase es `postgres/v0.61.0`, pero el detalle narrativo de versiones anteriores no fue reconstruido aqui.
 
+## [Unreleased]
+
 ## [0.900.5] - 2026-06-09
 
 Despliegue del plan 019: `entity-picker` en `assessments-form.subject_id`, `view_when` read-only
