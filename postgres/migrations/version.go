@@ -596,7 +596,14 @@ import (
 //     eliminan sus screen_instances + mappings en resource_screens + constantes.
 //     Cambia el set de screens del seed L4 → bump para invalidar la caché SDUI
 //     por contenido. Sin cambios de roles ni permisos. L4_SEED_VERSION → 1.54.0.
-const SchemaVersion = "3.58.0"
+//   - 3.59.0: plan 020 N5 F1.1/F1.2 — push M2M + device tokens. NUEVAS
+//     notifications.device_tokens (entity DeviceToken, FK auth.users CASCADE,
+//     UNIQUE user_id+device_token, índice parcial idx_device_tokens_user_active)
+//     y auth.service_clients (entity ServiceClient, scopes text[], índice parcial
+//     idx_service_clients_active). Seed L5-m2m: edugo-worker y edugo-api-learning
+//     con scope notifications.dispatch y secret_hash bcrypt del dev secret de
+//     push-secrets.env. L5_SEED_VERSION → 1.0.0.
+const SchemaVersion = "3.59.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -31,6 +31,7 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// Auth (no cross-schema deps)
 		&entities.User{},
 		&entities.RefreshToken{},
+		&entities.ServiceClient{},
 		&entities.LoginAttempt{},
 
 		// IAM (depends on iam ENUM types created in pre_gorm.sql)
@@ -107,5 +108,6 @@ func autoMigrateAll(gdb *gorm.DB) error {
 
 		// Notifications
 		&entities.Notification{},
+		&entities.DeviceToken{},
 	)
 }
