@@ -11,11 +11,8 @@ import (
 // ScopeNotificationsDispatch es el scope M2M requerido para POST /internal/notifications/dispatch.
 const ScopeNotificationsDispatch = "notifications.dispatch"
 
-// devServiceClientSecret es el valor documentado en push-secrets.env (SERVICE_CLIENT_SECRET).
-// NUNCA se persiste en claro en el repo ni en BD — solo alimenta el hash precomputado.
-const devServiceClientSecret = "change-me-dev-only"
-
-// devServiceClientSecretHash es bcrypt(DefaultCost) de devServiceClientSecret.
+// devServiceClientSecretHash es bcrypt(DefaultCost) de "change-me-dev-only"
+// (valor en push-secrets.env / SERVICE_CLIENT_SECRET; nunca persiste en claro).
 // Método: bcrypt vía golang.org/x/crypto/bcrypt (mismo algoritmo que auth.users.password_hash).
 // Precomputado para determinismo del seed; en runtime la validación usa bcrypt.CompareHashAndPassword.
 const devServiceClientSecretHash = "$2a$10$64yROwHnbokxE7wrWGCzzeMYfierzsRq53iZVI7l.qbSe74gf/C7K"
