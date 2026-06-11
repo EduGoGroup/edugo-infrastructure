@@ -19,6 +19,11 @@ type Notification struct {
 	Body         *string    `db:"body" gorm:"default:null" validate:"omitempty"`
 	ResourceType *string    `db:"resource_type" gorm:"type:varchar(50)" validate:"omitempty"`
 	ResourceID   *uuid.UUID `db:"resource_id" gorm:"type:uuid" validate:"omitempty,uuid"`
+	// SchoolID/UnitID identifican el tenant (escuela/unidad) del recurso (F4.6.8,
+	// D21). Se persisten para que la lista in-app pueda hacer context-switch
+	// multi-tenant al tocar. Nullable: notif global/sin tenant → NULL.
+	SchoolID *uuid.UUID `db:"school_id" gorm:"type:uuid" validate:"omitempty,uuid"`
+	UnitID   *uuid.UUID `db:"unit_id" gorm:"type:uuid" validate:"omitempty,uuid"`
 	// NOTE: partial index idx_notif_user_unread ON (user_id, created_at DESC) WHERE is_read = FALSE must be created in post_gorm.sql
 	IsRead    bool       `db:"is_read" gorm:"not null;default:false"`
 	CreatedAt time.Time  `db:"created_at" gorm:"not null;autoCreateTime;index:idx_notif_user_all" validate:"-"`

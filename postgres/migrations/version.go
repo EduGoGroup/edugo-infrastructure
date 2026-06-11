@@ -603,7 +603,13 @@ import (
 //     idx_service_clients_active). Seed L5-m2m: edugo-worker y edugo-api-learning
 //     con scope notifications.dispatch y secret_hash bcrypt del dev secret de
 //     push-secrets.env. L5_SEED_VERSION → 1.0.0.
-const SchemaVersion = "3.59.0"
+//   - 3.60.0: plan 020 F4.6.8 — persistir tenant en la notificación in-app. La
+//     entity Notification suma school_id/unit_id (uuid nullable) a
+//     notifications.notifications para que la lista in-app pueda resolver el
+//     context-switch multi-tenant al tocar (antes solo viajaban en el push, V1).
+//     Solo DDL aditivo vía AutoMigrate (2 columnas nullable, sin índice); sin
+//     cambios de seeds ni SQL post_gorm. Bump por la regla 1 (cambio en entity).
+const SchemaVersion = "3.60.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
