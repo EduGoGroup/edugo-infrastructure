@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.6] - 2026-06-11
+
 ### Added
 
 - Plan 020 N5 F1.1/F1.2: tablas `notifications.device_tokens` y `auth.service_clients`
