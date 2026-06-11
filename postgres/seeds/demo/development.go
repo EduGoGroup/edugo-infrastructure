@@ -90,9 +90,6 @@ func ApplyDemo(gdb *gorm.DB) error {
 		if err := seedCalendarEvents(tx); err != nil {
 			return err
 		}
-		if err := seedCourses(tx); err != nil {
-			return err
-		}
 		return nil
 	})
 }
@@ -132,10 +129,6 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 		"iam.user_grants",
 		"iam.user_roles",
 		"academic.academic_units",
-	}
-	// content.courses puede no existir en entornos sin la migración de learning
-	if err := truncateIfExists(tx, "content.courses"); err != nil {
-		return err
 	}
 	for _, table := range required {
 		if err := truncateTable(tx, table); err != nil {
@@ -790,36 +783,6 @@ func seedCalendarEvents(tx *gorm.DB) error {
 	}
 
 	return upsertMaps(tx, "academic.calendar_events", rows, []string{"id"}, nil, false)
-}
-
-func seedCourses(tx *gorm.DB) error {
-	// content.courses puede no existir si la migración de la API de learning no se ha aplicado.
-	// En ese caso, se omite silenciosamente.
-	exists, err := tableExists(tx, "content.courses")
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return nil
-	}
-
-	rows := []map[string]any{
-		{
-			"id":          mustUUID("c0000000-0000-0000-0000-000000000001"),
-			"unit_id":     mustUUID("ac000000-0000-0000-0000-000000000003"),
-			"name":        "Curso de Matematicas 5to A",
-			"description": "Curso de matematicas para 5to A - seed de desarrollo para tests de integración",
-			"status":      "active",
-		},
-		{
-			"id":          mustUUID("c0000000-0000-0000-0000-000000000002"),
-			"unit_id":     mustUUID("ac000000-0000-0000-0000-000000000004"),
-			"name":        "Curso de Ciencias 5to B",
-			"description": "Curso de ciencias para 5to B - seed de desarrollo para tests de integración",
-			"status":      "active",
-		},
-	}
-	return upsertMaps(tx, "content.courses", rows, []string{"id"}, []string{"name", "description", "status"}, true)
 }
 
 func upsertMaps(tx *gorm.DB, table string, rows []map[string]any, conflictColumns, updateColumns []string, touchUpdatedAt bool) error {

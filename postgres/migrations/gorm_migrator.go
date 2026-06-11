@@ -77,9 +77,7 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// F2 (plan 018, maestro-detalle): material es el TEMA; material_file es el
 		// DETALLE (N archivos por tema, va DESPUES de Material por la FK material_id).
 		// content.material_version ELIMINADA (versionaba el unico archivo inline).
-		// content.courses queda FUERA de alcance de N4: se deja intacto tal cual
-		// estaba (no se toca ni se reconstruye), por eso su entity sigue registrada.
-		&entities.Course{},
+		// content.courses ELIMINADA (feature muerta: ningun codigo vivo la lee).
 		&entities.Material{},
 		&entities.MaterialFile{},
 		&entities.Progress{},

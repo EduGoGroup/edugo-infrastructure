@@ -609,7 +609,16 @@ import (
 //     context-switch multi-tenant al tocar (antes solo viajaban en el push, V1).
 //     Solo DDL aditivo vía AutoMigrate (2 columnas nullable, sin índice); sin
 //     cambios de seeds ni SQL post_gorm. Bump por la regla 1 (cambio en entity).
-const SchemaVersion = "3.60.0"
+//   - 3.60.1: eliminación de la feature muerta `content.courses` — ningún código
+//     vivo la lee (la API learning ya fue limpiada). Se borra la entity Course,
+//     su registro en el AutoMigrate de gorm_migrator.go y el seedCourses + su
+//     truncate en demo/development.go. AutoMigrate nunca dropea, así que un
+//     recreate fresco simplemente ya no crea la tabla (sin DROP, sin SQL
+//     post_gorm). Bump por la regla 1 (cambio en migrations/ + seeds/), aunque
+//     ComputeFilesHash() no cambia (solo hashea pre/post_gorm.sql). NO se toca
+//     content.progress / entities.Progress (la lee viva academic via
+//     cross_schema_stats).
+const SchemaVersion = "3.60.1"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
