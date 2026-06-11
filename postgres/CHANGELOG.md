@@ -6,6 +6,15 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.6] - 2026-06-11
+
+### Added
+
+- Plan 020 N5 F1.1/F1.2: tablas `notifications.device_tokens` y `auth.service_clients`
+  (entities GORM + índices parciales). Capa de seed L5-m2m con clientes `edugo-worker` y
+  `edugo-api-learning` (scope `notifications.dispatch`, `secret_hash` bcrypt del dev secret de
+  `push-secrets.env`). `SchemaVersion` 3.58.0 → 3.59.0; `L5_SEED_VERSION` 1.0.0.
+
 ## [0.900.5] - 2026-06-09
 
 Despliegue del plan 019: `entity-picker` en `assessments-form.subject_id`, `view_when` read-only

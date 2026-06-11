@@ -25,6 +25,8 @@ import (
 //     resource_screens, concept_types). Implementación por batches
 //     B1..B7 (phase-6-layer-l4/tasks.md). Stub en B0; datos reales
 //     en seeds/system/l4/*.go.
+//   - L5-m2m: clientes service JWT (edugo-worker, edugo-api-learning)
+//     con scope notifications.dispatch (plan 020 N5).
 //   - Layer_Legacy ([archivado pre-Fase-6] ) NO se aplica desde Fase 2
 //     (ADR-6); el directorio se elimina del disco en el bloque C
 //     de Fase 6.
@@ -35,6 +37,7 @@ func Layers() []Layer {
 		layers.NewL2(),
 		layers.NewL3(),
 		layers.NewL4(),
+		layers.NewL5(),
 	}
 }
 

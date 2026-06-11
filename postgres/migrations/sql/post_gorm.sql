@@ -858,6 +858,9 @@ CREATE INDEX IF NOT EXISTS idx_users_active
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_revoked_at
     ON auth.refresh_tokens (revoked_at) WHERE revoked_at IS NOT NULL;
 
+CREATE INDEX IF NOT EXISTS idx_service_clients_active
+    ON auth.service_clients (client_id) WHERE is_active = true;
+
 CREATE INDEX IF NOT EXISTS idx_login_attempts_rate_limit
     ON auth.login_attempts (identifier, successful, attempted_at) WHERE successful = false;
 
@@ -929,3 +932,6 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_severity
 -- notifications
 CREATE INDEX IF NOT EXISTS idx_notif_user_unread
     ON notifications.notifications (user_id, created_at DESC) WHERE is_read = FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_device_tokens_user_active
+    ON notifications.device_tokens (user_id) WHERE revoked_at IS NULL;
