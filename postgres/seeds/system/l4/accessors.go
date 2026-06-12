@@ -113,6 +113,16 @@ func ConceptTypes() ([]entities.ConceptType, error) {
 	return buildL4ConceptTypes(), nil
 }
 
+// Systems retorna las 2 apps del ecosistema sembradas por L4 (MP-08).
+func Systems() ([]entities.System, error) {
+	return buildL4Systems(), nil
+}
+
+// InvitationTypes retorna los 6 tipos de invitación sembrados por L4 (MP-08).
+func InvitationTypes() ([]entities.InvitationType, error) {
+	return buildL4InvitationTypes(), nil
+}
+
 // ConceptDefinitions retorna las 50 definiciones (10 × 5 tipos)
 // sembradas por L4. Como el schema asigna el ID con
 // `gen_random_uuid()`, el accessor sintetiza un UUID determinístico

@@ -552,9 +552,9 @@ package layers
 //     campo `"type": "number"` declara su rango en el slot_data con las claves
 //     `min`/`max` (el FE KMP las lee y valida antes de enviar). Valores
 //     alineados al binding real del backend donde existe:
-//       · assessments-form: pass_threshold min=0/max=100, max_attempts min=1,
-//         time_limit_minutes min=1 (assessment_dto.go).
-//       · assessment-question-form: points min=0 (question_dto.go).
+//     · assessments-form: pass_threshold min=0/max=100, max_attempts min=1,
+//     time_limit_minutes min=1 (assessment_dto.go).
+//     · assessment-question-form: points min=0 (question_dto.go).
 //     Donde el backend NO tiene rango se usa un mínimo conservador (sin respaldo
 //     de binding): period-form academic_year min=1900/max=2100; invitations-form
 //     max_uses min=1. Solo cambia slot_data de instances L4 → bump para
@@ -565,8 +565,24 @@ package layers
 //     alias quedan en NULL (caen al default de la escuela / fallback de sistema;
 //     herencia del landing = mejora futura). super_admin (L0) → dashboard-superadmin
 //     se siembra en l0_roles. Acompaña el DDL aditivo iam.roles.landing_screen_key
-//     + academic.schools.default_landing_screen_key (SchemaVersion → 3.60.8).
-const L4_SEED_VERSION = "1.59.0"
+//   - academic.schools.default_landing_screen_key (SchemaVersion → 3.60.8).
+//   - 1.60.0 (MP-08 F1 — acceso por sistema + tipos de invitación): se siembran
+//     4 catálogos nuevos vía seeds/system/l4/access_catalog.go:
+//     · iam.systems → 2 apps (kmp, admin-tool).
+//     · iam.system_roles → reparto rol↔app: kmp recibe los 12 roles del
+//     ecosistema; admin-tool SOLO staff/admin (super_admin, school_admin,
+//     school_coordinator, school_director, readonly_auditor). REGLA DURA
+//     (DEC-C): student/teacher/guardian NO entran a admin-tool.
+//     · academic.invitation_types → catálogo global de 6 tipos
+//     (teacher/student/guardian/coordinator/admin/assistant; guardian.label
+//     = "Representante"; requires_unit por scope).
+//     · academic.school_invitation_roles → equivalencias tipo→rol IAM por
+//     defecto de la escuela demo L1. Helper compartido
+//     SeedDefaultSchoolInvitationRoles también enganchado en
+//     common.SeedSchool (playground_v2) → toda escuela de playground las
+//     recibe. Acompaña el DDL aditivo de F0 (tablas iam.systems/system_roles
+//   - academic.invitation_types/school_invitation_roles).
+const L4_SEED_VERSION = "1.60.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

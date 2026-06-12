@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -71,9 +72,19 @@ func buildSchool(spec SchoolSpec) entities.School {
 	}
 }
 
-// SeedSchool inserta la escuela aplicando los defaults del playground.
-// Idempotente: si el id ya existe, no actualiza ni falla.
+// SeedSchool inserta la escuela aplicando los defaults del playground y, acto
+// seguido, sus equivalencias tipo-de-invitación→rol por defecto (MP-08).
+//
+// Es el PUNTO ÚNICO donde nacen las escuelas de playground, así que aquí se
+// engancha SeedDefaultSchoolInvitationRoles para que TODA escuela sembrada
+// reciba sus 6 equivalencias sin duplicar el mapeo (shared over inline). Los
+// invitation_types los siembra la capa L4 del system seed, que SIEMPRE corre
+// antes que cualquier playground → la FK invitation_type_id existe. Idempotente:
+// si el id de la escuela ya existe, no actualiza ni falla.
 func SeedSchool(tx *gorm.DB, spec SchoolSpec) error {
 	school := buildSchool(spec)
-	return onConflictIgnore(tx, &school)
+	if err := onConflictIgnore(tx, &school); err != nil {
+		return err
+	}
+	return l4.SeedDefaultSchoolInvitationRoles(tx, spec.ID)
 }

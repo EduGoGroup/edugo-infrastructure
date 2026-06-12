@@ -55,6 +55,11 @@ func (l *l4Layer) SeedVersion() string { return L4_SEED_VERSION }
 //  4. screen_instances    (FK a screen_templates)
 //  5. resource_screens    (FK a resources + screen_instances)
 //  6. concept_types       (sin deps L4)
+//  7. systems             (MP-08, sin deps de FK)
+//  8. system_roles        (MP-08, FK a systems + roles ya sembrados)
+//  9. invitation_types    (MP-08, sin deps de FK)
+//  10. demo_school_invitation_roles (MP-08, FK a invitation_types + roles +
+//     escuela demo L1; equivalencias por defecto de la escuela demo)
 func (l *l4Layer) Apply(tx *gorm.DB) error {
 	if err := l4.ApplyResources(tx); err != nil {
 		return err
@@ -72,6 +77,19 @@ func (l *l4Layer) Apply(tx *gorm.DB) error {
 		return err
 	}
 	if err := l4.ApplyConceptTypes(tx); err != nil {
+		return err
+	}
+	// MP-08: acceso por sistema + tipos de invitación.
+	if err := l4.ApplySystems(tx); err != nil {
+		return err
+	}
+	if err := l4.ApplySystemRoles(tx); err != nil {
+		return err
+	}
+	if err := l4.ApplyInvitationTypes(tx); err != nil {
+		return err
+	}
+	if err := l4.ApplyDemoSchoolInvitationRoles(tx); err != nil {
 		return err
 	}
 	return nil
