@@ -48,14 +48,12 @@
 package onboarding
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -105,46 +103,66 @@ const (
 // ya existen). Orden: school → units → users → user_roles → memberships →
 // invitations. Idempotente.
 func Apply(tx *gorm.DB) error {
-	if err := upsertSchool(tx); err != nil {
+	sid := common.MustParseUUID(schoolID)
+	unitA := common.MustParseUUID(unitAID)
+	unitB := common.MustParseUUID(unitBID)
+
+	if err := common.SeedSchool(tx, common.SchoolSpec{
+		ID: sid, Name: schoolName, Code: schoolCode,
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: school: %w", err)
 	}
-	if err := upsertAcademicUnit(tx, unitAID, unitAName, unitACode); err != nil {
+	if err := common.SeedAcademicUnit(tx, common.UnitSpec{
+		ID: unitA, SchoolID: sid, Name: unitAName, Code: unitACode, AcademicYear: academicYear,
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: unit_a: %w", err)
 	}
-	if err := upsertAcademicUnit(tx, unitBID, unitBName, unitBCode); err != nil {
+	if err := common.SeedAcademicUnit(tx, common.UnitSpec{
+		ID: unitB, SchoolID: sid, Name: unitBName, Code: unitBCode, AcademicYear: academicYear,
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: unit_b: %w", err)
 	}
 
-	if err := upsertUser(tx, adminUserID, AdminEmail, "Admin", "Colegio"); err != nil {
+	adminUser := common.MustParseUUID(adminUserID)
+	profesorUser := common.MustParseUUID(profesorUserID)
+	miembroUser := common.MustParseUUID(miembroUserID)
+
+	if err := common.SeedUser(tx, common.UserSpec{ID: adminUser, Email: AdminEmail, Password: Password, FirstName: "Admin", LastName: "Colegio"}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: admin_user: %w", err)
 	}
-	if err := upsertUser(tx, profesorUserID, ProfesorEmail, "Profesor", "Unidad A"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: profesorUser, Email: ProfesorEmail, Password: Password, FirstName: "Profesor", LastName: "Unidad A"}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: profesor_user: %w", err)
 	}
-	if err := upsertUser(tx, miembroUserID, MiembroEmail, "Ya", "Miembro"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: miembroUser, Email: MiembroEmail, Password: Password, FirstName: "Ya", LastName: "Miembro"}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: miembro_user: %w", err)
 	}
 
 	// Asignación de roles L4 (no se crean roles nuevos).
-	if err := upsertUserRole(tx, adminUserID, l4.L4_ROLE_SCHOOL_ADMIN_ID); err != nil {
+	if err := common.SeedUserRole(tx, adminUser, common.MustParseUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID)); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: admin_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, profesorUserID, l4.L4_ROLE_TEACHER_ID); err != nil {
+	if err := common.SeedUserRole(tx, profesorUser, common.MustParseUUID(l4.L4_ROLE_TEACHER_ID)); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: profesor_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, miembroUserID, l4.L4_ROLE_STUDENT_ID); err != nil {
+	if err := common.SeedUserRole(tx, miembroUser, common.MustParseUUID(l4.L4_ROLE_STUDENT_ID)); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: miembro_user_role: %w", err)
 	}
 
-	// Membresías: admin con alcance COLEGIO (academic_unit_id NULL); profesor
+	// Membresías: admin con alcance COLEGIO (academic_unit_id nil); profesor
 	// y ya-miembro con alcance UNIDAD A.
-	if err := upsertMembership(tx, adminMembID, adminUserID, nil, "admin"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{
+		ID: common.MustParseUUID(adminMembID), UserID: adminUser, SchoolID: sid, AcademicUnitID: nil, Role: "admin",
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: admin_membership: %w", err)
 	}
-	if err := upsertMembership(tx, profesorMembID, profesorUserID, ptrUnit(unitAID), "teacher"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{
+		ID: common.MustParseUUID(profesorMembID), UserID: profesorUser, SchoolID: sid, AcademicUnitID: &unitA, Role: "teacher",
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: profesor_membership: %w", err)
 	}
-	if err := upsertMembership(tx, miembroMembID, miembroUserID, ptrUnit(unitAID), "student"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{
+		ID: common.MustParseUUID(miembroMembID), UserID: miembroUser, SchoolID: sid, AcademicUnitID: &unitA, Role: "student",
+	}); err != nil {
 		return fmt.Errorf("playground_v2/onboarding: miembro_membership: %w", err)
 	}
 
@@ -160,143 +178,6 @@ func Apply(tx *gorm.DB) error {
 	}
 
 	return nil
-}
-
-func ptrUnit(idStr string) *string {
-	s := idStr
-	return &s
-}
-
-func upsertSchool(tx *gorm.DB) error {
-	id, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	s := entities.School{
-		ID:               id,
-		Name:             schoolName,
-		Code:             schoolCode,
-		Country:          "Chile",
-		SubscriptionTier: "basic",
-		MaxTeachers:      0,
-		MaxStudents:      0,
-		IsActive:         true,
-		Metadata:         json.RawMessage(`{}`),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&s).Error
-}
-
-func upsertAcademicUnit(tx *gorm.DB, idStr, name, code string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	u := entities.AcademicUnit{
-		ID:           id,
-		SchoolID:     sid,
-		Name:         name,
-		Code:         code,
-		Type:         "class",
-		AcademicYear: academicYear,
-		Metadata:     json.RawMessage(`{}`),
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&u).Error
-}
-
-func upsertUser(tx *gorm.DB, idStr, email, first, last string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("bcrypt: %w", err)
-	}
-	u := entities.User{
-		ID:           id,
-		Email:        email,
-		PasswordHash: string(hash),
-		FirstName:    first,
-		LastName:     last,
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&u).Error
-}
-
-func upsertUserRole(tx *gorm.DB, userIDStr, roleIDStr string) error {
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	rid, err := uuid.Parse(roleIDStr)
-	if err != nil {
-		return err
-	}
-	derived := uuid.NewSHA1(uuid.NameSpaceOID, []byte(uid.String()+":"+rid.String()))
-	ur := entities.UserRole{
-		ID:        derived,
-		UserID:    uid,
-		RoleID:    rid,
-		IsActive:  true,
-		GrantedAt: time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&ur).Error
-}
-
-// upsertMembership siembra una membresía. unitIDStr nil → academic_unit_id
-// NULL (alcance COLEGIO); no-nil → alcance UNIDAD.
-func upsertMembership(tx *gorm.DB, idStr, userIDStr string, unitIDStr *string, roleKind string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	var auid *uuid.UUID
-	if unitIDStr != nil {
-		parsed, perr := uuid.Parse(*unitIDStr)
-		if perr != nil {
-			return perr
-		}
-		auid = &parsed
-	}
-	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: auid,
-		Role:           roleKind,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&m).Error
 }
 
 func upsertInvitation(tx *gorm.DB, idStr, code, unitIDStr, role, label string) error {

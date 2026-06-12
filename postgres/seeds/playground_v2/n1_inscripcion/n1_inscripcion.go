@@ -44,16 +44,11 @@
 package n1_inscripcion
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
 
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
@@ -105,89 +100,122 @@ const (
 // school → unit → subjects → period → users → user_roles → memberships →
 // subject_offerings → subject_offering_enrollments. Idempotente.
 func Apply(tx *gorm.DB) error {
-	if err := upsertSchool(tx); err != nil {
+	// Ids del playground (constantes string) parseados una sola vez.
+	schoolUUID := common.MustParseUUID(schoolID)
+	unitUUID := common.MustParseUUID(unitID)
+	subjectMathUUID := common.MustParseUUID(subjectMathID)
+	subjectLangUUID := common.MustParseUUID(subjectLangID)
+	subjectScienceUUID := common.MustParseUUID(subjectScienceID)
+	periodUUID := common.MustParseUUID(periodID)
+
+	teacherUserUUID := common.MustParseUUID(teacherUserID)
+	student1UserUUID := common.MustParseUUID(student1UserID)
+	student2UserUUID := common.MustParseUUID(student2UserID)
+	student3UserUUID := common.MustParseUUID(student3UserID)
+	adminUserUUID := common.MustParseUUID(adminUserID)
+
+	teacherMembUUID := common.MustParseUUID(teacherMembID)
+	student1MembUUID := common.MustParseUUID(student1MembID)
+	student2MembUUID := common.MustParseUUID(student2MembID)
+	student3MembUUID := common.MustParseUUID(student3MembID)
+	adminMembUUID := common.MustParseUUID(adminMembID)
+
+	offeringMathUUID := common.MustParseUUID(offeringMathID)
+	offeringLangUUID := common.MustParseUUID(offeringLangID)
+	offeringScienceUUID := common.MustParseUUID(offeringScienceID)
+
+	if err := common.SeedSchool(tx, common.SchoolSpec{ID: schoolUUID, Name: schoolName, Code: schoolCode}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: school: %w", err)
 	}
-	if err := upsertAcademicUnit(tx); err != nil {
+	if err := common.SeedAcademicUnit(tx, common.UnitSpec{ID: unitUUID, SchoolID: schoolUUID, Name: unitName, Code: unitCode, AcademicYear: academicYear}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: academic_unit: %w", err)
 	}
 
-	if err := upsertSubject(tx, subjectMathID, "Matemáticas", "MAT"); err != nil {
+	if err := common.SeedSubject(tx, common.SubjectSpec{ID: subjectMathUUID, SchoolID: schoolUUID, Name: "Matemáticas", Code: "MAT"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: subject_math: %w", err)
 	}
-	if err := upsertSubject(tx, subjectLangID, "Lenguaje", "LEN"); err != nil {
+	if err := common.SeedSubject(tx, common.SubjectSpec{ID: subjectLangUUID, SchoolID: schoolUUID, Name: "Lenguaje", Code: "LEN"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: subject_lang: %w", err)
 	}
-	if err := upsertSubject(tx, subjectScienceID, "Ciencias", "CIE"); err != nil {
+	if err := common.SeedSubject(tx, common.SubjectSpec{ID: subjectScienceUUID, SchoolID: schoolUUID, Name: "Ciencias", Code: "CIE"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: subject_science: %w", err)
 	}
 
-	if err := upsertActivePeriod(tx); err != nil {
+	if err := common.SeedActivePeriod(tx, common.PeriodSpec{
+		ID:             periodUUID,
+		SchoolID:       schoolUUID,
+		AcademicUnitID: unitUUID,
+		Name:           "Semestre 1 2026",
+		Code:           "N1-2026-S1",
+		Type:           "semester",
+		AcademicYear:   academicYear,
+		SortOrder:      1,
+	}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: academic_period: %w", err)
 	}
 
-	if err := upsertUser(tx, teacherUserID, TeacherEmail, "Docente", "N1"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: teacherUserUUID, Email: TeacherEmail, Password: Password, FirstName: "Docente", LastName: "N1"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: teacher_user: %w", err)
 	}
-	if err := upsertUser(tx, student1UserID, Student1Email, "Alumno", "Uno"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: student1UserUUID, Email: Student1Email, Password: Password, FirstName: "Alumno", LastName: "Uno"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_user: %w", err)
 	}
-	if err := upsertUser(tx, student2UserID, Student2Email, "Alumno", "Dos"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: student2UserUUID, Email: Student2Email, Password: Password, FirstName: "Alumno", LastName: "Dos"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_user: %w", err)
 	}
-	if err := upsertUser(tx, student3UserID, Student3Email, "Alumno", "Tres"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: student3UserUUID, Email: Student3Email, Password: Password, FirstName: "Alumno", LastName: "Tres"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student3_user: %w", err)
 	}
-	if err := upsertUser(tx, adminUserID, AdminEmail, "Admin", "N1"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: adminUserUUID, Email: AdminEmail, Password: Password, FirstName: "Admin", LastName: "N1"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: admin_user: %w", err)
 	}
 
 	// Roles L4 para contexto de login (no se crean roles nuevos).
-	if err := upsertUserRole(tx, teacherUserID, l4.L4_ROLE_TEACHER_ID); err != nil {
+	if err := common.SeedUserRole(tx, teacherUserUUID, common.MustParseUUID(l4.L4_ROLE_TEACHER_ID)); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: teacher_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, student1UserID, l4.L4_ROLE_STUDENT_ID); err != nil {
+	if err := common.SeedUserRole(tx, student1UserUUID, common.MustParseUUID(l4.L4_ROLE_STUDENT_ID)); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, student2UserID, l4.L4_ROLE_STUDENT_ID); err != nil {
+	if err := common.SeedUserRole(tx, student2UserUUID, common.MustParseUUID(l4.L4_ROLE_STUDENT_ID)); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, student3UserID, l4.L4_ROLE_STUDENT_ID); err != nil {
+	if err := common.SeedUserRole(tx, student3UserUUID, common.MustParseUUID(l4.L4_ROLE_STUDENT_ID)); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student3_user_role: %w", err)
 	}
-	if err := upsertUserRole(tx, adminUserID, l4.L4_ROLE_SCHOOL_ADMIN_ID); err != nil {
+	if err := common.SeedUserRole(tx, adminUserUUID, common.MustParseUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID)); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: admin_user_role: %w", err)
 	}
 
 	// Membresías: todos con alcance UNIDAD en la misma unidad.
-	if err := upsertMembership(tx, teacherMembID, teacherUserID, "teacher"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{ID: teacherMembUUID, UserID: teacherUserUUID, SchoolID: schoolUUID, AcademicUnitID: &unitUUID, Role: "teacher"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: teacher_membership: %w", err)
 	}
-	if err := upsertMembership(tx, student1MembID, student1UserID, "student"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{ID: student1MembUUID, UserID: student1UserUUID, SchoolID: schoolUUID, AcademicUnitID: &unitUUID, Role: "student"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_membership: %w", err)
 	}
-	if err := upsertMembership(tx, student2MembID, student2UserID, "student"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{ID: student2MembUUID, UserID: student2UserUUID, SchoolID: schoolUUID, AcademicUnitID: &unitUUID, Role: "student"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_membership: %w", err)
 	}
-	if err := upsertMembership(tx, student3MembID, student3UserID, "student"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{ID: student3MembUUID, UserID: student3UserUUID, SchoolID: schoolUUID, AcademicUnitID: &unitUUID, Role: "student"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student3_membership: %w", err)
 	}
 	// Membresía del admin con alcance COLEGIO (AcademicUnitID = NULL): el form
 	// memberships-form exige contexto de colegio en el JWT del actor.
-	if err := upsertSchoolMembership(tx, adminMembID, adminUserID, "admin"); err != nil {
+	if err := common.SeedMembership(tx, common.MembershipSpec{ID: adminMembUUID, UserID: adminUserUUID, SchoolID: schoolUUID, AcademicUnitID: nil, Role: "admin"}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: admin_membership: %w", err)
 	}
 
 	// Sesiones de materia (subject_offerings): una por materia en la unidad.
 	// La de Matemáticas lleva al docente (la dicta); Lenguaje y Ciencias quedan
-	// sin docente asignado (teacher_membership_id NULL).
-	if err := upsertOffering(tx, offeringMathID, subjectMathID, teacherMembID); err != nil {
+	// sin docente asignado (teacher_membership_id NULL) y SIN section_label.
+	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringMathUUID, SchoolID: schoolUUID, SubjectID: subjectMathUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID, TeacherMembershipID: &teacherMembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_math: %w", err)
 	}
-	if err := upsertOffering(tx, offeringLangID, subjectLangID, ""); err != nil {
+	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringLangUUID, SchoolID: schoolUUID, SubjectID: subjectLangUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_lang: %w", err)
 	}
-	if err := upsertOffering(tx, offeringScienceID, subjectScienceID, ""); err != nil {
+	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringScienceUUID, SchoolID: schoolUUID, SubjectID: subjectScienceUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_science: %w", err)
 	}
 
@@ -195,328 +223,21 @@ func Apply(tx *gorm.DB) error {
 	//  - alumno 1: Matemáticas + Lenguaje.
 	//  - alumno 2: las 3 materias.
 	//  - alumno 3: SIN inscribir (no se crea ninguna fila).
-	if err := upsertEnrollment(tx, offeringMathID, subjectMathID, student1MembID); err != nil {
+	if err := common.SeedEnrollment(tx, common.EnrollmentSpec{OfferingID: offeringMathUUID, SubjectID: subjectMathUUID, PeriodID: periodUUID, StudentMembershipID: student1MembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_enroll_math: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLangID, subjectLangID, student1MembID); err != nil {
+	if err := common.SeedEnrollment(tx, common.EnrollmentSpec{OfferingID: offeringLangUUID, SubjectID: subjectLangUUID, PeriodID: periodUUID, StudentMembershipID: student1MembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student1_enroll_lang: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringMathID, subjectMathID, student2MembID); err != nil {
+	if err := common.SeedEnrollment(tx, common.EnrollmentSpec{OfferingID: offeringMathUUID, SubjectID: subjectMathUUID, PeriodID: periodUUID, StudentMembershipID: student2MembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_math: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringLangID, subjectLangID, student2MembID); err != nil {
+	if err := common.SeedEnrollment(tx, common.EnrollmentSpec{OfferingID: offeringLangUUID, SubjectID: subjectLangUUID, PeriodID: periodUUID, StudentMembershipID: student2MembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_lang: %w", err)
 	}
-	if err := upsertEnrollment(tx, offeringScienceID, subjectScienceID, student2MembID); err != nil {
+	if err := common.SeedEnrollment(tx, common.EnrollmentSpec{OfferingID: offeringScienceUUID, SubjectID: subjectScienceUUID, PeriodID: periodUUID, StudentMembershipID: student2MembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: student2_enroll_science: %w", err)
 	}
 
 	return nil
-}
-
-func upsertSchool(tx *gorm.DB) error {
-	id, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	s := entities.School{
-		ID:               id,
-		Name:             schoolName,
-		Code:             schoolCode,
-		Country:          "Chile",
-		SubscriptionTier: "basic",
-		MaxTeachers:      0,
-		MaxStudents:      0,
-		IsActive:         true,
-		Metadata:         json.RawMessage(`{}`),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&s).Error
-}
-
-func upsertAcademicUnit(tx *gorm.DB) error {
-	id, err := uuid.Parse(unitID)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	u := entities.AcademicUnit{
-		ID:           id,
-		SchoolID:     sid,
-		Name:         unitName,
-		Code:         unitCode,
-		Type:         "class",
-		AcademicYear: academicYear,
-		Metadata:     json.RawMessage(`{}`),
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&u).Error
-}
-
-// upsertSubject siembra una materia con scope de ESCUELA (ADR 0016):
-// AcademicUnitID = nil. La materia es catálogo de la escuela; su ubicación en
-// la unidad la da la sesión (subject_offering). Los 3 nombres del playground
-// son distintos, así que cumplen UNIQUE(school_id, name) sin deduplicar.
-func upsertSubject(tx *gorm.DB, idStr, name, code string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	c := code
-	subj := entities.Subject{
-		ID:             id,
-		SchoolID:       sid,
-		AcademicUnitID: nil,
-		Name:           name,
-		Code:           &c,
-		IsActive:       true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&subj).Error
-}
-
-// upsertActivePeriod siembra un período académico ACTIVO (is_active=true)
-// para el colegio. Hay un índice único parcial por school_id WHERE is_active,
-// así que sólo puede haber uno activo por colegio (cumplido: único período).
-func upsertActivePeriod(tx *gorm.DB) error {
-	id, err := uuid.Parse(periodID)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	auid, err := uuid.Parse(unitID)
-	if err != nil {
-		return err
-	}
-	code := "N1-2026-S1"
-	p := entities.AcademicPeriod{
-		ID:             id,
-		SchoolID:       sid,
-		AcademicUnitID: auid,
-		Name:           "Semestre 1 2026",
-		Code:           &code,
-		Type:           "semester",
-		StartDate:      time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate:        time.Date(2026, 7, 31, 0, 0, 0, 0, time.UTC),
-		IsActive:       true,
-		AcademicYear:   academicYear,
-		SortOrder:      1,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&p).Error
-}
-
-func upsertUser(tx *gorm.DB, idStr, email, first, last string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("bcrypt: %w", err)
-	}
-	u := entities.User{
-		ID:           id,
-		Email:        email,
-		PasswordHash: string(hash),
-		FirstName:    first,
-		LastName:     last,
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&u).Error
-}
-
-func upsertUserRole(tx *gorm.DB, userIDStr, roleIDStr string) error {
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	rid, err := uuid.Parse(roleIDStr)
-	if err != nil {
-		return err
-	}
-	derived := uuid.NewSHA1(uuid.NameSpaceOID, []byte(uid.String()+":"+rid.String()))
-	ur := entities.UserRole{
-		ID:        derived,
-		UserID:    uid,
-		RoleID:    rid,
-		IsActive:  true,
-		GrantedAt: time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&ur).Error
-}
-
-func upsertMembership(tx *gorm.DB, idStr, userIDStr, roleKind string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	auid, err := uuid.Parse(unitID)
-	if err != nil {
-		return err
-	}
-	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: &auid,
-		Role:           roleKind,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&m).Error
-}
-
-// upsertSchoolMembership crea una membresía con alcance COLEGIO (no UNIDAD):
-// AcademicUnitID = nil. Es lo que necesita el school_admin para que su JWT
-// lleve contexto de colegio y pueda abrir memberships-form. Idempotente por id.
-func upsertSchoolMembership(tx *gorm.DB, idStr, userIDStr, roleKind string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: nil,
-		Role:           roleKind,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&m).Error
-}
-
-// upsertOffering crea una sesión de materia (subject_offering) para la materia
-// dada en la unidad y período del playground. teacherMembIDStr puede ser ""
-// (sesión sin docente asignado → teacher_membership_id NULL). Idempotente por id.
-func upsertOffering(tx *gorm.DB, idStr, subjectIDStr, teacherMembIDStr string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolID)
-	if err != nil {
-		return err
-	}
-	subjID, err := uuid.Parse(subjectIDStr)
-	if err != nil {
-		return err
-	}
-	auid, err := uuid.Parse(unitID)
-	if err != nil {
-		return err
-	}
-	pid, err := uuid.Parse(periodID)
-	if err != nil {
-		return err
-	}
-
-	var teacherMembID *uuid.UUID
-	if teacherMembIDStr != "" {
-		tmid, err := uuid.Parse(teacherMembIDStr)
-		if err != nil {
-			return err
-		}
-		teacherMembID = &tmid
-	}
-
-	o := entities.SubjectOffering{
-		ID:                  id,
-		SchoolID:            sid,
-		SubjectID:           subjID,
-		AcademicUnitID:      auid,
-		PeriodID:            pid,
-		TeacherMembershipID: teacherMembID,
-		IsActive:            true,
-		Metadata:            json.RawMessage(`{}`),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&o).Error
-}
-
-// upsertEnrollment inscribe al alumno (membership) en una sesión de materia
-// (subject_offering_enrollment). La PK es compuesta (offering_id,
-// student_membership_id); OnConflict sobre ambas → idempotente. subjectIDStr y
-// el periodID del playground son el subject_id y period_id de la oferta (copias
-// denormalizadas e inmutables que respaldan el invariante una-oferta-por-materia-
-// por-período, bug 0036). El playground tiene un único período activo.
-func upsertEnrollment(tx *gorm.DB, offeringIDStr, subjectIDStr, studentMembIDStr string) error {
-	oid, err := uuid.Parse(offeringIDStr)
-	if err != nil {
-		return err
-	}
-	subjID, err := uuid.Parse(subjectIDStr)
-	if err != nil {
-		return err
-	}
-	pid, err := uuid.Parse(periodID)
-	if err != nil {
-		return err
-	}
-	smid, err := uuid.Parse(studentMembIDStr)
-	if err != nil {
-		return err
-	}
-	e := entities.SubjectOfferingEnrollment{
-		OfferingID:          oid,
-		SubjectID:           subjID,
-		PeriodID:            pid,
-		StudentMembershipID: smid,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "offering_id"}, {Name: "student_membership_id"}},
-		DoNothing: true,
-	}).Create(&e).Error
 }

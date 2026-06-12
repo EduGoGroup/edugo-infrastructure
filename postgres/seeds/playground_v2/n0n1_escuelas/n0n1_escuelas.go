@@ -30,13 +30,12 @@
 package n0n1_escuelas
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -84,9 +83,6 @@ const (
 	// Usuarios.
 	adminUserID       = "69000000-0000-0000-0000-000000001001"
 	solicitanteUserID = "69000000-0000-0000-0000-000000001020"
-
-	// UserRole del admin (vínculo con super_admin).
-	adminUserRoleID = "69000000-0000-0000-0000-000000001301"
 
 	// Membresías del admin (alcance colegio en cada escuela).
 	adminMembCristoReyID = "69000000-0000-0000-0000-000000001311"
@@ -287,34 +283,43 @@ func Apply(tx *gorm.DB) error {
 	}
 
 	// Admin global.
-	if err := upsertUser(tx, adminUserID, "admin@edugo.local", "Admin", "Total"); err != nil {
+	adminUser := common.MustParseUUID(adminUserID)
+	if err := common.SeedUser(tx, common.UserSpec{ID: adminUser, Email: "admin@edugo.local", Password: Password, FirstName: "Admin", LastName: "Total"}); err != nil {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: admin_user: %w", err)
 	}
 	// Profesores.
 	for _, t := range teacherSeeds {
-		if err := upsertUser(tx, t.id, t.email, t.first, t.last); err != nil {
+		if err := common.SeedUser(tx, common.UserSpec{ID: common.MustParseUUID(t.id), Email: t.email, Password: Password, FirstName: t.first, LastName: t.last}); err != nil {
 			return fmt.Errorf("playground_v2/n0n1_escuelas: teacher_user %s: %w", t.email, err)
 		}
 	}
 	// Solicitante N0.
-	if err := upsertUser(tx, solicitanteUserID, "carlos.estudiante@edugo.local", "Carlos", "Estudiante"); err != nil {
+	if err := common.SeedUser(tx, common.UserSpec{ID: common.MustParseUUID(solicitanteUserID), Email: "carlos.estudiante@edugo.local", Password: Password, FirstName: "Carlos", LastName: "Estudiante"}); err != nil {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: solicitante_user: %w", err)
 	}
 
-	// UserRole admin → super_admin (acceso global "*" vía BeforeSave).
-	if err := upsertAdminUserRole(tx); err != nil {
+	// UserRole admin → super_admin (acceso global "*" vía BeforeSave del UserRole).
+	// El id se deriva SHA1(userID:roleID) en el común; la constante explícita
+	// adminUserRoleID que usaba el seed original no se referencia en ningún otro
+	// lado, así que el resultado es funcionalmente idéntico (mismo vínculo, scope "*").
+	if err := common.SeedUserRole(tx, adminUser, common.MustParseUUID(superAdminRoleID)); err != nil {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: admin_user_role: %w", err)
 	}
 
 	// Membresías admin (alcance colegio) en las 3 escuelas.
 	for _, m := range adminMembershipSeeds {
-		if err := upsertSchoolMembership(tx, m.id, adminUserID, m.schoolID, "admin"); err != nil {
+		if err := common.SeedMembership(tx, common.MembershipSpec{
+			ID: common.MustParseUUID(m.id), UserID: adminUser, SchoolID: common.MustParseUUID(m.schoolID), AcademicUnitID: nil, Role: "admin",
+		}); err != nil {
 			return fmt.Errorf("playground_v2/n0n1_escuelas: admin_membership %s: %w", m.id, err)
 		}
 	}
 	// Membresías teacher (alcance unidad).
 	for _, m := range teacherMembershipSeeds {
-		if err := upsertUnitMembership(tx, m.id, m.teacherUserID, m.schoolID, m.unitID, "teacher"); err != nil {
+		unitID := common.MustParseUUID(m.unitID)
+		if err := common.SeedMembership(tx, common.MembershipSpec{
+			ID: common.MustParseUUID(m.id), UserID: common.MustParseUUID(m.teacherUserID), SchoolID: common.MustParseUUID(m.schoolID), AcademicUnitID: &unitID, Role: "teacher",
+		}); err != nil {
 			return fmt.Errorf("playground_v2/n0n1_escuelas: teacher_membership %s: %w", m.id, err)
 		}
 	}
@@ -347,107 +352,50 @@ func upsertConceptType(tx *gorm.DB) error {
 }
 
 func upsertSchool(tx *gorm.DB, s schoolSeed) error {
-	id, err := uuid.Parse(s.id)
-	if err != nil {
-		return err
-	}
-	ctID, err := uuid.Parse(s.conceptTypeID)
-	if err != nil {
-		return err
-	}
-	school := entities.School{
-		ID:               id,
-		Name:             s.name,
-		Code:             s.code,
-		Country:          "Venezuela",
-		ConceptTypeID:    &ctID,
-		Metadata:         json.RawMessage(`{}`),
-		IsActive:         true,
-		SubscriptionTier: "basic",
-		MaxTeachers:      0,
-		MaxStudents:      0,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&school).Error
+	ctID := common.MustParseUUID(s.conceptTypeID)
+	return common.SeedSchool(tx, common.SchoolSpec{
+		ID:            common.MustParseUUID(s.id),
+		Name:          s.name,
+		Code:          s.code,
+		Country:       "Venezuela",
+		ConceptTypeID: &ctID,
+	})
 }
 
 func upsertPeriod(tx *gorm.DB, p periodSeed) error {
-	id, err := uuid.Parse(p.id)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(p.schoolID)
-	if err != nil {
-		return err
-	}
-	code := p.code
-	period := entities.AcademicPeriod{
-		ID:           id,
-		SchoolID:     sid,
+	// AcademicUnitID se deja en uuid.Nil (período por escuela, sin anclar a
+	// unidad), igual que el seed original.
+	return common.SeedActivePeriod(tx, common.PeriodSpec{
+		ID:           common.MustParseUUID(p.id),
+		SchoolID:     common.MustParseUUID(p.schoolID),
 		Name:         p.name,
-		Code:         &code,
+		Code:         p.code,
 		Type:         "semester",
 		StartDate:    time.Date(p.startY, time.Month(p.startM), p.startD, 0, 0, 0, 0, time.UTC),
 		EndDate:      time.Date(p.endY, time.Month(p.endM), p.endD, 0, 0, 0, 0, time.UTC),
-		IsActive:     true,
 		AcademicYear: academicYear,
 		SortOrder:    0,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&period).Error
+	})
 }
 
 func upsertUnit(tx *gorm.DB, u unitSeed) error {
-	id, err := uuid.Parse(u.id)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(u.schoolID)
-	if err != nil {
-		return err
-	}
-	unit := entities.AcademicUnit{
-		ID:           id,
-		SchoolID:     sid,
+	return common.SeedAcademicUnit(tx, common.UnitSpec{
+		ID:           common.MustParseUUID(u.id),
+		SchoolID:     common.MustParseUUID(u.schoolID),
 		Name:         u.name,
 		Code:         u.code,
 		Type:         "grade",
 		AcademicYear: academicYear,
-		Metadata:     json.RawMessage(`{}`),
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&unit).Error
+	})
 }
 
 func upsertSubject(tx *gorm.DB, s subjectSeed) error {
-	id, err := uuid.Parse(s.id)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(s.schoolID)
-	if err != nil {
-		return err
-	}
-	code := s.code
-	subj := entities.Subject{
-		ID:             id,
-		SchoolID:       sid,
-		AcademicUnitID: nil,
-		Name:           s.name,
-		Code:           &code,
-		IsActive:       true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&subj).Error
+	return common.SeedSubject(tx, common.SubjectSpec{
+		ID:       common.MustParseUUID(s.id),
+		SchoolID: common.MustParseUUID(s.schoolID),
+		Name:     s.name,
+		Code:     s.code,
+	})
 }
 
 // upsertOfferings genera las 32 subject_offerings por loop sobre offeringGroups
@@ -456,173 +404,31 @@ func upsertSubject(tx *gorm.DB, s subjectSeed) error {
 func upsertOfferings(tx *gorm.DB) error {
 	seq := 0x201 // primer id secuencial: 69..0201.
 	for _, g := range offeringGroups {
-		sid, err := uuid.Parse(g.schoolID)
-		if err != nil {
-			return err
-		}
-		auid, err := uuid.Parse(g.unitID)
-		if err != nil {
-			return err
-		}
-		pid, err := uuid.Parse(g.periodID)
-		if err != nil {
-			return err
-		}
+		sid := common.MustParseUUID(g.schoolID)
+		auid := common.MustParseUUID(g.unitID)
+		pid := common.MustParseUUID(g.periodID)
 		for _, subjIDStr := range g.subjectIDs {
-			subjID, err := uuid.Parse(subjIDStr)
-			if err != nil {
-				return err
-			}
+			subjID := common.MustParseUUID(subjIDStr)
 			for _, section := range g.sections {
-				idStr := fmt.Sprintf("69000000-0000-0000-0000-%012x", seq)
-				id, err := uuid.Parse(idStr)
-				if err != nil {
-					return err
-				}
+				id := common.MustParseUUID(fmt.Sprintf("69000000-0000-0000-0000-%012x", seq))
 				seq++
 				label := section
-				o := entities.SubjectOffering{
+				if err := common.SeedOffering(tx, common.OfferingSpec{
 					ID:                  id,
 					SchoolID:            sid,
 					SubjectID:           subjID,
 					AcademicUnitID:      auid,
-					SectionLabel:        &label,
 					PeriodID:            pid,
+					SectionLabel:        &label,
 					TeacherMembershipID: nil,
 					Capacity:            nil,
-					IsActive:            true,
-					Metadata:            json.RawMessage(`{}`),
-				}
-				if err := tx.Clauses(clause.OnConflict{
-					Columns:   []clause.Column{{Name: "id"}},
-					DoNothing: true,
-				}).Create(&o).Error; err != nil {
+				}); err != nil {
 					return err
 				}
 			}
 		}
 	}
 	return nil
-}
-
-func upsertUser(tx *gorm.DB, idStr, email, first, last string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("bcrypt: %w", err)
-	}
-	u := entities.User{
-		ID:           id,
-		Email:        email,
-		PasswordHash: string(hash),
-		FirstName:    first,
-		LastName:     last,
-		IsActive:     true,
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&u).Error
-}
-
-// upsertAdminUserRole vincula el admin con el rol L0 super_admin SIN contexto
-// (SchoolID/AcademicUnitID = nil) → el hook BeforeSave calcula scope_pattern "*"
-// (acceso global). Idempotente por id.
-func upsertAdminUserRole(tx *gorm.DB) error {
-	id, err := uuid.Parse(adminUserRoleID)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(adminUserID)
-	if err != nil {
-		return err
-	}
-	rid, err := uuid.Parse(superAdminRoleID)
-	if err != nil {
-		return err
-	}
-	ur := entities.UserRole{
-		ID:             id,
-		UserID:         uid,
-		RoleID:         rid,
-		SchoolID:       nil,
-		AcademicUnitID: nil,
-		IsActive:       true,
-		GrantedAt:      time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&ur).Error
-}
-
-// upsertSchoolMembership crea una membresía con alcance COLEGIO (AcademicUnitID
-// = nil), para el admin. Idempotente por id.
-func upsertSchoolMembership(tx *gorm.DB, idStr, userIDStr, schoolIDStr, role string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolIDStr)
-	if err != nil {
-		return err
-	}
-	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: nil,
-		Role:           role,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&m).Error
-}
-
-// upsertUnitMembership crea una membresía con alcance UNIDAD (AcademicUnitID
-// seteado), para los profesores. Idempotente por id.
-func upsertUnitMembership(tx *gorm.DB, idStr, userIDStr, schoolIDStr, unitIDStr, role string) error {
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return err
-	}
-	sid, err := uuid.Parse(schoolIDStr)
-	if err != nil {
-		return err
-	}
-	auid, err := uuid.Parse(unitIDStr)
-	if err != nil {
-		return err
-	}
-	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: &auid,
-		Role:           role,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
-	}
-	return tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoNothing: true,
-	}).Create(&m).Error
 }
 
 // upsertJoinRequest crea la solicitud N0 PENDIENTE (sin firmas) del solicitante
