@@ -23,6 +23,7 @@ const (
 	l4TplDashboardV1ID      = "a4000000-0000-0000-0000-000000000002"
 	l4TplSettingsV1ID       = "a4000000-0000-0000-0000-000000000003"
 	l4TplSettingsSystemV1ID = "a4000000-0000-0000-0000-000000000005"
+	l4TplAuditDetailV1ID    = "a4000000-0000-0000-0000-000000000006"
 )
 
 // loginBasicV1Definition — template de login con marca + formulario +
@@ -138,11 +139,58 @@ const settingsSystemV1Definition = `{
   ]
 }`
 
+// auditDetailV1Definition — template de detalle de un evento de
+// auditoría (pattern "detail"), SOLO LECTURA. Nace porque el template
+// base detail-basic-v1 (L0) trae slots HARDCODEADOS de material/archivo
+// (file_type_icon, file_size "Tamaño", created_at "Subido", status
+// "Estado", description "Descripción" y un botón "Descargar" con ícono
+// download). El renderer de detalle del KMP está atado a `definition.zones`
+// del template: el slot_data del instance solo puede sustituir los labels
+// (bind "slot:<key>") pero NO cambia qué `field` del JSON se pinta ni los
+// slots de la zona (no existe equivalente a FormFieldsResolver para detail).
+// Por eso audit-detail necesita su propio template con los campos REALES del
+// evento (GET identity:/api/v1/audit/events/:id → AuditEventResponse) y sin
+// el botón de descarga.
+//
+// Cada slot fija su label en `default` (español) y lo deja sobreescribible
+// vía bind:"slot:<key>" desde el slot_data del instance, igual que los demás
+// templates L4. `field` apunta al campo del JSON del evento. No hay zona de
+// acciones: la pantalla es de solo lectura.
+const auditDetailV1Definition = `{
+  "navigation": {"topBar": {"title": "slot:page_title", "showBack": true, "actions": []}},
+  "zones": [
+    {"id": "hero", "type": "container", "slots": [
+      {"id": "audit_icon", "controlType": "icon", "style": "large", "icon": "list", "bind": "slot:audit_icon"},
+      {"id": "severity_badge", "controlType": "chip", "field": "severity"}
+    ]},
+    {"id": "header", "type": "container", "slots": [
+      {"id": "action", "controlType": "label", "style": "headline-large", "field": "action"},
+      {"id": "actor_email", "controlType": "label", "style": "body", "field": "actor_email"}
+    ]},
+    {"id": "details", "type": "container", "slots": [
+      {"id": "actor_email_row", "controlType": "list-item", "bind": "slot:actor_email_label", "field": "actor_email", "default": "Usuario"},
+      {"id": "actor_role_row", "controlType": "list-item", "bind": "slot:actor_role_label", "field": "actor_role", "default": "Rol"},
+      {"id": "actor_ip_row", "controlType": "list-item", "bind": "slot:actor_ip_label", "field": "actor_ip", "default": "IP"},
+      {"id": "actor_user_agent_row", "controlType": "list-item", "bind": "slot:actor_user_agent_label", "field": "actor_user_agent", "default": "Cliente"},
+      {"id": "service_name_row", "controlType": "list-item", "bind": "slot:service_name_label", "field": "service_name", "default": "Servicio"},
+      {"id": "action_row", "controlType": "list-item", "bind": "slot:action_label", "field": "action", "default": "Acción"},
+      {"id": "resource_type_row", "controlType": "list-item", "bind": "slot:resource_type_label", "field": "resource_type", "default": "Tipo de recurso"},
+      {"id": "resource_id_row", "controlType": "list-item", "bind": "slot:resource_id_label", "field": "resource_id", "default": "ID de recurso"},
+      {"id": "request_method_row", "controlType": "list-item", "bind": "slot:request_method_label", "field": "request_method", "default": "Método"},
+      {"id": "request_path_row", "controlType": "list-item", "bind": "slot:request_path_label", "field": "request_path", "default": "Ruta"},
+      {"id": "status_code_row", "controlType": "list-item", "bind": "slot:status_code_label", "field": "status_code", "default": "Código HTTP"},
+      {"id": "severity_row", "controlType": "list-item", "bind": "slot:severity_label", "field": "severity", "default": "Severidad"},
+      {"id": "category_row", "controlType": "list-item", "bind": "slot:category_label", "field": "category", "default": "Categoría"},
+      {"id": "created_at_row", "controlType": "list-item", "bind": "slot:created_at_label", "field": "created_at", "default": "Fecha"}
+    ]}
+  ]
+}`
+
 // (helper strPtr definido en concept_types.go).
 
-// ApplyScreenTemplates siembra los 4 templates adicionales de L4
-// (login, dashboard, settings-user, settings-system). Los 3 templates
-// base (list/detail/form-basic-v1) están en L0 y su `definition`
+// ApplyScreenTemplates siembra los 5 templates adicionales de L4
+// (login, dashboard, settings-user, settings-system, audit-detail). Los 3
+// templates base (list/detail/form-basic-v1) están en L0 y su `definition`
 // canónica vive en seeds/system/layers/l0_screens.go (refactor de
 // excepción aplicado en B3 — ver phase-6-layer-l4/design.md §4).
 //
@@ -212,6 +260,15 @@ func buildL4ScreenTemplates() []entities.ScreenTemplate {
 			Description: strPtr("Configuración del sistema con secciones, acciones y datos informativos"),
 			Version:     1,
 			Definition:  json.RawMessage([]byte(settingsSystemV1Definition)),
+			IsActive:    true,
+		},
+		{
+			ID:          mustParseL4UUID(l4TplAuditDetailV1ID, "l4TplAuditDetailV1ID"),
+			Pattern:     "detail",
+			Name:        "audit-detail-v1",
+			Description: strPtr("Detalle de un evento de auditoría, solo lectura, con los campos reales del evento (sin descarga)"),
+			Version:     1,
+			Definition:  json.RawMessage([]byte(auditDetailV1Definition)),
 			IsActive:    true,
 		},
 	}

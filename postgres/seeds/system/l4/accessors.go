@@ -93,7 +93,7 @@ func RoleGrants(tx *gorm.DB) ([]entities.RoleGrant, error) {
 	return rgs, nil
 }
 
-// ScreenTemplates retorna los 5 templates adicionales sembrados por L4.
+// ScreenTemplates retorna los 6 templates adicionales sembrados por L4.
 func ScreenTemplates() ([]entities.ScreenTemplate, error) {
 	return buildL4ScreenTemplates(), nil
 }

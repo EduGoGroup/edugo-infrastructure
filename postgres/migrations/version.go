@@ -635,7 +635,22 @@ import (
 //     sigue viva). AutoMigrate nunca dropea: un recreate fresco simplemente ya
 //     no crea la tabla (sin DROP). Bump por la regla 1; ComputeFilesHash()
 //     CAMBIA esta vez (se editó post_gorm.sql).
-const SchemaVersion = "3.60.3"
+//   - 3.60.4: seed-only (sin DDL, igual que 3.60.2). Arregla la pantalla
+//     `audit-detail` (detalle de evento de auditoría) que pintaba campos de
+//     material/archivo ("Tamaño/Subido/Estado/Descripción" + botón
+//     "Descargar"): el renderer de detalle del KMP está atado a las `zones`
+//     del template y el slot_data del instance no puede cambiar los `field`
+//     ni los slots, solo los labels. Se mina un template propio L4
+//     `audit-detail-v1` (a4000000-...006, pattern detail) con los campos
+//     REALES del evento (actor_email/role/ip/user_agent, service_name,
+//     action, resource_type/id, request_method/path, status_code, severity,
+//     category, created_at) en solo lectura, labels en español, ícono "list"
+//     y sin descarga; `auditDetail()` se reapunta a él (antes
+//     detail-basic-v1 de L0). Endpoint (identity:/api/v1/audit/events/:id) y
+//     permiso (admin.audit.read) intactos. Cambia slot_data + se agrega un
+//     template → bump para invalidar la caché SDUI por contenido.
+//     L4_SEED_VERSION 1.55.0 → 1.56.0. Sin cambios de esquema ni de permisos.
+const SchemaVersion = "3.60.4"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

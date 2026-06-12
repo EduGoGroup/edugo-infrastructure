@@ -237,17 +237,29 @@ func auditEventsList() l4ScreenInstanceRow {
 	}
 }
 
+// auditDetail: detalle SOLO LECTURA de un evento de auditoría. Usa el
+// template propio `audit-detail-v1` (L4) en vez del base detail-basic-v1
+// (L0): este último trae slots HARDCODEADOS de material/archivo
+// ("Tamaño/Subido/Estado/Descripción" + botón "Descargar") y el renderer
+// de detalle del KMP está atado a las `zones` del template — el slot_data
+// del instance solo sustituye labels (bind "slot:<key>"), no cambia qué
+// `field` del JSON se pinta ni los slots. audit-detail-v1 declara los
+// campos reales del evento (GET identity:/api/v1/audit/events/:id) con
+// labels en español y sin descarga. Endpoint y permiso (admin.audit.read)
+// intactos. Los labels viven en los `default` del template; aquí solo el
+// título de la pantalla.
 func auditDetail() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_AUDIT_DETAIL_ID,
 		screenKey:          "audit-detail",
-		templateID:         L0_SCREEN_TPL_DETAIL_ID_REF,
+		templateID:         l4TplAuditDetailV1ID,
 		name:               "Detalle de Auditoría",
 		description:        "Detalle de un evento de auditoría",
 		scope:              "system",
 		requiredPermission: "admin.audit.read",
 		slotData: `{
-  "title": "Evento de Auditoría",
+  "title": "Detalle de auditoría",
+  "page_title": "Detalle de auditoría",
   "readonly": true,
   "api_prefix": "identity"
 }`,

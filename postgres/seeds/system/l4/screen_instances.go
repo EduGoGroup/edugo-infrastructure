@@ -119,8 +119,8 @@ func ApplyScreenInstances(tx *gorm.DB) error {
 // (uuid.UUID, *string, json.RawMessage).
 //
 //   - templateID: literal UUID; debe ser uno de los 3 templates base
-//     L0 (L0_SCREEN_TPL_*_ID_REF) o uno de los 5 L4
-//     (l4TplLoginV1ID, etc.).
+//     L0 (L0_SCREEN_TPL_*_ID_REF) o uno de los 6 L4
+//     (l4TplLoginV1ID, l4TplAuditDetailV1ID, etc.).
 //   - slotData: JSON literal RAW. Se inyecta sin re-serializar para
 //     preservar formato (mismo patron que announcementsListSlotData
 //     en seeds/system/layers/l0_screens.go).

@@ -535,7 +535,13 @@ package layers
 //     school-concepts-list). Sin wiring KMP nuevo (ya existía) ni cambios de
 //     esquema/permisos. Cambia el slot_data del seed L4 → bump para invalidar
 //     la caché SDUI por contenido.
-const L4_SEED_VERSION = "1.55.0"
+//   - 1.56.0: arregla `audit-detail` (pintaba campos de material/archivo). Se
+//     mina un template L4 propio `audit-detail-v1` (pattern detail) con los
+//     campos reales del evento de auditoría en solo lectura (labels español,
+//     ícono "list", sin descarga) y `auditDetail()` se reapunta a él. Cambia
+//     slot_data del instance + agrega un template → bump para invalidar la
+//     caché SDUI por contenido. Sin cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.56.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
