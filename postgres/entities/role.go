@@ -21,9 +21,15 @@ type Role struct {
 	// iam.roles(id); ON DELETE SET NULL para no romper el alias si se
 	// borra el canónico.
 	ParentRoleID *uuid.UUID `db:"parent_role_id" gorm:"type:uuid;default:null;constraint:fk_roles_parent,OnDelete:SET NULL;index:idx_roles_parent" validate:"omitempty"`
-	IsActive     bool       `db:"is_active" gorm:"not null;default:true;index:idx_roles_active"`
-	CreatedAt    time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt    time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// LandingScreenKey es el screen_key del dashboard de inicio (landing) de
+	// este rol (ADR 0024 DEC-2: string nullable, NO UUID, NO FK). NULL para
+	// roles alias (caen al default de la escuela o al fallback de sistema; la
+	// herencia del landing es mejora futura, no F0). Solo dato sembrado; la
+	// resolución vive en el backend (F1).
+	LandingScreenKey *string   `db:"landing_screen_key" gorm:"type:varchar(64)" validate:"omitempty"`
+	IsActive         bool      `db:"is_active" gorm:"not null;default:true;index:idx_roles_active"`
+	CreatedAt        time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt        time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

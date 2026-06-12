@@ -559,7 +559,14 @@ package layers
 //     de binding): period-form academic_year min=1900/max=2100; invitations-form
 //     max_uses min=1. Solo cambia slot_data de instances L4 → bump para
 //     invalidar la caché SDUI por contenido. Sin cambios de esquema ni permisos.
-const L4_SEED_VERSION = "1.58.0"
+//   - 1.59.0 (ADR 0024 F0 — landing data-driven): los 4 roles canónicos L4
+//     (student/teacher/guardian/school_admin) ganan landing_screen_key con su
+//     dashboard de rol (dashboard-student/teacher/guardian/schooladmin). Los 6
+//     alias quedan en NULL (caen al default de la escuela / fallback de sistema;
+//     herencia del landing = mejora futura). super_admin (L0) → dashboard-superadmin
+//     se siembra en l0_roles. Acompaña el DDL aditivo iam.roles.landing_screen_key
+//     + academic.schools.default_landing_screen_key (SchemaVersion → 3.60.8).
+const L4_SEED_VERSION = "1.59.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

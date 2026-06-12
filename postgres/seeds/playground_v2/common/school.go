@@ -17,17 +17,20 @@ import (
 //   - ConceptTypeID: nil por default; n0n1_escuelas lo setea (concept type
 //     "university") para escuelas con concepto de universidad.
 //   - Country: "Chile" por default; n0n1_escuelas usa "Venezuela".
+//   - DefaultLandingScreenKey: "dashboard-home" por default (ADR 0024 F0);
+//     pantalla de inicio predeterminada de la escuela si el rol no tiene la suya.
 type SchoolSpec struct {
-	ID               uuid.UUID
-	Name             string
-	Code             string
-	Country          string     // default "Chile" si vacío
-	SubscriptionTier string     // default "basic" si vacío
-	GradeProfile     string     // default "basic" si vacío ("basic"|"detailed")
-	ConceptTypeID    *uuid.UUID // nil = sin concept type
-	MaxTeachers      int
-	MaxStudents      int
-	Metadata         json.RawMessage // default `{}` si nil
+	ID                      uuid.UUID
+	Name                    string
+	Code                    string
+	Country                 string     // default "Chile" si vacío
+	SubscriptionTier        string     // default "basic" si vacío
+	GradeProfile            string     // default "basic" si vacío ("basic"|"detailed")
+	DefaultLandingScreenKey string     // default "dashboard-home" si vacío (ADR 0024 F0)
+	ConceptTypeID           *uuid.UUID // nil = sin concept type
+	MaxTeachers             int
+	MaxStudents             int
+	Metadata                json.RawMessage // default `{}` si nil
 }
 
 // buildSchool mapea SchoolSpec a entities.School aplicando defaults.
@@ -44,22 +47,27 @@ func buildSchool(spec SchoolSpec) entities.School {
 	if profile == "" {
 		profile = "basic"
 	}
+	landing := spec.DefaultLandingScreenKey
+	if landing == "" {
+		landing = "dashboard-home"
+	}
 	metadata := spec.Metadata
 	if metadata == nil {
 		metadata = json.RawMessage(`{}`)
 	}
 	return entities.School{
-		ID:               spec.ID,
-		Name:             spec.Name,
-		Code:             spec.Code,
-		Country:          country,
-		SubscriptionTier: tier,
-		GradeProfile:     profile,
-		ConceptTypeID:    spec.ConceptTypeID,
-		MaxTeachers:      spec.MaxTeachers,
-		MaxStudents:      spec.MaxStudents,
-		IsActive:         true,
-		Metadata:         metadata,
+		ID:                      spec.ID,
+		Name:                    spec.Name,
+		Code:                    spec.Code,
+		Country:                 country,
+		SubscriptionTier:        tier,
+		GradeProfile:            profile,
+		DefaultLandingScreenKey: &landing,
+		ConceptTypeID:           spec.ConceptTypeID,
+		MaxTeachers:             spec.MaxTeachers,
+		MaxStudents:             spec.MaxStudents,
+		IsActive:                true,
+		Metadata:                metadata,
 	}
 }
 

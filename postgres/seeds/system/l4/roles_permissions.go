@@ -64,6 +64,11 @@ type l4RoleSpec struct {
 	// apuntan aquí a su canónico y dejan de declarar grants propios:
 	// la herencia se resuelve y aplana en el login.
 	parentIDStr string
+	// landingScreenKey es el screen_key del dashboard de inicio de este rol
+	// (ADR 0024 F0 DEC-2). Vacío → NULL: los alias caen al default de la
+	// escuela o al fallback de sistema (la herencia del landing es mejora
+	// futura, no F0).
+	landingScreenKey string
 }
 
 // l4RoleSpecs retorna las specs declarativas de los 11 roles que L4
@@ -73,35 +78,39 @@ type l4RoleSpec struct {
 func l4RoleSpecs() []l4RoleSpec {
 	return []l4RoleSpec{
 		{
-			idStr:       L4_ROLE_STUDENT_ID,
-			name:        L4_ROLE_STUDENT_NAME,
-			displayName: "Estudiante",
-			description: "Alumno inscrito en una unidad académica.",
-			scope:       "unit",
+			idStr:            L4_ROLE_STUDENT_ID,
+			name:             L4_ROLE_STUDENT_NAME,
+			displayName:      "Estudiante",
+			description:      "Alumno inscrito en una unidad académica.",
+			scope:            "unit",
+			landingScreenKey: "dashboard-student",
 		},
 		{
-			idStr:       L4_ROLE_TEACHER_ID,
-			name:        L4_ROLE_TEACHER_NAME,
-			displayName: "Profesor",
-			description: "Docente con permisos de gestión de clase (asistencia, calificaciones, evaluaciones, materiales).",
-			scope:       "unit",
+			idStr:            L4_ROLE_TEACHER_ID,
+			name:             L4_ROLE_TEACHER_NAME,
+			displayName:      "Profesor",
+			description:      "Docente con permisos de gestión de clase (asistencia, calificaciones, evaluaciones, materiales).",
+			scope:            "unit",
+			landingScreenKey: "dashboard-teacher",
 		},
 		{
-			idStr:       L4_ROLE_GUARDIAN_ID,
-			name:        L4_ROLE_GUARDIAN_NAME,
-			displayName: "Apoderado",
-			description: "Tutor legal o apoderado vinculado a uno o más estudiantes.",
-			scope:       "unit",
+			idStr:            L4_ROLE_GUARDIAN_ID,
+			name:             L4_ROLE_GUARDIAN_NAME,
+			displayName:      "Apoderado",
+			description:      "Tutor legal o apoderado vinculado a uno o más estudiantes.",
+			scope:            "unit",
+			landingScreenKey: "dashboard-guardian",
 		},
 		// PRE-4: el rol `platform_admin` (L4_ROLE_ADMIN_*) fue
 		// eliminado. Sus capacidades quedan cubiertas por `super_admin`
 		// (L0) que ya tiene acceso global.
 		{
-			idStr:       L4_ROLE_SCHOOL_ADMIN_ID,
-			name:        L4_ROLE_SCHOOL_ADMIN_NAME,
-			displayName: "Administrador de Escuela",
-			description: "Administrador con control total dentro de una institución educativa.",
-			scope:       "school",
+			idStr:            L4_ROLE_SCHOOL_ADMIN_ID,
+			name:             L4_ROLE_SCHOOL_ADMIN_NAME,
+			displayName:      "Administrador de Escuela",
+			description:      "Administrador con control total dentro de una institución educativa.",
+			scope:            "school",
+			landingScreenKey: "dashboard-schooladmin",
 		},
 		// --- Alias roles (heredan grants del canónico) ---
 		{
@@ -181,14 +190,20 @@ func buildL4Roles() ([]entities.Role, error) {
 			parentID = &pid
 		}
 		desc := s.description
+		var landing *string
+		if s.landingScreenKey != "" {
+			lk := s.landingScreenKey
+			landing = &lk
+		}
 		roles = append(roles, entities.Role{
-			ID:           id,
-			Name:         s.name,
-			DisplayName:  s.displayName,
-			Description:  &desc,
-			Scope:        s.scope,
-			ParentRoleID: parentID,
-			IsActive:     true,
+			ID:               id,
+			Name:             s.name,
+			DisplayName:      s.displayName,
+			Description:      &desc,
+			Scope:            s.scope,
+			ParentRoleID:     parentID,
+			LandingScreenKey: landing,
+			IsActive:         true,
 		})
 	}
 	return roles, nil

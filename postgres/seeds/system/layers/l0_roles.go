@@ -43,13 +43,15 @@ func upsertL0Role(tx *gorm.DB) error {
 		return fmt.Errorf("upsertL0Role: parse id: %w", err)
 	}
 	desc := "Rol con acceso total al sistema. Usuario de bootstrapping."
+	landing := "dashboard-superadmin" // ADR 0024 F0: landing del super_admin
 	role := entities.Role{
-		ID:          id,
-		Name:        L0_ROLE_SUPER_ADMIN_NAME,
-		DisplayName: "Super Administrador",
-		Description: &desc,
-		Scope:       "system",
-		IsActive:    true,
+		ID:               id,
+		Name:             L0_ROLE_SUPER_ADMIN_NAME,
+		DisplayName:      "Super Administrador",
+		Description:      &desc,
+		Scope:            "system",
+		LandingScreenKey: &landing,
+		IsActive:         true,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
