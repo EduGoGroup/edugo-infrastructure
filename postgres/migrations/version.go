@@ -672,7 +672,8 @@ import (
 //     invitations-form max_uses min=1). Cambia slot_data de instances L4 → bump
 //     para invalidar la caché SDUI por contenido. L4_SEED_VERSION 1.57.0 →
 //     1.58.0. Sin cambios de esquema ni de permisos.
-const SchemaVersion = "3.60.6"
+//   - 3.60.7 — MP-01 F3: poda de tablas muertas academic.{schedule,calendar_event,colors} y playground focal_colors_demo
+const SchemaVersion = "3.60.7"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

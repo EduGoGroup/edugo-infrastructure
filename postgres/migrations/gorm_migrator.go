@@ -68,10 +68,7 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.GradeItem{},
 		&entities.GradeHistory{},
 		&entities.Attendance{},
-		&entities.Schedule{},
 		&entities.Announcement{},
-		&entities.CalendarEvent{},
-		&entities.Color{},
 
 		// Content (N4 / ADR 0019: material gana subject_id).
 		// F2 (plan 018, maestro-detalle): material es el TEMA; material_file es el

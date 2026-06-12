@@ -23,7 +23,6 @@ import (
 	"fmt"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/admin"
-	focal_colors_demo "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_colors_demo"
 	focal_pantalla "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground/focal_pantalla"
 	"gorm.io/gorm"
 )
@@ -55,7 +54,6 @@ var fixtures = []Fixture{
 	//     tenant; focal-static-screens chainea focal_botonera. Toda la cadena era
 	//     dead-by-transitivity y rompía el build. Se reconstruye en F2 sobre el
 	//     esquema nuevo (assessment.* por sesión) si se necesita.
-	{Name: "focal-colors-demo", Apply: focal_colors_demo.Apply},
 }
 
 // Available retorna los nombres de playgrounds disponibles, en el orden

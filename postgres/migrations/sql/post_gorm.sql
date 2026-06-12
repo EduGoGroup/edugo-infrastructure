@@ -554,44 +554,10 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.grade_item
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- academic.schedules
-CREATE OR REPLACE TRIGGER set_updated_at
-    BEFORE UPDATE ON academic.schedules
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
 -- academic.announcements
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.announcements
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
--- academic.calendar_events
-CREATE OR REPLACE TRIGGER set_updated_at
-    BEFORE UPDATE ON academic.calendar_events
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
--- academic.colors
--- Recurso CRUD plano demo (Fase 3 SDUI — colors-list / colors-form sin Kotlin).
--- GORM no expresa el CHECK con regex ni el UNIQUE compuesto con nombre, así
--- que viven aquí (idempotente).
-CREATE OR REPLACE TRIGGER set_updated_at
-    BEFORE UPDATE ON academic.colors
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-DO $$ BEGIN
-    ALTER TABLE academic.colors
-        ADD CONSTRAINT colors_hex_format_check
-        CHECK (hex ~ '^#[0-9A-Fa-f]{6}$');
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE academic.colors
-        ADD CONSTRAINT colors_school_name_unique
-        UNIQUE (school_id, name);
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
 
 -- content.materials
 CREATE OR REPLACE TRIGGER set_updated_at
