@@ -602,7 +602,7 @@ func periodsForm() l4ScreenInstanceRow {
       {"value": "bimester", "label": "Bimestre"},
       {"value": "quarter", "label": "Cuatrimestre"}
     ]},
-    {"key": "academic_year", "label": "Año académico", "type": "number", "required": true},
+    {"key": "academic_year", "label": "Año académico", "type": "number", "required": true, "min": 1900, "max": 2100},
     {"key": "start_date", "label": "Inicio", "type": "date", "required": true},
     {"key": "end_date", "label": "Fin", "type": "date", "required": true},
     {"key": "is_active", "label": "Activo", "type": "toggle"}
@@ -683,7 +683,7 @@ func invitationsForm() l4ScreenInstanceRow {
     ]},
     {"key": "label", "label": "Etiqueta", "type": "text"},
     {"key": "expires_at", "label": "Expira", "type": "datetime"},
-    {"key": "max_uses", "label": "Usos máximos", "type": "number"}
+    {"key": "max_uses", "label": "Usos máximos", "type": "number", "min": 1}
   ],
   "actions_removed": ["save", "delete"],
   "api_prefix": "academic"
@@ -1200,9 +1200,9 @@ func assessmentsForm() l4ScreenInstanceRow {
     {"key": "title", "label": "Título", "type": "text", "required": true},
     {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
-    {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number"},
-    {"key": "max_attempts", "label": "Intentos máximos", "type": "number"},
-    {"key": "time_limit_minutes", "label": "Tiempo límite (min)", "type": "number"},
+    {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number", "min": 0, "max": 100},
+    {"key": "max_attempts", "label": "Intentos máximos", "type": "number", "min": 1},
+    {"key": "time_limit_minutes", "label": "Tiempo límite (min)", "type": "number", "min": 1},
     {"key": "is_timed", "label": "Cronometrada", "type": "boolean"},
     {"key": "shuffle_questions", "label": "Mezclar preguntas", "type": "boolean"},
     {"key": "show_correct_answers", "label": "Mostrar respuestas correctas", "type": "boolean"},
@@ -1384,7 +1384,7 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
       {"value": "false", "label": "Falso"}
     ]},
     {"key": "correct_answer_text", "label": "Respuesta correcta", "type": "text", "required": true, "visible_when": {"field": "question_type", "equals": "short_answer"}},
-    {"key": "points", "label": "Puntaje", "type": "number", "required": true},
+    {"key": "points", "label": "Puntaje", "type": "number", "required": true, "min": 0},
     {"key": "explanation", "label": "Explicación", "type": "textarea"},
     {"key": "difficulty", "label": "Dificultad", "type": "select", "options": [
       {"value": "easy", "label": "Fácil"},

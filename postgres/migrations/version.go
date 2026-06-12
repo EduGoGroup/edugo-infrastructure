@@ -662,7 +662,17 @@ import (
 //     definition del template L4 → bump para invalidar la caché SDUI por
 //     contenido. L4_SEED_VERSION 1.56.0 → 1.57.0. Sin cambios de esquema ni de
 //     permisos.
-const SchemaVersion = "3.60.5"
+//   - 3.60.6: seed-only (sin DDL, igual que 3.60.5). MP-03 F3: rangos numéricos
+//     declarativos en los forms SDUI. Cada campo `"type": "number"` ahora lleva
+//     `min`/`max` en su slot_data para que el FE KMP valide antes de enviar,
+//     espejando el binding real del backend donde existe (assessments-form:
+//     pass_threshold 0–100, max_attempts/time_limit_minutes min=1;
+//     assessment-question-form: points min=0) y con un mínimo conservador donde
+//     el backend no declara rango (period-form academic_year 1900–2100,
+//     invitations-form max_uses min=1). Cambia slot_data de instances L4 → bump
+//     para invalidar la caché SDUI por contenido. L4_SEED_VERSION 1.57.0 →
+//     1.58.0. Sin cambios de esquema ni de permisos.
+const SchemaVersion = "3.60.6"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -548,7 +548,18 @@ package layers
 //     se ve "Etiqueta / valor" en solo lectura. Cambia el definition del
 //     template L4 → bump para invalidar la caché SDUI. Sin cambios de esquema
 //     ni de permisos.
-const L4_SEED_VERSION = "1.57.0"
+//   - 1.58.0 (MP-03 F3): rangos numéricos declarativos en los forms SDUI. Cada
+//     campo `"type": "number"` declara su rango en el slot_data con las claves
+//     `min`/`max` (el FE KMP las lee y valida antes de enviar). Valores
+//     alineados al binding real del backend donde existe:
+//       · assessments-form: pass_threshold min=0/max=100, max_attempts min=1,
+//         time_limit_minutes min=1 (assessment_dto.go).
+//       · assessment-question-form: points min=0 (question_dto.go).
+//     Donde el backend NO tiene rango se usa un mínimo conservador (sin respaldo
+//     de binding): period-form academic_year min=1900/max=2100; invitations-form
+//     max_uses min=1. Solo cambia slot_data de instances L4 → bump para
+//     invalidar la caché SDUI por contenido. Sin cambios de esquema ni permisos.
+const L4_SEED_VERSION = "1.58.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
