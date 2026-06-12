@@ -650,7 +650,19 @@ import (
 //     permiso (admin.audit.read) intactos. Cambia slot_data + se agrega un
 //     template → bump para invalidar la caché SDUI por contenido.
 //     L4_SEED_VERSION 1.55.0 → 1.56.0. Sin cambios de esquema ni de permisos.
-const SchemaVersion = "3.60.4"
+//   - 3.60.5: seed-only (sin DDL, igual que 3.60.4). Fix de render de
+//     `audit-detail-v1`: las filas de detalle usaban controlType "list-item"
+//     (DSListRow), que pinta el valor como headline + un chevron de navegación
+//     y deja el label vacío (DSListRow solo toma el atributo estático `label`
+//     como supporting, ignora bind/default). Ahora cada campo es una sub-zona
+//     container con DOS slots controlType "label" (uno de etiqueta, texto
+//     español estático en `value`, style "caption"; otro de valor con `field`,
+//     style "body"), espejo de cómo detail-basic-v1 pinta sus filas de valor:
+//     sin chevron y se ve "Etiqueta / valor" en solo lectura. Cambia el
+//     definition del template L4 → bump para invalidar la caché SDUI por
+//     contenido. L4_SEED_VERSION 1.56.0 → 1.57.0. Sin cambios de esquema ni de
+//     permisos.
+const SchemaVersion = "3.60.5"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

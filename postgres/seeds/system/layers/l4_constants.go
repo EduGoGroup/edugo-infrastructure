@@ -541,7 +541,14 @@ package layers
 //     ícono "list", sin descarga) y `auditDetail()` se reapunta a él. Cambia
 //     slot_data del instance + agrega un template → bump para invalidar la
 //     caché SDUI por contenido. Sin cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.56.0"
+//   - 1.57.0: fix de render de `audit-detail-v1`. Las filas usaban controlType
+//     "list-item" (chevron + valor sin label legible); ahora cada campo es una
+//     sub-zona container con dos slots controlType "label" (etiqueta estática
+//     en español + valor desde `field`), espejo de detail-basic-v1: sin chevron,
+//     se ve "Etiqueta / valor" en solo lectura. Cambia el definition del
+//     template L4 → bump para invalidar la caché SDUI. Sin cambios de esquema
+//     ni de permisos.
+const L4_SEED_VERSION = "1.57.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

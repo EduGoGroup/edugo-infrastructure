@@ -246,7 +246,8 @@ func auditEventsList() l4ScreenInstanceRow {
 // `field` del JSON se pinta ni los slots. audit-detail-v1 declara los
 // campos reales del evento (GET identity:/api/v1/audit/events/:id) con
 // labels en español y sin descarga. Endpoint y permiso (admin.audit.read)
-// intactos. Los labels viven en los `default` del template; aquí solo el
+// intactos. Cada fila del template son dos slots controlType "label"
+// (etiqueta estática + valor desde `field`); aquí en el instance solo va el
 // título de la pantalla.
 func auditDetail() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{

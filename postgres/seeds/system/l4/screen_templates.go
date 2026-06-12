@@ -152,10 +152,22 @@ const settingsSystemV1Definition = `{
 // evento (GET identity:/api/v1/audit/events/:id → AuditEventResponse) y sin
 // el botón de descarga.
 //
-// Cada slot fija su label en `default` (español) y lo deja sobreescribible
-// vía bind:"slot:<key>" desde el slot_data del instance, igual que los demás
-// templates L4. `field` apunta al campo del JSON del evento. No hay zona de
-// acciones: la pantalla es de solo lectura.
+// Cada CAMPO es una sub-zona "container" con DOS slots controlType "label"
+// (espejo de cómo detail-basic-v1 pinta sus filas de valor): un slot de
+// ETIQUETA (style "caption", texto español estático en `value`) y un slot de
+// VALOR (style "body", `field` → valor del JSON del evento). Así cada fila se
+// ve "Etiqueta / valor" en solo lectura.
+//
+// Por qué NO `list-item`: el renderer mapea controlType "list-item" a DSListRow,
+// que (a) SIEMPRE pinta un chevron de navegación cuando no hay trailing y
+// (b) toma el VALOR del `field` como headline y SOLO el atributo estático
+// `label` como supporting (ignora `bind`/`default`). Con bind+default+field
+// sin `label` estático, salía label vacío + chevron y el valor no se leía como
+// "Etiqueta: valor". controlType "label" renderiza un único Text con el valor
+// resuelto (field del JSON), sin chevron — igual que detail-basic-v1.
+//
+// `field` apunta al campo del JSON del evento (AuditEventResponse). No hay zona
+// de acciones: la pantalla es de solo lectura, sin botón de descarga.
 const auditDetailV1Definition = `{
   "navigation": {"topBar": {"title": "slot:page_title", "showBack": true, "actions": []}},
   "zones": [
@@ -164,24 +176,64 @@ const auditDetailV1Definition = `{
       {"id": "severity_badge", "controlType": "chip", "field": "severity"}
     ]},
     {"id": "header", "type": "container", "slots": [
-      {"id": "action", "controlType": "label", "style": "headline-large", "field": "action"},
-      {"id": "actor_email", "controlType": "label", "style": "body", "field": "actor_email"}
+      {"id": "action_title", "controlType": "label", "style": "headline-large", "field": "action"},
+      {"id": "actor_email_subtitle", "controlType": "label", "style": "body", "field": "actor_email"}
     ]},
-    {"id": "details", "type": "container", "slots": [
-      {"id": "actor_email_row", "controlType": "list-item", "bind": "slot:actor_email_label", "field": "actor_email", "default": "Usuario"},
-      {"id": "actor_role_row", "controlType": "list-item", "bind": "slot:actor_role_label", "field": "actor_role", "default": "Rol"},
-      {"id": "actor_ip_row", "controlType": "list-item", "bind": "slot:actor_ip_label", "field": "actor_ip", "default": "IP"},
-      {"id": "actor_user_agent_row", "controlType": "list-item", "bind": "slot:actor_user_agent_label", "field": "actor_user_agent", "default": "Cliente"},
-      {"id": "service_name_row", "controlType": "list-item", "bind": "slot:service_name_label", "field": "service_name", "default": "Servicio"},
-      {"id": "action_row", "controlType": "list-item", "bind": "slot:action_label", "field": "action", "default": "Acción"},
-      {"id": "resource_type_row", "controlType": "list-item", "bind": "slot:resource_type_label", "field": "resource_type", "default": "Tipo de recurso"},
-      {"id": "resource_id_row", "controlType": "list-item", "bind": "slot:resource_id_label", "field": "resource_id", "default": "ID de recurso"},
-      {"id": "request_method_row", "controlType": "list-item", "bind": "slot:request_method_label", "field": "request_method", "default": "Método"},
-      {"id": "request_path_row", "controlType": "list-item", "bind": "slot:request_path_label", "field": "request_path", "default": "Ruta"},
-      {"id": "status_code_row", "controlType": "list-item", "bind": "slot:status_code_label", "field": "status_code", "default": "Código HTTP"},
-      {"id": "severity_row", "controlType": "list-item", "bind": "slot:severity_label", "field": "severity", "default": "Severidad"},
-      {"id": "category_row", "controlType": "list-item", "bind": "slot:category_label", "field": "category", "default": "Categoría"},
-      {"id": "created_at_row", "controlType": "list-item", "bind": "slot:created_at_label", "field": "created_at", "default": "Fecha"}
+    {"id": "row_actor_email", "type": "container", "slots": [
+      {"id": "actor_email_label", "controlType": "label", "style": "caption", "value": "Usuario"},
+      {"id": "actor_email_value", "controlType": "label", "style": "body", "field": "actor_email"}
+    ]},
+    {"id": "row_actor_role", "type": "container", "slots": [
+      {"id": "actor_role_label", "controlType": "label", "style": "caption", "value": "Rol"},
+      {"id": "actor_role_value", "controlType": "label", "style": "body", "field": "actor_role"}
+    ]},
+    {"id": "row_actor_ip", "type": "container", "slots": [
+      {"id": "actor_ip_label", "controlType": "label", "style": "caption", "value": "IP"},
+      {"id": "actor_ip_value", "controlType": "label", "style": "body", "field": "actor_ip"}
+    ]},
+    {"id": "row_actor_user_agent", "type": "container", "slots": [
+      {"id": "actor_user_agent_label", "controlType": "label", "style": "caption", "value": "Cliente"},
+      {"id": "actor_user_agent_value", "controlType": "label", "style": "body", "field": "actor_user_agent"}
+    ]},
+    {"id": "row_service_name", "type": "container", "slots": [
+      {"id": "service_name_label", "controlType": "label", "style": "caption", "value": "Servicio"},
+      {"id": "service_name_value", "controlType": "label", "style": "body", "field": "service_name"}
+    ]},
+    {"id": "row_action", "type": "container", "slots": [
+      {"id": "action_label", "controlType": "label", "style": "caption", "value": "Acción"},
+      {"id": "action_value", "controlType": "label", "style": "body", "field": "action"}
+    ]},
+    {"id": "row_resource_type", "type": "container", "slots": [
+      {"id": "resource_type_label", "controlType": "label", "style": "caption", "value": "Tipo de recurso"},
+      {"id": "resource_type_value", "controlType": "label", "style": "body", "field": "resource_type"}
+    ]},
+    {"id": "row_resource_id", "type": "container", "slots": [
+      {"id": "resource_id_label", "controlType": "label", "style": "caption", "value": "ID de recurso"},
+      {"id": "resource_id_value", "controlType": "label", "style": "body", "field": "resource_id"}
+    ]},
+    {"id": "row_request_method", "type": "container", "slots": [
+      {"id": "request_method_label", "controlType": "label", "style": "caption", "value": "Método"},
+      {"id": "request_method_value", "controlType": "label", "style": "body", "field": "request_method"}
+    ]},
+    {"id": "row_request_path", "type": "container", "slots": [
+      {"id": "request_path_label", "controlType": "label", "style": "caption", "value": "Ruta"},
+      {"id": "request_path_value", "controlType": "label", "style": "body", "field": "request_path"}
+    ]},
+    {"id": "row_status_code", "type": "container", "slots": [
+      {"id": "status_code_label", "controlType": "label", "style": "caption", "value": "Código HTTP"},
+      {"id": "status_code_value", "controlType": "label", "style": "body", "field": "status_code"}
+    ]},
+    {"id": "row_severity", "type": "container", "slots": [
+      {"id": "severity_label", "controlType": "label", "style": "caption", "value": "Severidad"},
+      {"id": "severity_value", "controlType": "label", "style": "body", "field": "severity"}
+    ]},
+    {"id": "row_category", "type": "container", "slots": [
+      {"id": "category_label", "controlType": "label", "style": "caption", "value": "Categoría"},
+      {"id": "category_value", "controlType": "label", "style": "body", "field": "category"}
+    ]},
+    {"id": "row_created_at", "type": "container", "slots": [
+      {"id": "created_at_label", "controlType": "label", "style": "caption", "value": "Fecha"},
+      {"id": "created_at_value", "controlType": "label", "style": "body", "field": "created_at"}
     ]}
   ]
 }`
