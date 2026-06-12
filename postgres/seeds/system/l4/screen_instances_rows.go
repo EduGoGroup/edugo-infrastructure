@@ -109,6 +109,9 @@ func schoolsForm() l4ScreenInstanceRow {
     {"key": "description", "label": "Descripción", "type": "textarea"},
     {"key": "is_active", "label": "Activa", "type": "toggle"}
   ],
+  "actions_added": [
+    {"id": "manage-concepts", "scope": "form-submit", "label": "Gestionar Conceptos", "icon": "settings", "permission": "admin.concept_types.read", "condition": "edit-only", "event_id": "manage-concepts", "style": "outlined", "order": 30}
+  ],
   "api_prefix": "academic"
 }`,
 	}

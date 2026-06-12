@@ -522,7 +522,20 @@ package layers
 //     guía": se podan los seeds. Cambia el set de screens del seed L4 → bump
 //     para invalidar la caché SDUI por contenido. Sin cambios de esquema ni
 //     de permisos (no se tocan roles ni grants).
-const L4_SEED_VERSION = "1.54.0"
+//   - 1.55.0 (2026-06-11, entry-point "Gestionar Conceptos" en schools-form):
+//     se AÑADE la action de navegación `manage-concepts` al slot_data de
+//     `schools-form` (event_id manage-concepts, mapeado por SchoolsFormContract
+//     del KMP → NavigateTo("school-concepts-list")). scope=form-submit (única
+//     zona ACTION_GROUP con scope que declara el template form-basic-v1; el
+//     resolver KMP solo materializa actions cuya scope coincide con una zona
+//     existente), style=outlined (botón distinto del filled "Guardar"),
+//     condition=edit-only (solo al editar una escuela existente, espejo del
+//     requisito del handler que necesita el id de la escuela),
+//     permission=admin.concept_types.read (igual que la pantalla destino
+//     school-concepts-list). Sin wiring KMP nuevo (ya existía) ni cambios de
+//     esquema/permisos. Cambia el slot_data del seed L4 → bump para invalidar
+//     la caché SDUI por contenido.
+const L4_SEED_VERSION = "1.55.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

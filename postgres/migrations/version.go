@@ -618,7 +618,15 @@ import (
 //     ComputeFilesHash() no cambia (solo hashea pre/post_gorm.sql). NO se toca
 //     content.progress / entities.Progress (la lee viva academic via
 //     cross_schema_stats).
-const SchemaVersion = "3.60.1"
+//   - 3.60.2: seed-only (sin DDL). Entry-point "Gestionar Conceptos" en el
+//     form `schools-form`: nueva action de navegación `manage-concepts`
+//     (scope form-submit, condition edit-only, permission
+//     admin.concept_types.read, event_id manage-concepts) que abre la
+//     pantalla ya sembrada `school-concepts-list` (el wiring KMP en
+//     SchoolsFormContract ya existía). Cambia el slot_data del seed L4 →
+//     bump para invalidar la caché SDUI por contenido. L4_SEED_VERSION
+//     1.54.0 → 1.55.0. Sin cambios de esquema ni de permisos.
+const SchemaVersion = "3.60.2"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
