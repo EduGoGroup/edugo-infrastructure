@@ -674,7 +674,17 @@ import (
 //     1.58.0. Sin cambios de esquema ni de permisos.
 //   - 3.60.7 — MP-01 F3: poda de tablas muertas academic.{schedule,calendar_event,colors} y playground focal_colors_demo
 //   - 3.60.8 — ADR 0024 F0: landing_screen_key en roles + default_landing_screen_key en schools
-const SchemaVersion = "3.60.8"
+//   - 3.61.0 — MP-08 F0 (aditivo, solo esquema): 4 tablas nuevas modelando en
+//     datos el acceso por sistema y la equivalencia tipo-de-invitacion->rol
+//     (todo por FK de id, nunca por nombre). iam.systems (catalogo de apps),
+//     iam.system_roles (puente sistema<->rol), academic.invitation_types
+//     (catalogo global de tipos de invitacion) y academic.school_invitation_roles
+//     (equivalencia (escuela, tipo) -> rol IAM, FK cross-schema academic->iam).
+//     Las 4 entities entran en AutoMigrate; post_gorm.sql agrega sus FKs (GORM
+//     no las materializa sin campo de relacion) y los triggers set_updated_at.
+//     Puramente ADITIVO: no toca tablas existentes. SIN seeds (los valores de
+//     los catalogos los siembra F1); L4_SEED_VERSION intacto.
+const SchemaVersion = "3.61.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

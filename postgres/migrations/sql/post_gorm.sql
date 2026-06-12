@@ -105,6 +105,58 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- ============================================================
+-- iam.system_roles (MP-08) — puente sistema<->rol. GORM no materializa FKs
+-- desde el tag `constraint:` sin campo de relacion (mismo patron que
+-- iam.role_grants), por eso ambas FKs (same-schema iam) se declaran aqui
+-- espejando los nombres de constraint anotados en la entity. CASCADE: borrar
+-- un sistema o un rol limpia sus filas puente. Idempotente.
+-- ============================================================
+
+DO $$ BEGIN
+    ALTER TABLE iam.system_roles
+        ADD CONSTRAINT system_roles_system_fkey
+            FOREIGN KEY (system_id) REFERENCES iam.systems(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE iam.system_roles
+        ADD CONSTRAINT system_roles_role_fkey
+            FOREIGN KEY (iam_role_id) REFERENCES iam.roles(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
+-- academic.school_invitation_roles (MP-08) — equivalencia (escuela, tipo) ->
+-- rol IAM. GORM no materializa FKs sin campo de relacion, por eso TODAS van
+-- aqui: school_id e invitation_type_id son same-schema (academic); iam_role_id
+-- es CROSS-SCHEMA (academic -> iam) y obligatoriamente fuera del tag. CASCADE
+-- en las tres (tabla de relacion): borrar escuela/tipo/rol limpia la fila.
+-- Idempotente.
+-- ============================================================
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitation_roles
+        ADD CONSTRAINT school_invitation_roles_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitation_roles
+        ADD CONSTRAINT school_invitation_roles_type_fkey
+            FOREIGN KEY (invitation_type_id) REFERENCES academic.invitation_types(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitation_roles
+        ADD CONSTRAINT school_invitation_roles_role_fkey
+            FOREIGN KEY (iam_role_id) REFERENCES iam.roles(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- academic.subject_offerings / academic.subject_offering_enrollments
 -- (sesiones de materia + inscripcion, ADR 0009 / plan 010 N1.7).
 -- GORM no materializa FKs desde el tag `constraint:` sin campo de relacion
@@ -478,6 +530,16 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON iam.user_roles
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- iam.systems (MP-08)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON iam.systems
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- iam.system_roles (MP-08)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON iam.system_roles
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- academic.schools
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.schools
@@ -521,6 +583,16 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- academic.school_join_requests
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.school_join_requests
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- academic.invitation_types (MP-08)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.invitation_types
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- academic.school_invitation_roles (MP-08)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.school_invitation_roles
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- academic.concept_types

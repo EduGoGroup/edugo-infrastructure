@@ -41,9 +41,19 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.UserRole{},
 		&entities.RoleGrant{},
 		&entities.UserGrant{},
+		// Acceso por sistema (MP-08): systems (catalogo) antes de system_roles
+		// (puente sistema<->rol; FK a iam.systems y a iam.roles, ambos migrados
+		// arriba en este bloque IAM).
+		&entities.System{},
+		&entities.SystemRole{},
 
-		// Academic base (concept_types before schools due to FK)
+		// Academic base (concept_types before schools due to FK).
+		// invitation_types (catalogo global de tipos de invitacion, MP-08) sin
+		// deps; debe migrarse antes de schools/memberships/school_invitations/
+		// school_join_requests/school_invitation_roles (todas lo referencian via
+		// invitation_type_id).
 		&entities.ConceptType{},
+		&entities.InvitationType{},
 		&entities.School{},
 		&entities.AcademicUnit{},
 		&entities.Membership{},
@@ -51,6 +61,11 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.GuardianRelation{},
 		&entities.SchoolInvitation{},
 		&entities.SchoolJoinRequest{},
+		// Equivalencia (escuela, tipo de invitacion) -> rol IAM (MP-08).
+		// Depende de schools e invitation_types (migrados arriba) y de iam.roles
+		// (bloque IAM, ya migrado); la FK cross-schema iam_role_id vive en
+		// post_gorm.sql.
+		&entities.SchoolInvitationRole{},
 		&entities.ConceptDefinition{},
 		&entities.SchoolConcept{},
 		&entities.AcademicPeriod{},
