@@ -319,21 +319,6 @@ END $$;
 -- (y sus FKs material_version_material_fkey / material_version_membership_fkey)
 -- fue ELIMINADA en F2.
 
--- content.progress → materials (CASCADE) / membership del alumno (CASCADE)
-DO $$ BEGIN
-    ALTER TABLE content.progress
-        ADD CONSTRAINT progress_material_fkey
-            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-    ALTER TABLE content.progress
-        ADD CONSTRAINT progress_student_fkey
-            FOREIGN KEY (student_membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
 -- assessment.assessment → schools (CASCADE) / membership autor (RESTRICT) /
 -- subjects (RESTRICT, catalogo de escuela)
 DO $$ BEGIN
@@ -611,11 +596,6 @@ END $$;
 -- content.materials
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON content.materials
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
--- content.progress
-CREATE OR REPLACE TRIGGER set_updated_at
-    BEFORE UPDATE ON content.progress
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- assessment.assessment

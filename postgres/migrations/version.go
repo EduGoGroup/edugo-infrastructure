@@ -615,9 +615,9 @@ import (
 //     truncate en demo/development.go. AutoMigrate nunca dropea, así que un
 //     recreate fresco simplemente ya no crea la tabla (sin DROP, sin SQL
 //     post_gorm). Bump por la regla 1 (cambio en migrations/ + seeds/), aunque
-//     ComputeFilesHash() no cambia (solo hashea pre/post_gorm.sql). NO se toca
-//     content.progress / entities.Progress (la lee viva academic via
-//     cross_schema_stats).
+//     ComputeFilesHash() no cambia (solo hashea pre/post_gorm.sql). En este
+//     paso content.progress / entities.Progress aun seguian vivas; se
+//     eliminan despues en 3.60.3.
 //   - 3.60.2: seed-only (sin DDL). Entry-point "Gestionar Conceptos" en el
 //     form `schools-form`: nueva action de navegación `manage-concepts`
 //     (scope form-submit, condition edit-only, permission
@@ -626,7 +626,16 @@ import (
 //     SchoolsFormContract ya existía). Cambia el slot_data del seed L4 →
 //     bump para invalidar la caché SDUI por contenido. L4_SEED_VERSION
 //     1.54.0 → 1.55.0. Sin cambios de esquema ni de permisos.
-const SchemaVersion = "3.60.2"
+//   - 3.60.3 (seed/DDL): elimina la tabla content.progress huerfana —
+//     productor y lector removidos en paralelo (MP-04). Se borra la entity
+//     Progress, su registro en el AutoMigrate de gorm_migrator.go, las 2 FKs
+//     (progress_material_fkey / progress_student_fkey) y el trigger
+//     set_updated_at de content.progress en post_gorm.sql, y su truncate en
+//     demo/development.go. El schema content NO se borra (content.materials
+//     sigue viva). AutoMigrate nunca dropea: un recreate fresco simplemente ya
+//     no crea la tabla (sin DROP). Bump por la regla 1; ComputeFilesHash()
+//     CAMBIA esta vez (se editó post_gorm.sql).
+const SchemaVersion = "3.60.3"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

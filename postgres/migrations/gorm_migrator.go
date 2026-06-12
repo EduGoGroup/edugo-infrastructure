@@ -73,14 +73,14 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.CalendarEvent{},
 		&entities.Color{},
 
-		// Content (N4 / ADR 0019: material gana subject_id; progress por membership).
+		// Content (N4 / ADR 0019: material gana subject_id).
 		// F2 (plan 018, maestro-detalle): material es el TEMA; material_file es el
 		// DETALLE (N archivos por tema, va DESPUES de Material por la FK material_id).
 		// content.material_version ELIMINADA (versionaba el unico archivo inline).
 		// content.courses ELIMINADA (feature muerta: ningun codigo vivo la lee).
+		// content.progress ELIMINADA (MP-04: huerfana — productor y lector removidos).
 		&entities.Material{},
 		&entities.MaterialFile{},
-		&entities.Progress{},
 
 		// Assessment (N4 / ADR 0019: llaveado al modelo de sesion). assessment
 		// primero; question antes de question_option/attempt_answer; attempt antes
