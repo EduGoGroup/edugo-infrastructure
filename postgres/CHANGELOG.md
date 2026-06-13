@@ -6,6 +6,76 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.7] - 2026-06-13
+
+Cierre de varios micro-planes sobre el esquema: MP-08 (acceso por sistema + contexto de invitación
+data-driven, swap `role`→`invitation_type_id`, split del permiso de aprobación), poda de features
+muertas (MP-04 Track A / MP-01), rangos numéricos declarativos en forms SDUI (MP-03 F3), landing
+data-driven (ADR 0024 F0) y persistencia de tenant en la notificación in-app. `SchemaVersion`
+3.59.0 → 3.64.0; `L4_SEED_VERSION` 1.57.0 → 1.62.0.
+
+### Added
+
+- **MP-08 F0 (3.61.0, aditivo, solo esquema)**: 4 entities nuevas que modelan en datos el acceso por
+  sistema y la equivalencia tipo-de-invitación → rol (todo por FK de id, nunca por nombre):
+  `iam.systems` (catálogo de apps), `iam.system_roles` (puente sistema↔rol),
+  `academic.invitation_types` (catálogo global de tipos de invitación) y
+  `academic.school_invitation_roles` (equivalencia `(escuela, tipo) → rol` IAM, FK cross-schema
+  `academic→iam`). Las 4 entran en AutoMigrate; `post_gorm.sql` agrega sus FKs y triggers
+  `set_updated_at`. Sin seeds (los catálogos los siembra F1).
+- **MP-08 F1 (seeds L4, `L4_SEED_VERSION` → 1.60.0)**: siembra de `systems`/`system_roles`/
+  `invitation_types` y las equivalencias por escuela en las nuevas tablas del catálogo.
+
+### Changed
+
+- **MP-08 F3 (3.62.0, swap de columna, NO aditivo)**: la columna `role` (varchar + CHECK inline del
+  enum de roles) se reemplaza por `invitation_type_id` (uuid, FK → `academic.invitation_types(id)`) en
+  `academic.{memberships,school_invitations,school_join_requests}`. Se elimina el CHECK `..._role_check`
+  (la validez la garantiza la FK) y el índice parcial `idx_memberships_unit_role_active` se reexpresa a
+  `idx_memberships_unit_invitation_type_active` (en `post_gorm.sql`). Los seeds resuelven la key del tipo
+  a su id vía `catalog.ResolveInvitationTypeID` (data-driven, sin UUIDs hardcodeados). Requiere recrear
+  BD (sin ALTER).
+- **MP-08 F4 (3.63.0, seed-only)**: el form `invitations-form` cambia el campo `role` (select estático,
+  enum legacy muerto) por `invitation_type` (remote_select contra
+  `GET /api/v1/schools/invitation-types`); y `schools-list` retira la acción `create` del header
+  (`actions_removed ["create"]`) — el alta de escuelas pasa al admin-tool de Go (se conserva
+  `schools-form` + `manage-concepts` y la edición de escuelas existentes). `L4_SEED_VERSION` → 1.61.0.
+- **MP-08 aprobación SELLO x TIPO (3.64.0, seed-only)**: el permiso único
+  `academic.join_request_approvals.<tipo>` se separa en
+  `academic.join_request_approvals.{school,unit}.{student,teacher,guardian}` (catálogo 3 → 6 filas). El
+  CHECK de permisos/grants se amplía de `{0,2}` a `{0,3}` segmentos (alinea con
+  `enum.PathPermissionRegex` del shared, ahora 4 segmentos) en `permission.go` + `post_gorm.sql`. El
+  grant de `teacher` pasa de `...student` a `...unit.student` (admite alumnos a su clase = sello de
+  unidad, ya no firma el sello de colegio); `school_admin`/`super_admin` cubren ambos sub-namespaces por
+  subárbol y `readonly_auditor` sigue denegado por su deny de prefijo. `L4_SEED_VERSION` → 1.62.0.
+  Requiere recrear BD (sin ALTER).
+- **ADR 0024 F0 (3.60.8)**: landing data-driven — `landing_screen_key` en roles y
+  `default_landing_screen_key` en schools (la pantalla de aterrizaje deja de estar hardcodeada).
+- **MP-03 F3 (3.60.6, seed-only)**: rangos numéricos declarativos en los forms SDUI. Cada campo
+  `"type": "number"` lleva ahora `min`/`max` en su slot_data para que el front KMP valide antes de
+  enviar, espejando el binding real del backend (assessments-form: `pass_threshold` 0–100,
+  `max_attempts`/`time_limit_minutes` min=1; assessment-question-form: `points` min=0) y con un mínimo
+  conservador donde el backend no declara rango. `L4_SEED_VERSION` → 1.58.0.
+- **Notificación in-app (3.60.0, plan 020 F4.6.8)**: la entity `Notification` suma `school_id`/`unit_id`
+  (uuid nullable) a `notifications.notifications` para que la lista in-app resuelva el context-switch
+  multi-tenant al tocar (antes solo viajaban en el push). DDL aditivo vía AutoMigrate (2 columnas
+  nullable, sin índice).
+- **Seeds audit-detail (3.60.2/3.60.4/3.60.5, seed-only — MP-01 Ola 2)**: entry-point
+  "Gestionar Conceptos" (`manage-concepts`) en `schools-form`, y nuevo template L4 `audit-detail-v1`
+  que pinta los campos reales del evento de auditoría (actor, acción, recurso, status, severidad…) en
+  solo lectura, en vez de los campos heredados de material/archivo. `L4_SEED_VERSION` 1.54.0 → 1.57.0.
+
+### Removed
+
+- **MP-04 Track A / MP-01 — poda de features muertas** (sin DROP; AutoMigrate nunca dropea, un recreate
+  fresco simplemente ya no crea las tablas):
+  - `content.courses` (3.60.1): se borra la entity `Course`, su registro en AutoMigrate y el `seedCourses`.
+  - `content.progress` (3.60.3): se borra la entity `Progress`, su registro en AutoMigrate, sus 2 FKs y
+    el trigger `set_updated_at` en `post_gorm.sql`.
+  - `academic.{schedule,calendar_event,colors}` y el playground `focal_colors_demo` (3.60.7, MP-01 F3).
+  Acompaña dedup de helpers de playground v2 → `playground_v2/common` (MP-01 F2.1) y la baja de los
+  permisos/recursos muertos asociados.
+
 ## [0.900.6] - 2026-06-11
 
 ### Added
