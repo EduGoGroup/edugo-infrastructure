@@ -34,7 +34,7 @@ func TestN5InfraGate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer container.Terminate(ctx)
+	defer func() { _ = container.Terminate(ctx) }()
 	host, _ := container.Host(ctx)
 	port, _ := container.MappedPort(ctx, "5432/tcp")
 	dsn := "postgres://test:test@" + host + ":" + port.Port() + "/test?sslmode=disable"
@@ -42,7 +42,7 @@ func TestN5InfraGate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	_, err = migrations.Migrate(db, migrations.MigrateOptions{Force: true, SeedDemo: false, DBUser: "test"})
 	if err != nil {
 		t.Fatalf("migrate: %v", err)
