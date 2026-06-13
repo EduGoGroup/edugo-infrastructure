@@ -451,7 +451,6 @@ func seedUserGrants(tx *gorm.DB) error {
 		{
 			ID:                mustUUID("ee000000-0000-0000-0000-000000000001"),
 			UserID:            mustUUID("00000000-0000-0000-0000-000000000008"),
-			ScopePattern:      "*",
 			PermissionPattern: "academic.grades.read",
 			Effect:            "deny",
 			GrantedBy:         &grantedBy,
@@ -459,7 +458,6 @@ func seedUserGrants(tx *gorm.DB) error {
 		{
 			ID:                mustUUID("ee000000-0000-0000-0000-000000000002"),
 			UserID:            mustUUID("00000000-0000-0000-0000-000000000005"),
-			ScopePattern:      "*",
 			PermissionPattern: "admin.users.create",
 			Effect:            "allow",
 			ExpiresAt:         &expiresIn30Days,

@@ -862,13 +862,8 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- CHECK constraints on iam.user_grants
-DO $$ BEGIN
-    ALTER TABLE iam.user_grants
-        ADD CONSTRAINT user_grants_scope_format
-        CHECK (scope_pattern ~ '^(\*|(school|unit|section|subject):[^/]+(/(school|unit|section|subject):[^/]+)*)$');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
+-- (ADR 0024 DEC-4: el CHECK user_grants_scope_format se eliminó junto con la
+-- columna scope_pattern decorativa; el motor de auth nunca la evaluaba.)
 -- {0,3}: ver nota en role_grants_pattern_format (path de hasta 4 segmentos,
 -- alineado con enum.PathPermissionRegex del shared).
 DO $$ BEGIN

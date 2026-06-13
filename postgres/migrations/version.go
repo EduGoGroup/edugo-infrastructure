@@ -716,7 +716,18 @@ import (
 //     por subarbol; readonly_auditor sigue denegado por su deny de prefijo
 //     academic.join_request_approvals.*. L4_SEED_VERSION 1.61.0 -> 1.62.0. Bump
 //     de SchemaVersion por cambio de catalogo+grant (recrear BD, sin ALTER).
-const SchemaVersion = "3.64.0"
+//   - 3.65.0 — ADR 0024 DEC-4: elimina la columna decorativa scope_pattern de
+//     iam.user_grants (el motor de auth nunca la evaluaba; el scope efectivo
+//     vive en el JWT, no en el grant). Cambios: entity UserGrant pierde el campo
+//     ScopePattern y el indice unico uq_user_grants_user_scope_perm_effect se
+//     reescribe a uq_user_grants_user_perm_effect sobre (user_id,
+//     permission_pattern, effect); post_gorm.sql elimina el CHECK
+//     user_grants_scope_format; el demo seed (seedUserGrants) deja de sembrar
+//     ScopePattern en sus 2 filas. NO toca iam.role_grants (ya limpio) ni
+//     iam.user_roles.scope_pattern (sigue en uso). Cambio en entity + SQL +
+//     demo seed (no L4) -> L4_SEED_VERSION intacto. Requiere recrear BD (sin
+//     ALTER). ComputeFilesHash() CAMBIA (se editó post_gorm.sql).
+const SchemaVersion = "3.65.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
