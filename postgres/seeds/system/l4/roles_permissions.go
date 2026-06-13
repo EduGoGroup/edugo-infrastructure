@@ -381,10 +381,22 @@ func l4Permissions() []l4PermissionSpec {
 		{"aca9a4cc-d572-4a21-8e58-ff3ccceb7daf", L4_RESOURCE_JOIN_REQUESTS_ID, "academic.join_requests.read", "Ver Solicitudes de Ingreso", "Ver la bandeja de solicitudes pendientes", "read", "school"},
 		{"fed74f16-24ce-4247-8dea-abaaf927fbd6", L4_RESOURCE_JOIN_REQUESTS_ID, "academic.join_requests.reject", "Rechazar Solicitud", "Rechazar una solicitud de ingreso", "reject", "school"},
 
-		// --- join_request_approvals (resource …63): la acción ES el rol que se admite ---
-		{"8881638e-6f57-4849-9238-bcf8b7af5a93", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.student", "Aprobar Alumnos", "Firmar el visto bueno de solicitudes con rol student", "student", "school"},
-		{"f423efb0-ec3f-4d2e-bb45-f4bc2262156c", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.teacher", "Aprobar Profesores", "Firmar el visto bueno de solicitudes con rol teacher", "teacher", "school"},
-		{"995a9f3d-c1d9-4e30-8bdf-feb7aee84178", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.guardian", "Aprobar Apoderados", "Firmar el visto bueno de solicitudes con rol guardian", "guardian", "school"},
+		// --- join_request_approvals (resource …63): SELLO × TIPO ---
+		// El doble gate de ingreso (colegio→unidad) tiene UN permiso POR SELLO y
+		// POR TIPO de invitación. El path es
+		// `academic.join_request_approvals.<sello>.<tipo>` con sello ∈
+		// {school, unit} y tipo ∈ {student, teacher, guardian}. La key de acción
+		// (`<sello>.<tipo>`) es única dentro del recurso (UNIQUE resource_id+action).
+		// approve.go evalúa el permiso del sello concreto que va a firmar, así un
+		// rol puede firmar el sello de unidad de su clase (teacher → unit.student)
+		// sin firmar el de colegio. Los wildcards amplios (school_admin
+		// `academic.*`, super_admin `*`) cubren ambos sub-namespaces por subárbol.
+		{"437fd7c4-bbcc-4359-87b4-b3444c8f2abe", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.school.student", "Aprobar Alumnos (colegio)", "Firmar el sello de COLEGIO de solicitudes con rol student", "school.student", "school"},
+		{"2637d38f-6ae2-4e65-bb5e-c28b8acc35d8", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.school.teacher", "Aprobar Profesores (colegio)", "Firmar el sello de COLEGIO de solicitudes con rol teacher", "school.teacher", "school"},
+		{"d369b2ac-b84a-4f8d-8099-ffb27128bc10", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.school.guardian", "Aprobar Apoderados (colegio)", "Firmar el sello de COLEGIO de solicitudes con rol guardian", "school.guardian", "school"},
+		{"d75e2c2a-7b9b-4472-8fcd-98d7ca74ce9e", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.unit.student", "Aprobar Alumnos (unidad)", "Firmar el sello de UNIDAD de solicitudes con rol student", "unit.student", "school"},
+		{"ac9b949a-896d-4b62-a005-ab97b00b96a6", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.unit.teacher", "Aprobar Profesores (unidad)", "Firmar el sello de UNIDAD de solicitudes con rol teacher", "unit.teacher", "school"},
+		{"63551147-a030-420f-a60b-a4e05e731040", L4_RESOURCE_JOIN_REQUEST_APPROVALS_ID, "academic.join_request_approvals.unit.guardian", "Aprobar Apoderados (unidad)", "Firmar el sello de UNIDAD de solicitudes con rol guardian", "unit.guardian", "school"},
 
 		// --- audit (resource 20000000-…-70) ---
 		{"a1000000-0000-0000-0000-000000000001", L4_RESOURCE_AUDIT_ID, "admin.audit.read", "Ver Auditoría", "Ver registros de auditoría del sistema", "read", "system"},
@@ -550,7 +562,7 @@ func roleGrantPatterns() map[string][]string {
 		// (unit-directory). Grant LITERAL a `.read`, NO el wildcard
 		// `academic.memberships.*`: el profesor no crea, edita ni elimina
 		// membresías (eso es de school_admin vía academic.*). Mismo criterio
-		// que `academic.join_request_approvals.student` — literal donde el
+		// que `academic.join_request_approvals.unit.student` — literal donde el
 		// wildcard sobre-otorgaría. (DIFERIBLE en F0b: se conserva porque tiene
 		// usos vivos roster/unit-directory; la vista "alumnos por materia" que
 		// también lo usaba se retiró, ver plan 010 N1.7.)
@@ -569,13 +581,15 @@ func roleGrantPatterns() map[string][]string {
 		// concreto debe inscribir, se le da `...enroll` vía user_grant.
 		"academic.subject_offerings.read",
 		"academic.units.*",
-		// Onboarding (plan 005): el profesor gestiona invitaciones y
-		// solicitudes de su clase, pero SOLO firma aprobaciones de alumnos
-		// (no de profesores ni apoderados) → grant literal a `.student`,
-		// nunca el wildcard `.*` sobre approvals.
+		// Onboarding (plan 005, sello × tipo): el profesor gestiona invitaciones
+		// y solicitudes de su clase, pero SOLO firma el sello de UNIDAD de
+		// alumnos (admite alumnos a SU clase) → grant literal a
+		// `.unit.student`. NO firma el sello de COLEGIO (eso es de school_admin
+		// vía academic.*) ni aprobaciones de profesores/apoderados; nunca el
+		// wildcard `.*` sobre approvals.
 		"academic.invitations.*",
 		"academic.join_requests.*",
-		"academic.join_request_approvals.student",
+		"academic.join_request_approvals.unit.student",
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",

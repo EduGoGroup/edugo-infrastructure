@@ -844,10 +844,13 @@ $$;
 -- P1-2: regex acepta ambos formatos: legacy (recurso:accion[:own]) y
 -- path-based (recurso.accion[.*][:own]). Mirror desde role_permissions
 -- usa nombres legacy con `:`.
+-- {0,3}: el path llega a 4 segmentos (p.ej.
+-- academic.join_request_approvals.unit.student — SELLO × TIPO); alinea con
+-- enum.PathPermissionRegex del shared (que ya permite hasta 4 segmentos).
 DO $$ BEGIN
     ALTER TABLE iam.role_grants
         ADD CONSTRAINT role_grants_pattern_format
-        CHECK (pattern ~ '^(\*|[a-z_]+(\.[a-z_]+){0,2}(\.\*)?|\*\.[a-z_]+|[a-z_]+\.\*\.[a-z_]+|[a-z_]+(:[a-z_]+){0,1})(:own)?$');
+        CHECK (pattern ~ '^(\*|[a-z_]+(\.[a-z_]+){0,3}(\.\*)?|\*\.[a-z_]+|[a-z_]+\.\*\.[a-z_]+|[a-z_]+(:[a-z_]+){0,1})(:own)?$');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
@@ -866,10 +869,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- {0,3}: ver nota en role_grants_pattern_format (path de hasta 4 segmentos,
+-- alineado con enum.PathPermissionRegex del shared).
 DO $$ BEGIN
     ALTER TABLE iam.user_grants
         ADD CONSTRAINT user_grants_permission_format
-        CHECK (permission_pattern ~ '^(\*|[a-z_]+(\.[a-z_]+){0,2}(\.\*)?|\*\.[a-z_]+|[a-z_]+\.\*\.[a-z_]+|[a-z_]+(:[a-z_]+){0,1})(:own)?$');
+        CHECK (permission_pattern ~ '^(\*|[a-z_]+(\.[a-z_]+){0,3}(\.\*)?|\*\.[a-z_]+|[a-z_]+\.\*\.[a-z_]+|[a-z_]+(:[a-z_]+){0,1})(:own)?$');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 

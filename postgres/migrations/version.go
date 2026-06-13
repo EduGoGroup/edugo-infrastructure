@@ -705,7 +705,18 @@ import (
 //     schools-form + manage-concepts y la edicion de escuelas existentes.
 //     L4_SEED_VERSION 1.60.0 -> 1.61.0. Bump de SchemaVersion para invalidar la
 //     cache SDUI por contenido (recrear BD, sin ALTER).
-const SchemaVersion = "3.63.0"
+//   - 3.64.0 — aprobacion de ingreso: SELLO x TIPO (seed-only, sin DDL). El
+//     permiso unico academic.join_request_approvals.<tipo> se separa en
+//     academic.join_request_approvals.{school,unit}.{student,teacher,guardian}
+//     (catalogo: 3 filas -> 6). El doble gate (colegio->unidad) gana un permiso
+//     por sello; approve.go (academic) evalua el permiso del sello concreto que
+//     firma. El grant de teacher pasa de ...student a ...unit.student (admite
+//     alumnos a SU clase = sello de unidad; ya no firma el sello de colegio).
+//     school_admin (academic.*) / super_admin (*) cubren ambos sub-namespaces
+//     por subarbol; readonly_auditor sigue denegado por su deny de prefijo
+//     academic.join_request_approvals.*. L4_SEED_VERSION 1.61.0 -> 1.62.0. Bump
+//     de SchemaVersion por cambio de catalogo+grant (recrear BD, sin ALTER).
+const SchemaVersion = "3.64.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

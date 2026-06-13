@@ -605,7 +605,18 @@ package layers
 //     `invitation_type_label` (texto legible del tipo). Solo cambia slot_data de
 //     instances L4 → bump para invalidar la caché SDUI por contenido. Sin
 //     cambios de esquema ni de permisos.
-const L4_SEED_VERSION = "1.61.0"
+//   - 1.62.0 (aprobación de ingreso: SELLO × TIPO): el permiso único
+//     `academic.join_request_approvals.<tipo>` se separa en SELLO × TIPO —
+//     `academic.join_request_approvals.{school,unit}.{student,teacher,guardian}`
+//     (6 filas en el catálogo, antes 3). El doble gate (colegio→unidad) ahora
+//     tiene un permiso por sello: approve.go evalúa el permiso del sello
+//     concreto que firma. teacher pasa de `…student` a `…unit.student`
+//     (admite alumnos a SU clase = sello de unidad; ya NO firma el sello de
+//     colegio). school_admin (`academic.*`) y super_admin (`*`) cubren ambos
+//     sub-namespaces por subárbol; readonly_auditor sigue denegado por su deny
+//     de prefijo `academic.join_request_approvals.*`. Cambio de catálogo de
+//     permisos + 1 grant de rol → bump.
+const L4_SEED_VERSION = "1.62.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
