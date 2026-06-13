@@ -8,7 +8,7 @@ import (
 
 // Permission representa un permiso del sistema RBAC
 type Permission struct {
-	ID          uuid.UUID `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
+	ID uuid.UUID `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	// La profundidad del path llega a 4 segmentos (p.ej.
 	// academic.join_request_approvals.school.student — SELLO × TIPO): el
 	// cuantificador {0,3} alinea esta CHECK con enum.PathPermissionRegex del
