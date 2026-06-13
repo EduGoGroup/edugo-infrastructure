@@ -6,6 +6,17 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.8] - 2026-06-13
+
+### Fixed
+
+- **Seed demo (`seedMemberships`)**: migrado de la columna `role` (eliminada por MP-08 F3) a
+  `invitation_type_id` (FK → `academic.invitation_types`), alineando el demo con el esquema 3.64.0. El
+  defecto hacía fallar la siembra demo de `postgres/v0.900.7` con `column "role" ... does not exist`.
+  Las keys (`student`/`teacher`/`admin`/`coordinator`/`guardian`/`assistant`) se resuelven a su id vía
+  `catalog.ResolveInvitationTypeID` (data-driven, sin UUIDs hardcodeados), igual que los playground_v2 y
+  los playground legacy ya migrados. Sin cambio de esquema → `SchemaVersion` sigue 3.64.0.
+
 ## [0.900.7] - 2026-06-13
 
 Cierre de varios micro-planes sobre el esquema: MP-08 (acceso por sistema + contexto de invitación
