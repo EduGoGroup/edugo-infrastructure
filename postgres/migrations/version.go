@@ -695,7 +695,17 @@ import (
 //     (data-driven, sin hardcodear UUIDs); L1 adelanta ApplyInvitationTypes para
 //     que su membresia pueda resolver el FK antes de L4. L4_SEED_VERSION intacto
 //     (no cambian filas de catalogo). Requiere recrear BD (sin ALTER).
-const SchemaVersion = "3.62.0"
+//   - 3.63.0 — MP-08 F4 (seed-only, sin DDL): dos ajustes de slot_data SDUI en
+//     L4. (1) P5: el form `invitations-form` cambia el campo `role` (select
+//     estatico, enum legacy muerto) por `invitation_type` (remote_select contra
+//     GET /api/v1/schools/invitation-types; value_field=key, display_field=label),
+//     alineado a CreateInvitationRequest.InvitationType. (2) P4 (DEC-D):
+//     `schools-list` retira la accion `create` del header (actions_removed
+//     ["create"]); el alta de escuelas pasa al admin-tool de Go. Se conserva
+//     schools-form + manage-concepts y la edicion de escuelas existentes.
+//     L4_SEED_VERSION 1.60.0 -> 1.61.0. Bump de SchemaVersion para invalidar la
+//     cache SDUI por contenido (recrear BD, sin ALTER).
+const SchemaVersion = "3.63.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

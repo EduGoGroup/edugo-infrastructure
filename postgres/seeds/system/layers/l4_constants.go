@@ -582,7 +582,30 @@ package layers
 //     common.SeedSchool (playground_v2) → toda escuela de playground las
 //     recibe. Acompaña el DDL aditivo de F0 (tablas iam.systems/system_roles
 //   - academic.invitation_types/school_invitation_roles).
-const L4_SEED_VERSION = "1.60.0"
+//   - 1.61.0 (MP-08 F4 — invitation_type por remote_select + sin crear escuela):
+//     dos ajustes seed-only de slot_data L4 (sin DDL). (1) P5: el form
+//     `invitations-form` reemplaza el campo `role` (select estático con el enum
+//     legacy student/teacher/guardian, ya muerto en backend) por
+//     `invitation_type` (la KEY del tipo) de tipo remote_select contra el
+//     endpoint nuevo GET /api/v1/schools/invitation-types
+//     (academic:/api/v1/schools/invitation-types, JWT-only, los tipos
+//     configurados para la escuela activa; responde
+//     {"invitation_types":[{"key","label","requires_unit"}]}). El RemoteDataLoader
+//     del KMP localiza el array por el fallback "primer array de objetos top-level"
+//     (no hay envelope items/data) y el select lee value_field=key,
+//     display_field=label — sin tocar el endpoint ni el KMP. Alinea con
+//     CreateInvitationRequest.InvitationType (json:"invitation_type"
+//     binding:"required"). (2) P4 (DEC-D): `schools-list` retira la acción
+//     `create` del header (actions_removed ["create"], id real del default de
+//     list-basic-v1); el alta de escuelas pasa al admin-tool de Go. Se CONSERVA
+//     `schools-form` y su action `manage-concepts` (único entry-point a
+//     "Gestionar Conceptos"); editar escuela existente intacto. (3) Mismo blast
+//     radius del contrato F3: la lista `invitations-list` deja de pintar la
+//     columna muerta `role` (el InvitationResponse ya no la trae) y muestra
+//     `invitation_type_label` (texto legible del tipo). Solo cambia slot_data de
+//     instances L4 → bump para invalidar la caché SDUI por contenido. Sin
+//     cambios de esquema ni de permisos.
+const L4_SEED_VERSION = "1.61.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

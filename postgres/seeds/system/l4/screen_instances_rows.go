@@ -67,6 +67,12 @@ func usersForm() l4ScreenInstanceRow {
 	}
 }
 
+// schools-list (MP-08 F4, DEC-D): se retira la acción `create` del header
+// (heredada de list-basic-v1 vía actions_removed). Crear una escuela deja de
+// ser un flujo del producto SDUI: el alta de escuelas pasa al admin-tool de Go.
+// Editar una escuela existente se conserva (la fila navega a schools-form, que
+// mantiene el entry-point "Gestionar Conceptos"). Mismo patrón delta que
+// memberships-list / concept-types-list.
 func schoolsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_SCHOOLS_LIST_ID,
@@ -87,6 +93,7 @@ func schoolsList() l4ScreenInstanceRow {
     {"key": "code", "label": "Código"},
     {"key": "is_active", "label": "Activa"}
   ],
+  "actions_removed": ["create"],
   "api_prefix": "academic"
 }`,
 	}
@@ -641,7 +648,7 @@ func invitationsList() l4ScreenInstanceRow {
   "search_placeholder": "Buscar invitación...",
   "columns": [
     {"key": "code", "label": "Código"},
-    {"key": "role", "label": "Rol"},
+    {"key": "invitation_type_label", "label": "Tipo"},
     {"key": "label", "label": "Etiqueta"},
     {"key": "uses_count", "label": "Usos"},
     {"key": "max_uses", "label": "Máx."},
@@ -657,12 +664,24 @@ func invitationsList() l4ScreenInstanceRow {
 	}
 }
 
-// invitations-form (N0.4-A): creación de un código de invitación.
+// invitations-form (N0.4-A; MP-08 F4): creación de un código de invitación.
 // Solo create (no edit): patrón delta retira "save" (edit-only) y
 // "delete"; conserva "save_new" → $resource$.create →
 // academic.invitations.create. El campo `code` NO se incluye: lo
 // genera el backend. academic_unit_id se llena vía remote_select de
 // unidades del colegio (remoteSelectPrefix=academic en el contrato FE).
+//
+// MP-08 F4: el campo `role` (select estático con el enum legacy) murió.
+// Ahora es `invitation_type` (la KEY del tipo configurado para la escuela),
+// que el backend exige en CreateInvitationRequest (json:"invitation_type"
+// binding:"required"). Se llena por remote_select contra el endpoint nuevo
+// GET /api/v1/schools/invitation-types (JWT-only, los tipos configurados
+// para la escuela activa), que responde
+// {"invitation_types":[{"key","label","requires_unit"}]}. El RemoteDataLoader
+// del KMP localiza el array por el fallback "primer array de objetos de nivel
+// superior" (no hay envelope items/data), y el select lee value_field=key y
+// display_field=label de cada objeto. value=key (lo que el body envía),
+// label=label (texto legible).
 func invitationsForm() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_INVITATIONS_FORM_ID,
@@ -676,11 +695,7 @@ func invitationsForm() l4ScreenInstanceRow {
   "title": "Nueva Invitación",
   "fields": [
     {"key": "academic_unit_id", "label": "Unidad", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/units", "display_field": "display_name", "value_field": "id"},
-    {"key": "role", "label": "Rol", "type": "select", "required": true, "options": [
-      {"value": "student", "label": "Estudiante"},
-      {"value": "teacher", "label": "Profesor"},
-      {"value": "guardian", "label": "Acudiente"}
-    ]},
+    {"key": "invitation_type", "label": "Tipo de invitación", "type": "remote_select", "required": true, "remote_endpoint": "academic:/api/v1/schools/invitation-types", "display_field": "label", "value_field": "key"},
     {"key": "label", "label": "Etiqueta", "type": "text"},
     {"key": "expires_at", "label": "Expira", "type": "datetime"},
     {"key": "max_uses", "label": "Usos máximos", "type": "number", "min": 1}
