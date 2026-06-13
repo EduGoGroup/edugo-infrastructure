@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/framework"
 )
 
@@ -156,14 +157,18 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 		return err
 	}
 
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "student")
+	if err != nil {
+		return fmt.Errorf("guardian_relation: resolve invitation_type: %w", err)
+	}
 	membership := entities.Membership{
-		ID:         membershipUUID,
-		UserID:     student.ID,
-		SchoolID:   schoolUUID,
-		Role:       "student",
-		Metadata:   json.RawMessage(`{"e2e":true,"fixture":"guardian_relation"}`),
-		IsActive:   true,
-		EnrolledAt: time.Date(2026, 1, 1, 8, 0, 0, 0, time.UTC),
+		ID:               membershipUUID,
+		UserID:           student.ID,
+		SchoolID:         schoolUUID,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"guardian_relation"}`),
+		IsActive:         true,
+		EnrolledAt:       time.Date(2026, 1, 1, 8, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

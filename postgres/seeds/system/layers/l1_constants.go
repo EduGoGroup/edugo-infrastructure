@@ -21,11 +21,12 @@ const (
 	L1_MEMBERSHIP_VIEWER_ID = "b1000000-0000-0000-0000-000000000006"
 )
 
-// L1_MEMBERSHIP_ROLE es el valor que se usa en
-// academic.memberships.role para el viewer. Tiene que pertenecer al
-// CHECK constraint memberships_role_check
-// (teacher|student|guardian|coordinator|admin|assistant). La
-// semántica real del rol vive en iam.user_roles (announcement_viewer).
+// L1_MEMBERSHIP_ROLE es la key del tipo de invitación que se usa para la
+// membership del viewer. Se resuelve a academic.memberships.invitation_type_id
+// vía catalog.ResolveInvitationTypeID, así que tiene que ser una key existente
+// en academic.invitation_types
+// (teacher|student|guardian|coordinator|admin|assistant). La semántica real del
+// rol vive en iam.user_roles (announcement_viewer).
 const L1_MEMBERSHIP_ROLE = "assistant"
 
 // Credenciales de bootstrapping del usuario viewer de L1.

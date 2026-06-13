@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/framework"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/layers"
@@ -182,14 +183,18 @@ func (f *RoleOnly) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 		return err
 	}
 
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, membershipRoleFor(f.RoleCode))
+	if err != nil {
+		return fmt.Errorf("role_only: resolve invitation_type: %w", err)
+	}
 	membership := entities.Membership{
-		ID:         uuid.MustParse(membershipID),
-		UserID:     user.ID,
-		SchoolID:   schoolUUID,
-		Role:       membershipRoleFor(f.RoleCode),
-		Metadata:   json.RawMessage(`{"e2e":true,"fixture":"role_only"}`),
-		IsActive:   true,
-		EnrolledAt: time.Date(2026, 1, 1, 8, 0, 0, 0, time.UTC),
+		ID:               uuid.MustParse(membershipID),
+		UserID:           user.ID,
+		SchoolID:         schoolUUID,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"role_only"}`),
+		IsActive:         true,
+		EnrolledAt:       time.Date(2026, 1, 1, 8, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -241,13 +246,15 @@ func (f *RoleOnly) Cleanup(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	return nil
 }
 
-// membershipRoleFor mapea el rol RBAC del catálogo al enum de la
-// columna academic.memberships.role. El enum acepta exactamente:
+// membershipRoleFor mapea el rol RBAC del catálogo a la key del tipo de
+// invitación con que se siembra la membership (MP-08): se resuelve a
+// academic.memberships.invitation_type_id vía catalog.ResolveInvitationTypeID.
+// Las keys válidas son exactamente:
 // ('teacher','student','guardian','coordinator','admin','assistant').
 // Los roles "observer-like" (observer, readonly_auditor,
-// school_assistant) caen bajo "assistant" — es el valor del enum más
-// cercano a "ayudante sin permisos plenos". Para un código desconocido
-// devuelve "student" como fallback seguro.
+// school_assistant) caen bajo "assistant" — el tipo más cercano a
+// "ayudante sin permisos plenos". Para un código desconocido devuelve
+// "student" como fallback seguro.
 func membershipRoleFor(roleCode string) string {
 	switch roleCode {
 	// PRE-4: "platform_admin" removido del catálogo. La función

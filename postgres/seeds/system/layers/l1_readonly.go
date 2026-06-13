@@ -29,7 +29,10 @@
 //	phase-3-layer-l1/{design,requirements}.md.
 package layers
 
-import "gorm.io/gorm"
+import (
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
+	"gorm.io/gorm"
+)
 
 // l1Layer implementa system.Layer por duck-typing (no se importa la
 // interfaz para evitar ciclo seeds/system ↔ seeds/system/layers).
@@ -49,12 +52,19 @@ func (l *l1Layer) SeedVersion() string { return L1_SEED_VERSION }
 
 // Apply siembra L1 en orden respetando las FK del esquema.
 // Orden obligatorio:
+//  0. academic.invitation_types (catálogo MP-08; sin deps de FK). Se adelanta
+//     desde L4 porque la membership de L1 (paso 5) referencia invitation_type_id
+//     por FK y necesita el tipo "assistant" ya sembrado. ApplyInvitationTypes es
+//     idempotente, así que reaplicarlo en L4 no duplica.
 //  1. academic.schools     (sin dependencias hacia L1)
 //  2. iam.roles            (sin dependencias hacia L1)
 //  3. auth.users           (sin dependencias hacia L1)
 //  4. iam.user_roles       (FK a users de L1, roles de L1, schools de L1)
-//  5. academic.memberships (FK a users de L1, schools de L1)
+//  5. academic.memberships (FK a users/schools de L1 + invitation_type_id)
 func (l *l1Layer) Apply(tx *gorm.DB) error {
+	if err := l4.ApplyInvitationTypes(tx); err != nil {
+		return err
+	}
 	if err := applyL1School(tx); err != nil {
 		return err
 	}

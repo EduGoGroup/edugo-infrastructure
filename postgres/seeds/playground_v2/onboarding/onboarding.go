@@ -51,6 +51,7 @@ import (
 	"fmt"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/google/uuid"
@@ -193,16 +194,20 @@ func upsertInvitation(tx *gorm.DB, idStr, code, unitIDStr, role, label string) e
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, role)
+	if err != nil {
+		return err
+	}
 	lbl := label
 	inv := entities.SchoolInvitation{
-		ID:             id,
-		Code:           code,
-		SchoolID:       sid,
-		AcademicUnitID: auid,
-		Role:           role,
-		Label:          &lbl,
-		UsesCount:      0,
-		IsActive:       true,
+		ID:               id,
+		Code:             code,
+		SchoolID:         sid,
+		AcademicUnitID:   auid,
+		InvitationTypeID: invitationTypeID,
+		Label:            &lbl,
+		UsesCount:        0,
+		IsActive:         true,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

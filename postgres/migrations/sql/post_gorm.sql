@@ -106,6 +106,36 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ============================================================
+-- MP-08 F3 — swap role(string+CHECK) -> invitation_type_id(uuid+FK) en las 3
+-- tablas de membresía/invitación. El CHECK inline de rol se eliminó de las
+-- entities; la validez del tipo la garantiza ahora esta FK por id, same-schema
+-- (academic -> academic). GORM no materializa la FK porque invitation_type_id es
+-- una columna plana sin campo de relación. CASCADE: borrar un tipo de invitación
+-- limpia las filas que lo referencian. Idempotente.
+-- ============================================================
+
+DO $$ BEGIN
+    ALTER TABLE academic.memberships
+        ADD CONSTRAINT memberships_invitation_type_fkey
+            FOREIGN KEY (invitation_type_id) REFERENCES academic.invitation_types(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitations
+        ADD CONSTRAINT school_invitations_invitation_type_fkey
+            FOREIGN KEY (invitation_type_id) REFERENCES academic.invitation_types(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_join_requests
+        ADD CONSTRAINT school_join_requests_invitation_type_fkey
+            FOREIGN KEY (invitation_type_id) REFERENCES academic.invitation_types(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
 -- iam.system_roles (MP-08) — puente sistema<->rol. GORM no materializa FKs
 -- desde el tag `constraint:` sin campo de relacion (mismo patron que
 -- iam.role_grants), por eso ambas FKs (same-schema iam) se declaran aqui
@@ -893,8 +923,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_user_roles_user_active_covering
     ON iam.user_roles (user_id, school_id, academic_unit_id, role_id) WHERE is_active = true;
 
 -- academic
-CREATE INDEX IF NOT EXISTS idx_memberships_unit_role_active
-    ON academic.memberships (academic_unit_id, role) WHERE is_active = true;
+-- MP-08 F3: reexpresado de (academic_unit_id, role) a (academic_unit_id,
+-- invitation_type_id) tras el swap role->invitation_type_id.
+CREATE INDEX IF NOT EXISTS idx_memberships_unit_invitation_type_active
+    ON academic.memberships (academic_unit_id, invitation_type_id) WHERE is_active = true;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_academic_periods_active
     ON academic.academic_periods (school_id, academic_unit_id) WHERE is_active = true;

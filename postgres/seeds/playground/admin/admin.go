@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/layers"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -265,14 +266,18 @@ func upsertMembership(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "admin")
+	if err != nil {
+		return err
+	}
 	m := entities.Membership{
-		ID:         id,
-		UserID:     uid,
-		SchoolID:   sid,
-		Role:       "admin",
-		Metadata:   json.RawMessage(`{}`),
-		IsActive:   true,
-		EnrolledAt: time.Now().UTC(),
+		ID:               id,
+		UserID:           uid,
+		SchoolID:         sid,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{}`),
+		IsActive:         true,
+		EnrolledAt:       time.Now().UTC(),
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -365,14 +370,18 @@ func upsertMembershipB(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "admin")
+	if err != nil {
+		return err
+	}
 	m := entities.Membership{
-		ID:         id,
-		UserID:     uid,
-		SchoolID:   sid,
-		Role:       "admin",
-		Metadata:   json.RawMessage(`{}`),
-		IsActive:   true,
-		EnrolledAt: time.Now().UTC(),
+		ID:               id,
+		UserID:           uid,
+		SchoolID:         sid,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{}`),
+		IsActive:         true,
+		EnrolledAt:       time.Now().UTC(),
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -499,15 +508,19 @@ func upsertViewerMembership(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "teacher")
+	if err != nil {
+		return err
+	}
 	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: &auid,
-		Role:           "teacher",
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
+		ID:               id,
+		UserID:           uid,
+		SchoolID:         sid,
+		AcademicUnitID:   &auid,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{}`),
+		IsActive:         true,
+		EnrolledAt:       time.Now().UTC(),
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

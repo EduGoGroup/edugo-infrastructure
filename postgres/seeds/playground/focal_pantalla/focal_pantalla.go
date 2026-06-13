@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -413,15 +414,19 @@ func upsertMembership(tx *gorm.DB, idStr, userIDStr, roleKind string) error {
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, roleKind)
+	if err != nil {
+		return err
+	}
 	m := entities.Membership{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: &auid,
-		Role:           roleKind,
-		Metadata:       json.RawMessage(`{}`),
-		IsActive:       true,
-		EnrolledAt:     time.Now().UTC(),
+		ID:               id,
+		UserID:           uid,
+		SchoolID:         sid,
+		AcademicUnitID:   &auid,
+		InvitationTypeID: invitationTypeID,
+		Metadata:         json.RawMessage(`{}`),
+		IsActive:         true,
+		EnrolledAt:       time.Now().UTC(),
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

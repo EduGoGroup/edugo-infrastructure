@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/framework"
 )
 
@@ -188,14 +189,18 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 	if err != nil {
 		return fmt.Errorf("screen_only: teacher membership UUID inválido (%q): %w", teacherMembershipIDStr, err)
 	}
+	teacherInvitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "teacher")
+	if err != nil {
+		return fmt.Errorf("screen_only: resolve teacher invitation_type: %w", err)
+	}
 	teacherMembership := entities.Membership{
-		ID:         teacherMembershipID,
-		UserID:     teacherUser.ID,
-		SchoolID:   schoolUUID,
-		Role:       "teacher",
-		Metadata:   json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"assessments-list"}`),
-		IsActive:   true,
-		EnrolledAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		ID:               teacherMembershipID,
+		UserID:           teacherUser.ID,
+		SchoolID:         schoolUUID,
+		InvitationTypeID: teacherInvitationTypeID,
+		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"assessments-list"}`),
+		IsActive:         true,
+		EnrolledAt:       time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -398,14 +403,18 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 	if err != nil {
 		return fmt.Errorf("screen_only: student membership UUID inválido (%q): %w", studentMembershipIDStr, err)
 	}
+	studentInvitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "student")
+	if err != nil {
+		return fmt.Errorf("screen_only: resolve student invitation_type: %w", err)
+	}
 	studentMembership := entities.Membership{
-		ID:         studentMembershipID,
-		UserID:     student.ID,
-		SchoolID:   schoolUUID,
-		Role:       "student",
-		Metadata:   json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"grades-list"}`),
-		IsActive:   true,
-		EnrolledAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		ID:               studentMembershipID,
+		UserID:           student.ID,
+		SchoolID:         schoolUUID,
+		InvitationTypeID: studentInvitationTypeID,
+		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"grades-list"}`),
+		IsActive:         true,
+		EnrolledAt:       time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

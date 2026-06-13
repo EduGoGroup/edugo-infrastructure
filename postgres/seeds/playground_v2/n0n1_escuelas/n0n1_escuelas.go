@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -450,15 +451,19 @@ func upsertJoinRequest(tx *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	invitationTypeID, err := catalog.ResolveInvitationTypeID(tx, "student")
+	if err != nil {
+		return err
+	}
 	r := entities.SchoolJoinRequest{
-		ID:             id,
-		UserID:         uid,
-		SchoolID:       sid,
-		AcademicUnitID: auid,
-		Role:           "student",
-		InvitationID:   nil,
-		Status:         "pending",
-		RequestedAt:    time.Now().UTC(),
+		ID:               id,
+		UserID:           uid,
+		SchoolID:         sid,
+		AcademicUnitID:   auid,
+		InvitationTypeID: invitationTypeID,
+		InvitationID:     nil,
+		Status:           "pending",
+		RequestedAt:      time.Now().UTC(),
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

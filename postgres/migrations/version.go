@@ -684,7 +684,18 @@ import (
 //     no las materializa sin campo de relacion) y los triggers set_updated_at.
 //     Puramente ADITIVO: no toca tablas existentes. SIN seeds (los valores de
 //     los catalogos los siembra F1); L4_SEED_VERSION intacto.
-const SchemaVersion = "3.61.0"
+//   - 3.62.0 — MP-08 F3 (swap de columna, NO aditivo): la columna role (varchar
+//   - CHECK inline del enum de roles) se reemplaza por invitation_type_id (uuid,
+//     FK -> academic.invitation_types(id)) en las 3 tablas academic.{memberships,
+//     school_invitations,school_join_requests}. El CHECK ..._role_check se elimina
+//     (la validez del tipo la garantiza la FK). Las 3 FKs nuevas y el reexpresado
+//     del indice parcial idx_memberships_unit_role_active ->
+//     idx_memberships_unit_invitation_type_active viven en post_gorm.sql. Los
+//     seeds resuelven la key del tipo a su id via catalog.ResolveInvitationTypeID
+//     (data-driven, sin hardcodear UUIDs); L1 adelanta ApplyInvitationTypes para
+//     que su membresia pueda resolver el FK antes de L4. L4_SEED_VERSION intacto
+//     (no cambian filas de catalogo). Requiere recrear BD (sin ALTER).
+const SchemaVersion = "3.62.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

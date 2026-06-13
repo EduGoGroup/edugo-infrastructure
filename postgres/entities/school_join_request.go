@@ -13,18 +13,20 @@ import (
 // GATE de aprobación: SchoolApproved* (nivel colegio) y UnitApproved* (nivel
 // unidad). El estado vive en `status` ('pending','approved','rejected').
 //
-// Mirroreada del patrón de guardian_relation.go (CHECK inline del enum de rol
-// y de status, *uuid con SET NULL para los aprobadores, autoCreate/autoUpdate).
+// El tipo de invitación se referencia por id (invitation_type_id ->
+// academic.invitation_types); el CHECK inline de rol que existía antes de MP-08
+// se eliminó (la validez del tipo la garantiza la FK). El CHECK de status se
+// conserva inline. *uuid con SET NULL para los aprobadores, autoCreate/autoUpdate.
 //
-// El índice UNIQUE PARCIAL (user_id, school_id, academic_unit_id)
-// WHERE status='pending' NO se expresa en tag GORM (no soporta WHERE) → vive
-// en sql/post_gorm.sql. El trigger set_updated_at también vive ahí.
+// La FK invitation_type_id (same-schema academic) y el índice UNIQUE PARCIAL
+// (user_id, school_id, academic_unit_id) WHERE status='pending' (GORM no soporta
+// WHERE) viven en sql/post_gorm.sql, junto al trigger set_updated_at.
 type SchoolJoinRequest struct {
 	ID               uuid.UUID  `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	UserID           uuid.UUID  `db:"user_id" gorm:"type:uuid;index;not null;constraint:school_join_requests_user_fkey,OnDelete:CASCADE" validate:"required,uuid"`
 	SchoolID         uuid.UUID  `db:"school_id" gorm:"type:uuid;not null;constraint:school_join_requests_school_fkey,OnDelete:CASCADE" validate:"required,uuid"`
 	AcademicUnitID   uuid.UUID  `db:"academic_unit_id" gorm:"type:uuid;not null;constraint:school_join_requests_unit_fkey,OnDelete:CASCADE" validate:"required,uuid"`
-	Role             string     `db:"role" gorm:"not null;type:varchar(50);check:school_join_requests_role_check,role IN ('teacher','student','guardian','coordinator','admin','assistant')" validate:"required,oneof=teacher student guardian coordinator admin assistant"`
+	InvitationTypeID uuid.UUID  `db:"invitation_type_id" gorm:"column:invitation_type_id;type:uuid;not null" validate:"required,uuid"`
 	InvitationID     *uuid.UUID `db:"invitation_id" gorm:"type:uuid;constraint:school_join_requests_invitation_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	Status           string     `db:"status" gorm:"not null;type:varchar(20);default:'pending';index:idx_school_join_requests_status;check:school_join_requests_status_check,status IN ('pending','approved','rejected')" validate:"required,oneof=pending approved rejected"`
 	SchoolApprovedBy *uuid.UUID `db:"school_approved_by" gorm:"type:uuid;constraint:school_join_requests_school_approver_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
