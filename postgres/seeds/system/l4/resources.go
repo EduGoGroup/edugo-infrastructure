@@ -225,11 +225,6 @@ var l4Resources = []l4ResourceRow{
 	// Se quitan también sus permisos y los patterns de grant que los citaban.
 	{ID: L4_RESOURCE_PERIODS_ID, Key: "periods", DisplayName: "Periodos Académicos", Description: "Gestión de periodos académicos", Icon: "calendar-range", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_GRADES_ID, Key: "grades", DisplayName: "Calificaciones", Description: "Gestión de calificaciones", Icon: "award", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: true, IsActive: true},
-	// grades_detail (N4 / ADR 0020 — MODO DETALLADO): recurso del desglose por
-	// componente de nota. NO menú-visible (sin pantalla propia); existe solo para
-	// colgar los permisos academic.grades_detail.* sin colisionar con `grades` en
-	// el unique (resource_id, action). Grant condicional por perfil (identity, F4.5).
-	{ID: L4_RESOURCE_GRADES_DETAIL_ID, Key: L4_RESOURCE_GRADES_DETAIL_KEY, DisplayName: "Desglose de Notas", Description: "Componentes de nota (modo detallado)", Icon: "list", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_ATTENDANCE_ID, Key: "attendance", DisplayName: "Asistencia", Description: "Registro de asistencia", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
 	// Onboarding (plan 005, N0.0): invitaciones y solicitudes de ingreso.
 	// Menu-visibles bajo "academic" como guardian_relations.

@@ -439,17 +439,13 @@ package layers
 //     esquema nuevo no tiene modalidad). take/result/review-dashboard/
 //     attempt-review-detail quedan MÍNIMAS (F3, re-apuntado de UI pendiente). Sin
 //     cambios de esquema (cambia solo el output del seed).
-//   - 1.47.0 (2026-06-06, N4 F4.6 — catálogo del modo detallado de notas): se
-//     siembran en iam.permissions los 4 permisos del recurso grades_detail
-//     (academic.grades_detail.create/read/update/delete), espejando el enum de
-//     edugo-shared. Cuelgan de un recurso PROPIO grades_detail (…37, NO
-//     menú-visible): no comparten resource_id con `grades` porque el unique
-//     (resource_id, action) prohíbe repetir create/read/update. Gestionan los
-//     componentes de nota (academic.grade_item) y el desglose transparente en
-//     "Mis Notas". NO se otorgan a roles vía roleGrantPatterns: el grant es
-//     CONDICIONAL por perfil de escuela (academic.schools.grade_profile) y lo
-//     inyecta identity en runtime (F4.5). Sin cambios de esquema (cambia solo el
-//     output del seed).
+//   - 1.47.0 (2026-06-06, N4 F4.6 — catálogo del modo detallado de notas):
+//     sembraba en iam.permissions los 4 permisos del recurso grades_detail
+//     (academic.grades_detail.create/read/update/delete) bajo un recurso propio
+//     (…37, no menú-visible) con grant condicional por perfil de escuela inyectado
+//     por identity en runtime. SUPERADO por 1.63.0 (plan 022): recurso + permisos
+//     + grant condicional eliminados; el modo detallado lo decide ahora academic
+//     leyendo `grade_profile` directamente.
 //   - 1.48.0 (2026-06-08, Fase 1 — visibilidad condicional de campos SDUI en el
 //     form de pregunta): assessment-question-form se vuelve REACTIVO por
 //     `question_type` (campo controlador). Nuevo contrato SDUI snake_case
@@ -616,7 +612,14 @@ package layers
 //     sub-namespaces por subárbol; readonly_auditor sigue denegado por su deny
 //     de prefijo `academic.join_request_approvals.*`. Cambio de catálogo de
 //     permisos + 1 grant de rol → bump.
-const L4_SEED_VERSION = "1.62.0"
+//   - 1.63.0 (plan 022 / ADR 0024 foco 3 — poda del recurso grades_detail): se
+//     eliminan del catálogo el recurso `grades_detail` (…37) y sus 4 permisos
+//     academic.grades_detail.{create,read,update,delete}. El modo detallado de
+//     notas ya no se gobierna con un permiso: academic lo decide leyendo
+//     `grade_profile` de la escuela. El grant condicional por perfil que vivía en
+//     identity desaparece (el permiso era un mensajero eliminable). Cambio de
+//     catálogo de recursos + permisos → bump.
+const L4_SEED_VERSION = "1.63.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

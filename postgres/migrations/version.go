@@ -727,7 +727,16 @@ import (
 //     iam.user_roles.scope_pattern (sigue en uso). Cambio en entity + SQL +
 //     demo seed (no L4) -> L4_SEED_VERSION intacto. Requiere recrear BD (sin
 //     ALTER). ComputeFilesHash() CAMBIA (se editó post_gorm.sql).
-const SchemaVersion = "3.65.0"
+//   - 3.66.0 — plan 022 / ADR 0024 foco 3: poda del recurso grades_detail
+//     (seed-only, sin DDL). Se eliminan del catálogo L4 el recurso
+//     `grades_detail` (…37) y sus 4 permisos academic.grades_detail.{create,
+//     read,update,delete}. El modo detallado de notas ya no se gobierna con un
+//     permiso: academic lo decide leyendo `grade_profile` de la escuela (el
+//     permiso era un mensajero eliminable). Se retira también el grant condicional
+//     por perfil que vivía en identity. L4_SEED_VERSION 1.62.0 -> 1.63.0. Bump de
+//     SchemaVersion por cambio de catálogo de recursos+permisos (recrear BD, sin
+//     ALTER).
+const SchemaVersion = "3.66.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

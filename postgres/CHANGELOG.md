@@ -6,6 +6,20 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.9] - 2026-06-13
+
+Poda del recurso/permisos `grades_detail` (plan 022 / ADR 0024 foco 3). `SchemaVersion` 3.65.0 → 3.66.0;
+`L4_SEED_VERSION` 1.62.0 → 1.63.0.
+
+### Removed
+
+- **Recurso L4 `grades_detail` (…37) + sus 4 permisos `academic.grades_detail.{create,read,update,delete}`**
+  (seed-only, sin DDL): se eliminan del catálogo L4 (`resources.go`, `resources_constants.go`,
+  `roles_permissions.go`). El modo detallado de notas ya no se gobierna con un permiso: ahora lo decide
+  `academic` leyendo `grade_profile` de la escuela. El permiso era un mensajero eliminable, así que se
+  retira también el grant condicional por perfil que vivía en `identity`. UUID …37 queda libre. Requiere
+  recrear BD (sin ALTER).
+
 ## [0.900.8] - 2026-06-13
 
 ### Fixed
