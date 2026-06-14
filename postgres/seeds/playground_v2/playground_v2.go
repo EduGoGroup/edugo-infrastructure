@@ -20,6 +20,7 @@ package playground_v2
 import (
 	"fmt"
 
+	base "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/base"
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
@@ -50,6 +51,8 @@ type Fixture struct {
 // fixtures es el registry declarativo de playgrounds v2 disponibles.
 // El orden se respeta cuando se aplica "all".
 var fixtures = []Fixture{
+	// base = mundo de datos por defecto (MP-09). Va primero en "all".
+	{Name: "base", Apply: base.Apply},
 	{Name: "onboarding", Apply: onboarding.Apply},
 	{Name: "n1_inscripcion", Apply: n1_inscripcion.Apply},
 	{Name: "n17_secciones", Apply: n17_secciones.Apply},
