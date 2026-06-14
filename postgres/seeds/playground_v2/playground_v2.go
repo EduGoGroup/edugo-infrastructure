@@ -1,14 +1,11 @@
-// Package playground_v2 es la segunda línea de playgrounds focalizados
-// de EduGo, paralela a `seeds/playground/`. A diferencia de los v1 que
-// se aplicaban sobre L0 con recursos+pantallas sembrados ad-hoc, los
-// v2 corren sobre el sistema completo (L0..L4) y se limitan a sembrar
-// el envoltorio multi-tenant + roles/grants/usuarios para validar el
-// CRUD sobre los recursos meta que L4 ya trae.
+// Package playground_v2 es la línea vigente de playgrounds focalizados
+// de EduGo. Corren sobre el sistema completo (L0..L4) y se limitan a
+// sembrar el envoltorio multi-tenant + roles/grants/usuarios para validar
+// el CRUD sobre los recursos meta que L4 ya trae.
 //
-// Convive con `playground/` sin pisarlo: registry propio, flag CLI
-// propio (`--playground-v2`) y rangos UUID dedicados (62000000-...,
-// 12000000-...). No participa de `ComputeFilesHash()` — cambiar un v2
-// no requiere bump de SchemaVersion.
+// Tiene registry propio, flag CLI propio (`--playground-v2`) y rangos
+// UUID dedicados (62000000-..., 12000000-...). No participa de
+// `ComputeFilesHash()` — cambiar un v2 no requiere bump de SchemaVersion.
 //
 // Para agregar un nuevo playground v2:
 //  1. Crear paquete `seeds/playground_v2/<name>/<name>.go` con

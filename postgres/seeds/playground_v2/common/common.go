@@ -1,6 +1,6 @@
 // Package common agrupa los helpers idempotentes compartidos por los
-// playgrounds de la línea v2 (los que asumen que L0..L4 ya corrieron y reusan
-// los roles L4 school_admin/teacher/student).
+// playgrounds v2 (asumen que L0..L4 ya corrieron y reusan los roles L4
+// school_admin/teacher/student).
 //
 // Antes de este paquete, cada playground v2 redefinía ~9 funciones upsertXXX()
 // casi idénticas (upsertSchool, upsertAcademicUnit, upsertSubject, upsertUser,
@@ -8,10 +8,9 @@
 // upsertActivePeriod, upsertOffering, upsertEnrollment). Aquí viven las versiones
 // canónicas, exportadas y parametrizadas, sin special-casing por playground.
 //
-// Estilo: mismo patrón que postgres/seeds/playground/common (v1, sobre L0) —
-// structs *Spec con defaults y un SeedXxx(tx, spec) idempotente por PK. La
-// diferencia con v1 es el modelo: v2 cubre el dominio academic completo
-// (unidades, períodos, materias, ofertas, inscripciones), que v1 no tenía.
+// Estilo: structs *Spec con defaults y un SeedXxx(tx, spec) idempotente por
+// PK. El modelo cubre el dominio academic completo (unidades, períodos,
+// materias, ofertas, inscripciones).
 //
 // Diferencias clave que motivan parametrizar TODO (en vez de leer constantes
 // del paquete del playground, como hacían las copias):
