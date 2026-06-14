@@ -619,7 +619,19 @@ package layers
 //     `grade_profile` de la escuela. El grant condicional por perfil que vivía en
 //     identity desaparece (el permiso era un mensajero eliminable). Cambio de
 //     catálogo de recursos + permisos → bump.
-const L4_SEED_VERSION = "1.63.0"
+//   - 1.64.0 (assessments-form — visibilidad de transiciones por estado): los
+//     actions de transición del toolbar declaran `visible_when` (operador
+//     `equals`, evaluado por el motor SDUI contra el `status` del item) para no
+//     mostrar botones redundantes. Matriz: `publish` solo en draft, `archive` y
+//     `assign` solo en published, `delete` solo en draft. `delete` se OVERRIDEA
+//     puntualmente (actions_removed:["delete"] + actions_added con el id) para NO
+//     tocar el `delete` genérico del template master-detail-v1 (los demás
+//     master-detail conservan su delete intacto). Mecanismo genérico: cualquier
+//     action puede declarar `visible_when`; el `ComposeActions` del shared lo
+//     pasa íntegro (shallow-copy + json.Marshal, sin whitelist de campos) y el
+//     SlotBindingResolver del KMP lo propaga al Slot. Solo cambia slot_data de la
+//     instancia → bump para invalidar la caché SDUI por contenido.
+const L4_SEED_VERSION = "1.64.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
