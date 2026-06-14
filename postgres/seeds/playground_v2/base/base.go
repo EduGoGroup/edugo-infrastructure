@@ -364,10 +364,12 @@ func seedUserRoles(tx *gorm.DB) error {
 // seedUserGrants — P4-2: overrides puntuales por usuario en iam.user_grants.
 // Demuestra deny > allow (override prohibitivo sobre lectura de notas a un
 // student) y allow temporal con expires_at (concede admin.users.create extra a
-// un teacher por 30 días). Idempotente vía OnConflict.DoNothing sobre id.
+// un teacher). El expires_at es relativo a la fecha de aplicación (un año en el
+// futuro) para que el grant siga ACTIVO en pruebas sin importar cuándo se
+// siembre. Idempotente vía OnConflict.DoNothing sobre id.
 func seedUserGrants(tx *gorm.DB) error {
 	grantedBy := mustUUID("00000000-0000-0000-0000-000000000001")
-	expiresIn30Days := mustTimestamp("2026-06-11 00:00:00")
+	expiresInOneYear := time.Now().UTC().AddDate(1, 0, 0)
 	rows := []entities.UserGrant{
 		{
 			ID:                mustUUID("ee000000-0000-0000-0000-000000000001"),
@@ -381,7 +383,7 @@ func seedUserGrants(tx *gorm.DB) error {
 			UserID:            mustUUID("00000000-0000-0000-0000-000000000005"),
 			PermissionPattern: "admin.users.create",
 			Effect:            "allow",
-			ExpiresAt:         &expiresIn30Days,
+			ExpiresAt:         &expiresInOneYear,
 			GrantedBy:         &grantedBy,
 		},
 	}

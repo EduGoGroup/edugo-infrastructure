@@ -736,7 +736,15 @@ import (
 //     por perfil que vivía en identity. L4_SEED_VERSION 1.62.0 -> 1.63.0. Bump de
 //     SchemaVersion por cambio de catálogo de recursos+permisos (recrear BD, sin
 //     ALTER).
-const SchemaVersion = "3.66.0"
+//   - 3.67.0 — MP-09 F2-A: eliminación del paquete seeds/demo. El dataset de
+//     desarrollo ya lo provee seeds/playground_v2/base (default del migrador
+//     desde F1). Se borra el paquete seeds/demo (development.go + su test de
+//     integración), se repuntan los consumidores no-test (cmd/runner, cmd/seed,
+//     tools/mock-generator) a base.Apply, se elimina el branch SeedDemo de
+//     migrate.go junto con el campo MigrateOptions.SeedDemo, y se retira el flag
+//     `--seed-demo` del migrador. ComputeFilesHash() de seeds/ deja de incluir
+//     la línea "demo:<SeedVersion>" → cambia el hash de seeds → bump obligatorio.
+const SchemaVersion = "3.67.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

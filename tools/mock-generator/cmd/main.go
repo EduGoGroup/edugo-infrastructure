@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&inputDir, "input", "../../postgres/seeds/demo", "Directorio con archivos SQL de entrada")
+	rootCmd.Flags().StringVar(&inputDir, "input", "../../postgres/seeds/playground_v2/base", "Directorio con archivos SQL de entrada")
 	rootCmd.Flags().StringVar(&outputDir, "output", "../../mock/dataset", "Directorio de salida")
 }
 

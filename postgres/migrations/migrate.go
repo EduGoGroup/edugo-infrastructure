@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/demo"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
@@ -15,10 +14,9 @@ import (
 // MigrateOptions configura el comportamiento de Migrate.
 type MigrateOptions struct {
 	Force         bool   // Eliminar y recrear todos los schemas
-	SeedDemo      bool   // Incluir datos de desarrollo (demo seed)
 	SeedUpToLayer string // Aplicar system seed hasta esta capa (vacío = todas)
-	Playground    string // Si se setea, aplica el playground tras ApplySystem (omite demo)
-	PlaygroundV2  string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Mutuamente excluyente con Playground.
+	Playground    string // Si se setea, aplica el playground tras ApplySystem
+	PlaygroundV2  string // Si se setea, aplica el playground v2 tras ApplySystem. Mutuamente excluyente con Playground.
 	DBUser        string // Usuario PostgreSQL (para GRANT tras drop)
 }
 
@@ -103,10 +101,6 @@ func Migrate(db *sql.DB, opts MigrateOptions) (MigrateResult, error) {
 		// que playground.Apply: "all" expande a todos.
 		if err := playground_v2.Apply(gdb, opts.PlaygroundV2); err != nil {
 			return MigrateResult{}, fmt.Errorf("error aplicando playground_v2 %q: %w", opts.PlaygroundV2, err)
-		}
-	} else if opts.SeedDemo {
-		if err := demo.ApplyDemo(gdb); err != nil {
-			return MigrateResult{}, fmt.Errorf("error aplicando demo seeds: %w", err)
 		}
 	}
 

@@ -13,7 +13,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/internal/dbutil"
 	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/demo"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/base"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
 )
 
@@ -75,7 +75,8 @@ func main() {
 	fmt.Println("Runner PostgreSQL completado")
 }
 
-// applyDemoWithSQL abre un *gorm.DB desde el *sql.DB dado y aplica el seed demo.
+// applyDemoWithSQL abre un *gorm.DB desde el *sql.DB dado y aplica el seed de
+// desarrollo (playground_v2/base, mundo de datos por defecto de EduGo).
 func applyDemoWithSQL(db *sql.DB) error {
 	gdb, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
@@ -83,7 +84,7 @@ func applyDemoWithSQL(db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("error abriendo GORM: %w", err)
 	}
-	return demo.ApplyDemo(gdb)
+	return base.Apply(gdb)
 }
 
 func printHelp() {
