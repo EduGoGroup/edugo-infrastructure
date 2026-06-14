@@ -15,19 +15,16 @@ import (
 //   1. iam.systems                  — apps del ecosistema (kmp, admin-tool).
 //   2. iam.system_roles             — qué roles entran a cada app (puente).
 //   3. academic.invitation_types    — catálogo global de tipos de invitación.
-//   4. academic.school_invitation_roles — equivalencia tipo→rol IAM por escuela
-//      (sólo la escuela demo L1 desde aquí; las escuelas de playground reciben
-//      las equivalencias por defecto vía common.SeedSchool, que invoca el helper
-//      compartido SeedDefaultSchoolInvitationRoles).
+//   4. academic.school_invitation_roles — equivalencia tipo→rol IAM por escuela.
+//      L4 NO siembra equivalencias por escuela: el sistema es CONTRATO PURO
+//      (MP-09 F4) y no contiene escuelas. Cada escuela recibe sus equivalencias
+//      por defecto vía el helper compartido SeedDefaultSchoolInvitationRoles
+//      (lo invocan common.SeedSchool para playground y playground_v2/base para
+//      sus escuelas).
 //
 // Todas las funciones son idempotentes (ON CONFLICT DO NOTHING) y referencian
 // roles/tipos por id (FK por id, nunca por nombre). Los ids hardcodeados viven
 // en access_catalog_constants.go.
-
-// l1SchoolDemoID es el id de la escuela demo sembrada por la capa L1. Re-pegado
-// como literal igual que los role ids de L0/L1: `l4` no puede importar `layers`
-// (ciclo, porque layers.l4Layer importa l4).
-const l1SchoolDemoID = "b1000000-0000-0000-0000-000000000003" // layers.L1_SCHOOL_DEMO_ID
 
 // ApplySystems siembra iam.systems (2 apps del ecosistema).
 //
@@ -178,10 +175,12 @@ var invitationTypeToRole = []struct {
 // SeedDefaultSchoolInvitationRoles siembra las 6 equivalencias tipo→rol por
 // defecto para schoolID en academic.school_invitation_roles.
 //
-// Es el PUNTO ÚNICO de la equivalencia por escuela: lo invoca tanto la capa L4
-// (para la escuela demo L1) como common.SeedSchool (para toda escuela de
-// playground), de modo que ninguna escuela nazca sin sus equivalencias y sin
-// duplicar el mapeo (shared over inline, una fuente un punto).
+// Es el PUNTO ÚNICO de la equivalencia por escuela: lo invocan tanto
+// common.SeedSchool (para toda escuela de playground) como
+// playground_v2/base (para sus escuelas), de modo que ninguna escuela nazca
+// sin sus equivalencias y sin duplicar el mapeo (shared over inline, una
+// fuente un punto). El sistema (L4) no lo invoca: es CONTRATO PURO y no
+// contiene escuelas (MP-09 F4).
 //
 // PRECONDICIÓN: academic.invitation_types debe estar sembrado (ApplyInvitationTypes,
 // que corre en la capa L4 del system seed, ANTES que cualquier playground). Si la
@@ -212,14 +211,4 @@ func SeedDefaultSchoolInvitationRoles(tx *gorm.DB, schoolID uuid.UUID) error {
 		Columns:   []clause.Column{{Name: "id"}},
 		DoNothing: true,
 	}).Create(&rows).Error
-}
-
-// ApplyDemoSchoolInvitationRoles aplica las equivalencias por defecto a la
-// escuela demo L1. Se invoca desde la capa L4 DESPUÉS de ApplyInvitationTypes.
-func ApplyDemoSchoolInvitationRoles(tx *gorm.DB) error {
-	schoolID, err := uuid.Parse(l1SchoolDemoID)
-	if err != nil {
-		return fmt.Errorf("ApplyDemoSchoolInvitationRoles: parse school id %s: %w", l1SchoolDemoID, err)
-	}
-	return SeedDefaultSchoolInvitationRoles(tx, schoolID)
 }

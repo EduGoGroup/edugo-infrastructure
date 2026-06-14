@@ -744,7 +744,21 @@ import (
 //     migrate.go junto con el campo MigrateOptions.SeedDemo, y se retira el flag
 //     `--seed-demo` del migrador. ComputeFilesHash() de seeds/ deja de incluir
 //     la línea "demo:<SeedVersion>" → cambia el hash de seeds → bump obligatorio.
-const SchemaVersion = "3.67.0"
+//   - 3.68.0 — MP-09 F4: las capas system L1..L4 quedan como CONTRATO PURO, sin
+//     DATO DE TENANT. (1) L1 deja de sembrar escuela demo, usuario viewer,
+//     user_role y membership; sólo conserva el rol de contrato
+//     announcement_viewer (se borran l1_{school,user,user_role,membership}.go y
+//     las constantes de tenant; L1_SEED_VERSION 1.2.0 -> 1.3.0). (2) L4 deja de
+//     sembrar las equivalencias tipo->rol de la escuela demo (se elimina
+//     ApplyDemoSchoolInvitationRoles y su paso 10; el helper genérico
+//     SeedDefaultSchoolInvitationRoles se conserva; L4_SEED_VERSION 1.64.0 ->
+//     1.65.0). (3) playground_v2/base ahora siembra school_invitation_roles para
+//     sus 2 escuelas vía l4.SeedDefaultSchoolInvitationRoles (antes ninguna las
+//     tenía). (4) tests/fixtures/scenarios L1..L3 actualizados a la nueva
+//     realidad (sin viewer; scenario l1_readonly reducido a rol, nombre
+//     conservado). Bump de seeds (L1/L4 SeedVersion) -> cambia el hash de seeds
+//     -> bump obligatorio de SchemaVersion.
+const SchemaVersion = "3.68.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -631,7 +631,12 @@ package layers
 //     pasa íntegro (shallow-copy + json.Marshal, sin whitelist de campos) y el
 //     SlotBindingResolver del KMP lo propaga al Slot. Solo cambia slot_data de la
 //     instancia → bump para invalidar la caché SDUI por contenido.
-const L4_SEED_VERSION = "1.64.0"
+//   - 1.65.0 — MP-09 F4: el sistema queda como CONTRATO PURO sin DATO DE TENANT.
+//     L4 deja de sembrar las equivalencias tipo→rol de la escuela demo L1
+//     (se elimina ApplyDemoSchoolInvitationRoles y su paso 10 en l4Layer.Apply).
+//     El helper genérico SeedDefaultSchoolInvitationRoles se conserva: lo
+//     invocan los seeds que crean escuelas (common.SeedSchool, playground_v2/base).
+const L4_SEED_VERSION = "1.65.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

@@ -23,10 +23,9 @@ import (
 //
 // Además de la presencia de filas, la fixture realiza las assertions
 // SQL focales de la Fase 5 (cubren F5-REQ-1.1, F5-REQ-2.1, F5-REQ-2.2,
-// F5-REQ-3.1, F5-REQ-3.2, F5-REQ-3.3 y no-regresión sobre la cadena L1
-// viewer→permisos). Las assertions HTTP/UI (F5-REQ-2.3, F5-REQ-4.1,
-// F5-REQ-4.2, F5-REQ-4.3, F5-REQ-6.2, F5-REQ-6.3) quedan diferidas —
-// ver docstring del scenario L3Isolation.
+// F5-REQ-3.1, F5-REQ-3.2, F5-REQ-3.3). Las assertions HTTP/UI
+// (F5-REQ-2.3, F5-REQ-4.1, F5-REQ-4.2, F5-REQ-4.3, F5-REQ-6.2,
+// F5-REQ-6.3) quedan diferidas — ver docstring del scenario L3Isolation.
 //
 // Refs: phase-5-layer-l3/{requirements,design}.md.
 type L3IsolationConstants struct{}
@@ -67,9 +66,11 @@ func (f *L3IsolationConstants) Manifest() framework.FixtureManifest {
 //   - F5-REQ-3.3 (post-poda): 1 resource_screen (list default; el form
 //     fue podado). La pantalla `materials-list` es nativa; su
 //     ScreenInstance mínima existe solo para satisfacer la FK del mapping.
-//   - No-regresión L1: la cadena user_roles → role_permissions →
-//     permissions filtrando por viewer@edugo.demo sigue devolviendo
-//     EXACTAMENTE el set {announcements:read}.
+//
+// MP-09 F4: la no-regresión sobre la cadena L1 viewer→permisos se
+// retiró. El usuario viewer era DATO DE TENANT que L1 ya no siembra
+// (system/ es contrato puro); el dato vivo equivalente vive en
+// playground_v2/base, no en el contrato que estas fixtures validan.
 func (f *L3IsolationConstants) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	if err := f.verifyResourceMaterials(tx); err != nil {
 		return err
@@ -86,9 +87,6 @@ func (f *L3IsolationConstants) Apply(tx *gorm.DB, ctx *framework.ApplyContext) e
 	// mapping de menú. verifyResourceScreens valida 1 mapping (`list`
 	// default); no se verifica la forma del slot_data (pantalla nativa).
 	if err := f.verifyResourceScreens(tx); err != nil {
-		return err
-	}
-	if err := f.verifyViewerPermissionsNoRegression(tx); err != nil {
 		return err
 	}
 
@@ -338,35 +336,3 @@ WHERE resource_id = ?::uuid
 	return nil
 }
 
-// verifyViewerPermissionsNoRegression asegura que tras aplicar L3 la
-// cadena L1 viewer@edugo.demo → user_role → role → role_permission →
-// permission sigue devolviendo EXACTAMENTE {announcements:read}.
-//
-// No es un requirement explícito de Fase 5 (es no-regresión de
-// F3-REQ-5.3) pero está pedido por el spec del scenario L3: una capa
-// nueva no debe inflar accidentalmente los permisos del viewer ni
-// concederle ningún permiso sobre materials (refuerza F5-REQ-2.3 a
-// nivel SQL).
-func (f *L3IsolationConstants) verifyViewerPermissionsNoRegression(tx *gorm.DB) error {
-	const q = `
-SELECT p.name
-FROM auth.users u
-JOIN iam.user_roles ur ON ur.user_id = u.id AND ur.is_active = TRUE
-JOIN iam.roles r ON r.id = ur.role_id AND r.is_active = TRUE
-JOIN iam.role_permissions rp ON rp.role_id = r.id
-JOIN iam.permissions p ON p.id = rp.permission_id AND p.is_active = TRUE
-WHERE u.email = ?
-ORDER BY p.name
-`
-	var names []string
-	if err := tx.Raw(q, layers.L1_VIEWER_EMAIL).Scan(&names).Error; err != nil {
-		return fmt.Errorf("L3IsolationConstants: query viewer permissions: %w", err)
-	}
-	if len(names) != 1 || names[0] != "academic.announcements.read" {
-		return fmt.Errorf(
-			"L3IsolationConstants: no-regresión L1 violada — viewer %q tiene permisos %v, want exactamente [announcements:read] (L3 no debe filtrar permisos materials:* al viewer)",
-			layers.L1_VIEWER_EMAIL, names,
-		)
-	}
-	return nil
-}

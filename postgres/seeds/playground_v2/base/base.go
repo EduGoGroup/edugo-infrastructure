@@ -38,6 +38,9 @@ func Apply(gdb *gorm.DB) error {
 		if err := seedSchools(tx); err != nil {
 			return err
 		}
+		if err := seedSchoolInvitationRoles(tx); err != nil {
+			return err
+		}
 		if err := seedAcademicUnits(tx); err != nil {
 			return err
 		}
@@ -222,6 +225,32 @@ func seedSchools(tx *gorm.DB) error {
 		},
 		true,
 	)
+}
+
+// seedSchoolInvitationRoles siembra las equivalencias tipo→rol IAM por defecto
+// (academic.school_invitation_roles) para las 2 escuelas de base.
+//
+// base siembra sus escuelas con upsertMaps raw (sin pasar por common.SeedSchool),
+// así que debe invocar explícitamente el helper compartido — de lo contrario sus
+// escuelas nacerían sin equivalencias y el flujo de aprobación de invitaciones
+// (que admin-go edita por UI) quedaría sin mapeo. MP-09 F4: el sistema (L4) dejó
+// de sembrar la escuela demo, así que este es el único punto donde las escuelas
+// de base obtienen sus equivalencias.
+//
+// PRECONDICIÓN: academic.invitation_types ya está sembrado por el system seed
+// (l4.ApplyInvitationTypes, que corre ANTES que cualquier playground). El helper
+// es idempotente (id derivado SHA1(school:type) + ON CONFLICT DO NOTHING).
+func seedSchoolInvitationRoles(tx *gorm.DB) error {
+	schools := []uuid.UUID{
+		mustUUID("b1000000-0000-0000-0000-000000000001"), // Colegio San Ignacio
+		mustUUID("b3000000-0000-0000-0000-000000000003"), // Academia Global English
+	}
+	for _, schoolID := range schools {
+		if err := l4.SeedDefaultSchoolInvitationRoles(tx, schoolID); err != nil {
+			return fmt.Errorf("seedSchoolInvitationRoles: %w", err)
+		}
+	}
+	return nil
 }
 
 func seedAcademicUnits(tx *gorm.DB) error {

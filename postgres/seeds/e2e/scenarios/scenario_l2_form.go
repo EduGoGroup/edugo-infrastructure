@@ -17,9 +17,11 @@ import (
 //     (announcements, screen_type=form, is_default=false).
 //   - Verificar la derivación de permisos por evento:
 //     SAVE_NEW → announcements:create, SAVE_EXISTING → announcements:update.
-//   - No-regresión sobre la cadena L1 viewer→permisos:
-//     viewer@edugo.demo sigue teniendo SOLO announcements:read.
 //   - Exportar las constantes L2 al ApplyContext → fixtures-constants.json.
+//
+// MP-09 F4: la no-regresión sobre la cadena L1 viewer→permisos se
+// retiró (el usuario viewer era DATO DE TENANT que L1 ya no siembra;
+// system/ es contrato puro).
 //
 // Cobertura por F4-REQ:
 //
@@ -28,7 +30,6 @@ import (
 //	F4-REQ-2.1  cubierto por SQL en l2_constants_export.verifyResourceScreen
 //	F4-REQ-3.1  cubierto por parse JSON en l2_constants_export.verifyScreenInstance
 //	F4-REQ-3.2  cubierto por parse JSON en l2_constants_export.verifyScreenInstance
-//	(no-regresión L1) cubierto por l2_constants_export.verifyViewerPermissionsNoRegression
 //
 // Diferidos (Opción A — HTTP/UI deferred per spec, requires API server):
 //
