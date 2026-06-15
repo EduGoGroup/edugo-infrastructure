@@ -762,7 +762,21 @@ import (
 //     índice único +school_id) + academic_unit_id; school_guardian_policy (política
 //     por escuela); school_invitations.student_id (FK auth.users SET NULL). Recrear
 //     BD, sin ALTER.
-const SchemaVersion = "3.69.0"
+//   - 3.70.0: F4·S3·M0 plan-024 (representante): academic.memberships gana ESTADO
+//     EXPLÍCITO `status` varchar(12) NOT NULL DEFAULT 'active' CHECK IN
+//     ('pending','active','withdrawn') como ÚNICA fuente de verdad del estado; se
+//     ELIMINA la columna `is_active` (era derivable: is_active=true ⟺
+//     status='active'). `withdrawn_at` se conserva como timestamp informativo. El
+//     índice parcial idx_memberships_unit_invitation_type_active pasa de
+//     `WHERE is_active = true` a `WHERE status = 'active'`. CHECK inline en el tag
+//     GORM del entity (mismo patrón que assessment.status / schools.grade_profile);
+//     post_gorm.sql cambia el WHERE del índice → ComputeFilesHash() CAMBIA. Sin
+//     cambio de comportamiento (default active equivale al is_active=true de hoy).
+//     Seeds playground_v2 (common helper + base) migrados a status='active'; no
+//     son parte del hash (MP-09). Recrear BD, sin ALTER. academic/identity migran
+//     su lectura del estado después (otra tarea). L*_SEED_VERSION intacto (no
+//     cambia ningún dato de las capas system L0–L4).
+const SchemaVersion = "3.70.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -938,7 +938,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_user_roles_user_active_covering
 -- MP-08 F3: reexpresado de (academic_unit_id, role) a (academic_unit_id,
 -- invitation_type_id) tras el swap role->invitation_type_id.
 CREATE INDEX IF NOT EXISTS idx_memberships_unit_invitation_type_active
-    ON academic.memberships (academic_unit_id, invitation_type_id) WHERE is_active = true;
+    ON academic.memberships (academic_unit_id, invitation_type_id) WHERE status = 'active';
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_academic_periods_active
     ON academic.academic_periods (school_id, academic_unit_id) WHERE is_active = true;
