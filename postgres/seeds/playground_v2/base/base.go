@@ -12,6 +12,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/layers"
 	"github.com/google/uuid"
@@ -87,6 +88,13 @@ func Apply(gdb *gorm.DB) error {
 			return err
 		}
 		if err := seedAnnouncements(tx); err != nil {
+			return err
+		}
+		// Plan 024 F1 (ADR 0026): tejido de representante (guardian). Va al final
+		// porque depende de users/schools/units/memberships ya sembrados. DEC-R-B:
+		// el guardián NO lleva membership, solo user_role guardián scoped +
+		// guardian_relations.
+		if err := seedGuardianTejido(tx); err != nil {
 			return err
 		}
 		return nil
@@ -282,6 +290,10 @@ func seedUsers(tx *gorm.DB) error {
 		{"id": mustUUID("00000000-0000-0000-0000-000000000005"), "email": "prof.martinez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Maria", "last_name": "Martinez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000006"), "email": "prof.gonzalez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Pedro", "last_name": "Gonzalez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000008"), "email": "est.carlos@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Carlos", "last_name": "Mendoza", "is_active": true},
+		// est.sofia (…0009): alumna de S1/5A, espejo de est.diego pero en la
+		// sección A (compañera de carlos). MP-09-base-logica la incluye; base la
+		// sembraba sin ella, plan 024 F1 la reconcilia para colgar un representante.
+		{"id": mustUUID("00000000-0000-0000-0000-000000000009"), "email": "est.sofia@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Sofia", "last_name": "Rojas", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000010"), "email": "est.diego@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Diego", "last_name": "Vargas", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000018"), "email": "asist.prof@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Andres", "last_name": "Gomez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000021"), "email": "readonly@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Test", "last_name": "ReadOnly", "is_active": true},
@@ -323,6 +335,9 @@ func seedMemberships(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("bb000000-0000-0000-0000-000000000001"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
 		{"id": mustUUID("bb000000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
+		// Sofia (…0009) — membership de alumna en S1/5A (ac…03), misma sección que
+		// carlos. Espejo de diego (bb…04, 5B) pero en la sección A.
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000003"), "user_id": mustUUID("00000000-0000-0000-0000-000000000009"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
 		{"id": mustUUID("bb000000-0000-0000-0000-000000000004"), "user_id": mustUUID("00000000-0000-0000-0000-000000000010"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
 		{"id": mustUUID("bb000000-0000-0000-0000-000000000008"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
 		{"id": mustUUID("bb000000-0000-0000-0000-000000000009"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
@@ -374,6 +389,8 @@ func seedUserRoles(tx *gorm.DB) error {
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000008"), UserID: mustUUID("00000000-0000-0000-0000-000000000006"), RoleID: mustUUID(l4.L4_ROLE_TEACHER_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-10 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000010"), UserID: mustUUID("00000000-0000-0000-0000-000000000008"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000011"), UserID: mustUUID("00000000-0000-0000-0000-000000000008"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b3000000-0000-0000-0000-000000000003"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-03-01 08:00:00")},
+		// Sofia (…0009) — rol student scoped a S1 (espejo de diego cc…13).
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000012"), UserID: mustUUID("00000000-0000-0000-0000-000000000009"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000013"), UserID: mustUUID("00000000-0000-0000-0000-000000000010"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
 		// PRE-4: usuario admin.plataforma@edugo.test re-mapeado de
 		// platform_admin (eliminado) a super_admin (L0).
@@ -577,6 +594,7 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 	// Periodos: offMat5A/offMat5B/offSci5B → ff…01; offEngA2 → ff…05.
 	enrollments := []map[string]any{
 		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (5to A, Matematicas)
+		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Sofia (5to A, Matematicas)
 		{"offering_id": mustUUID(offMat5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Matematicas)
 		{"offering_id": mustUUID(offSci5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Ciencias)
 		{"offering_id": mustUUID(offEngA2), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000005"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000002"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (Global English, multi-escuela)
@@ -614,6 +632,10 @@ func seedGrades(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000001"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 6.5, "grade_letter": "B+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Buen rendimiento", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 5.8, "grade_letter": "B", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": nil, "finalized_at": nil},
+		// Sofia (bb…03) — nota de Matematicas 5A (dd…01, period ff…01), teacher
+		// bb…08 (martinez, docente de Mate5A). Espejo de la nota de diego (a0…04)
+		// pero en la sección A; finalized como nota real (paralelo a a0…01).
+		{"id": mustUUID("a0000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 6.0, "grade_letter": "B+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Progreso constante", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
 		// Repuntada a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
 		// (ADR 0016). grades_unique=(membership,subject,period): membership bb…04
 		// es único en esta materia/periodo → sin colisión.
@@ -636,6 +658,12 @@ func seedAttendance(tx *gorm.DB) error {
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000001"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "late", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000005"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		// Sofia (bb…03) — asistencia de Mate5A (dd…01), misma sección/materia que
+		// carlos (recorded_by martinez …05). Usa los IDs libres del pool a1…02/04/06
+		// (carlos toma 01/03/05, diego 07/08). Mismas 3 fechas que carlos.
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000006"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "late", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		// Repuntadas a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
 		// (ADR 0016). attendance_unique=(membership,subject,date): membership
 		// bb…04 no tiene otra asistencia en dd…01 → sin colisión.
@@ -686,6 +714,99 @@ func seedAnnouncements(tx *gorm.DB) error {
 	}
 
 	return upsertMaps(tx, "academic.announcements", rows, []string{"id"}, nil, false)
+}
+
+// seedGuardianTejido siembra el modelo de representante (guardian) del plan 024
+// F1 / ADR 0026 sobre el dataset base ya existente. DEC-R-B: el guardián es un
+// usuario con rol guardián SCOPED a la(s) escuela(s) de sus acudidos, SIN
+// membership (no es alumno ni staff de la escuela). El vínculo con cada alumno
+// vive en academic.guardian_relations, con school_id en el índice único: el
+// mismo guardián puede colgar del mismo alumno en dos escuelas distintas (caso
+// repB↔carlos en S1 y S3).
+//
+// Se invoca al final de Apply: depende de users/schools/units/memberships ya
+// sembrados. Idempotente: auth.users / iam.user_roles / academic.guardian_relations
+// se truncan en truncateDevelopmentData; school_guardian_policy usa OnConflict
+// DoNothing por id.
+func seedGuardianTejido(tx *gorm.DB) error {
+	const (
+		// Escuelas de los acudidos.
+		schoolS1 = "b1000000-0000-0000-0000-000000000001" // Colegio San Ignacio
+		schoolS3 = "b3000000-0000-0000-0000-000000000003" // Academia Global English
+
+		// Alumnos (user IDs de auth.users sembrados arriba).
+		studSofia  = "00000000-0000-0000-0000-000000000009"
+		studCarlos = "00000000-0000-0000-0000-000000000008"
+		studDiego  = "00000000-0000-0000-0000-000000000010"
+
+		// Representantes (user IDs NUEVOS, libres en base).
+		guardianA = "00000000-0000-0000-0000-000000000011" // Laura Mendoza
+		guardianB = "00000000-0000-0000-0000-000000000012" // Miguel Castro
+	)
+
+	// 1) Usuarios representante (password 12345678 vía helper común con bcrypt).
+	guardians := []common.UserSpec{
+		{ID: mustUUID(guardianA), Email: "tutor.mendoza@edugo.test", Password: "12345678", FirstName: "Laura", LastName: "Mendoza"},
+		{ID: mustUUID(guardianB), Email: "tutor.castro@edugo.test", Password: "12345678", FirstName: "Miguel", LastName: "Castro"},
+	}
+	for _, spec := range guardians {
+		if err := common.SeedUser(tx, spec); err != nil {
+			return fmt.Errorf("seedGuardianTejido (user): %w", err)
+		}
+	}
+
+	// 2) user_roles guardián SCOPED por escuela (sin membership; DEC-R-B). IDs
+	// cc… nuevos y libres. El BeforeSave de UserRole calcula scope_pattern desde
+	// school_id (school:<id>). repB lleva DOS roles (S1 y S3): tiene acudidos en
+	// ambas escuelas.
+	uuidPtr := func(v string) *uuid.UUID { u := mustUUID(v); return &u }
+	grantedBy := mustUUID("00000000-0000-0000-0000-000000000001") // super
+	grantedAt := mustTimestamp("2026-03-01 08:00:00")
+	guardianRoleID := mustUUID(l4.L4_ROLE_GUARDIAN_ID)
+	guardianRoles := []entities.UserRole{
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000017"), UserID: mustUUID(guardianA), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS1), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000018"), UserID: mustUUID(guardianB), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS1), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000019"), UserID: mustUUID(guardianB), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS3), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&guardianRoles).Error; err != nil {
+		return fmt.Errorf("seedGuardianTejido (user_roles): %w", err)
+	}
+
+	// 3) guardian_relations (link a nivel escuela: AcademicUnitID nil porque la
+	// política por defecto es link_scope=school). IsPrimary=true, Status="active".
+	// repB↔carlos aparece DOS veces (S1 y S3): mismo guardián+alumno, otra
+	// escuela — habilitado por el índice único ampliado a (guardian,student,school).
+	relations := []common.GuardianRelationSpec{
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000001"), GuardianID: mustUUID(guardianA), StudentID: mustUUID(studSofia), SchoolID: mustUUID(schoolS1), IsPrimary: true},  // Laura ↔ Sofia (S1)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000002"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studCarlos), SchoolID: mustUUID(schoolS1), IsPrimary: true}, // Miguel ↔ Carlos (S1)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000003"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studCarlos), SchoolID: mustUUID(schoolS3), IsPrimary: true}, // Miguel ↔ Carlos (S3, multi-escuela)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000004"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studDiego), SchoolID: mustUUID(schoolS1), IsPrimary: true},  // Miguel ↔ Diego (S1)
+	}
+	for _, spec := range relations {
+		if err := common.SeedGuardianRelation(tx, spec); err != nil {
+			return fmt.Errorf("seedGuardianTejido (relation): %w", err)
+		}
+	}
+
+	// 4) school_guardian_policy: solo S3 aparta del default (S1 no lleva fila =
+	// usa los defaults del esquema). S3 invita en la inscripción y gatea
+	// activación con aprobación de cualquier representante.
+	if err := common.SeedSchoolGuardianPolicy(tx, common.SchoolGuardianPolicySpec{
+		ID:              mustUUID("9b000000-0000-0000-0000-000000000001"),
+		SchoolID:        mustUUID(schoolS3),
+		AcademicUnitID:  nil,
+		InvitationMode:  "on_enrollment",
+		GatesActivation: true,
+		GatingApprover:  "any",
+		LinkScope:       "school",
+	}); err != nil {
+		return fmt.Errorf("seedGuardianTejido (policy): %w", err)
+	}
+
+	return nil
 }
 
 
