@@ -641,7 +641,16 @@ package layers
 //     re-grant del rol guardián: +academic.guardian_relations.* (revierte poda
 //     2026-05-29) + my_wards_*:own + reuso reports.progress.read:own; ELIMINA el
 //     wildcard academic.grades.* del guardián (privacidad).
-const L4_SEED_VERSION = "1.66.0"
+//   - 1.67.0 (2026-06-15): ELIMINA por completo el recurso/pantalla `progress`
+//     (progress-dashboard). Su screen SDUI apuntaba a /api/v1/stats/student
+//     (inexistente → 404) y era redundante con el dashboard nativo del alumno.
+//     Se quitan: el recurso `progress` (resources.go + constantes), sus permisos
+//     `reports.progress.*` (catálogo + grants en student/guardian), la
+//     screen_instance `progress-dashboard` (+ constante), y el mapping
+//     resource_screens progress→progress-dashboard. El recurso hermano `stats`
+//     (→ stats-dashboard, /api/v1/stats/global, vivo) y el padre `reports` se
+//     conservan intactos.
+const L4_SEED_VERSION = "1.67.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

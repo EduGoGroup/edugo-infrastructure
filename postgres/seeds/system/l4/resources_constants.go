@@ -108,10 +108,11 @@ const (
 	L4_RESOURCE_ASSESSMENTS_STUDENT_KEY = "assessments_student"
 
 	// Hijos de reports
-	L4_RESOURCE_PROGRESS_ID  = "b4000000-0000-0000-0000-000000000040"
-	L4_RESOURCE_STATS_ID     = "b4000000-0000-0000-0000-000000000041"
-	L4_RESOURCE_PROGRESS_KEY = "progress"
-	L4_RESOURCE_STATS_KEY    = "stats"
+	// Eliminado (2026-06-15): recurso `progress` (…40); su UUID queda libre.
+	// Su pantalla SDUI apuntaba a /api/v1/stats/student (inexistente → 404) y
+	// era redundante con el dashboard nativo del alumno.
+	L4_RESOURCE_STATS_ID  = "b4000000-0000-0000-0000-000000000041"
+	L4_RESOURCE_STATS_KEY = "stats"
 
 	// Recursos "API-only" (IsMenuVisible=false). No raíces visibles.
 	L4_RESOURCE_SCREENS_ID        = "b4000000-0000-0000-0000-000000000052"

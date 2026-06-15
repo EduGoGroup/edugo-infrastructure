@@ -28,7 +28,7 @@ import (
 //   - screens, context, menu         → recursos "API-only"
 //     (IsMenuVisible=false). El FE no pide screen_config para ellos.
 //   - reports                        → contenedor del subárbol
-//     reports/{progress,stats}. report-card mapea a `reports` como
+//     reports/{stats}. report-card mapea a `reports` como
 //     pantalla legacy de boleta, manteniéndose como default.
 //
 // Tabla UNIQUE: (resource_id, screen_type). Por eso varias pantallas
@@ -314,16 +314,15 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-0000000000c1", resourceID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_STUDENT_KEY, screenKey: "assigned-assessments-list", screenType: "assigned-list", isDefault: false, sortOrder: 2},
 
 		// =============================================================
-		// reports → progress / stats / reports (report-card legacy)
+		// reports → stats (report-card legacy)
 		// =============================================================
 		// Poda F2 (plan 004-permisologia-mvp): retiradas las pantallas
 		// detalle progress-detail (d1), stats-detail (d6) y report-card
-		// (da). Se conservan los dashboards progress-dashboard /
-		// stats-dashboard. El recurso `reports` raíz queda sin mapping
-		// (huérfano, prune-later — ver
+		// (da). Eliminado (2026-06-15): el mapping progress → progress-dashboard
+		// (d0) junto con el recurso `progress` (apuntaba a un endpoint
+		// inexistente). Se conserva el dashboard stats-dashboard. El recurso
+		// `reports` raíz queda sin mapping (huérfano, prune-later — ver
 		// docs/plans/004-permisologia-mvp/diferido.md).
-		{id: "b4500000-0000-0000-0000-0000000000d0", resourceID: L4_RESOURCE_PROGRESS_ID, resourceKey: L4_RESOURCE_PROGRESS_KEY, screenKey: "progress-dashboard", screenType: "dashboard", isDefault: true, sortOrder: 1},
-
 		{id: "b4500000-0000-0000-0000-0000000000d5", resourceID: L4_RESOURCE_STATS_ID, resourceKey: L4_RESOURCE_STATS_KEY, screenKey: "stats-dashboard", screenType: "dashboard", isDefault: true, sortOrder: 1},
 
 		// notifications: mapping retirado en B7-fix junto con la

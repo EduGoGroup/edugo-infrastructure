@@ -273,7 +273,9 @@ var l4Resources = []l4ResourceRow{
 	// -------------------------------------------------------------
 	// Hijos de "reports"
 	// -------------------------------------------------------------
-	{ID: L4_RESOURCE_PROGRESS_ID, Key: "progress", DisplayName: "Progreso", Description: "Seguimiento de progreso", Icon: "trending-up", Scope: "unit", ParentID: L4_RESOURCE_REPORTS_ID, SortOrder: 1, IsMenuVisible: true, IsActive: true},
+	// Eliminado (2026-06-15): recurso `progress` (sort 1). Su pantalla SDUI
+	// apuntaba a /api/v1/stats/student (inexistente → 404) y era redundante con
+	// el dashboard nativo del alumno. Se preserva el gap de sort_order.
 	{ID: L4_RESOURCE_STATS_ID, Key: "stats", DisplayName: "Estadísticas", Description: "Estadísticas del sistema", Icon: "pie-chart", Scope: "school", ParentID: L4_RESOURCE_REPORTS_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
 
 	// -------------------------------------------------------------

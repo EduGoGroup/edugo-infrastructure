@@ -319,12 +319,9 @@ func l4Permissions() []l4PermissionSpec {
 		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
 		// eliminados junto con el recurso `permissions_mgmt`.
 
-		// --- progress (resource 20000000-…-40) ---
-		// NOTA: se descartó `progress:read:own` (zombie + sólo super_admin
-		//       lo usaba; el backend no chequea ese permiso en runtime).
-		{"89336e44-3636-4744-a056-aea878f57b18", L4_RESOURCE_PROGRESS_ID, "reports.progress.read", "Ver Progreso", "Ver progreso académico", "read", "unit"},
-		{"d033dfd0-47a5-476b-b51a-f52f5fc66d7a", L4_RESOURCE_PROGRESS_ID, "reports.progress.read:own", "Ver Progreso Propio", "Ver propio progreso (usado por student)", "read:own", "unit"},
-		{"19d017d1-ee5b-4fc3-828a-2d12056631b4", L4_RESOURCE_PROGRESS_ID, "reports.progress.update", "Actualizar Progreso", "Actualizar progreso de estudiantes", "update", "unit"},
+		// Eliminado (2026-06-15): permisos `reports.progress.*` junto con el
+		// recurso `progress`. Su pantalla SDUI apuntaba a /api/v1/stats/student
+		// (inexistente → 404) y era redundante con el dashboard nativo del alumno.
 
 		// Poda menú (2026-05-29): permisos `admin.roles.*` eliminados junto
 		// con el recurso `roles`.
@@ -626,7 +623,6 @@ func roleGrantPatterns() map[string][]string {
 		"content.assessments_student.*",
 		"content.materials.*",
 		"admin.system_settings.*",
-		"reports.progress.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -642,12 +638,10 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_attendance.read:own",
 		"academic.my_wards_announcements.read:own",
 		"academic.my_wards_materials.read:own",
-		"reports.progress.read:own", // reuso del permiso existente
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",
 		"admin.system_settings.*",
-		"reports.progress.*",
 		"reports.read",
 		"dashboard.*",
 		"menu.*",

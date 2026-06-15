@@ -776,7 +776,15 @@ import (
 //     son parte del hash (MP-09). Recrear BD, sin ALTER. academic/identity migran
 //     su lectura del estado después (otra tarea). L*_SEED_VERSION intacto (no
 //     cambia ningún dato de las capas system L0–L4).
-const SchemaVersion = "3.70.0"
+//   - 3.71.0 (2026-06-15): se ELIMINA el recurso/pantalla `progress`
+//     (progress-dashboard) del seed L4 — su screen SDUI apuntaba a
+//     /api/v1/stats/student (inexistente → 404) y era redundante con el
+//     dashboard nativo del alumno. Cambia el catálogo de recursos/permisos
+//     (resource `progress`, permisos `reports.progress.*` + grants, la
+//     screen_instance/mapping `progress-dashboard`). L4_SEED_VERSION
+//     1.66.0 → 1.67.0 → cambia el hash de seeds → bump obligatorio de
+//     SchemaVersion. Recrear BD, sin ALTER. `stats`/`reports` intactos.
+const SchemaVersion = "3.71.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

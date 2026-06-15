@@ -1503,13 +1503,14 @@ func attemptReviewDetail() l4ScreenInstanceRow {
 }
 
 // ===============================================================
-// REPORTS: progress / stats / report-card
+// REPORTS: stats / report-card
 // ===============================================================
 //
 // Poda F2 (plan 004-permisologia-mvp): progress-detail, stats-detail y
 // report-card se eliminaron del MVP junto con sus constantes y filas en
-// resource_screens.go. Los dashboards progress-dashboard /
-// stats-dashboard SÍ se conservan (definidos en screen_instances.go).
+// resource_screens.go. El dashboard stats-dashboard SÍ se conserva
+// (definido en screen_instances.go). progress-dashboard se eliminó el
+// 2026-06-15 (apuntaba a un endpoint inexistente).
 
 // ===============================================================
 // DIRECTORIES & MISC
