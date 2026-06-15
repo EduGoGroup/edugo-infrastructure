@@ -83,6 +83,11 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// grades; grade_history ademas referencia grade_item.
 		&entities.GradeItem{},
 		&entities.GradeHistory{},
+		// practice_result (plan 024 F6): espejo de grade_item para evaluaciones
+		// 'practice' (resultado fuera del expediente, solo estadisticas).
+		// Referencia memberships/subjects/periods (migradas arriba); sus FKs
+		// cross-schema a assessment.* viven en post_gorm.sql.
+		&entities.PracticeResult{},
 		&entities.Attendance{},
 		&entities.Announcement{},
 

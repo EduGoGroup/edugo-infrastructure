@@ -29,6 +29,12 @@ type Assessment struct {
 	Description           *string    `db:"description" gorm:"default:null" validate:"omitempty"`
 	SourceType            string     `db:"source_type" gorm:"not null;type:varchar(20);default:'manual';check:assessment_source_type_check,source_type IN ('manual','ai_generated')" validate:"required,oneof=manual ai_generated"`
 	Status                string     `db:"status" gorm:"not null;type:varchar(20);default:'draft';index;check:assessment_status_check,status IN ('draft','published','archived')" validate:"required,oneof=draft published archived"`
+	// Kind distingue evaluacion practica vs final (plan 024 F6). Una evaluacion
+	// 'final' genera componente de nota (grade_item) en el expediente; una
+	// 'practice' NO va al expediente: su resultado se guarda en
+	// academic.practice_result (estadisticas). El worker ramifica por este campo.
+	// CHECK inline en el tag GORM (mismo patron que Status / SourceType).
+	Kind                  string     `db:"kind" gorm:"not null;type:varchar(20);default:'final';check:assessment_kind_check,kind IN ('practice','final')" validate:"required,oneof=practice final"`
 	QuestionsCount        int        `db:"questions_count" gorm:"not null;default:0"`
 	PassThreshold         int        `db:"pass_threshold" gorm:"not null;default:70"`
 	MaxAttempts           *int       `db:"max_attempts" gorm:"default:null" validate:"omitempty"`

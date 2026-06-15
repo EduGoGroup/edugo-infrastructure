@@ -790,7 +790,27 @@ import (
 //     NATIVO y ya no carga por el pipe SDUI; nadie consume ese campo).
 //     L4_SEED_VERSION 1.67.0 → 1.68.0 → cambia el hash de seeds → bump
 //     obligatorio de SchemaVersion. Recrear BD, sin ALTER.
-const SchemaVersion = "3.72.0"
+//   - 3.73.0: F6 plan-024 (representante) — tipo de evaluacion practica/final. (1)
+//     assessment.assessment gana la columna `kind` varchar(20) NOT NULL DEFAULT
+//     'final' CHECK IN ('practice','final') (CHECK inline en el tag GORM, mismo
+//     patron que status / source_type); toda evaluacion existente queda 'final'.
+//     (2) NUEVA academic.practice_result: ESPEJO de academic.grade_item para
+//     evaluaciones 'practice' (resultado FUERA del expediente, solo estadisticas).
+//     Columnas id (PK uuid), membership_id/subject_id/period_id (FK academic CASCADE,
+//     grain no-unico via idx_practice_result_grain), title, value decimal(5,2)
+//     nullable (% 0–100), source varchar(20) con el mismo CHECK que grade_item
+//     ('auto_scored','manual','auto_llm'), source_attempt_id (FK→assessment.
+//     assessment_attempt SET NULL), source_assessment_id (FK→assessment.assessment
+//     SET NULL), created_by_membership_id (FK→memberships RESTRICT), created_at/
+//     updated_at. UNIQUE PARCIAL uq_practice_result_attempt (membership_id,
+//     subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL
+//     (espejo de uq_grade_item_attempt; defensa del upsert por id determinista del
+//     worker). Las FKs cross-schema, el trigger set_updated_at y el UNIQUE parcial
+//     viven en post_gorm.sql (GORM no los materializa sin campo de relacion). El
+//     worker ramifica por `kind` ('final'→grade_item, 'practice'→practice_result).
+//     Cambio en entity (kind) + nueva entity + post_gorm.sql → ComputeFilesHash()
+//     CAMBIA. Recrear BD, sin ALTER. L*_SEED_VERSION intacto (solo DDL, sin datos).
+const SchemaVersion = "3.73.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
