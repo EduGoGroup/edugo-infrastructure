@@ -55,6 +55,13 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitations
+        ADD CONSTRAINT school_invitations_student_fkey
+            FOREIGN KEY (student_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- school_join_requests → users / schools / academic_units / invitation + aprobadores
 DO $$ BEGIN
     ALTER TABLE academic.school_join_requests
@@ -625,6 +632,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.school_invitation_roles
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- academic.school_guardian_policy
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.school_guardian_policy
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- academic.concept_types
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.concept_types
@@ -943,6 +955,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_join_requests_pending_unique
 -- componentes manuales (source_attempt_id NULL) quedan fuera del indice parcial.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_grade_item_attempt
     ON academic.grade_item (membership_id, subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL;
+
+-- school_guardian_policy: un solo default por escuela (academic_unit_id NULL) y
+-- una sola override por (escuela, unidad). Postgres trata NULL como distinto en
+-- únicos → se necesitan dos índices parciales en lugar del único inline.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_school_guardian_policy_default_unique
+    ON academic.school_guardian_policy (school_id) WHERE academic_unit_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_school_guardian_policy_unit_unique
+    ON academic.school_guardian_policy (school_id, academic_unit_id) WHERE academic_unit_id IS NOT NULL;
 
 -- content
 CREATE INDEX IF NOT EXISTS idx_materials_status_active

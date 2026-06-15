@@ -79,6 +79,12 @@ const (
 	// Sufijo …24 (adyacente a subject_offerings …23 / my_memberships …22).
 	L4_RESOURCE_MY_GRADES_ID   = "b4000000-0000-0000-0000-000000000024"
 	L4_RESOURCE_MY_GRADES_KEY  = "my_grades"
+	// Recursos del representante (plan 024 F1): contenedores de las vistas `:own`
+	// del acudido. NO visibles en menú en F1 (la pantalla del representante es F5).
+	L4_RESOURCE_MY_WARDS_GRADES_ID        = "b4000000-0000-0000-0000-000000000025"
+	L4_RESOURCE_MY_WARDS_ATTENDANCE_ID    = "b4000000-0000-0000-0000-000000000026"
+	L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID = "b4000000-0000-0000-0000-000000000027"
+	L4_RESOURCE_MY_WARDS_MATERIALS_ID     = "b4000000-0000-0000-0000-000000000028"
 	L4_RESOURCE_SUBJECTS_KEY   = "subjects"
 	L4_RESOURCE_PERIODS_KEY    = "periods"
 	L4_RESOURCE_GRADES_KEY     = "grades"

@@ -103,4 +103,9 @@ const (
 	// filtrar el item de menú admin "grades" por el gate path-prefix ni depender
 	// del wildcard academic.grades.*. N3 F4 (consulta de notas).
 	L4_PERM_MY_GRADES_READ_OWN_ID = "b4000000-0002-0024-0000-000000000001"
+	// Permisos del representante (plan 024 F1): vistas `:own` del acudido.
+	L4_PERM_MY_WARDS_GRADES_READ_OWN_ID        = "b4000000-0002-0025-0000-000000000001"
+	L4_PERM_MY_WARDS_ATTENDANCE_READ_OWN_ID    = "b4000000-0002-0026-0000-000000000001"
+	L4_PERM_MY_WARDS_ANNOUNCEMENTS_READ_OWN_ID = "b4000000-0002-0027-0000-000000000001"
+	L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID     = "b4000000-0002-0028-0000-000000000001"
 )

@@ -636,7 +636,12 @@ package layers
 //     (se elimina ApplyDemoSchoolInvitationRoles y su paso 10 en l4Layer.Apply).
 //     El helper genérico SeedDefaultSchoolInvitationRoles se conserva: lo
 //     invocan los seeds que crean escuelas (common.SeedSchool, playground_v2/base).
-const L4_SEED_VERSION = "1.65.0"
+//   - 1.66.0: plan 024 F1 (representante) — recursos+permisos academic.my_wards_*
+//     (grades/attendance/announcements/materials, read:own, IsMenuVisible:false);
+//     re-grant del rol guardián: +academic.guardian_relations.* (revierte poda
+//     2026-05-29) + my_wards_*:own + reuso reports.progress.read:own; ELIMINA el
+//     wildcard academic.grades.* del guardián (privacidad).
+const L4_SEED_VERSION = "1.66.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

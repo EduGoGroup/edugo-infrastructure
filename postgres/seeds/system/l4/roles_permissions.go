@@ -307,6 +307,15 @@ func l4Permissions() []l4PermissionSpec {
 		// academic.my_memberships.read:own.
 		{L4_PERM_MY_GRADES_READ_OWN_ID, L4_RESOURCE_MY_GRADES_ID, "academic.my_grades.read:own", "Ver Mis Notas", "Ver el item de menú de notas propias del alumno", "read:own", "unit"},
 
+		// --- my_wards (resources b4000000-…-25/26/27/28) — plan 024 F1 ---
+		// Vistas `:own` del acudido para el rol guardián. Cada una bajo su path
+		// propio academic.my_wards_* (gate de menú por prefijo distinto del CRUD
+		// docente). El lector real que las sirve llega en F3; aquí solo se declaran.
+		{L4_PERM_MY_WARDS_GRADES_READ_OWN_ID, L4_RESOURCE_MY_WARDS_GRADES_ID, "academic.my_wards_grades.read:own", "Ver Notas de Acudidos", "Ver notas de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ATTENDANCE_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, "academic.my_wards_attendance.read:own", "Ver Asistencia de Acudidos", "Ver asistencia de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ANNOUNCEMENTS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, "academic.my_wards_announcements.read:own", "Ver Anuncios de Acudidos", "Ver anuncios dirigidos a los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_MATERIALS_ID, "academic.my_wards_materials.read:own", "Ver Materiales de Acudidos", "Ver materiales de los alumnos a cargo del representante", "read:own", "unit"},
+
 		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
 		// eliminados junto con el recurso `permissions_mgmt`.
 
@@ -626,7 +635,14 @@ func roleGrantPatterns() map[string][]string {
 	guardianPatterns := []string{
 		"academic.announcements.*",
 		"academic.attendance.*",
-		"academic.grades.*",
+		// academic.grades.* ELIMINADO en F1 (privacidad): el guardián ve solo a su
+		// hijo vía academic.my_wards_*.read:own (lector real en F3).
+		"academic.guardian_relations.*", // revertir poda 2026-05-29 (revive rutas backend)
+		"academic.my_wards_grades.read:own",
+		"academic.my_wards_attendance.read:own",
+		"academic.my_wards_announcements.read:own",
+		"academic.my_wards_materials.read:own",
+		"reports.progress.read:own", // reuso del permiso existente
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",

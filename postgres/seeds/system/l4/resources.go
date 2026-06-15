@@ -251,6 +251,12 @@ var l4Resources = []l4ResourceRow{
 	// Scope=unit (el alumno lee dentro de su unidad activa). El contrato KMP
 	// consume GET /api/v1/me/grades. Espejo de my_memberships.
 	{ID: L4_RESOURCE_MY_GRADES_ID, Key: "my_grades", DisplayName: "Mis Notas", Description: "Notas del alumno por sesión de materia", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
+	// Recursos del representante (plan 024 F1). IsMenuVisible:false — la pantalla
+	// "Mis acudidos" llega en F5; aquí solo existen para colgar los permisos `:own`.
+	{ID: L4_RESOURCE_MY_WARDS_GRADES_ID, Key: "my_wards_grades", DisplayName: "Notas de Acudidos", Description: "Notas de los alumnos a cargo del representante", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 15, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, Key: "my_wards_attendance", DisplayName: "Asistencia de Acudidos", Description: "Asistencia de los alumnos a cargo del representante", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 16, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, Key: "my_wards_announcements", DisplayName: "Anuncios de Acudidos", Description: "Anuncios dirigidos a los alumnos a cargo del representante", Icon: "bell", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_MATERIALS_ID, Key: "my_wards_materials", DisplayName: "Materiales de Acudidos", Description: "Materiales de los alumnos a cargo del representante", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 18, IsMenuVisible: false, IsActive: true},
 
 	// -------------------------------------------------------------
 	// Hijos de "content" (evaluaciones y materiales)

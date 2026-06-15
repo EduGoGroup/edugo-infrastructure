@@ -66,6 +66,7 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// (bloque IAM, ya migrado); la FK cross-schema iam_role_id vive en
 		// post_gorm.sql.
 		&entities.SchoolInvitationRole{},
+		&entities.SchoolGuardianPolicy{},
 		&entities.ConceptDefinition{},
 		&entities.SchoolConcept{},
 		&entities.AcademicPeriod{},

@@ -758,7 +758,11 @@ import (
 //     realidad (sin viewer; scenario l1_readonly reducido a rol, nombre
 //     conservado). Bump de seeds (L1/L4 SeedVersion) -> cambia el hash de seeds
 //     -> bump obligatorio de SchemaVersion.
-const SchemaVersion = "3.68.0"
+//   - 3.69.0: F1 plan-024 (representante): guardian_relations.school_id (NOT NULL,
+//     índice único +school_id) + academic_unit_id; school_guardian_policy (política
+//     por escuela); school_invitations.student_id (FK auth.users SET NULL). Recrear
+//     BD, sin ALTER.
+const SchemaVersion = "3.69.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
