@@ -356,6 +356,8 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 			templateID:  l4TplDashboardV1ID,
 			name:        "Dashboard Padres/Tutores",
 			description: "Panel principal del guardian",
+			// Sin api_prefix: el dashboard del representante es NATIVO y ya no
+			// carga por el pipe SDUI; el campo quedaba inerte (nadie lo consume).
 			slotData: `{
   "title": "Inicio",
   "greeting_text": "Hola",
@@ -365,8 +367,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
   "kpi_completion_label": "Asistencia",
   "activity_title": "Últimas novedades",
   "upload_label": "Vincular hijo",
-  "progress_label": "Progreso",
-  "api_prefix": "learning"
+  "progress_label": "Progreso"
 }`,
 			scope: "school",
 		},

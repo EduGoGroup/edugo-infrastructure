@@ -650,7 +650,14 @@ package layers
 //     resource_screens progress→progress-dashboard. El recurso hermano `stats`
 //     (→ stats-dashboard, /api/v1/stats/global, vivo) y el padre `reports` se
 //     conservan intactos.
-const L4_SEED_VERSION = "1.67.0"
+//   - 1.68.0 (2026-06-15): M4 plan-024 (representante) — higiene del
+//     screen_instance `dashboard-guardian`: se quita el campo `api_prefix:"learning"`
+//     INERTE de su slot_data. El dashboard del representante es NATIVO y ya no
+//     carga por el pipe SDUI, así que nadie consume ese campo (las referencias a
+//     `dashboard-guardian` son por screen_key/screen_type: landing del rol guardián,
+//     mapping resource_screens). Solo cambia slot_data de la instancia → bump para
+//     invalidar la caché SDUI por contenido. Sin cambios de esquema ni permisos.
+const L4_SEED_VERSION = "1.68.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

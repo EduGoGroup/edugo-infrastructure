@@ -784,7 +784,13 @@ import (
 //     screen_instance/mapping `progress-dashboard`). L4_SEED_VERSION
 //     1.66.0 → 1.67.0 → cambia el hash de seeds → bump obligatorio de
 //     SchemaVersion. Recrear BD, sin ALTER. `stats`/`reports` intactos.
-const SchemaVersion = "3.71.0"
+//   - 3.72.0 (2026-06-15): M4 plan-024 (representante) — higiene del seed L4: se
+//     quita el campo `api_prefix:"learning"` INERTE del slot_data del
+//     screen_instance `dashboard-guardian` (el dashboard del representante es
+//     NATIVO y ya no carga por el pipe SDUI; nadie consume ese campo).
+//     L4_SEED_VERSION 1.67.0 → 1.68.0 → cambia el hash de seeds → bump
+//     obligatorio de SchemaVersion. Recrear BD, sin ALTER.
+const SchemaVersion = "3.72.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

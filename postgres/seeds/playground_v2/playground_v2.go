@@ -21,6 +21,7 @@ import (
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
+	mp10_material "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/mp10_material"
 	n1_inscripcion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n1_inscripcion"
 	n4_evaluacion "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n4_evaluacion"
 	onboarding "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/onboarding"
@@ -56,6 +57,9 @@ var fixtures = []Fixture{
 	{Name: "n4_evaluacion", Apply: n4_evaluacion.Apply},
 	{Name: "multi_unidad", Apply: multi_unidad.Apply},
 	{Name: "n0n1_escuelas", Apply: n0n1_escuelas.Apply},
+	// mp10_material compone ENCIMA de base (material publicado para los hijos
+	// del representante); valida la pantalla "Material del hijo" (plan 024 M3).
+	{Name: "mp10_material", Apply: mp10_material.Apply},
 }
 
 // Available retorna los nombres de playgrounds v2 disponibles.
