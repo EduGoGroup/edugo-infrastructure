@@ -657,7 +657,13 @@ package layers
 //     `dashboard-guardian` son por screen_key/screen_type: landing del rol guardián,
 //     mapping resource_screens). Solo cambia slot_data de la instancia → bump para
 //     invalidar la caché SDUI por contenido. Sin cambios de esquema ni permisos.
-const L4_SEED_VERSION = "1.68.0"
+//   - 1.69.0 (2026-06-15): plan-024 S2 (evaluaciones del acudido) — nuevo recurso
+//     `my_wards_assessments` (…29, IsMenuVisible:false) + permiso
+//     `academic.my_wards_assessments.read:own` colgado de él, sumado al rol guardián
+//     (guardianPatterns enumera el literal; no hay wildcard `my_wards.*`). Lo sirve
+//     el lector real GET /api/v1/me/wards/assessments en edugo-api-learning. Espejo
+//     de my_wards_materials (…28).
+const L4_SEED_VERSION = "1.69.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

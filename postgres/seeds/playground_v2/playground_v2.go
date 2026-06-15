@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	base "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/base"
+	f6_representante "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/f6_representante"
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
@@ -60,6 +61,10 @@ var fixtures = []Fixture{
 	// mp10_material compone ENCIMA de base (material publicado para los hijos
 	// del representante); valida la pantalla "Material del hijo" (plan 024 M3).
 	{Name: "mp10_material", Apply: mp10_material.Apply},
+	// f6_representante compone ENCIMA de base (evaluaciones asignadas a la sesión
+	// del hijo); valida la pantalla "Evaluaciones del hijo" (plan 024 / GET
+	// /me/wards/assessments).
+	{Name: "f6_representante", Apply: f6_representante.Apply},
 }
 
 // Available retorna los nombres de playgrounds v2 disponibles.

@@ -810,7 +810,7 @@ import (
 //     worker ramifica por `kind` ('final'→grade_item, 'practice'→practice_result).
 //     Cambio en entity (kind) + nueva entity + post_gorm.sql → ComputeFilesHash()
 //     CAMBIA. Recrear BD, sin ALTER. L*_SEED_VERSION intacto (solo DDL, sin datos).
-const SchemaVersion = "3.73.0"
+const SchemaVersion = "3.74.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

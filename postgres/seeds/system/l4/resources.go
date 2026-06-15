@@ -257,6 +257,7 @@ var l4Resources = []l4ResourceRow{
 	{ID: L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, Key: "my_wards_attendance", DisplayName: "Asistencia de Acudidos", Description: "Asistencia de los alumnos a cargo del representante", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 16, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, Key: "my_wards_announcements", DisplayName: "Anuncios de Acudidos", Description: "Anuncios dirigidos a los alumnos a cargo del representante", Icon: "bell", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_MY_WARDS_MATERIALS_ID, Key: "my_wards_materials", DisplayName: "Materiales de Acudidos", Description: "Materiales de los alumnos a cargo del representante", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 18, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ASSESSMENTS_ID, Key: "my_wards_assessments", DisplayName: "Evaluaciones de Acudidos", Description: "Evaluaciones de los alumnos a cargo del representante", Icon: "file-text", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 19, IsMenuVisible: false, IsActive: true},
 
 	// -------------------------------------------------------------
 	// Hijos de "content" (evaluaciones y materiales)

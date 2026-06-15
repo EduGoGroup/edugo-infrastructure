@@ -315,6 +315,7 @@ func l4Permissions() []l4PermissionSpec {
 		{L4_PERM_MY_WARDS_ATTENDANCE_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, "academic.my_wards_attendance.read:own", "Ver Asistencia de Acudidos", "Ver asistencia de los alumnos a cargo del representante", "read:own", "unit"},
 		{L4_PERM_MY_WARDS_ANNOUNCEMENTS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, "academic.my_wards_announcements.read:own", "Ver Anuncios de Acudidos", "Ver anuncios dirigidos a los alumnos a cargo del representante", "read:own", "unit"},
 		{L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_MATERIALS_ID, "academic.my_wards_materials.read:own", "Ver Materiales de Acudidos", "Ver materiales de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ASSESSMENTS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ASSESSMENTS_ID, "academic.my_wards_assessments.read:own", "Ver Evaluaciones de Acudidos", "Ver evaluaciones de los alumnos a cargo del representante", "read:own", "unit"},
 
 		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
 		// eliminados junto con el recurso `permissions_mgmt`.
@@ -638,6 +639,7 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_attendance.read:own",
 		"academic.my_wards_announcements.read:own",
 		"academic.my_wards_materials.read:own",
+		"academic.my_wards_assessments.read:own",
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",
