@@ -80,14 +80,33 @@ func L3Permissions() ([]entities.Permission, error) {
 // L3ScreenInstances retorna las ScreenInstances sembradas por L3.
 // Mirror determinístico de l3_screens.go.
 //
-// Poda SDUI material (2026-06-07): L3 ya NO siembra screen_instances.
-// Las pantallas `materials-list` / `material-form` eran código muerto
-// (la app las renderiza nativas, no por SDUI) y fueron eliminadas. El
-// recurso materials sigue vivo en el menú vía el mapping resource_screen
-// `materials:list` (SIN ScreenInstance) — ver L3ResourceScreens. Por eso
-// este mirror devuelve un slice vacío.
+// Corrección F2 (2026-06-08): la poda 1.3.0 eliminó AMBAS ScreenInstances;
+// sin embargo `materials-list` tiene un mapping resource_screen con FK
+// fk_resource_screens_screen_key → se RESTAURA como instancia MÍNIMA (no
+// se renderiza; pantalla NATIVA Compose). Mirror de applyL3Screens.
 func L3ScreenInstances() ([]entities.ScreenInstance, error) {
-	return []entities.ScreenInstance{}, nil
+	id, err := uuid.Parse(L3_SCREEN_INSTANCE_MATERIALS_LIST_ID)
+	if err != nil {
+		return nil, fmt.Errorf("L3ScreenInstances: parse id: %w", err)
+	}
+	tplID, err := uuid.Parse(L0_SCREEN_TPL_LIST_ID)
+	if err != nil {
+		return nil, fmt.Errorf("L3ScreenInstances: parse tpl_id: %w", err)
+	}
+	desc := "Listado de materiales (pantalla nativa; instancia mínima para satisfacer la FK del menú)"
+	requiredPerm := "content.materials.read"
+	return []entities.ScreenInstance{
+		{
+			ID:                 id,
+			ScreenKey:          L3_SCREEN_KEY_MATERIALS_LIST,
+			TemplateID:         tplID,
+			Name:               "Materiales",
+			Description:        &desc,
+			Scope:              "unit",
+			RequiredPermission: &requiredPerm,
+			IsActive:           true,
+		},
+	}, nil
 }
 
 // L3ResourceScreens retorna el mapping materials ↔ materials-list
