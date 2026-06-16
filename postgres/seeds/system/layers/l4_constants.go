@@ -439,17 +439,13 @@ package layers
 //     esquema nuevo no tiene modalidad). take/result/review-dashboard/
 //     attempt-review-detail quedan MÍNIMAS (F3, re-apuntado de UI pendiente). Sin
 //     cambios de esquema (cambia solo el output del seed).
-//   - 1.47.0 (2026-06-06, N4 F4.6 — catálogo del modo detallado de notas): se
-//     siembran en iam.permissions los 4 permisos del recurso grades_detail
-//     (academic.grades_detail.create/read/update/delete), espejando el enum de
-//     edugo-shared. Cuelgan de un recurso PROPIO grades_detail (…37, NO
-//     menú-visible): no comparten resource_id con `grades` porque el unique
-//     (resource_id, action) prohíbe repetir create/read/update. Gestionan los
-//     componentes de nota (academic.grade_item) y el desglose transparente en
-//     "Mis Notas". NO se otorgan a roles vía roleGrantPatterns: el grant es
-//     CONDICIONAL por perfil de escuela (academic.schools.grade_profile) y lo
-//     inyecta identity en runtime (F4.5). Sin cambios de esquema (cambia solo el
-//     output del seed).
+//   - 1.47.0 (2026-06-06, N4 F4.6 — catálogo del modo detallado de notas):
+//     sembraba en iam.permissions los 4 permisos del recurso grades_detail
+//     (academic.grades_detail.create/read/update/delete) bajo un recurso propio
+//     (…37, no menú-visible) con grant condicional por perfil de escuela inyectado
+//     por identity en runtime. SUPERADO por 1.63.0 (plan 022): recurso + permisos
+//   - grant condicional eliminados; el modo detallado lo decide ahora academic
+//     leyendo `grade_profile` directamente.
 //   - 1.48.0 (2026-06-08, Fase 1 — visibilidad condicional de campos SDUI en el
 //     form de pregunta): assessment-question-form se vuelve REACTIVO por
 //     `question_type` (campo controlador). Nuevo contrato SDUI snake_case
@@ -616,7 +612,58 @@ package layers
 //     sub-namespaces por subárbol; readonly_auditor sigue denegado por su deny
 //     de prefijo `academic.join_request_approvals.*`. Cambio de catálogo de
 //     permisos + 1 grant de rol → bump.
-const L4_SEED_VERSION = "1.62.0"
+//   - 1.63.0 (plan 022 / ADR 0024 foco 3 — poda del recurso grades_detail): se
+//     eliminan del catálogo el recurso `grades_detail` (…37) y sus 4 permisos
+//     academic.grades_detail.{create,read,update,delete}. El modo detallado de
+//     notas ya no se gobierna con un permiso: academic lo decide leyendo
+//     `grade_profile` de la escuela. El grant condicional por perfil que vivía en
+//     identity desaparece (el permiso era un mensajero eliminable). Cambio de
+//     catálogo de recursos + permisos → bump.
+//   - 1.64.0 (assessments-form — visibilidad de transiciones por estado): los
+//     actions de transición del toolbar declaran `visible_when` (operador
+//     `equals`, evaluado por el motor SDUI contra el `status` del item) para no
+//     mostrar botones redundantes. Matriz: `publish` solo en draft, `archive` y
+//     `assign` solo en published, `delete` solo en draft. `delete` se OVERRIDEA
+//     puntualmente (actions_removed:["delete"] + actions_added con el id) para NO
+//     tocar el `delete` genérico del template master-detail-v1 (los demás
+//     master-detail conservan su delete intacto). Mecanismo genérico: cualquier
+//     action puede declarar `visible_when`; el `ComposeActions` del shared lo
+//     pasa íntegro (shallow-copy + json.Marshal, sin whitelist de campos) y el
+//     SlotBindingResolver del KMP lo propaga al Slot. Solo cambia slot_data de la
+//     instancia → bump para invalidar la caché SDUI por contenido.
+//   - 1.65.0 — MP-09 F4: el sistema queda como CONTRATO PURO sin DATO DE TENANT.
+//     L4 deja de sembrar las equivalencias tipo→rol de la escuela demo L1
+//     (se elimina ApplyDemoSchoolInvitationRoles y su paso 10 en l4Layer.Apply).
+//     El helper genérico SeedDefaultSchoolInvitationRoles se conserva: lo
+//     invocan los seeds que crean escuelas (common.SeedSchool, playground_v2/base).
+//   - 1.66.0: plan 024 F1 (representante) — recursos+permisos academic.my_wards_*
+//     (grades/attendance/announcements/materials, read:own, IsMenuVisible:false);
+//     re-grant del rol guardián: +academic.guardian_relations.* (revierte poda
+//     2026-05-29) + my_wards_*:own + reuso reports.progress.read:own; ELIMINA el
+//     wildcard academic.grades.* del guardián (privacidad).
+//   - 1.67.0 (2026-06-15): ELIMINA por completo el recurso/pantalla `progress`
+//     (progress-dashboard). Su screen SDUI apuntaba a /api/v1/stats/student
+//     (inexistente → 404) y era redundante con el dashboard nativo del alumno.
+//     Se quitan: el recurso `progress` (resources.go + constantes), sus permisos
+//     `reports.progress.*` (catálogo + grants en student/guardian), la
+//     screen_instance `progress-dashboard` (+ constante), y el mapping
+//     resource_screens progress→progress-dashboard. El recurso hermano `stats`
+//     (→ stats-dashboard, /api/v1/stats/global, vivo) y el padre `reports` se
+//     conservan intactos.
+//   - 1.68.0 (2026-06-15): M4 plan-024 (representante) — higiene del
+//     screen_instance `dashboard-guardian`: se quita el campo `api_prefix:"learning"`
+//     INERTE de su slot_data. El dashboard del representante es NATIVO y ya no
+//     carga por el pipe SDUI, así que nadie consume ese campo (las referencias a
+//     `dashboard-guardian` son por screen_key/screen_type: landing del rol guardián,
+//     mapping resource_screens). Solo cambia slot_data de la instancia → bump para
+//     invalidar la caché SDUI por contenido. Sin cambios de esquema ni permisos.
+//   - 1.69.0 (2026-06-15): plan-024 S2 (evaluaciones del acudido) — nuevo recurso
+//     `my_wards_assessments` (…29, IsMenuVisible:false) + permiso
+//     `academic.my_wards_assessments.read:own` colgado de él, sumado al rol guardián
+//     (guardianPatterns enumera el literal; no hay wildcard `my_wards.*`). Lo sirve
+//     el lector real GET /api/v1/me/wards/assessments en edugo-api-learning. Espejo
+//     de my_wards_materials (…28).
+const L4_SEED_VERSION = "1.69.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

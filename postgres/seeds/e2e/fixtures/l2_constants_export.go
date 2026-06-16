@@ -24,10 +24,14 @@ import (
 //
 // Además de la presencia de filas, la fixture realiza las assertions
 // SQL focales de la Fase 4 (cubren F4-REQ-1.1, F4-REQ-1.2, F4-REQ-2.1,
-// F4-REQ-3.1, F4-REQ-3.2 y no-regresión sobre la cadena L1
-// viewer→permisos). Las assertions HTTP/UI (F4-REQ-1.3, F4-REQ-3.3,
-// F4-REQ-5.2, F4-REQ-5.3) quedan diferidas — ver docstring del
-// scenario L2Form.
+// F4-REQ-3.1, F4-REQ-3.2). Las assertions HTTP/UI (F4-REQ-1.3,
+// F4-REQ-3.3, F4-REQ-5.2, F4-REQ-5.3) quedan diferidas — ver docstring
+// del scenario L2Form.
+//
+// MP-09 F4: la no-regresión sobre la cadena L1 viewer→permisos se
+// retiró. El usuario viewer era DATO DE TENANT que L1 ya no siembra
+// (system/ es contrato puro); el dato vivo equivalente vive en
+// playground_v2/base, no en el contrato que estas fixtures validan.
 //
 // Refs: phase-4-layer-l2/{requirements,design}.md.
 type L2ConstantsExport struct{}
@@ -57,17 +61,11 @@ func (f *L2ConstantsExport) Manifest() framework.FixtureManifest {
 //     screen_type=form, is_default=false) existe.
 //   - F4-REQ-3.1: action SAVE_NEW lleva permission=announcements:create.
 //   - F4-REQ-3.2: action SAVE_EXISTING lleva permission=announcements:update.
-//   - No-regresión L1: la cadena user_roles → role_permissions →
-//     permissions filtrando por viewer@edugo.demo sigue devolviendo
-//     EXACTAMENTE el set {announcements:read}.
 func (f *L2ConstantsExport) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	if err := f.verifyScreenInstance(tx); err != nil {
 		return err
 	}
 	if err := f.verifyResourceScreen(tx); err != nil {
-		return err
-	}
-	if err := f.verifyViewerPermissionsNoRegression(tx); err != nil {
 		return err
 	}
 
@@ -237,37 +235,6 @@ WHERE resource_id = ?::uuid AND screen_type = ?
 	}
 	if r.IsDefault {
 		return fmt.Errorf("l2_constants_export: F4-REQ-2.1 violado — resource_screens.is_default=true, want false (form NO es default)")
-	}
-	return nil
-}
-
-// verifyViewerPermissionsNoRegression asegura que tras aplicar L2 la
-// cadena L1 viewer@edugo.demo → user_role → role → role_permission →
-// permission sigue devolviendo EXACTAMENTE {announcements:read}.
-//
-// No es un requirement explícito de Fase 4 (es no-regresión de
-// F3-REQ-5.3) pero está pedido por el spec del scenario L2: una capa
-// nueva no debe inflar accidentalmente los permisos del viewer.
-func (f *L2ConstantsExport) verifyViewerPermissionsNoRegression(tx *gorm.DB) error {
-	const q = `
-SELECT p.name
-FROM auth.users u
-JOIN iam.user_roles ur ON ur.user_id = u.id AND ur.is_active = TRUE
-JOIN iam.roles r ON r.id = ur.role_id AND r.is_active = TRUE
-JOIN iam.role_permissions rp ON rp.role_id = r.id
-JOIN iam.permissions p ON p.id = rp.permission_id AND p.is_active = TRUE
-WHERE u.email = ?
-ORDER BY p.name
-`
-	var names []string
-	if err := tx.Raw(q, layers.L1_VIEWER_EMAIL).Scan(&names).Error; err != nil {
-		return fmt.Errorf("l2_constants_export: query viewer permissions: %w", err)
-	}
-	if len(names) != 1 || names[0] != "academic.announcements.read" {
-		return fmt.Errorf(
-			"l2_constants_export: no-regresión L1 violada — viewer %q tiene permisos %v, want exactamente [announcements:read]",
-			layers.L1_VIEWER_EMAIL, names,
-		)
 	}
 	return nil
 }

@@ -6,6 +6,38 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+Eliminación completa del recurso/pantalla `progress` (`progress-dashboard`). `SchemaVersion`
+3.70.0 → 3.71.0; `L4_SEED_VERSION` 1.66.0 → 1.67.0.
+
+### Removed
+
+- **Recurso L4 `progress` (…40) + su pantalla `progress-dashboard` (seed-only, sin DDL)**: la
+  screen SDUI apuntaba a `/api/v1/stats/student` (endpoint inexistente → 404) y era redundante con
+  el dashboard nativo del alumno; en el menú aparecía como "Reportes › Progreso" abriendo una
+  pantalla vacía. Se eliminan: el recurso `progress` (`resources.go`, `resources_constants.go`), sus
+  permisos `reports.progress.{read,read:own,update}` del catálogo y los grants `reports.progress.*` /
+  `reports.progress.read:own` de los roles `student` y `guardian` (`roles_permissions.go`), la
+  `screen_instance` `progress-dashboard` y su constante `L4_SCREEN_INST_PROGRESS_DASH_ID`
+  (`screen_instances.go`, `screen_instances_constants.go`), y el mapping
+  `progress → progress-dashboard` (`resource_screens.go`). UUIDs …40 (recurso) y …15
+  (screen_instance) quedan libres. El recurso hermano `stats` (→ `stats-dashboard`,
+  `/api/v1/stats/global`, vivo) y el padre `reports` se conservan intactos. Requiere recrear BD
+  (sin ALTER).
+
+## [0.900.9] - 2026-06-13
+
+Poda del recurso/permisos `grades_detail` (plan 022 / ADR 0024 foco 3). `SchemaVersion` 3.65.0 → 3.66.0;
+`L4_SEED_VERSION` 1.62.0 → 1.63.0.
+
+### Removed
+
+- **Recurso L4 `grades_detail` (…37) + sus 4 permisos `academic.grades_detail.{create,read,update,delete}`**
+  (seed-only, sin DDL): se eliminan del catálogo L4 (`resources.go`, `resources_constants.go`,
+  `roles_permissions.go`). El modo detallado de notas ya no se gobierna con un permiso: ahora lo decide
+  `academic` leyendo `grade_profile` de la escuela. El permiso era un mensajero eliminable, así que se
+  retira también el grant condicional por perfil que vivía en `identity`. UUID …37 queda libre. Requiere
+  recrear BD (sin ALTER).
+
 ## [0.900.8] - 2026-06-13
 
 ### Fixed

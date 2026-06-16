@@ -1,28 +1,21 @@
 // Capa L1 — Rol read-only (primer caso de gating real)
 // =====================================================
 //
-// L1 añade encima de L0 un rol `announcement_viewer` (scope school)
-// con un único `RolePermission` apuntando a `announcements:read`,
-// más el usuario y la escuela mínima necesarios para que ese rol
-// sea operativo (ADR-7). Propósito: validar que el sistema oculta
-// correctamente las acciones para las que el usuario no tiene
-// permiso (F3-REQ-3.x).
+// L1 añade encima de L0 un único rol de CONTRATO:
+// `announcement_viewer` (scope=school). Propósito: validar que el
+// sistema oculta correctamente las acciones para las que el usuario no
+// tiene permiso (F3-REQ-3.x). El permiso efectivo del rol
+// (`academic.announcements.read`) se otorga vía iam.role_grants desde
+// L4.
 //
-// Composición (5 filas):
-//   - 1 academic.schools: Escuela Demo L1 (b1...0003)
+// Composición (1 fila):
 //   - 1 iam.roles: announcement_viewer (b1...0001, scope=school)
-//   - 1 auth.users: viewer@edugo.demo (b1...0002)
-//   - 1 iam.user_roles: viewer × role × school (b1...0004)
-//   - 1 academic.memberships: viewer × escuela L1 (b1...0006) —
-//     requerido por identity API para que switch-context emita JWT
-//     con permisos efectivos (CHECK constraint exige role del enum;
-//     se usa "assistant" como valor mínimo).
 //
-// P4-1 (plan B): el role_permission viewer × announcements:read fue
-// eliminado; el permiso se otorga vía iam.role_grants desde L4
-// (pattern `academic.announcements.read`).
+// MP-09 F4: L1 dejó de sembrar DATO DE TENANT (escuela demo, usuario
+// viewer, user_role y membership). Ese dato vivo equivalente vive en
+// playground_v2/base. system/ queda como CONTRATO PURO: sólo el rol.
 //
-// Acumulado tras L0+L1: 18 filas.
+// Acumulado tras L0+L1: 18 filas (17 de L0 + 1 de L1).
 //
 // Refs: ADR-7 de seed-rebuild-spec/00-context/decisions.md;
 //
@@ -53,29 +46,13 @@ func (l *l1Layer) SeedVersion() string { return L1_SEED_VERSION }
 // Apply siembra L1 en orden respetando las FK del esquema.
 // Orden obligatorio:
 //  0. academic.invitation_types (catálogo MP-08; sin deps de FK). Se adelanta
-//     desde L4 porque la membership de L1 (paso 5) referencia invitation_type_id
-//     por FK y necesita el tipo "assistant" ya sembrado. ApplyInvitationTypes es
-//     idempotente, así que reaplicarlo en L4 no duplica.
-//  1. academic.schools     (sin dependencias hacia L1)
-//  2. iam.roles            (sin dependencias hacia L1)
-//  3. auth.users           (sin dependencias hacia L1)
-//  4. iam.user_roles       (FK a users de L1, roles de L1, schools de L1)
-//  5. academic.memberships (FK a users/schools de L1 + invitation_type_id)
+//     desde L4 porque otras capas/seeds del ecosistema resuelven
+//     invitation_type_id por FK; ApplyInvitationTypes es idempotente, así que
+//     reaplicarlo en L4 no duplica.
+//  1. iam.roles (rol de contrato announcement_viewer, sin deps hacia L1)
 func (l *l1Layer) Apply(tx *gorm.DB) error {
 	if err := l4.ApplyInvitationTypes(tx); err != nil {
 		return err
 	}
-	if err := applyL1School(tx); err != nil {
-		return err
-	}
-	if err := applyL1Role(tx); err != nil {
-		return err
-	}
-	if err := applyL1User(tx); err != nil {
-		return err
-	}
-	if err := applyL1UserRole(tx); err != nil {
-		return err
-	}
-	return applyL1Membership(tx)
+	return applyL1Role(tx)
 }

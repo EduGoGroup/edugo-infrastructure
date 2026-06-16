@@ -58,8 +58,11 @@ func (l *l4Layer) SeedVersion() string { return L4_SEED_VERSION }
 //  7. systems             (MP-08, sin deps de FK)
 //  8. system_roles        (MP-08, FK a systems + roles ya sembrados)
 //  9. invitation_types    (MP-08, sin deps de FK)
-//  10. demo_school_invitation_roles (MP-08, FK a invitation_types + roles +
-//     escuela demo L1; equivalencias por defecto de la escuela demo)
+//
+// MP-09 F4: L4 ya NO siembra equivalencias tipo→rol por escuela. El sistema es
+// CONTRATO PURO y no contiene escuelas; cada escuela recibe sus equivalencias
+// vía l4.SeedDefaultSchoolInvitationRoles desde el seed que la crea
+// (common.SeedSchool / playground_v2/base).
 func (l *l4Layer) Apply(tx *gorm.DB) error {
 	if err := l4.ApplyResources(tx); err != nil {
 		return err
@@ -87,9 +90,6 @@ func (l *l4Layer) Apply(tx *gorm.DB) error {
 		return err
 	}
 	if err := l4.ApplyInvitationTypes(tx); err != nil {
-		return err
-	}
-	if err := l4.ApplyDemoSchoolInvitationRoles(tx); err != nil {
 		return err
 	}
 	return nil

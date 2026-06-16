@@ -167,7 +167,7 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 		SchoolID:         schoolUUID,
 		InvitationTypeID: invitationTypeID,
 		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"guardian_relation"}`),
-		IsActive:         true,
+		Status:           "active",
 		EnrolledAt:       time.Date(2026, 1, 1, 8, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
@@ -176,7 +176,7 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 	}).Create(&membership).Error; err != nil {
 		return fmt.Errorf("guardian_relation: insert student membership: %w", err)
 	}
-	if err := framework.UpsertBool(tx, membership.TableName(), "id", membership.ID, "is_active", true); err != nil {
+	if err := framework.UpsertString(tx, membership.TableName(), "id", membership.ID, "status", "active"); err != nil {
 		return err
 	}
 

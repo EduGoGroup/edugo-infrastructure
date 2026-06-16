@@ -23,15 +23,16 @@ import (
 
 // TestL1_ApplyTwice_Idempotent verifica que aplicar las capas L0 + L1
 // dos veces consecutivas produce exactamente el mismo dataset que
-// aplicarlas una sola vez: 23 filas (17 de L0 + 6 de L1) sin duplicados.
+// aplicarlas una sola vez: 18 filas (17 de L0 + 1 de L1) sin duplicados.
 //
-// Justificación: la idempotencia de L1 es contrato (todos los inserts
-// usan ON CONFLICT DO NOTHING). Si una de las cinco funciones
-// applyL1_* perdiera el OnConflict, este test lo detectaría
-// inmediatamente.
+// Justificación: la idempotencia de L1 es contrato (el insert usa
+// ON CONFLICT DO NOTHING). Si applyL1Role perdiera el OnConflict, este
+// test lo detectaría inmediatamente.
 //
-// Adicionalmente verifica F3-REQ-6.2: el user_role del viewer debe
-// tener school_id NOT NULL (requisito del contrato scope=school).
+// MP-09 F4: L1 dejó de sembrar DATO DE TENANT (escuela demo, usuario
+// viewer, user_role, membership). system/ es CONTRATO PURO: L1 sólo
+// siembra el rol de contrato announcement_viewer. Se retiró
+// assertL1ViewerHasSchool (no hay viewer en el contrato).
 //
 // Ejecución:
 //
@@ -56,7 +57,6 @@ func TestL1_ApplyTwice_Idempotent(t *testing.T) {
 	// primera vez. Por tanto los conteos canónicos ya deben cumplirse.
 	assertL0Counts(t, gdb, "L1 test — after initial Migrate (Apply #1)")
 	assertL1Counts(t, gdb, "L1 test — after initial Migrate (Apply #1)")
-	assertL1ViewerHasSchool(t, gdb, "L1 test — after initial Migrate (Apply #1)")
 
 	// Apply #2 — primera reaplicación explícita de L0 + L1.
 	if err := layers.NewL0().Apply(gdb); err != nil {
@@ -67,7 +67,6 @@ func TestL1_ApplyTwice_Idempotent(t *testing.T) {
 	}
 	assertL0Counts(t, gdb, "after L0+L1 Apply #2")
 	assertL1Counts(t, gdb, "after L0+L1 Apply #2")
-	assertL1ViewerHasSchool(t, gdb, "after L0+L1 Apply #2")
 
 	// Apply #3 — segunda reaplicación. Refuerza idempotencia.
 	if err := layers.NewL0().Apply(gdb); err != nil {
@@ -78,107 +77,29 @@ func TestL1_ApplyTwice_Idempotent(t *testing.T) {
 	}
 	assertL0Counts(t, gdb, "after L0+L1 Apply #3")
 	assertL1Counts(t, gdb, "after L0+L1 Apply #3")
-	assertL1ViewerHasSchool(t, gdb, "after L0+L1 Apply #3")
 }
 
-// assertL1Counts valida los seis conteos canónicos de L1 (6 filas
-// distribuidas en 6 tablas) filtrados por los IDs específicos de L1
-// para no contaminar con datos de L0.
+// assertL1Counts valida el único conteo canónico de L1: el rol de
+// contrato announcement_viewer (1 fila en iam.roles).
+//
+// MP-09 F4: L1 dejó de sembrar DATO DE TENANT. El permiso efectivo del
+// rol (academic.announcements.read) se otorga vía iam.role_grants desde
+// L4, así que NO se valida aquí (este test sólo aplica L0+L1).
 func assertL1Counts(t *testing.T, gdb *gorm.DB, stage string) {
 	t.Helper()
 
-	type check struct {
-		desc  string
-		query string
-		args  []any
-		want  int64
-	}
-
-	checks := []check{
-		{
-			desc:  "academic.schools [code=L1-DEMO]",
-			query: `SELECT COUNT(*) FROM academic.schools WHERE code = ?`,
-			args:  []any{layers.L1_SCHOOL_DEMO_CODE},
-			want:  1,
-		},
-		{
-			desc:  "iam.roles [name=announcement_viewer]",
-			query: `SELECT COUNT(*) FROM iam.roles WHERE name = ?`,
-			args:  []any{layers.L1_ROLE_ANNOUNCEMENT_VIEWER_NAME},
-			want:  1,
-		},
-		{
-			desc:  "auth.users [email=viewer@edugo.demo]",
-			query: `SELECT COUNT(*) FROM auth.users WHERE email = ?`,
-			args:  []any{layers.L1_VIEWER_EMAIL},
-			want:  1,
-		},
-		{
-			desc:  "iam.role_permissions [role_id=L1 viewer]",
-			query: `SELECT COUNT(*) FROM iam.role_permissions WHERE role_id = ?`,
-			args:  []any{layers.L1_ROLE_ANNOUNCEMENT_VIEWER_ID},
-			want:  1,
-		},
-		{
-			desc:  "iam.user_roles [user_id=L1 viewer AND role_id=L1 viewer]",
-			query: `SELECT COUNT(*) FROM iam.user_roles WHERE user_id = ? AND role_id = ?`,
-			args:  []any{layers.L1_USER_VIEWER_ID, layers.L1_ROLE_ANNOUNCEMENT_VIEWER_ID},
-			want:  1,
-		},
-		{
-			desc:  "academic.memberships [user_id=L1 viewer AND school_id=L1 school]",
-			query: `SELECT COUNT(*) FROM academic.memberships WHERE user_id = ? AND school_id = ? AND is_active = true`,
-			args:  []any{layers.L1_USER_VIEWER_ID, layers.L1_SCHOOL_DEMO_ID},
-			want:  1,
-		},
-	}
-
-	var total int64
-	for _, c := range checks {
-		var got int64
-		if err := gdb.Raw(c.query, c.args...).Scan(&got).Error; err != nil {
-			t.Fatalf("[%s] count %s: %v", stage, c.desc, err)
-		}
-		if got != c.want {
-			t.Errorf("[%s] %s: got %d, want %d", stage, c.desc, got, c.want)
-		}
-		total += got
-	}
-
-	// Total canónico L1: 1 + 1 + 1 + 1 + 1 + 1 = 6.
-	const wantTotal int64 = 6
-	if total != wantTotal {
-		t.Errorf("[%s] total L1 rows: got %d, want %d", stage, total, wantTotal)
-	}
-}
-
-// assertL1ViewerHasSchool valida F3-REQ-6.2: el user_role del viewer
-// debe tener school_id NOT NULL (post_gorm.sql:~311 — contrato
-// scope=school exige school_id presente).
-func assertL1ViewerHasSchool(t *testing.T, gdb *gorm.DB, stage string) {
-	t.Helper()
-	var nullCount int64
+	var got int64
 	if err := gdb.Raw(
-		`SELECT COUNT(*) FROM iam.user_roles WHERE user_id = ? AND role_id = ? AND school_id IS NULL`,
-		layers.L1_USER_VIEWER_ID, layers.L1_ROLE_ANNOUNCEMENT_VIEWER_ID,
-	).Scan(&nullCount).Error; err != nil {
-		t.Fatalf("[%s] check viewer school_id: %v", stage, err)
-	}
-	if nullCount != 0 {
-		t.Errorf("[%s] F3-REQ-6.2: viewer user_role has NULL school_id (%d rows); expected school_id NOT NULL",
-			stage, nullCount)
+		`SELECT COUNT(*) FROM iam.roles WHERE name = ?`,
+		layers.L1_ROLE_ANNOUNCEMENT_VIEWER_NAME,
+	).Scan(&got).Error; err != nil {
+		t.Fatalf("[%s] count iam.roles [name=announcement_viewer]: %v", stage, err)
 	}
 
-	var matchCount int64
-	if err := gdb.Raw(
-		`SELECT COUNT(*) FROM iam.user_roles WHERE user_id = ? AND role_id = ? AND school_id = ?`,
-		layers.L1_USER_VIEWER_ID, layers.L1_ROLE_ANNOUNCEMENT_VIEWER_ID, layers.L1_SCHOOL_DEMO_ID,
-	).Scan(&matchCount).Error; err != nil {
-		t.Fatalf("[%s] check viewer school_id match: %v", stage, err)
-	}
-	if matchCount != 1 {
-		t.Errorf("[%s] F3-REQ-6.2: viewer user_role school_id != L1_SCHOOL_DEMO_ID (got %d matching rows; want 1)",
-			stage, matchCount)
+	// Total canónico L1: 1 (sólo el rol de contrato).
+	const wantTotal int64 = 1
+	if got != wantTotal {
+		t.Errorf("[%s] iam.roles [name=announcement_viewer]: got %d, want %d", stage, got, wantTotal)
 	}
 }
 

@@ -75,7 +75,7 @@ import (
 //   - `academic`  → units, memberships, subjects, periods, calendar,
 //     schedules, guardian_relations, materials (L3),
 //     directorios escolares, concept_types (school).
-//   - `learning`  → assessments, grades, attendance, progress, stats,
+//   - `learning`  → assessments, grades, attendance, stats,
 //     report-card, dashboards (KPIs).
 //
 // Correcciones aplicadas vs los 9 `service_prefix_mismatch` del
@@ -265,12 +265,11 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		},
 
 		// ===========================================================
-		// DASHBOARDS POR ROL (5 roles implementados + 2 dashboards
-		// agregados: progress / stats)
+		// DASHBOARDS POR ROL (5 roles implementados + stats-dashboard)
 		// ===========================================================
 		// Todos los dashboards usan dashboard-basic-v1 (template L4).
-		// api_prefix=learning porque los KPIs vienen del servicio
-		// learning (stats/progress endpoint).
+		// api_prefix=learning porque los KPIs vienen del servicio learning
+		// (endpoint stats).
 		{
 			id:          L4_SCREEN_INST_DASH_TEACHER_ID,
 			screenKey:   "dashboard-teacher",
@@ -357,6 +356,8 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 			templateID:  l4TplDashboardV1ID,
 			name:        "Dashboard Padres/Tutores",
 			description: "Panel principal del guardian",
+			// Sin api_prefix: el dashboard del representante es NATIVO y ya no
+			// carga por el pipe SDUI; el campo quedaba inerte (nadie lo consume).
 			slotData: `{
   "title": "Inicio",
   "greeting_text": "Hola",
@@ -366,33 +367,16 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
   "kpi_completion_label": "Asistencia",
   "activity_title": "Últimas novedades",
   "upload_label": "Vincular hijo",
-  "progress_label": "Progreso",
-  "api_prefix": "learning"
+  "progress_label": "Progreso"
 }`,
 			scope: "school",
 		},
-		// progress-dashboard / stats-dashboard: reutilizan
-		// dashboard-basic-v1. Conservados del legacy porque el FE
-		// (ProgressDashboardContract.kt, StatsDashboardContract.kt)
-		// declara estos screenKeys explicitamente.
-		{
-			id:          L4_SCREEN_INST_PROGRESS_DASH_ID,
-			screenKey:   "progress-dashboard",
-			templateID:  l4TplDashboardV1ID,
-			name:        "Progreso Académico",
-			description: "Dashboard de progreso académico",
-			slotData: `{
-  "title": "Progreso",
-  "greeting_text": "Progreso general",
-  "kpi_students_label": "Estudiantes",
-  "kpi_materials_label": "Materiales",
-  "kpi_avg_score_label": "Nota media",
-  "kpi_completion_label": "% Avance",
-  "activity_title": "Hitos recientes",
-  "api_prefix": "learning"
-}`,
-			scope: "unit",
-		},
+		// stats-dashboard: reutiliza dashboard-basic-v1. Conservado del
+		// legacy porque el FE (StatsDashboardContract.kt) declara este
+		// screenKey explícitamente; apunta a /api/v1/stats/global (vivo).
+		// progress-dashboard ELIMINADO (2026-06-15): apuntaba a
+		// /api/v1/stats/student (inexistente → 404) y era redundante con el
+		// dashboard nativo del alumno.
 		{
 			id:          L4_SCREEN_INST_STATS_DASH_ID,
 			screenKey:   "stats-dashboard",
@@ -515,9 +499,10 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// REPORTS (detalles + report-card)
 		// ===========================================================
 		// Poda F2 (plan 004-permisologia-mvp): progress-detail,
-		// stats-detail y report-card se retiraron del MVP (los
-		// dashboards progress-dashboard / stats-dashboard SÍ se
-		// conservan). Sus constructores y constantes se eliminaron.
+		// stats-detail y report-card se retiraron del MVP. Sus
+		// constructores y constantes se eliminaron. El dashboard
+		// stats-dashboard SÍ se conserva (progress-dashboard se eliminó
+		// el 2026-06-15: apuntaba a un endpoint inexistente).
 
 		// ===========================================================
 		// DIRECTORIES & MISC (unit-directory)

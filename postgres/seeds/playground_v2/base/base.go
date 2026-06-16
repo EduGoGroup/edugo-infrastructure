@@ -1,4 +1,8 @@
-package demo
+// Package base es el MUNDO DE DATOS POR DEFECTO de EduGo (MP-09 / F0, 2026-06-14).
+// Reubicado verbatim desde seeds/demo: mismos UUIDs/emails @edugo.test, para que dev
+// y los tests de integracion compartan UNA sola fuente de la verdad. El paquete
+// seeds/demo se elimina en F2 (repoint demo.ApplyDemo -> base.Apply).
+package base
 
 import (
 	"encoding/json"
@@ -8,6 +12,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/catalog"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/layers"
 	"github.com/google/uuid"
@@ -26,12 +31,15 @@ const (
 	defaultPasswordHash = "$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau"
 )
 
-func ApplyDemo(gdb *gorm.DB) error {
+func Apply(gdb *gorm.DB) error {
 	return gdb.Transaction(func(tx *gorm.DB) error {
 		if err := truncateDevelopmentData(tx); err != nil {
 			return err
 		}
 		if err := seedSchools(tx); err != nil {
+			return err
+		}
+		if err := seedSchoolInvitationRoles(tx); err != nil {
 			return err
 		}
 		if err := seedAcademicUnits(tx); err != nil {
@@ -59,9 +67,6 @@ func ApplyDemo(gdb *gorm.DB) error {
 		// subject/grade texto-libre, student_id→auth.users), ahora demolido. Su
 		// reconstrucción sobre el esquema nuevo (FKs a memberships/subjects/
 		// subject_offerings) es DATA, no esquema → F2/F4.
-		if err := seedGuardianRelations(tx); err != nil {
-			return err
-		}
 		if err := seedScreenUserPreferences(tx); err != nil {
 			return err
 		}
@@ -82,13 +87,14 @@ func ApplyDemo(gdb *gorm.DB) error {
 		if err := seedAttendance(tx); err != nil {
 			return err
 		}
-		if err := seedSchedules(tx); err != nil {
-			return err
-		}
 		if err := seedAnnouncements(tx); err != nil {
 			return err
 		}
-		if err := seedCalendarEvents(tx); err != nil {
+		// Plan 024 F1 (ADR 0026): tejido de representante (guardian). Va al final
+		// porque depende de users/schools/units/memberships ya sembrados. DEC-R-B:
+		// el guardián NO lleva membership, solo user_role guardián scoped +
+		// guardian_relations.
+		if err := seedGuardianTejido(tx); err != nil {
 			return err
 		}
 		return nil
@@ -148,9 +154,7 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 	}
 
 	guarded = []string{
-		"academic.calendar_events",
 		"academic.announcements",
-		"academic.schedules",
 		"academic.attendance",
 		"academic.grades",
 		"academic.academic_periods",
@@ -202,22 +206,6 @@ func seedSchools(tx *gorm.DB) error {
 			"max_students":      300,
 		},
 		{
-			"id":                mustUUID("b2000000-0000-0000-0000-000000000002"),
-			"name":              "Taller CreArte",
-			"code":              "SCH_CA_001",
-			"address":           "Calle Artistas 234",
-			"city":              "Valparaiso",
-			"country":           "Chile",
-			"phone":             "+56 32 2345 678",
-			"email":             "contacto@crearte.edugo.test",
-			"concept_type_id":   mustUUID("c1000000-0000-0000-0000-000000000005"),
-			"metadata":          mustJSON(`{"level":"workshop","demo":true,"founded_year":2021}`),
-			"is_active":         true,
-			"subscription_tier": "basic",
-			"max_teachers":      10,
-			"max_students":      100,
-		},
-		{
 			"id":                mustUUID("b3000000-0000-0000-0000-000000000003"),
 			"name":              "Academia Global English",
 			"code":              "SCH_GE_001",
@@ -247,24 +235,41 @@ func seedSchools(tx *gorm.DB) error {
 	)
 }
 
+// seedSchoolInvitationRoles siembra las equivalencias tipo→rol IAM por defecto
+// (academic.school_invitation_roles) para las 2 escuelas de base.
+//
+// base siembra sus escuelas con upsertMaps raw (sin pasar por common.SeedSchool),
+// así que debe invocar explícitamente el helper compartido — de lo contrario sus
+// escuelas nacerían sin equivalencias y el flujo de aprobación de invitaciones
+// (que admin-go edita por UI) quedaría sin mapeo. MP-09 F4: el sistema (L4) dejó
+// de sembrar la escuela demo, así que este es el único punto donde las escuelas
+// de base obtienen sus equivalencias.
+//
+// PRECONDICIÓN: academic.invitation_types ya está sembrado por el system seed
+// (l4.ApplyInvitationTypes, que corre ANTES que cualquier playground). El helper
+// es idempotente (id derivado SHA1(school:type) + ON CONFLICT DO NOTHING).
+func seedSchoolInvitationRoles(tx *gorm.DB) error {
+	schools := []uuid.UUID{
+		mustUUID("b1000000-0000-0000-0000-000000000001"), // Colegio San Ignacio
+		mustUUID("b3000000-0000-0000-0000-000000000003"), // Academia Global English
+	}
+	for _, schoolID := range schools {
+		if err := l4.SeedDefaultSchoolInvitationRoles(tx, schoolID); err != nil {
+			return fmt.Errorf("seedSchoolInvitationRoles: %w", err)
+		}
+	}
+	return nil
+}
+
 func seedAcademicUnits(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000001"), "parent_unit_id": nil, "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "Colegio San Ignacio", "code": "CSI-ROOT", "type": "school", "description": "Unidad raiz del Colegio San Ignacio", "level": "secondary", "academic_year": 0, "metadata": mustJSON(`{"is_root":true}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000007"), "parent_unit_id": nil, "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Taller CreArte", "code": "TCA-ROOT", "type": "school", "description": "Unidad raiz del Taller CreArte", "level": "workshop", "academic_year": 0, "metadata": mustJSON(`{"is_root":true}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000012"), "parent_unit_id": nil, "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Academia Global English", "code": "AGE-ROOT", "type": "school", "description": "Unidad raiz de la Academia Global English", "level": "language", "academic_year": 0, "metadata": mustJSON(`{"is_root":true}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000002"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "5to Basico", "code": "GRADE-05", "type": "grade", "description": "Quinto ano de educacion basica, 2026", "level": "secondary", "academic_year": 2026, "metadata": mustJSON(`{"grade_number":5}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000005"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "6to Basico", "code": "GRADE-06", "type": "grade", "description": "Sexto ano de educacion basica, 2026", "level": "secondary", "academic_year": 2026, "metadata": mustJSON(`{"grade_number":6}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000008"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Modulo Pintura", "code": "MOD-PINT", "type": "grade", "description": "Modulo de tecnicas de pintura", "level": "workshop", "academic_year": 2026, "metadata": mustJSON(`{"module_type":"pintura"}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000010"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Modulo Escultura", "code": "MOD-ESCL", "type": "grade", "description": "Modulo de fundamentos de escultura", "level": "workshop", "academic_year": 2026, "metadata": mustJSON(`{"module_type":"escultura"}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000013"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000012"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Level A2", "code": "LVL-A2", "type": "grade", "description": "Elementary level A2", "level": "language", "academic_year": 2026, "metadata": mustJSON(`{"cefr_level":"A2"}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000015"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000012"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Level B1", "code": "LVL-B1", "type": "grade", "description": "Intermediate level B1", "level": "language", "academic_year": 2026, "metadata": mustJSON(`{"cefr_level":"B1"}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000003"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "5to A", "code": "5A", "type": "class", "description": "Seccion A del 5to Basico, 2026", "level": "secondary", "academic_year": 2026, "metadata": mustJSON(`{"section":"A","grade_number":5}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000004"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "5to B", "code": "5B", "type": "class", "description": "Seccion B del 5to Basico, 2026", "level": "secondary", "academic_year": 2026, "metadata": mustJSON(`{"section":"B","grade_number":5}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000006"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "name": "6to A", "code": "6A", "type": "class", "description": "Seccion A del 6to Basico, 2026", "level": "secondary", "academic_year": 2026, "metadata": mustJSON(`{"section":"A","grade_number":6}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000009"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Grupo Manana", "code": "GRP-MAN", "type": "class", "description": "Grupo de la manana - Modulo Pintura", "level": "workshop", "academic_year": 2026, "metadata": mustJSON(`{"schedule":"morning"}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000011"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000010"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "name": "Grupo Tarde", "code": "GRP-TAR", "type": "class", "description": "Grupo de la tarde - Modulo Escultura", "level": "workshop", "academic_year": 2026, "metadata": mustJSON(`{"schedule":"afternoon"}`), "is_active": true},
 		{"id": mustUUID("ac000000-0000-0000-0000-000000000014"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000013"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Class Monday", "code": "CLS-MON", "type": "class", "description": "Monday class - Level A2", "level": "language", "academic_year": 2026, "metadata": mustJSON(`{"day":"monday"}`), "is_active": true},
-		{"id": mustUUID("ac000000-0000-0000-0000-000000000016"), "parent_unit_id": mustUUID("ac000000-0000-0000-0000-000000000015"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "name": "Class Tuesday", "code": "CLS-TUE", "type": "class", "description": "Tuesday class - Level B1", "level": "language", "academic_year": 2026, "metadata": mustJSON(`{"day":"tuesday"}`), "is_active": true},
 	}
 
 	return upsertMaps(
@@ -281,24 +286,16 @@ func seedUsers(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("00000000-0000-0000-0000-000000000001"), "email": "super@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Santiago", "last_name": "Ramirez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000002"), "email": "admin.sanignacio@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Carmen", "last_name": "Valdes", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000003"), "email": "admin.crearte@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Roberto", "last_name": "Silva", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000004"), "email": "coord.academico@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Lucia", "last_name": "Fernandez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000005"), "email": "prof.martinez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Maria", "last_name": "Martinez", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000006"), "email": "prof.gonzalez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Pedro", "last_name": "Gonzalez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000007"), "email": "facilitador.ruiz@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Ana", "last_name": "Ruiz", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000008"), "email": "est.carlos@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Carlos", "last_name": "Mendoza", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000009"), "email": "est.sofia@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Sofia", "last_name": "Herrera", "is_active": true},
+		// est.sofia (…0009): alumna de S1/5A, espejo de est.diego pero en la
+		// sección A (compañera de carlos). MP-09-base-logica la incluye; base la
+		// sembraba sin ella, plan 024 F1 la reconcilia para colgar un representante.
+		{"id": mustUUID("00000000-0000-0000-0000-000000000009"), "email": "est.sofia@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Sofia", "last_name": "Rojas", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000010"), "email": "est.diego@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Diego", "last_name": "Vargas", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000011"), "email": "est.valentina@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Valentina", "last_name": "Rojas", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000012"), "email": "est.mateo@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Mateo", "last_name": "Fuentes", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000013"), "email": "tutor.mendoza@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Ricardo", "last_name": "Mendoza", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000014"), "email": "tutora.herrera@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Patricia", "last_name": "Herrera", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000015"), "email": "admin.plataforma@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Elena", "last_name": "Torres", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000016"), "email": "director.sanignacio@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Miguel", "last_name": "Castillo", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000017"), "email": "asist.admin@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Laura", "last_name": "Pena", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000018"), "email": "asist.prof@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Andres", "last_name": "Gomez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000019"), "email": "observador@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Diana", "last_name": "Lopez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000020"), "email": "guardian.pendiente@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Fernando", "last_name": "Ruiz", "is_active": true},
 		{"id": mustUUID("00000000-0000-0000-0000-000000000021"), "email": "readonly@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Test", "last_name": "ReadOnly", "is_active": true},
 	}
 
@@ -333,38 +330,22 @@ func seedMemberships(tx *gorm.DB) error {
 	teacher := invType("teacher")
 	admin := invType("admin")
 	coordinator := invType("coordinator")
-	guardian := invType("guardian")
 	assistant := invType("assistant")
 
 	rows := []map[string]any{
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000001"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000003"), "user_id": mustUUID("00000000-0000-0000-0000-000000000009"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000004"), "user_id": mustUUID("00000000-0000-0000-0000-000000000010"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000005"), "user_id": mustUUID("00000000-0000-0000-0000-000000000011"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000006"), "user_id": mustUUID("00000000-0000-0000-0000-000000000011"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000007"), "user_id": mustUUID("00000000-0000-0000-0000-000000000012"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000008"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000009"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000010"), "user_id": mustUUID("00000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000011"), "user_id": mustUUID("00000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000012"), "user_id": mustUUID("00000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000013"), "user_id": mustUUID("00000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000011"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000014"), "user_id": mustUUID("00000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-01-15 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000015"), "user_id": mustUUID("00000000-0000-0000-0000-000000000003"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-01-15 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000016"), "user_id": mustUUID("00000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": coordinator, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000017"), "user_id": mustUUID("00000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "invitation_type_id": coordinator, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-10 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000018"), "user_id": mustUUID("00000000-0000-0000-0000-000000000013"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": guardian, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000019"), "user_id": mustUUID("00000000-0000-0000-0000-000000000013"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "invitation_type_id": guardian, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000020"), "user_id": mustUUID("00000000-0000-0000-0000-000000000014"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": guardian, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000021"), "user_id": mustUUID("00000000-0000-0000-0000-000000000014"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": guardian, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-01 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000022"), "user_id": mustUUID("00000000-0000-0000-0000-000000000016"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-01-20 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000023"), "user_id": mustUUID("00000000-0000-0000-0000-000000000017"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": assistant, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-01 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000024"), "user_id": mustUUID("00000000-0000-0000-0000-000000000018"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": assistant, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-15 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000025"), "user_id": mustUUID("00000000-0000-0000-0000-000000000019"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": assistant, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-20 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000026"), "user_id": mustUUID("00000000-0000-0000-0000-000000000019"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "invitation_type_id": assistant, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-02-20 09:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000027"), "user_id": mustUUID("00000000-0000-0000-0000-000000000020"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": guardian, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-10 08:00:00+00")},
-		{"id": mustUUID("bb000000-0000-0000-0000-000000000028"), "user_id": mustUUID("00000000-0000-0000-0000-000000000021"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "is_active": true, "enrolled_at": parse("2026-03-25 08:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000001"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-03-01 08:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000002"), "user_id": mustUUID("00000000-0000-0000-0000-000000000008"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-03-01 08:00:00+00")},
+		// Sofia (…0009) — membership de alumna en S1/5A (ac…03), misma sección que
+		// carlos. Espejo de diego (bb…04, 5B) pero en la sección A.
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000003"), "user_id": mustUUID("00000000-0000-0000-0000-000000000009"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-03-01 08:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000004"), "user_id": mustUUID("00000000-0000-0000-0000-000000000010"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": student, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-03-01 08:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000008"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-02-10 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000009"), "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000014"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-02-10 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000010"), "user_id": mustUUID("00000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "invitation_type_id": teacher, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-02-10 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000014"), "user_id": mustUUID("00000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-01-15 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000016"), "user_id": mustUUID("00000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": coordinator, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-02-10 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000024"), "user_id": mustUUID("00000000-0000-0000-0000-000000000018"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "invitation_type_id": assistant, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-02-15 09:00:00+00")},
+		{"id": mustUUID("bb000000-0000-0000-0000-000000000028"), "user_id": mustUUID("00000000-0000-0000-0000-000000000021"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "invitation_type_id": admin, "metadata": mustJSON(`{}`), "status": "active", "enrolled_at": parse("2026-03-25 08:00:00+00")},
 	}
 
 	return upsertMaps(
@@ -372,7 +353,7 @@ func seedMemberships(tx *gorm.DB) error {
 		"academic.memberships",
 		rows,
 		[]string{"id"},
-		[]string{"user_id", "school_id", "academic_unit_id", "invitation_type_id", "metadata", "is_active", "enrolled_at", "withdrawn_at"},
+		[]string{"user_id", "school_id", "academic_unit_id", "invitation_type_id", "metadata", "status", "enrolled_at", "withdrawn_at"},
 		true,
 	)
 }
@@ -402,32 +383,18 @@ func seedUserRoles(tx *gorm.DB) error {
 	rows := []entities.UserRole{
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000001"), UserID: mustUUID("00000000-0000-0000-0000-000000000001"), RoleID: mustUUID(layers.L0_ROLE_SUPER_ADMIN_ID), SchoolID: nil, AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-01-01 00:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000002"), UserID: mustUUID("00000000-0000-0000-0000-000000000002"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-01-15 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000003"), UserID: mustUUID("00000000-0000-0000-0000-000000000003"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-01-15 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000004"), UserID: mustUUID("00000000-0000-0000-0000-000000000004"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_COORDINATOR_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-01 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000005"), UserID: mustUUID("00000000-0000-0000-0000-000000000004"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_COORDINATOR_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-02-01 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000006"), UserID: mustUUID("00000000-0000-0000-0000-000000000005"), RoleID: mustUUID(l4.L4_ROLE_TEACHER_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-10 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000007"), UserID: mustUUID("00000000-0000-0000-0000-000000000005"), RoleID: mustUUID(l4.L4_ROLE_TEACHER_ID), SchoolID: uuidPtr("b3000000-0000-0000-0000-000000000003"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-02-10 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000008"), UserID: mustUUID("00000000-0000-0000-0000-000000000006"), RoleID: mustUUID(l4.L4_ROLE_TEACHER_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-10 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000009"), UserID: mustUUID("00000000-0000-0000-0000-000000000007"), RoleID: mustUUID(l4.L4_ROLE_TEACHER_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-02-10 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000010"), UserID: mustUUID("00000000-0000-0000-0000-000000000008"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000011"), UserID: mustUUID("00000000-0000-0000-0000-000000000008"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-03-01 08:00:00")},
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000011"), UserID: mustUUID("00000000-0000-0000-0000-000000000008"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b3000000-0000-0000-0000-000000000003"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-03-01 08:00:00")},
+		// Sofia (…0009) — rol student scoped a S1 (espejo de diego cc…13).
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000012"), UserID: mustUUID("00000000-0000-0000-0000-000000000009"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000013"), UserID: mustUUID("00000000-0000-0000-0000-000000000010"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000014"), UserID: mustUUID("00000000-0000-0000-0000-000000000011"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000015"), UserID: mustUUID("00000000-0000-0000-0000-000000000011"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b3000000-0000-0000-0000-000000000003"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000016"), UserID: mustUUID("00000000-0000-0000-0000-000000000012"), RoleID: mustUUID(l4.L4_ROLE_STUDENT_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000017"), UserID: mustUUID("00000000-0000-0000-0000-000000000013"), RoleID: mustUUID(l4.L4_ROLE_GUARDIAN_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000018"), UserID: mustUUID("00000000-0000-0000-0000-000000000013"), RoleID: mustUUID(l4.L4_ROLE_GUARDIAN_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-03-01 08:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000019"), UserID: mustUUID("00000000-0000-0000-0000-000000000014"), RoleID: mustUUID(l4.L4_ROLE_GUARDIAN_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-01 08:00:00")},
 		// PRE-4: usuario admin.plataforma@edugo.test re-mapeado de
 		// platform_admin (eliminado) a super_admin (L0).
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000020"), UserID: mustUUID("00000000-0000-0000-0000-000000000015"), RoleID: mustUUID(layers.L0_ROLE_SUPER_ADMIN_ID), SchoolID: nil, AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-01-20 00:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000021"), UserID: mustUUID("00000000-0000-0000-0000-000000000016"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_DIRECTOR_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-01-20 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000022"), UserID: mustUUID("00000000-0000-0000-0000-000000000017"), RoleID: mustUUID(l4.L4_ROLE_SCHOOL_ASSISTANT_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-01 09:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000023"), UserID: mustUUID("00000000-0000-0000-0000-000000000018"), RoleID: mustUUID(l4.L4_ROLE_ASSISTANT_TEACHER_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-15 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000024"), UserID: mustUUID("00000000-0000-0000-0000-000000000019"), RoleID: mustUUID(l4.L4_ROLE_OBSERVER_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-02-20 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000025"), UserID: mustUUID("00000000-0000-0000-0000-000000000019"), RoleID: mustUUID(l4.L4_ROLE_OBSERVER_ID), SchoolID: uuidPtr("b2000000-0000-0000-0000-000000000002"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000003"), GrantedAt: parse("2026-02-20 09:00:00")},
-		{ID: mustUUID("cc000000-0000-0000-0000-000000000026"), UserID: mustUUID("00000000-0000-0000-0000-000000000020"), RoleID: mustUUID(l4.L4_ROLE_GUARDIAN_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000002"), GrantedAt: parse("2026-03-10 08:00:00")},
 		{ID: mustUUID("cc000000-0000-0000-0000-000000000027"), UserID: mustUUID("00000000-0000-0000-0000-000000000021"), RoleID: mustUUID(l4.L4_ROLE_READONLY_AUDITOR_ID), SchoolID: uuidPtr("b1000000-0000-0000-0000-000000000001"), AcademicUnitID: nil, IsActive: true, GrantedBy: uuidPtr("00000000-0000-0000-0000-000000000001"), GrantedAt: parse("2026-03-25 08:00:00")},
 	}
 
@@ -443,15 +410,16 @@ func seedUserRoles(tx *gorm.DB) error {
 // seedUserGrants — P4-2: overrides puntuales por usuario en iam.user_grants.
 // Demuestra deny > allow (override prohibitivo sobre lectura de notas a un
 // student) y allow temporal con expires_at (concede admin.users.create extra a
-// un teacher por 30 días). Idempotente vía OnConflict.DoNothing sobre id.
+// un teacher). El expires_at es relativo a la fecha de aplicación (un año en el
+// futuro) para que el grant siga ACTIVO en pruebas sin importar cuándo se
+// siembre. Idempotente vía OnConflict.DoNothing sobre id.
 func seedUserGrants(tx *gorm.DB) error {
 	grantedBy := mustUUID("00000000-0000-0000-0000-000000000001")
-	expiresIn30Days := mustTimestamp("2026-06-11 00:00:00")
+	expiresInOneYear := time.Now().UTC().AddDate(1, 0, 0)
 	rows := []entities.UserGrant{
 		{
 			ID:                mustUUID("ee000000-0000-0000-0000-000000000001"),
 			UserID:            mustUUID("00000000-0000-0000-0000-000000000008"),
-			ScopePattern:      "*",
 			PermissionPattern: "academic.grades.read",
 			Effect:            "deny",
 			GrantedBy:         &grantedBy,
@@ -459,10 +427,9 @@ func seedUserGrants(tx *gorm.DB) error {
 		{
 			ID:                mustUUID("ee000000-0000-0000-0000-000000000002"),
 			UserID:            mustUUID("00000000-0000-0000-0000-000000000005"),
-			ScopePattern:      "*",
 			PermissionPattern: "admin.users.create",
 			Effect:            "allow",
-			ExpiresAt:         &expiresIn30Days,
+			ExpiresAt:         &expiresInOneYear,
 			GrantedBy:         &grantedBy,
 		},
 	}
@@ -492,23 +459,9 @@ func seedSubjects(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("dd000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Matematicas", "code": "MAT-5A", "description": "Matematicas (5to A/B)", "is_active": true},
 		{"id": mustUUID("dd000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Ciencias Naturales", "code": "SCI-5A", "description": "Ciencias Naturales (5to A/B)", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": nil, "name": "Historia", "code": "HIS-6A", "description": "Historia de Chile para 6to A", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "name": "Tecnicas de Pintura", "code": "PINT-GM", "description": "Taller de tecnicas de pintura", "is_active": true},
-		{"id": mustUUID("dd000000-0000-0000-0000-000000000006"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": nil, "name": "Fundamentos de Escultura", "code": "ESCL-GT", "description": "Taller de fundamentos de escultura", "is_active": true},
 		{"id": mustUUID("dd000000-0000-0000-0000-000000000007"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": nil, "name": "English Basics A2", "code": "ENG-A2", "description": "English course for level A2", "is_active": true},
 	}
 	return upsertMaps(tx, "academic.subjects", rows, []string{"id"}, nil, false)
-}
-
-func seedGuardianRelations(tx *gorm.DB) error {
-	rows := []map[string]any{
-		{"id": mustUUID("ee000000-0000-0000-0000-000000000001"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000013"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "relationship_type": "parent", "is_primary": true, "is_active": true, "status": "active"},
-		{"id": mustUUID("ee000000-0000-0000-0000-000000000002"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000014"), "student_id": mustUUID("00000000-0000-0000-0000-000000000009"), "relationship_type": "parent", "is_primary": true, "is_active": true, "status": "active"},
-		{"id": mustUUID("ee000000-0000-0000-0000-000000000003"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000014"), "student_id": mustUUID("00000000-0000-0000-0000-000000000010"), "relationship_type": "guardian", "is_primary": false, "is_active": true, "status": "active"},
-		{"id": mustUUID("ee000000-0000-0000-0000-000000000004"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000020"), "student_id": mustUUID("00000000-0000-0000-0000-000000000008"), "relationship_type": "guardian", "is_primary": false, "is_active": true, "status": "pending"},
-		{"id": mustUUID("ee000000-0000-0000-0000-000000000005"), "guardian_id": mustUUID("00000000-0000-0000-0000-000000000014"), "student_id": mustUUID("00000000-0000-0000-0000-000000000011"), "relationship_type": "guardian", "is_primary": false, "is_active": true, "status": "pending"},
-	}
-	return upsertMaps(tx, "academic.guardian_relations", rows, []string{"id"}, nil, false)
 }
 
 func seedScreenUserPreferences(tx *gorm.DB) error {
@@ -530,7 +483,6 @@ func seedScreenUserPreferences(tx *gorm.DB) error {
 
 	rows := []map[string]any{
 		{"id": mustUUID("ff000000-0000-0000-0000-000000000001"), "screen_key": "app-settings", "user_id": mustUUID("00000000-0000-0000-0000-000000000001"), "preferences": mustJSON(`{"dark_mode":true,"language":"es"}`)},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000002"), "screen_key": "app-settings", "user_id": mustUUID("00000000-0000-0000-0000-000000000005"), "preferences": mustJSON(`{"dark_mode":false,"language":"es","push_enabled":true}`)},
 	}
 
 	return upsertMaps(tx, "ui_config.screen_user_preferences", rows, []string{"screen_key", "user_id"}, nil, false)
@@ -542,7 +494,6 @@ func seedSchoolConcepts(tx *gorm.DB) error {
 		ConceptTypeID uuid.UUID
 	}{
 		{SchoolID: mustUUID("b1000000-0000-0000-0000-000000000001"), ConceptTypeID: mustUUID("c1000000-0000-0000-0000-000000000002")},
-		{SchoolID: mustUUID("b2000000-0000-0000-0000-000000000002"), ConceptTypeID: mustUUID("c1000000-0000-0000-0000-000000000005")},
 		{SchoolID: mustUUID("b3000000-0000-0000-0000-000000000003"), ConceptTypeID: mustUUID("c1000000-0000-0000-0000-000000000003")},
 	}
 
@@ -598,9 +549,6 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 		offEngA2 = "c5000000-0000-0000-0000-000000000002" // English A2 (Global English)
 		offMat5B = "c5000000-0000-0000-0000-000000000003" // Matematicas 5to B (San Ignacio)
 		offSci5B = "c5000000-0000-0000-0000-000000000004" // Ciencias 5to B (San Ignacio)
-		offHis6A = "c5000000-0000-0000-0000-000000000005" // Historia 6to A (San Ignacio)
-		offPint  = "c5000000-0000-0000-0000-000000000006" // Tecnicas de Pintura (CreArte)
-		offEscl  = "c5000000-0000-0000-0000-000000000007" // Fundamentos de Escultura (CreArte)
 	)
 
 	offerings := []map[string]any{
@@ -613,9 +561,6 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 		// (offMat5A/dd…01) porque la unidad difiere (ac…03 vs ac…04).
 		{"id": mustUUID(offMat5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
 		{"id": mustUUID(offSci5B), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "is_active": true, "metadata": mustJSON(`{}`)},
-		{"id": mustUUID(offHis6A), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000004"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000006"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000011"), "is_active": true, "metadata": mustJSON(`{}`)},
-		{"id": mustUUID(offPint), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000005"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000009"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000012"), "is_active": true, "metadata": mustJSON(`{}`)},
-		{"id": mustUUID(offEscl), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000006"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000011"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000013"), "is_active": true, "metadata": mustJSON(`{}`)},
 	}
 
 	if err := upsertMaps(
@@ -645,16 +590,13 @@ func seedSubjectOfferings(tx *gorm.DB) error {
 	// subject_id y period_id se copian de la oferta correspondiente (mismo
 	// archivo, slice offerings de arriba): son denormalizados e inmutables y
 	// respaldan el invariante una-oferta-por-materia-por-período (bug 0036).
-	// Periodos: offMat5A/offMat5B/offSci5B/offHis6A → ff…01; offEngA2 → ff…05;
-	// offPint → ff…03.
+	// Periodos: offMat5A/offMat5B/offSci5B → ff…01; offEngA2 → ff…05.
 	enrollments := []map[string]any{
 		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (5to A, Matematicas)
 		{"offering_id": mustUUID(offMat5A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Sofia (5to A, Matematicas)
 		{"offering_id": mustUUID(offMat5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Matematicas)
 		{"offering_id": mustUUID(offSci5B), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000004"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Diego (5to B, Ciencias)
-		{"offering_id": mustUUID(offHis6A), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000004"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000005"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (6to A, Historia)
-		{"offering_id": mustUUID(offEngA2), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000005"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000006"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Valentina (Global English)
-		{"offering_id": mustUUID(offPint), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000005"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000003"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000007"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")},  // Mateo (CreArte pintura)
+		{"offering_id": mustUUID(offEngA2), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000007"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000005"), "student_membership_id": mustUUID("bb000000-0000-0000-0000-000000000002"), "enrolled_at": mustTimestamp("2026-03-01 08:00:00+00")}, // Carlos (Global English, multi-escuela)
 	}
 
 	return upsertMaps(tx, "academic.subject_offering_enrollments", enrollments, []string{"offering_id", "student_membership_id"}, nil, false)
@@ -671,9 +613,6 @@ func seedAcademicPeriods(tx *gorm.DB) error {
 
 	rows := []map[string]any{
 		{"id": mustUUID("ff000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "name": "Primer Semestre 2026", "code": "S1-2026", "type": "semester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-07-15"), "is_active": true, "academic_year": 2026, "sort_order": 1},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000001"), "name": "Segundo Semestre 2026", "code": "S2-2026", "type": "semester", "start_date": mustDate("2026-08-01"), "end_date": mustDate("2026-12-15"), "is_active": false, "academic_year": 2026, "sort_order": 2},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000003"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "name": "Primer Trimestre 2026", "code": "T1-2026", "type": "trimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-05-31"), "is_active": true, "academic_year": 2026, "sort_order": 1},
-		{"id": mustUUID("ff000000-0000-0000-0000-000000000004"), "school_id": mustUUID("b2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000007"), "name": "Segundo Trimestre 2026", "code": "T2-2026", "type": "trimester", "start_date": mustDate("2026-06-01"), "end_date": mustDate("2026-08-31"), "is_active": false, "academic_year": 2026, "sort_order": 2},
 		{"id": mustUUID("ff000000-0000-0000-0000-000000000005"), "school_id": mustUUID("b3000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000012"), "name": "Bimestre 1", "code": "B1-2026", "type": "bimester", "start_date": mustDate("2026-03-01"), "end_date": mustDate("2026-04-30"), "is_active": true, "academic_year": 2026, "sort_order": 1},
 	}
 
@@ -692,7 +631,10 @@ func seedGrades(tx *gorm.DB) error {
 	rows := []map[string]any{
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000001"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 6.5, "grade_letter": "B+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Buen rendimiento", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
 		{"id": mustUUID("a0000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 5.8, "grade_letter": "B", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": nil, "finalized_at": nil},
-		{"id": mustUUID("a0000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 7.0, "grade_letter": "A-", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Excelente", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
+		// Sofia (bb…03) — nota de Matematicas 5A (dd…01, period ff…01), teacher
+		// bb…08 (martinez, docente de Mate5A). Espejo de la nota de diego (a0…04)
+		// pero en la sección A; finalized como nota real (paralelo a a0…01).
+		{"id": mustUUID("a0000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "grade_value": 6.0, "grade_letter": "B+", "teacher_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "notes": "Progreso constante", "finalized_at": mustTimestamp("2026-03-20 10:00:00+00")},
 		// Repuntada a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
 		// (ADR 0016). grades_unique=(membership,subject,period): membership bb…04
 		// es único en esta materia/periodo → sin colisión.
@@ -713,11 +655,14 @@ func seedAttendance(tx *gorm.DB) error {
 
 	rows := []map[string]any{
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000001"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
-		{"id": mustUUID("a1000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000003"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "late", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
-		{"id": mustUUID("a1000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		{"id": mustUUID("a1000000-0000-0000-0000-000000000005"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000001"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
-		{"id": mustUUID("a1000000-0000-0000-0000-000000000006"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "absent", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		// Sofia (bb…03) — asistencia de Mate5A (dd…01), misma sección/materia que
+		// carlos (recorded_by martinez …05). Usa los IDs libres del pool a1…02/04/06
+		// (carlos toma 01/03/05, diego 07/08). Mismas 3 fechas que carlos.
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000002"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-17"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000004"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-18"), "status": "present", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
+		{"id": mustUUID("a1000000-0000-0000-0000-000000000006"), "membership_id": mustUUID("bb000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "date": mustDate("2026-03-19"), "status": "late", "recorded_by": mustUUID("00000000-0000-0000-0000-000000000005")},
 		// Repuntadas a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
 		// (ADR 0016). attendance_unique=(membership,subject,date): membership
 		// bb…04 no tiene otra asistencia en dd…01 → sin colisión.
@@ -726,27 +671,6 @@ func seedAttendance(tx *gorm.DB) error {
 	}
 
 	return upsertMaps(tx, "academic.attendance", rows, []string{"id"}, nil, false)
-}
-
-func seedSchedules(tx *gorm.DB) error {
-	exists, err := tableExists(tx, "academic.schedules")
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return nil
-	}
-
-	rows := []map[string]any{
-		{"id": mustUUID("a2000000-0000-0000-0000-000000000001"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "day_of_week": 1, "start_time": mustTimestamp("2026-03-03 08:00:00+00"), "end_time": mustTimestamp("2026-03-03 09:30:00+00"), "room": "Sala 101", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
-		{"id": mustUUID("a2000000-0000-0000-0000-000000000002"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000003"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000002"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000008"), "day_of_week": 3, "start_time": mustTimestamp("2026-03-05 10:00:00+00"), "end_time": mustTimestamp("2026-03-05 11:30:00+00"), "room": "Sala 102", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
-		// Repuntada a dd…01 (Matematicas escuela) tras colapsar la duplicada 5B
-		// (ADR 0016). schedules no tiene unique natural → repunte directo seguro;
-		// la unidad 5to B (ac…04) sigue en la propia fila de horario.
-		{"id": mustUUID("a2000000-0000-0000-0000-000000000003"), "academic_unit_id": mustUUID("ac000000-0000-0000-0000-000000000004"), "subject_id": mustUUID("dd000000-0000-0000-0000-000000000001"), "teacher_membership_id": mustUUID("bb000000-0000-0000-0000-000000000010"), "day_of_week": 2, "start_time": mustTimestamp("2026-03-04 08:00:00+00"), "end_time": mustTimestamp("2026-03-04 09:30:00+00"), "room": "Sala 103", "period_id": mustUUID("ff000000-0000-0000-0000-000000000001"), "is_active": true},
-	}
-
-	return upsertMaps(tx, "academic.schedules", rows, []string{"id"}, nil, false)
 }
 
 func seedAnnouncements(tx *gorm.DB) error {
@@ -790,21 +714,97 @@ func seedAnnouncements(tx *gorm.DB) error {
 	return upsertMaps(tx, "academic.announcements", rows, []string{"id"}, nil, false)
 }
 
-func seedCalendarEvents(tx *gorm.DB) error {
-	exists, err := tableExists(tx, "academic.calendar_events")
-	if err != nil {
-		return err
+// seedGuardianTejido siembra el modelo de representante (guardian) del plan 024
+// F1 / ADR 0026 sobre el dataset base ya existente. DEC-R-B: el guardián es un
+// usuario con rol guardián SCOPED a la(s) escuela(s) de sus acudidos, SIN
+// membership (no es alumno ni staff de la escuela). El vínculo con cada alumno
+// vive en academic.guardian_relations, con school_id en el índice único: el
+// mismo guardián puede colgar del mismo alumno en dos escuelas distintas (caso
+// repB↔carlos en S1 y S3).
+//
+// Se invoca al final de Apply: depende de users/schools/units/memberships ya
+// sembrados. Idempotente: auth.users / iam.user_roles / academic.guardian_relations
+// se truncan en truncateDevelopmentData; school_guardian_policy usa OnConflict
+// DoNothing por id.
+func seedGuardianTejido(tx *gorm.DB) error {
+	const (
+		// Escuelas de los acudidos.
+		schoolS1 = "b1000000-0000-0000-0000-000000000001" // Colegio San Ignacio
+		schoolS3 = "b3000000-0000-0000-0000-000000000003" // Academia Global English
+
+		// Alumnos (user IDs de auth.users sembrados arriba).
+		studSofia  = "00000000-0000-0000-0000-000000000009"
+		studCarlos = "00000000-0000-0000-0000-000000000008"
+		studDiego  = "00000000-0000-0000-0000-000000000010"
+
+		// Representantes (user IDs NUEVOS, libres en base).
+		guardianA = "00000000-0000-0000-0000-000000000011" // Laura Mendoza
+		guardianB = "00000000-0000-0000-0000-000000000012" // Miguel Castro
+	)
+
+	// 1) Usuarios representante (password 12345678 vía helper común con bcrypt).
+	guardians := []common.UserSpec{
+		{ID: mustUUID(guardianA), Email: "tutor.mendoza@edugo.test", Password: "12345678", FirstName: "Laura", LastName: "Mendoza"},
+		{ID: mustUUID(guardianB), Email: "tutor.castro@edugo.test", Password: "12345678", FirstName: "Miguel", LastName: "Castro"},
 	}
-	if !exists {
-		return nil
+	for _, spec := range guardians {
+		if err := common.SeedUser(tx, spec); err != nil {
+			return fmt.Errorf("seedGuardianTejido (user): %w", err)
+		}
 	}
 
-	rows := []map[string]any{
-		{"id": mustUUID("a4000000-0000-0000-0000-000000000001"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "title": "Semana Santa - Sin Clases", "description": "Receso por Semana Santa. Se retoman clases el lunes 6 de abril.", "event_type": "holiday", "start_date": mustDate("2026-04-02"), "end_date": mustDate("2026-04-05"), "is_all_day": true, "created_by": mustUUID("00000000-0000-0000-0000-000000000002")},
-		{"id": mustUUID("a4000000-0000-0000-0000-000000000002"), "school_id": mustUUID("b1000000-0000-0000-0000-000000000001"), "title": "Examenes Primer Semestre - Matematicas", "description": "Examenes de matematicas para todos los cursos de 5to y 6to.", "event_type": "exam", "start_date": mustDate("2026-03-31"), "end_date": mustDate("2026-03-31"), "is_all_day": true, "created_by": mustUUID("00000000-0000-0000-0000-000000000002")},
+	// 2) user_roles guardián SCOPED por escuela (sin membership; DEC-R-B). IDs
+	// cc… nuevos y libres. El BeforeSave de UserRole calcula scope_pattern desde
+	// school_id (school:<id>). repB lleva DOS roles (S1 y S3): tiene acudidos en
+	// ambas escuelas.
+	uuidPtr := func(v string) *uuid.UUID { u := mustUUID(v); return &u }
+	grantedBy := mustUUID("00000000-0000-0000-0000-000000000001") // super
+	grantedAt := mustTimestamp("2026-03-01 08:00:00")
+	guardianRoleID := mustUUID(l4.L4_ROLE_GUARDIAN_ID)
+	guardianRoles := []entities.UserRole{
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000017"), UserID: mustUUID(guardianA), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS1), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000018"), UserID: mustUUID(guardianB), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS1), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+		{ID: mustUUID("cc000000-0000-0000-0000-000000000019"), UserID: mustUUID(guardianB), RoleID: guardianRoleID, SchoolID: uuidPtr(schoolS3), AcademicUnitID: nil, IsActive: true, GrantedBy: &grantedBy, GrantedAt: grantedAt},
+	}
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&guardianRoles).Error; err != nil {
+		return fmt.Errorf("seedGuardianTejido (user_roles): %w", err)
 	}
 
-	return upsertMaps(tx, "academic.calendar_events", rows, []string{"id"}, nil, false)
+	// 3) guardian_relations (link a nivel escuela: AcademicUnitID nil porque la
+	// política por defecto es link_scope=school). IsPrimary=true, Status="active".
+	// repB↔carlos aparece DOS veces (S1 y S3): mismo guardián+alumno, otra
+	// escuela — habilitado por el índice único ampliado a (guardian,student,school).
+	relations := []common.GuardianRelationSpec{
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000001"), GuardianID: mustUUID(guardianA), StudentID: mustUUID(studSofia), SchoolID: mustUUID(schoolS1), IsPrimary: true},  // Laura ↔ Sofia (S1)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000002"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studCarlos), SchoolID: mustUUID(schoolS1), IsPrimary: true}, // Miguel ↔ Carlos (S1)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000003"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studCarlos), SchoolID: mustUUID(schoolS3), IsPrimary: true}, // Miguel ↔ Carlos (S3, multi-escuela)
+		{ID: mustUUID("9a000000-0000-0000-0000-000000000004"), GuardianID: mustUUID(guardianB), StudentID: mustUUID(studDiego), SchoolID: mustUUID(schoolS1), IsPrimary: true},  // Miguel ↔ Diego (S1)
+	}
+	for _, spec := range relations {
+		if err := common.SeedGuardianRelation(tx, spec); err != nil {
+			return fmt.Errorf("seedGuardianTejido (relation): %w", err)
+		}
+	}
+
+	// 4) school_guardian_policy: solo S3 aparta del default (S1 no lleva fila =
+	// usa los defaults del esquema). S3 invita en la inscripción y gatea
+	// activación con aprobación de cualquier representante.
+	if err := common.SeedSchoolGuardianPolicy(tx, common.SchoolGuardianPolicySpec{
+		ID:              mustUUID("9b000000-0000-0000-0000-000000000001"),
+		SchoolID:        mustUUID(schoolS3),
+		AcademicUnitID:  nil,
+		InvitationMode:  "on_enrollment",
+		GatesActivation: true,
+		GatingApprover:  "any",
+		LinkScope:       "school",
+	}); err != nil {
+		return fmt.Errorf("seedGuardianTejido (policy): %w", err)
+	}
+
+	return nil
 }
 
 func upsertMaps(tx *gorm.DB, table string, rows []map[string]any, conflictColumns, updateColumns []string, touchUpdatedAt bool) error {

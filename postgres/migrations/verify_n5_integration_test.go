@@ -43,7 +43,7 @@ func TestN5InfraGate(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = db.Close() }()
-	_, err = migrations.Migrate(db, migrations.MigrateOptions{Force: true, SeedDemo: false, DBUser: "test"})
+	_, err = migrations.Migrate(db, migrations.MigrateOptions{Force: true, DBUser: "test"})
 	if err != nil {
 		t.Fatalf("migrate: %v", err)
 	}

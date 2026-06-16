@@ -51,21 +51,11 @@ const (
 	L4_RESOURCE_SUBJECTS_ID    = "b4000000-0000-0000-0000-000000000032"
 	// Poda menú (2026-05-29): se eliminaron los recursos `guardian_relations`
 	// (…60), `schedules` (…37) y `calendar` (…39); sus UUIDs quedan libres.
-	L4_RESOURCE_PERIODS_ID    = "b4000000-0000-0000-0000-000000000034"
-	L4_RESOURCE_GRADES_ID     = "b4000000-0000-0000-0000-000000000035"
-	L4_RESOURCE_ATTENDANCE_ID = "b4000000-0000-0000-0000-000000000036"
-	// grades_detail (N4 / ADR 0020 — MODO DETALLADO). Recurso del desglose por
-	// componente de nota (academic.grade_item). NO es menú-visible (no tiene
-	// pantalla propia: el desglose vive embebido en grades / "Mis Notas"); existe
-	// para colgar los permisos academic.grades_detail.* (que NO pueden compartir
-	// resource_id con `grades` por el unique (resource_id, action)). El grant de
-	// estos permisos es CONDICIONAL por perfil de escuela y lo inyecta identity en
-	// runtime (F4.5). Sufijo …37 (adyacente a grades …35 / attendance …36; UUID
-	// liberado por la poda de `schedules`).
-	L4_RESOURCE_GRADES_DETAIL_ID  = "b4000000-0000-0000-0000-000000000037"
-	L4_RESOURCE_GRADES_DETAIL_KEY = "grades_detail"
-	L4_RESOURCE_UNITS_KEY         = "units"
-	L4_RESOURCE_MEMBERSHIPS_KEY   = "memberships"
+	L4_RESOURCE_PERIODS_ID      = "b4000000-0000-0000-0000-000000000034"
+	L4_RESOURCE_GRADES_ID       = "b4000000-0000-0000-0000-000000000035"
+	L4_RESOURCE_ATTENDANCE_ID   = "b4000000-0000-0000-0000-000000000036"
+	L4_RESOURCE_UNITS_KEY       = "units"
+	L4_RESOURCE_MEMBERSHIPS_KEY = "memberships"
 	// Recurso de menú "Mis materias" del alumno (plan 006, N1.C). Es un recurso
 	// de MENÚ separado de `memberships` (roster de unidad para admin/teacher):
 	// la pantalla default difiere y el path-prefix del gate de menú no
@@ -87,12 +77,19 @@ const (
 	// path propio academic.my_grades para que el gate de menú por path-prefix NO
 	// le filtre el item admin "grades" ni dependa del wildcard academic.grades.*.
 	// Sufijo …24 (adyacente a subject_offerings …23 / my_memberships …22).
-	L4_RESOURCE_MY_GRADES_ID   = "b4000000-0000-0000-0000-000000000024"
-	L4_RESOURCE_MY_GRADES_KEY  = "my_grades"
-	L4_RESOURCE_SUBJECTS_KEY   = "subjects"
-	L4_RESOURCE_PERIODS_KEY    = "periods"
-	L4_RESOURCE_GRADES_KEY     = "grades"
-	L4_RESOURCE_ATTENDANCE_KEY = "attendance"
+	L4_RESOURCE_MY_GRADES_ID  = "b4000000-0000-0000-0000-000000000024"
+	L4_RESOURCE_MY_GRADES_KEY = "my_grades"
+	// Recursos del representante (plan 024 F1): contenedores de las vistas `:own`
+	// del acudido. NO visibles en menú en F1 (la pantalla del representante es F5).
+	L4_RESOURCE_MY_WARDS_GRADES_ID        = "b4000000-0000-0000-0000-000000000025"
+	L4_RESOURCE_MY_WARDS_ATTENDANCE_ID    = "b4000000-0000-0000-0000-000000000026"
+	L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID = "b4000000-0000-0000-0000-000000000027"
+	L4_RESOURCE_MY_WARDS_MATERIALS_ID     = "b4000000-0000-0000-0000-000000000028"
+	L4_RESOURCE_MY_WARDS_ASSESSMENTS_ID   = "b4000000-0000-0000-0000-000000000029"
+	L4_RESOURCE_SUBJECTS_KEY              = "subjects"
+	L4_RESOURCE_PERIODS_KEY               = "periods"
+	L4_RESOURCE_GRADES_KEY                = "grades"
+	L4_RESOURCE_ATTENDANCE_KEY            = "attendance"
 
 	// Onboarding (plan 005, N0.0): invitaciones + solicitudes de ingreso.
 	// IDs libres adyacentes a guardian (…60). join_request_approvals es
@@ -112,10 +109,11 @@ const (
 	L4_RESOURCE_ASSESSMENTS_STUDENT_KEY = "assessments_student"
 
 	// Hijos de reports
-	L4_RESOURCE_PROGRESS_ID  = "b4000000-0000-0000-0000-000000000040"
-	L4_RESOURCE_STATS_ID     = "b4000000-0000-0000-0000-000000000041"
-	L4_RESOURCE_PROGRESS_KEY = "progress"
-	L4_RESOURCE_STATS_KEY    = "stats"
+	// Eliminado (2026-06-15): recurso `progress` (…40); su UUID queda libre.
+	// Su pantalla SDUI apuntaba a /api/v1/stats/student (inexistente → 404) y
+	// era redundante con el dashboard nativo del alumno.
+	L4_RESOURCE_STATS_ID  = "b4000000-0000-0000-0000-000000000041"
+	L4_RESOURCE_STATS_KEY = "stats"
 
 	// Recursos "API-only" (IsMenuVisible=false). No raíces visibles.
 	L4_RESOURCE_SCREENS_ID        = "b4000000-0000-0000-0000-000000000052"

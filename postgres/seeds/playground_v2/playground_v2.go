@@ -1,14 +1,11 @@
-// Package playground_v2 es la segunda línea de playgrounds focalizados
-// de EduGo, paralela a `seeds/playground/`. A diferencia de los v1 que
-// se aplicaban sobre L0 con recursos+pantallas sembrados ad-hoc, los
-// v2 corren sobre el sistema completo (L0..L4) y se limitan a sembrar
-// el envoltorio multi-tenant + roles/grants/usuarios para validar el
-// CRUD sobre los recursos meta que L4 ya trae.
+// Package playground_v2 es la línea vigente de playgrounds focalizados
+// de EduGo. Corren sobre el sistema completo (L0..L4) y se limitan a
+// sembrar el envoltorio multi-tenant + roles/grants/usuarios para validar
+// el CRUD sobre los recursos meta que L4 ya trae.
 //
-// Convive con `playground/` sin pisarlo: registry propio, flag CLI
-// propio (`--playground-v2`) y rangos UUID dedicados (62000000-...,
-// 12000000-...). No participa de `ComputeFilesHash()` — cambiar un v2
-// no requiere bump de SchemaVersion.
+// Tiene registry propio, flag CLI propio (`--playground-v2`) y rangos
+// UUID dedicados (62000000-..., 12000000-...). No participa de
+// `ComputeFilesHash()` — cambiar un v2 no requiere bump de SchemaVersion.
 //
 // Para agregar un nuevo playground v2:
 //  1. Crear paquete `seeds/playground_v2/<name>/<name>.go` con
@@ -20,6 +17,9 @@ package playground_v2
 import (
 	"fmt"
 
+	base "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/base"
+	f6_representante "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/f6_representante"
+	mp10_material "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/mp10_material"
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
 	n0n1_escuelas "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n0n1_escuelas"
 	n17_secciones "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/n17_secciones"
@@ -50,12 +50,21 @@ type Fixture struct {
 // fixtures es el registry declarativo de playgrounds v2 disponibles.
 // El orden se respeta cuando se aplica "all".
 var fixtures = []Fixture{
+	// base = mundo de datos por defecto (MP-09). Va primero en "all".
+	{Name: "base", Apply: base.Apply},
 	{Name: "onboarding", Apply: onboarding.Apply},
 	{Name: "n1_inscripcion", Apply: n1_inscripcion.Apply},
 	{Name: "n17_secciones", Apply: n17_secciones.Apply},
 	{Name: "n4_evaluacion", Apply: n4_evaluacion.Apply},
 	{Name: "multi_unidad", Apply: multi_unidad.Apply},
 	{Name: "n0n1_escuelas", Apply: n0n1_escuelas.Apply},
+	// mp10_material compone ENCIMA de base (material publicado para los hijos
+	// del representante); valida la pantalla "Material del hijo" (plan 024 M3).
+	{Name: "mp10_material", Apply: mp10_material.Apply},
+	// f6_representante compone ENCIMA de base (evaluaciones asignadas a la sesión
+	// del hijo); valida la pantalla "Evaluaciones del hijo" (plan 024 / GET
+	// /me/wards/assessments).
+	{Name: "f6_representante", Apply: f6_representante.Apply},
 }
 
 // Available retorna los nombres de playgrounds v2 disponibles.

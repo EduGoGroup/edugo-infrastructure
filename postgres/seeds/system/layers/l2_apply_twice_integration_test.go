@@ -73,9 +73,10 @@ func TestL2_ApplyTwice_Idempotent(t *testing.T) {
 	// resource_screens con resource_id distinto. F4-REQ-2.1 se valida
 	// directamente abajo (assertL2Counts).
 	//
-	// Sí mantenemos assertL1ViewerHasSchool: F3-REQ-6.2 sigue siendo
-	// invariante tras L2 y el helper no depende de conteos L0.
-	assertL1ViewerHasSchool(t, gdb, "L2 test — after initial Migrate (Apply #1)")
+	// MP-09 F4: ya no se valida el viewer L1 (assertL1ViewerHasSchool
+	// eliminado). L1 quedó como CONTRATO PURO sin DATO DE TENANT; el
+	// viewer/escuela/membership ya no existen en el system seed. La
+	// idempotencia de L2 se valida con assertL2Counts.
 	assertL2Counts(t, gdb, "L2 test — after initial Migrate (Apply #1)")
 
 	// Apply #2 — primera reaplicación explícita de L0 + L1 + L2.
@@ -88,7 +89,6 @@ func TestL2_ApplyTwice_Idempotent(t *testing.T) {
 	if err := layers.NewL2().Apply(gdb); err != nil {
 		t.Fatalf("NewL2().Apply (#2): %v", err)
 	}
-	assertL1ViewerHasSchool(t, gdb, "after L0+L1+L2 Apply #2")
 	assertL2Counts(t, gdb, "after L0+L1+L2 Apply #2")
 
 	// Apply #3 — segunda reaplicación. Refuerza idempotencia.
@@ -101,7 +101,6 @@ func TestL2_ApplyTwice_Idempotent(t *testing.T) {
 	if err := layers.NewL2().Apply(gdb); err != nil {
 		t.Fatalf("NewL2().Apply (#3): %v", err)
 	}
-	assertL1ViewerHasSchool(t, gdb, "after L0+L1+L2 Apply #3")
 	assertL2Counts(t, gdb, "after L0+L1+L2 Apply #3")
 }
 

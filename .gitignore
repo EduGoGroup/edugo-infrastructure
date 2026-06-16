@@ -54,3 +54,6 @@ postgres/runner
 postgres/seed
 mongodb/runner
 mongodb/seed
+
+# Backups locales de BD (binarios pesados, no versionar)
+postgres-backup-*.zip

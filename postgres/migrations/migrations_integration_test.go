@@ -30,9 +30,8 @@ func TestIntegration(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	result, err := migrations.Migrate(db, migrations.MigrateOptions{
-		Force:    true,
-		SeedDemo: true,
-		DBUser:   "test",
+		Force:  true,
+		DBUser: "test",
 	})
 	if err != nil {
 		t.Fatalf("Error ejecutando migración completa: %v", err)

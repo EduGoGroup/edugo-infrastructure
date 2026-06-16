@@ -6,8 +6,6 @@ import (
 	"fmt"
 
 	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/demo"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
 )
@@ -15,10 +13,8 @@ import (
 // MigrateOptions configura el comportamiento de Migrate.
 type MigrateOptions struct {
 	Force         bool   // Eliminar y recrear todos los schemas
-	SeedDemo      bool   // Incluir datos de desarrollo (demo seed)
 	SeedUpToLayer string // Aplicar system seed hasta esta capa (vacío = todas)
-	Playground    string // Si se setea, aplica el playground tras ApplySystem (omite demo)
-	PlaygroundV2  string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Mutuamente excluyente con Playground.
+	PlaygroundV2  string // Si se setea, aplica el playground v2 tras ApplySystem.
 	DBUser        string // Usuario PostgreSQL (para GRANT tras drop)
 }
 
@@ -91,22 +87,12 @@ func Migrate(db *sql.DB, opts MigrateOptions) (MigrateResult, error) {
 		return MigrateResult{}, fmt.Errorf("error aplicando system seeds: %w", err)
 	}
 
-	if opts.Playground != "" {
-		// playground.Apply maneja "all" expandiendo a todos los registrados
-		// (ver seeds/playground/playground.go). Acá tratamos al valor como
-		// opaco: pasamos lo que venga desde el CLI sin special-casing.
-		if err := playground.Apply(gdb, opts.Playground); err != nil {
-			return MigrateResult{}, fmt.Errorf("error aplicando playground %q: %w", opts.Playground, err)
-		}
-	} else if opts.PlaygroundV2 != "" {
-		// playground_v2.Apply usa registry propio. Sigue el mismo contrato
-		// que playground.Apply: "all" expande a todos.
+	if opts.PlaygroundV2 != "" {
+		// playground_v2.Apply usa registry propio. "all" expande a todos los
+		// registrados. Acá tratamos al valor como opaco: pasamos lo que venga
+		// desde el CLI sin special-casing.
 		if err := playground_v2.Apply(gdb, opts.PlaygroundV2); err != nil {
 			return MigrateResult{}, fmt.Errorf("error aplicando playground_v2 %q: %w", opts.PlaygroundV2, err)
-		}
-	} else if opts.SeedDemo {
-		if err := demo.ApplyDemo(gdb); err != nil {
-			return MigrateResult{}, fmt.Errorf("error aplicando demo seeds: %w", err)
 		}
 	}
 

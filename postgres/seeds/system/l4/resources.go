@@ -225,11 +225,6 @@ var l4Resources = []l4ResourceRow{
 	// Se quitan también sus permisos y los patterns de grant que los citaban.
 	{ID: L4_RESOURCE_PERIODS_ID, Key: "periods", DisplayName: "Periodos Académicos", Description: "Gestión de periodos académicos", Icon: "calendar-range", Scope: "school", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 5, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_GRADES_ID, Key: "grades", DisplayName: "Calificaciones", Description: "Gestión de calificaciones", Icon: "award", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: true, IsActive: true},
-	// grades_detail (N4 / ADR 0020 — MODO DETALLADO): recurso del desglose por
-	// componente de nota. NO menú-visible (sin pantalla propia); existe solo para
-	// colgar los permisos academic.grades_detail.* sin colisionar con `grades` en
-	// el unique (resource_id, action). Grant condicional por perfil (identity, F4.5).
-	{ID: L4_RESOURCE_GRADES_DETAIL_ID, Key: L4_RESOURCE_GRADES_DETAIL_KEY, DisplayName: "Desglose de Notas", Description: "Componentes de nota (modo detallado)", Icon: "list", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 6, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_ATTENDANCE_ID, Key: "attendance", DisplayName: "Asistencia", Description: "Registro de asistencia", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
 	// Onboarding (plan 005, N0.0): invitaciones y solicitudes de ingreso.
 	// Menu-visibles bajo "academic" como guardian_relations.
@@ -256,6 +251,13 @@ var l4Resources = []l4ResourceRow{
 	// Scope=unit (el alumno lee dentro de su unidad activa). El contrato KMP
 	// consume GET /api/v1/me/grades. Espejo de my_memberships.
 	{ID: L4_RESOURCE_MY_GRADES_ID, Key: "my_grades", DisplayName: "Mis Notas", Description: "Notas del alumno por sesión de materia", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
+	// Recursos del representante (plan 024 F1). IsMenuVisible:false — la pantalla
+	// "Mis acudidos" llega en F5; aquí solo existen para colgar los permisos `:own`.
+	{ID: L4_RESOURCE_MY_WARDS_GRADES_ID, Key: "my_wards_grades", DisplayName: "Notas de Acudidos", Description: "Notas de los alumnos a cargo del representante", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 15, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, Key: "my_wards_attendance", DisplayName: "Asistencia de Acudidos", Description: "Asistencia de los alumnos a cargo del representante", Icon: "check-square", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 16, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, Key: "my_wards_announcements", DisplayName: "Anuncios de Acudidos", Description: "Anuncios dirigidos a los alumnos a cargo del representante", Icon: "bell", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_MATERIALS_ID, Key: "my_wards_materials", DisplayName: "Materiales de Acudidos", Description: "Materiales de los alumnos a cargo del representante", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 18, IsMenuVisible: false, IsActive: true},
+	{ID: L4_RESOURCE_MY_WARDS_ASSESSMENTS_ID, Key: "my_wards_assessments", DisplayName: "Evaluaciones de Acudidos", Description: "Evaluaciones de los alumnos a cargo del representante", Icon: "file-text", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 19, IsMenuVisible: false, IsActive: true},
 
 	// -------------------------------------------------------------
 	// Hijos de "content" (evaluaciones y materiales)
@@ -272,7 +274,9 @@ var l4Resources = []l4ResourceRow{
 	// -------------------------------------------------------------
 	// Hijos de "reports"
 	// -------------------------------------------------------------
-	{ID: L4_RESOURCE_PROGRESS_ID, Key: "progress", DisplayName: "Progreso", Description: "Seguimiento de progreso", Icon: "trending-up", Scope: "unit", ParentID: L4_RESOURCE_REPORTS_ID, SortOrder: 1, IsMenuVisible: true, IsActive: true},
+	// Eliminado (2026-06-15): recurso `progress` (sort 1). Su pantalla SDUI
+	// apuntaba a /api/v1/stats/student (inexistente → 404) y era redundante con
+	// el dashboard nativo del alumno. Se preserva el gap de sort_order.
 	{ID: L4_RESOURCE_STATS_ID, Key: "stats", DisplayName: "Estadísticas", Description: "Estadísticas del sistema", Icon: "pie-chart", Scope: "school", ParentID: L4_RESOURCE_REPORTS_ID, SortOrder: 2, IsMenuVisible: true, IsActive: true},
 
 	// -------------------------------------------------------------

@@ -1227,11 +1227,13 @@ func assessmentsForm() l4ScreenInstanceRow {
   "detail_configs": [
     {"screen_key": "assessment-questions-list", "modal_screen_key": "assessment-question-form", "parent_id_param": "assessmentId", "child_id_field": "id"}
   ],
+  "actions_removed": ["delete"],
   "actions_added": [
     {"id": "detail",  "scope": "resource-toolbar", "icon": "help_outline", "label": "Preguntas", "permission": "content.assessments.read",   "condition": "edit-only", "event_id": "view-questions", "style": "icon", "order": 15},
-    {"id": "assign",  "scope": "resource-toolbar", "icon": "assignment",   "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20},
-    {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.publish", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30},
-    {"id": "archive", "scope": "resource-toolbar", "icon": "archive",      "label": "Archivar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "archive",        "style": "icon", "order": 40}
+    {"id": "assign",  "scope": "resource-toolbar", "icon": "assignment",   "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20, "visible_when": {"field": "status", "equals": "published"}},
+    {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.publish", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30, "visible_when": {"field": "status", "equals": "draft"}},
+    {"id": "archive", "scope": "resource-toolbar", "icon": "archive",      "label": "Archivar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "archive",        "style": "icon", "order": 40, "visible_when": {"field": "status", "equals": "published"}},
+    {"id": "delete",  "scope": "form-submit",      "icon": "trash",        "label": "Eliminar",  "permission": "content.assessments.delete", "condition": "edit-only", "event_id": "delete",         "style": "destructive", "order": 50, "visible_when": {"field": "status", "equals": "draft"}}
   ],
   "api_prefix": "learning"
 }`,
@@ -1501,13 +1503,14 @@ func attemptReviewDetail() l4ScreenInstanceRow {
 }
 
 // ===============================================================
-// REPORTS: progress / stats / report-card
+// REPORTS: stats / report-card
 // ===============================================================
 //
 // Poda F2 (plan 004-permisologia-mvp): progress-detail, stats-detail y
 // report-card se eliminaron del MVP junto con sus constantes y filas en
-// resource_screens.go. Los dashboards progress-dashboard /
-// stats-dashboard SÍ se conservan (definidos en screen_instances.go).
+// resource_screens.go. El dashboard stats-dashboard SÍ se conserva
+// (definido en screen_instances.go). progress-dashboard se eliminó el
+// 2026-06-15 (apuntaba a un endpoint inexistente).
 
 // ===============================================================
 // DIRECTORIES & MISC

@@ -307,15 +307,22 @@ func l4Permissions() []l4PermissionSpec {
 		// academic.my_memberships.read:own.
 		{L4_PERM_MY_GRADES_READ_OWN_ID, L4_RESOURCE_MY_GRADES_ID, "academic.my_grades.read:own", "Ver Mis Notas", "Ver el item de menú de notas propias del alumno", "read:own", "unit"},
 
+		// --- my_wards (resources b4000000-…-25/26/27/28) — plan 024 F1 ---
+		// Vistas `:own` del acudido para el rol guardián. Cada una bajo su path
+		// propio academic.my_wards_* (gate de menú por prefijo distinto del CRUD
+		// docente). El lector real que las sirve llega en F3; aquí solo se declaran.
+		{L4_PERM_MY_WARDS_GRADES_READ_OWN_ID, L4_RESOURCE_MY_WARDS_GRADES_ID, "academic.my_wards_grades.read:own", "Ver Notas de Acudidos", "Ver notas de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ATTENDANCE_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ATTENDANCE_ID, "academic.my_wards_attendance.read:own", "Ver Asistencia de Acudidos", "Ver asistencia de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ANNOUNCEMENTS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ANNOUNCEMENTS_ID, "academic.my_wards_announcements.read:own", "Ver Anuncios de Acudidos", "Ver anuncios dirigidos a los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_MATERIALS_ID, "academic.my_wards_materials.read:own", "Ver Materiales de Acudidos", "Ver materiales de los alumnos a cargo del representante", "read:own", "unit"},
+		{L4_PERM_MY_WARDS_ASSESSMENTS_READ_OWN_ID, L4_RESOURCE_MY_WARDS_ASSESSMENTS_ID, "academic.my_wards_assessments.read:own", "Ver Evaluaciones de Acudidos", "Ver evaluaciones de los alumnos a cargo del representante", "read:own", "unit"},
+
 		// Poda menú (2026-05-29): permisos `admin.permissions_mgmt.*`
 		// eliminados junto con el recurso `permissions_mgmt`.
 
-		// --- progress (resource 20000000-…-40) ---
-		// NOTA: se descartó `progress:read:own` (zombie + sólo super_admin
-		//       lo usaba; el backend no chequea ese permiso en runtime).
-		{"89336e44-3636-4744-a056-aea878f57b18", L4_RESOURCE_PROGRESS_ID, "reports.progress.read", "Ver Progreso", "Ver progreso académico", "read", "unit"},
-		{"d033dfd0-47a5-476b-b51a-f52f5fc66d7a", L4_RESOURCE_PROGRESS_ID, "reports.progress.read:own", "Ver Progreso Propio", "Ver propio progreso (usado por student)", "read:own", "unit"},
-		{"19d017d1-ee5b-4fc3-828a-2d12056631b4", L4_RESOURCE_PROGRESS_ID, "reports.progress.update", "Actualizar Progreso", "Actualizar progreso de estudiantes", "update", "unit"},
+		// Eliminado (2026-06-15): permisos `reports.progress.*` junto con el
+		// recurso `progress`. Su pantalla SDUI apuntaba a /api/v1/stats/student
+		// (inexistente → 404) y era redundante con el dashboard nativo del alumno.
 
 		// Poda menú (2026-05-29): permisos `admin.roles.*` eliminados junto
 		// con el recurso `roles`.
@@ -422,20 +429,6 @@ func l4Permissions() []l4PermissionSpec {
 		{"e2000000-0000-0000-0000-000000000002", L4_RESOURCE_GRADES_ID, "academic.grades.create", "Crear Calificación", "Registrar calificaciones", "create", "unit"},
 		{"e2000000-0000-0000-0000-000000000003", L4_RESOURCE_GRADES_ID, "academic.grades.update", "Editar Calificación", "Modificar calificaciones", "update", "unit"},
 		{"e2000000-0000-0000-0000-000000000004", L4_RESOURCE_GRADES_ID, "academic.grades.finalize", "Finalizar Calificación", "Finalizar y cerrar calificaciones", "finalize", "unit"},
-
-		// --- grades_detail (resource 20000000-…-37, N4 / ADR 0020 — MODO DETALLADO) ---
-		// Componentes de nota (academic.grade_item) + desglose transparente en "Mis
-		// Notas". Recurso PROPIO (grades_detail) — NO comparten resource_id con
-		// `grades` porque el unique (resource_id, action) prohíbe repetir las acciones
-		// create/read/update. Estos permisos se DEFINEN aquí pero NO se otorgan a
-		// roles vía roleGrantPatterns: el grant (teacher academic.grades_detail.* /
-		// student academic.grades_detail.read:own) es CONDICIONAL por perfil de
-		// escuela (academic.schools.grade_profile) y lo inyecta identity en runtime
-		// (F4.5).
-		{"e2000000-0000-0000-0000-000000000005", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.create", "Crear Componente de Nota", "Registrar componentes de nota (desglose)", "create", "unit"},
-		{"e2000000-0000-0000-0000-000000000006", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.read", "Ver Desglose de Nota", "Ver componentes de nota (desglose)", "read", "unit"},
-		{"e2000000-0000-0000-0000-000000000007", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.update", "Editar Componente de Nota", "Modificar componentes de nota (desglose)", "update", "unit"},
-		{"e2000000-0000-0000-0000-000000000008", L4_RESOURCE_GRADES_DETAIL_ID, "academic.grades_detail.delete", "Eliminar Componente de Nota", "Eliminar componentes de nota (desglose)", "delete", "unit"},
 
 		// --- attendance (resource 20000000-…-36) ---
 		{"e3000000-0000-0000-0000-000000000001", L4_RESOURCE_ATTENDANCE_ID, "academic.attendance.read", "Ver Asistencia", "Ver registros de asistencia", "read", "unit"},
@@ -631,7 +624,6 @@ func roleGrantPatterns() map[string][]string {
 		"content.assessments_student.*",
 		"content.materials.*",
 		"admin.system_settings.*",
-		"reports.progress.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -640,12 +632,18 @@ func roleGrantPatterns() map[string][]string {
 	guardianPatterns := []string{
 		"academic.announcements.*",
 		"academic.attendance.*",
-		"academic.grades.*",
+		// academic.grades.* ELIMINADO en F1 (privacidad): el guardián ve solo a su
+		// hijo vía academic.my_wards_*.read:own (lector real en F3).
+		"academic.guardian_relations.*", // revertir poda 2026-05-29 (revive rutas backend)
+		"academic.my_wards_grades.read:own",
+		"academic.my_wards_attendance.read:own",
+		"academic.my_wards_announcements.read:own",
+		"academic.my_wards_materials.read:own",
+		"academic.my_wards_assessments.read:own",
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.users.*",
 		"admin.system_settings.*",
-		"reports.progress.*",
 		"reports.read",
 		"dashboard.*",
 		"menu.*",

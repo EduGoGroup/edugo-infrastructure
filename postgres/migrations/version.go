@@ -716,7 +716,101 @@ import (
 //     por subarbol; readonly_auditor sigue denegado por su deny de prefijo
 //     academic.join_request_approvals.*. L4_SEED_VERSION 1.61.0 -> 1.62.0. Bump
 //     de SchemaVersion por cambio de catalogo+grant (recrear BD, sin ALTER).
-const SchemaVersion = "3.64.0"
+//   - 3.65.0 — ADR 0024 DEC-4: elimina la columna decorativa scope_pattern de
+//     iam.user_grants (el motor de auth nunca la evaluaba; el scope efectivo
+//     vive en el JWT, no en el grant). Cambios: entity UserGrant pierde el campo
+//     ScopePattern y el indice unico uq_user_grants_user_scope_perm_effect se
+//     reescribe a uq_user_grants_user_perm_effect sobre (user_id,
+//     permission_pattern, effect); post_gorm.sql elimina el CHECK
+//     user_grants_scope_format; el demo seed (seedUserGrants) deja de sembrar
+//     ScopePattern en sus 2 filas. NO toca iam.role_grants (ya limpio) ni
+//     iam.user_roles.scope_pattern (sigue en uso). Cambio en entity + SQL +
+//     demo seed (no L4) -> L4_SEED_VERSION intacto. Requiere recrear BD (sin
+//     ALTER). ComputeFilesHash() CAMBIA (se editó post_gorm.sql).
+//   - 3.66.0 — plan 022 / ADR 0024 foco 3: poda del recurso grades_detail
+//     (seed-only, sin DDL). Se eliminan del catálogo L4 el recurso
+//     `grades_detail` (…37) y sus 4 permisos academic.grades_detail.{create,
+//     read,update,delete}. El modo detallado de notas ya no se gobierna con un
+//     permiso: academic lo decide leyendo `grade_profile` de la escuela (el
+//     permiso era un mensajero eliminable). Se retira también el grant condicional
+//     por perfil que vivía en identity. L4_SEED_VERSION 1.62.0 -> 1.63.0. Bump de
+//     SchemaVersion por cambio de catálogo de recursos+permisos (recrear BD, sin
+//     ALTER).
+//   - 3.67.0 — MP-09 F2-A: eliminación del paquete seeds/demo. El dataset de
+//     desarrollo ya lo provee seeds/playground_v2/base (default del migrador
+//     desde F1). Se borra el paquete seeds/demo (development.go + su test de
+//     integración), se repuntan los consumidores no-test (cmd/runner, cmd/seed,
+//     tools/mock-generator) a base.Apply, se elimina el branch SeedDemo de
+//     migrate.go junto con el campo MigrateOptions.SeedDemo, y se retira el flag
+//     `--seed-demo` del migrador. ComputeFilesHash() de seeds/ deja de incluir
+//     la línea "demo:<SeedVersion>" → cambia el hash de seeds → bump obligatorio.
+//   - 3.68.0 — MP-09 F4: las capas system L1..L4 quedan como CONTRATO PURO, sin
+//     DATO DE TENANT. (1) L1 deja de sembrar escuela demo, usuario viewer,
+//     user_role y membership; sólo conserva el rol de contrato
+//     announcement_viewer (se borran l1_{school,user,user_role,membership}.go y
+//     las constantes de tenant; L1_SEED_VERSION 1.2.0 -> 1.3.0). (2) L4 deja de
+//     sembrar las equivalencias tipo->rol de la escuela demo (se elimina
+//     ApplyDemoSchoolInvitationRoles y su paso 10; el helper genérico
+//     SeedDefaultSchoolInvitationRoles se conserva; L4_SEED_VERSION 1.64.0 ->
+//     1.65.0). (3) playground_v2/base ahora siembra school_invitation_roles para
+//     sus 2 escuelas vía l4.SeedDefaultSchoolInvitationRoles (antes ninguna las
+//     tenía). (4) tests/fixtures/scenarios L1..L3 actualizados a la nueva
+//     realidad (sin viewer; scenario l1_readonly reducido a rol, nombre
+//     conservado). Bump de seeds (L1/L4 SeedVersion) -> cambia el hash de seeds
+//     -> bump obligatorio de SchemaVersion.
+//   - 3.69.0: F1 plan-024 (representante): guardian_relations.school_id (NOT NULL,
+//     índice único +school_id) + academic_unit_id; school_guardian_policy (política
+//     por escuela); school_invitations.student_id (FK auth.users SET NULL). Recrear
+//     BD, sin ALTER.
+//   - 3.70.0: F4·S3·M0 plan-024 (representante): academic.memberships gana ESTADO
+//     EXPLÍCITO `status` varchar(12) NOT NULL DEFAULT 'active' CHECK IN
+//     ('pending','active','withdrawn') como ÚNICA fuente de verdad del estado; se
+//     ELIMINA la columna `is_active` (era derivable: is_active=true ⟺
+//     status='active'). `withdrawn_at` se conserva como timestamp informativo. El
+//     índice parcial idx_memberships_unit_invitation_type_active pasa de
+//     `WHERE is_active = true` a `WHERE status = 'active'`. CHECK inline en el tag
+//     GORM del entity (mismo patrón que assessment.status / schools.grade_profile);
+//     post_gorm.sql cambia el WHERE del índice → ComputeFilesHash() CAMBIA. Sin
+//     cambio de comportamiento (default active equivale al is_active=true de hoy).
+//     Seeds playground_v2 (common helper + base) migrados a status='active'; no
+//     son parte del hash (MP-09). Recrear BD, sin ALTER. academic/identity migran
+//     su lectura del estado después (otra tarea). L*_SEED_VERSION intacto (no
+//     cambia ningún dato de las capas system L0–L4).
+//   - 3.71.0 (2026-06-15): se ELIMINA el recurso/pantalla `progress`
+//     (progress-dashboard) del seed L4 — su screen SDUI apuntaba a
+//     /api/v1/stats/student (inexistente → 404) y era redundante con el
+//     dashboard nativo del alumno. Cambia el catálogo de recursos/permisos
+//     (resource `progress`, permisos `reports.progress.*` + grants, la
+//     screen_instance/mapping `progress-dashboard`). L4_SEED_VERSION
+//     1.66.0 → 1.67.0 → cambia el hash de seeds → bump obligatorio de
+//     SchemaVersion. Recrear BD, sin ALTER. `stats`/`reports` intactos.
+//   - 3.72.0 (2026-06-15): M4 plan-024 (representante) — higiene del seed L4: se
+//     quita el campo `api_prefix:"learning"` INERTE del slot_data del
+//     screen_instance `dashboard-guardian` (el dashboard del representante es
+//     NATIVO y ya no carga por el pipe SDUI; nadie consume ese campo).
+//     L4_SEED_VERSION 1.67.0 → 1.68.0 → cambia el hash de seeds → bump
+//     obligatorio de SchemaVersion. Recrear BD, sin ALTER.
+//   - 3.73.0: F6 plan-024 (representante) — tipo de evaluacion practica/final. (1)
+//     assessment.assessment gana la columna `kind` varchar(20) NOT NULL DEFAULT
+//     'final' CHECK IN ('practice','final') (CHECK inline en el tag GORM, mismo
+//     patron que status / source_type); toda evaluacion existente queda 'final'.
+//     (2) NUEVA academic.practice_result: ESPEJO de academic.grade_item para
+//     evaluaciones 'practice' (resultado FUERA del expediente, solo estadisticas).
+//     Columnas id (PK uuid), membership_id/subject_id/period_id (FK academic CASCADE,
+//     grain no-unico via idx_practice_result_grain), title, value decimal(5,2)
+//     nullable (% 0–100), source varchar(20) con el mismo CHECK que grade_item
+//     ('auto_scored','manual','auto_llm'), source_attempt_id (FK→assessment.
+//     assessment_attempt SET NULL), source_assessment_id (FK→assessment.assessment
+//     SET NULL), created_by_membership_id (FK→memberships RESTRICT), created_at/
+//     updated_at. UNIQUE PARCIAL uq_practice_result_attempt (membership_id,
+//     subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL
+//     (espejo de uq_grade_item_attempt; defensa del upsert por id determinista del
+//     worker). Las FKs cross-schema, el trigger set_updated_at y el UNIQUE parcial
+//     viven en post_gorm.sql (GORM no los materializa sin campo de relacion). El
+//     worker ramifica por `kind` ('final'→grade_item, 'practice'→practice_result).
+//     Cambio en entity (kind) + nueva entity + post_gorm.sql → ComputeFilesHash()
+//     CAMBIA. Recrear BD, sin ALTER. L*_SEED_VERSION intacto (solo DDL, sin datos).
+const SchemaVersion = "3.74.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

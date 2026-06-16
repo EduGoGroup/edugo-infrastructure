@@ -6,13 +6,26 @@ Al cierre de cada fase del rebuild (Fase 2 en adelante), incrementar `SchemaVers
 
 Fuera del rebuild, cualquier cambio que altere el output de `ComputeFilesHash()` debe acompañarse de bump:
 - Renombre de capa (campo `Name()` en un `Layer`)
-- Bump de `SeedVersion` en cualquier capa del sistema o en `demo`
+- Bump de `SeedVersion` en cualquier capa del sistema
 - Agregado o eliminación de capas en `system.Layers()`
-- Cambio en `demo.SeedVersion`
+
+> **Nota (MP-09, 2026-06-14):** `playground_v2/` (incluido `base`) **NO entra** en `ComputeFilesHash()`
+> — son fotos de datos, no contrato. Cambiar `base` u otro fixture v2 no exige bump de `SchemaVersion`.
+> Solo el contrato (`system/`) cuenta para el hash.
 
 **Regla de e2e**: cualquier cambio bajo `e2e/framework/`, `e2e/fixtures/`, `e2e/scenarios/` o `e2e/exports/` también requiere bump — el framework forma parte del contrato que valida el migrator.
 
 ## Estructura
+
+> **Modelo vigente (MP-09, 2026-06-14): un solo mundo de datos.**
+> - `system/` (L0–L4) = **CONTRATO PURO** (esquema, roles, permisos, templates SDUI, M2M). Cero datos
+>   de tenant. Siempre se aplica.
+> - `playground_v2/` = **único mundo de datos** (fotos inmutables, versionadas, componibles). `base` es
+>   el **fixture por defecto**: `make docker-recreate` / `cloud-migrate` siembran `system` + `base`.
+>   Los focalizados (`n4_evaluacion`, `onboarding`, `n1_inscripcion`, `n17_secciones`, `multi_unidad`,
+>   `n0n1_escuelas`) se piden explícitos con `make docker-playground-v2 P=<fixture>`.
+> - **Eliminados:** `seeds/demo/` y `seeds/playground/` (v1). Ya no existen ni se invocan. Si ves
+>   referencias a ellos en docs viejas/journal, es historia.
 
 ### system/ — Datos del sistema (SIEMPRE se aplican)
 
@@ -31,11 +44,18 @@ Implementado por capas que cumplen la interfaz `Layer` (métodos `Name()`, `Seed
   - `l*_apply_twice_integration_test.go` — tests integration de idempotencia con testcontainer postgres.
 - `system/l4/` — sub-paquete con los datos de L4 por dominio (resources, roles_permissions, screen_templates, screen_instances, resource_screens, concept_types) + accessors públicos para que el cross-checker los consuma.
 
-### demo/ — Datos de prueba (solo en desarrollo)
+### playground_v2/ — Único mundo de datos (escuelas, usuarios, académico)
 
-Datos para testing: escuelas, usuarios, unidades académicas, materias, etc.
+Fotos inmutables y componibles sobre el contrato L0–L4. `base` es el default neutro; el resto son
+focalizados que componen encima.
 
-- `demo/development.go` — `ApplyDemo(gdb)`, `SeedVersion`.
+- `playground_v2/playground_v2.go` — registry de fixtures (`base`, `n4_evaluacion`, `onboarding`, …).
+- `playground_v2/base/base.go` — `base.Apply(gdb)`. **Fixture por defecto** que reproduce el dataset de
+  desarrollo (2 escuelas, 9 usuarios `@edugo.test`, login `12345678`). Es la fuente que consumen también
+  los tests de integración de las 4 APIs y los flow-tests de dev-environment (repointados desde el viejo
+  `demo.ApplyDemo`). super_admin del mundo `base` = `super@edugo.test` (`base` resiembra `auth.users`, así
+  que el bootstrap L0 `super_admin@edugo.system` queda sobrescrito dentro de este mundo).
+- `playground_v2/common/` — helpers compartidos de seed (`Seed*` con `Spec` structs).
 
 ### e2e/ — Fixtures focalizables (plan E2E + system-data-quality, Fase C)
 

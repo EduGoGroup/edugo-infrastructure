@@ -42,7 +42,7 @@ func buildMembership(spec MembershipSpec, invitationTypeID uuid.UUID) entities.M
 		AcademicUnitID:   spec.AcademicUnitID,
 		InvitationTypeID: invitationTypeID,
 		Metadata:         metadata,
-		IsActive:         true,
+		Status:           "active",
 		EnrolledAt:       time.Now().UTC(),
 	}
 }

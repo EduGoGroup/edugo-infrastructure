@@ -199,7 +199,7 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 		SchoolID:         schoolUUID,
 		InvitationTypeID: teacherInvitationTypeID,
 		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"assessments-list"}`),
-		IsActive:         true,
+		Status:           "active",
 		EnrolledAt:       time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
@@ -208,7 +208,7 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 	}).Create(&teacherMembership).Error; err != nil {
 		return fmt.Errorf("screen_only: insert teacher membership: %w", err)
 	}
-	if err := framework.UpsertBool(tx, teacherMembership.TableName(), "id", teacherMembership.ID, "is_active", true); err != nil {
+	if err := framework.UpsertString(tx, teacherMembership.TableName(), "id", teacherMembership.ID, "status", "active"); err != nil {
 		return err
 	}
 
@@ -413,7 +413,7 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 		SchoolID:         schoolUUID,
 		InvitationTypeID: studentInvitationTypeID,
 		Metadata:         json.RawMessage(`{"e2e":true,"fixture":"screen_only","screen_key":"grades-list"}`),
-		IsActive:         true,
+		Status:           "active",
 		EnrolledAt:       time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 	if err := tx.Clauses(clause.OnConflict{
@@ -422,7 +422,7 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 	}).Create(&studentMembership).Error; err != nil {
 		return fmt.Errorf("screen_only: insert student membership: %w", err)
 	}
-	if err := framework.UpsertBool(tx, studentMembership.TableName(), "id", studentMembership.ID, "is_active", true); err != nil {
+	if err := framework.UpsertString(tx, studentMembership.TableName(), "id", studentMembership.ID, "status", "active"); err != nil {
 		return err
 	}
 

@@ -55,6 +55,13 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+DO $$ BEGIN
+    ALTER TABLE academic.school_invitations
+        ADD CONSTRAINT school_invitations_student_fkey
+            FOREIGN KEY (student_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- school_join_requests → users / schools / academic_units / invitation + aprobadores
 DO $$ BEGIN
     ALTER TABLE academic.school_join_requests
@@ -356,6 +363,59 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ============================================================
+-- academic.practice_result (plan 024 F6) — espejo de academic.grade_item para
+-- evaluaciones 'practice' (resultado FUERA del expediente, solo estadisticas).
+-- GORM no materializa FKs desde el tag `constraint:` sin campo de relacion, por eso
+-- TODAS las FKs (academic y cross-schema a assessment.*) viven aqui. Idempotente.
+-- ============================================================
+
+-- academic.practice_result → memberships (CASCADE) / subjects (CASCADE) / periods
+-- (CASCADE) / membership autor (RESTRICT)
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_membership_fkey
+            FOREIGN KEY (membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_period_fkey
+            FOREIGN KEY (period_id) REFERENCES academic.academic_periods(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_created_by_fkey
+            FOREIGN KEY (created_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Cross-schema: trazabilidad al origen auto_scored/auto_llm (SET NULL: el resultado
+-- persiste si se borra el intento/evaluacion de origen).
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_source_attempt_fkey
+            FOREIGN KEY (source_attempt_id) REFERENCES assessment.assessment_attempt(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE academic.practice_result
+        ADD CONSTRAINT practice_result_source_assessment_fkey
+            FOREIGN KEY (source_assessment_id) REFERENCES assessment.assessment(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ============================================================
 -- assessment.* y content.* (N4 / ADR 0019) — esquema de evaluacion/contenido
 -- anclado al modelo de sesion. GORM no materializa FKs desde el tag
 -- `constraint:` sin campo de relacion (mismo caso que subject_offerings),
@@ -625,6 +685,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.school_invitation_roles
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- academic.school_guardian_policy
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.school_guardian_policy
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- academic.concept_types
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.concept_types
@@ -654,6 +719,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- append-only: changed_at lo fija el insert), por eso no lleva trigger.
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.grade_item
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- academic.practice_result (plan 024 F6)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.practice_result
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- academic.announcements
@@ -862,13 +932,8 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- CHECK constraints on iam.user_grants
-DO $$ BEGIN
-    ALTER TABLE iam.user_grants
-        ADD CONSTRAINT user_grants_scope_format
-        CHECK (scope_pattern ~ '^(\*|(school|unit|section|subject):[^/]+(/(school|unit|section|subject):[^/]+)*)$');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
+-- (ADR 0024 DEC-4: el CHECK user_grants_scope_format se eliminó junto con la
+-- columna scope_pattern decorativa; el motor de auth nunca la evaluaba.)
 -- {0,3}: ver nota en role_grants_pattern_format (path de hasta 4 segmentos,
 -- alineado con enum.PathPermissionRegex del shared).
 DO $$ BEGIN
@@ -931,7 +996,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_user_roles_user_active_covering
 -- MP-08 F3: reexpresado de (academic_unit_id, role) a (academic_unit_id,
 -- invitation_type_id) tras el swap role->invitation_type_id.
 CREATE INDEX IF NOT EXISTS idx_memberships_unit_invitation_type_active
-    ON academic.memberships (academic_unit_id, invitation_type_id) WHERE is_active = true;
+    ON academic.memberships (academic_unit_id, invitation_type_id) WHERE status = 'active';
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_academic_periods_active
     ON academic.academic_periods (school_id, academic_unit_id) WHERE is_active = true;
@@ -948,6 +1013,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_join_requests_pending_unique
 -- componentes manuales (source_attempt_id NULL) quedan fuera del indice parcial.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_grade_item_attempt
     ON academic.grade_item (membership_id, subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL;
+
+-- Un solo resultado practico auto_scored por (alumno, materia, periodo, intento de
+-- origen): espejo de uq_grade_item_attempt para academic.practice_result (plan 024
+-- F6). Defensa en profundidad del upsert por id determinista del worker; los
+-- resultados manuales (source_attempt_id NULL) quedan fuera del indice parcial.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_practice_result_attempt
+    ON academic.practice_result (membership_id, subject_id, period_id, source_attempt_id) WHERE source_attempt_id IS NOT NULL;
+
+-- school_guardian_policy: un solo default por escuela (academic_unit_id NULL) y
+-- una sola override por (escuela, unidad). Postgres trata NULL como distinto en
+-- únicos → se necesitan dos índices parciales en lugar del único inline.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_school_guardian_policy_default_unique
+    ON academic.school_guardian_policy (school_id) WHERE academic_unit_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_school_guardian_policy_unit_unique
+    ON academic.school_guardian_policy (school_id, academic_unit_id) WHERE academic_unit_id IS NOT NULL;
 
 -- content
 CREATE INDEX IF NOT EXISTS idx_materials_status_active

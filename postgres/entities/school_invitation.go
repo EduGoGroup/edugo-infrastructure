@@ -29,6 +29,7 @@ type SchoolInvitation struct {
 	ExpiresAt        *time.Time `db:"expires_at" gorm:"default:null" validate:"-"`
 	MaxUses          *int       `db:"max_uses" gorm:"default:null" validate:"omitempty"`
 	UsesCount        int        `db:"uses_count" gorm:"not null;default:0" validate:"-"`
+	StudentID        *uuid.UUID `db:"student_id" gorm:"type:uuid;index" validate:"omitempty,uuid"`
 	IsActive         bool       `db:"is_active" gorm:"not null;default:true"`
 	CreatedAt        time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
 	UpdatedAt        time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`

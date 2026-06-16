@@ -252,28 +252,11 @@ func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
 		)
 	}
 
-	// (3) Cadena L1 viewer → permisos sigue sin contener materials:*.
-	// No-regresión a nivel SQL de F5-REQ-2.3: tras L3 el viewer no
-	// adquiere accidentalmente ningún permiso sobre materials.
-	var viewerMaterialsCount int64
-	if err := gdb.Raw(
-		`SELECT COUNT(*) FROM iam.role_permissions rp `+
-			`JOIN iam.permissions p ON rp.permission_id = p.id `+
-			`WHERE rp.role_id = (`+
-			`  SELECT ur.role_id FROM iam.user_roles ur `+
-			`  JOIN auth.users u ON ur.user_id = u.id `+
-			`  WHERE u.email = ? LIMIT 1`+
-			`) AND p.name LIKE ?`,
-		layers.L1_VIEWER_EMAIL, "materials:%",
-	).Scan(&viewerMaterialsCount).Error; err != nil {
-		t.Fatalf("[%s] count viewer materials:* permissions: %v", stage, err)
-	}
-	if viewerMaterialsCount != 0 {
-		t.Errorf(
-			"[%s] viewer materials:* permissions: got %d, want 0 (L3 no debe filtrar permisos materials:* al viewer)",
-			stage, viewerMaterialsCount,
-		)
-	}
+	// MP-09 F4: la verificación "(3) cadena L1 viewer → permisos materials:*"
+	// se retiró. El usuario viewer era DATO DE TENANT que L1 ya no siembra
+	// (system/ es contrato puro); el dato vivo equivalente vive en
+	// playground_v2/base. La no-regresión de aislamiento de L3 sigue cubierta
+	// por (1) y (2) sobre el catálogo de recursos/permisos del contrato.
 }
 
 // startPostgresForL3Test levanta un contenedor postgres:15-alpine,
