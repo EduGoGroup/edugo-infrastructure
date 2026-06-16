@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.10] - 2026-06-15
+
 Eliminación completa del recurso/pantalla `progress` (`progress-dashboard`). `SchemaVersion`
 3.70.0 → 3.71.0; `L4_SEED_VERSION` 1.66.0 → 1.67.0.
 
