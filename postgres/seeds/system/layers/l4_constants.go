@@ -444,7 +444,7 @@ package layers
 //     (academic.grades_detail.create/read/update/delete) bajo un recurso propio
 //     (…37, no menú-visible) con grant condicional por perfil de escuela inyectado
 //     por identity en runtime. SUPERADO por 1.63.0 (plan 022): recurso + permisos
-//     + grant condicional eliminados; el modo detallado lo decide ahora academic
+//   - grant condicional eliminados; el modo detallado lo decide ahora academic
 //     leyendo `grade_profile` directamente.
 //   - 1.48.0 (2026-06-08, Fase 1 — visibilidad condicional de campos SDUI en el
 //     form de pregunta): assessment-question-form se vuelve REACTIVO por

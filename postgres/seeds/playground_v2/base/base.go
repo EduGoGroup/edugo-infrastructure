@@ -464,7 +464,6 @@ func seedSubjects(tx *gorm.DB) error {
 	return upsertMaps(tx, "academic.subjects", rows, []string{"id"}, nil, false)
 }
 
-
 func seedScreenUserPreferences(tx *gorm.DB) error {
 	exists, err := tableExists(tx, "ui_config.screen_user_preferences")
 	if err != nil {
@@ -674,7 +673,6 @@ func seedAttendance(tx *gorm.DB) error {
 	return upsertMaps(tx, "academic.attendance", rows, []string{"id"}, nil, false)
 }
 
-
 func seedAnnouncements(tx *gorm.DB) error {
 	exists, err := tableExists(tx, "academic.announcements")
 	if err != nil {
@@ -808,7 +806,6 @@ func seedGuardianTejido(tx *gorm.DB) error {
 
 	return nil
 }
-
 
 func upsertMaps(tx *gorm.DB, table string, rows []map[string]any, conflictColumns, updateColumns []string, touchUpdatedAt bool) error {
 	if len(rows) == 0 {

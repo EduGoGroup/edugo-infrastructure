@@ -20,6 +20,7 @@
 //   - deleted_at IS NULL,
 //   - subject_id ∈ las materias en las que el hijo está inscrito
 //     (subject_offering_enrollments) en su unidad activa con membership active.
+//
 // NO filtra por is_public (la columna se devuelve pero no gatea); aun así se
 // siembra is_public=true para reflejar material publicado/visible.
 //

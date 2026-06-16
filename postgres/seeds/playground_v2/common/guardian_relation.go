@@ -23,7 +23,7 @@ type GuardianRelationSpec struct {
 	AcademicUnitID   *uuid.UUID // nil = link a nivel escuela (link_scope=school)
 	RelationshipType string     // default "parent"
 	IsPrimary        bool
-	IsActive         bool // ignorado para el default; ver SeedGuardianRelation
+	IsActive         bool   // ignorado para el default; ver SeedGuardianRelation
 	Status           string // default "active"
 }
 

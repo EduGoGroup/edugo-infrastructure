@@ -16,8 +16,8 @@ type GuardianRelation struct {
 	ID               uuid.UUID  `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	GuardianID       uuid.UUID  `db:"guardian_id" gorm:"type:uuid;index;not null;constraint:guardian_relations_guardian_fkey,OnDelete:CASCADE;uniqueIndex:guardian_relations_unique" validate:"required,uuid"`
 	StudentID        uuid.UUID  `db:"student_id" gorm:"type:uuid;index;not null;constraint:guardian_relations_student_fkey,OnDelete:CASCADE;uniqueIndex:guardian_relations_unique" validate:"required,uuid"`
-	SchoolID       uuid.UUID  `db:"school_id" gorm:"type:uuid;index;not null;constraint:guardian_relations_school_fkey,OnDelete:CASCADE;uniqueIndex:guardian_relations_unique" validate:"required,uuid"`
-	AcademicUnitID *uuid.UUID `db:"academic_unit_id" gorm:"type:uuid;index;constraint:guardian_relations_unit_fkey,OnDelete:CASCADE" validate:"omitempty,uuid"`
+	SchoolID         uuid.UUID  `db:"school_id" gorm:"type:uuid;index;not null;constraint:guardian_relations_school_fkey,OnDelete:CASCADE;uniqueIndex:guardian_relations_unique" validate:"required,uuid"`
+	AcademicUnitID   *uuid.UUID `db:"academic_unit_id" gorm:"type:uuid;index;constraint:guardian_relations_unit_fkey,OnDelete:CASCADE" validate:"omitempty,uuid"`
 	RelationshipType string     `db:"relationship_type" gorm:"not null;type:varchar(50);default:'parent';check:guardian_relations_type_check,relationship_type IN ('parent','guardian','tutor','other')" validate:"required,oneof=parent guardian tutor other"`
 	IsPrimary        bool       `db:"is_primary" gorm:"not null;default:false"`
 	IsActive         bool       `db:"is_active" gorm:"not null;default:true"`

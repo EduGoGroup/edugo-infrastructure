@@ -335,4 +335,3 @@ WHERE resource_id = ?::uuid
 	}
 	return nil
 }
-
