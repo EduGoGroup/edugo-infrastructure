@@ -810,7 +810,17 @@ import (
 //     worker ramifica por `kind` ('final'→grade_item, 'practice'→practice_result).
 //     Cambio en entity (kind) + nueva entity + post_gorm.sql → ComputeFilesHash()
 //     CAMBIA. Recrear BD, sin ALTER. L*_SEED_VERSION intacto (solo DDL, sin datos).
-const SchemaVersion = "3.74.0"
+//   - 3.75.0 (2026-06-17): ADR 0024 sub-deuda "herencia del landing" — los 6 roles
+//     alias (school_director/coordinator/assistant → dashboard-schooladmin;
+//     assistant_teacher/observer/readonly_auditor → dashboard-teacher) reciben
+//     landing_screen_key explícito (antes NULL → caían a school.default
+//     "dashboard-home", shell sin contrato resoluble). Solo datos de seed L4
+//     (L4_SEED_VERSION 1.69.0 → 1.70.0); sin DDL. Recrear BD para reseeding.
+//   - 3.76.0 (2026-06-17): mismo frente — el rol de contrato L1 announcement_viewer
+//     (scope school) recibe landing_screen_key=dashboard-schooladmin (antes NULL).
+//     Cierra el 7º rol secundario que quedaba sin landing. Solo dato de seed L1
+//     (L1_SEED_VERSION 1.3.0 → 1.4.0); sin DDL. Recrear BD para reseeding.
+const SchemaVersion = "3.76.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

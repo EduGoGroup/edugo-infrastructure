@@ -6,7 +6,12 @@ package layers
 // MP-09 F4 (1.2.0 → 1.3.0): L1 dejó de sembrar DATO DE TENANT (escuela
 // demo, usuario viewer, user_role y membership). Sólo queda el rol de
 // contrato announcement_viewer.
-const L1_SEED_VERSION = "1.3.0"
+//
+// 1.3.0 → 1.4.0 (2026-06-17, ADR 0024 sub-deuda "herencia del landing"):
+// el rol announcement_viewer gana landing_screen_key=dashboard-schooladmin
+// (antes NULL → caía a school.default "dashboard-home", shell sin contrato
+// resoluble en el front).
+const L1_SEED_VERSION = "1.4.0"
 
 // L1_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

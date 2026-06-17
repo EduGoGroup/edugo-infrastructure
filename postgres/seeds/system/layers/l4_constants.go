@@ -663,7 +663,18 @@ package layers
 //     (guardianPatterns enumera el literal; no hay wildcard `my_wards.*`). Lo sirve
 //     el lector real GET /api/v1/me/wards/assessments en edugo-api-learning. Espejo
 //     de my_wards_materials (…28).
-const L4_SEED_VERSION = "1.69.0"
+//   - 1.70.0 (2026-06-17): ADR 0024 sub-deuda "herencia del landing" — los 6 roles
+//     alias ganan landing_screen_key EXPLÍCITO (antes NULL). school_director /
+//     school_coordinator / school_assistant → dashboard-schooladmin;
+//     assistant_teacher / observer → dashboard-teacher; readonly_auditor →
+//     dashboard-teacher. Causa: la cascada del backend (rol ?? escuela ??
+//     "dashboard-home") solo mira el campo PROPIO del rol y NO resuelve la
+//     herencia de grants (ADR-6) para el landing; un alias con NULL caía al
+//     default de la escuela (= "dashboard-home", shell sin contrato resoluble en
+//     el front → "contract no resolvable"). El usuario coordinador del playground
+//     base (rol school_coordinator) era el caso roto observado. Solo datos de
+//     roles del contrato → bump del seed para invalidar caché y reseeding.
+const L4_SEED_VERSION = "1.70.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
