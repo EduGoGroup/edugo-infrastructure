@@ -21,7 +21,8 @@ func applyL1Role(tx *gorm.DB) error {
 	desc := "Rol read-only: solo puede ver anuncios. Usado para validar gating de UI en Fase 3."
 	// landing_screen_key (ADR 0024 sub-deuda "herencia del landing"): scope=school
 	// → dashboard-schooladmin. Sin landing propio caía a school.default
-	// (= "dashboard-home", shell sin contrato resoluble en el front).
+	// (= "dashboard-home", el dashboard básico genérico); con landing propio
+	// aterriza en el dashboard de su superficie en vez del home genérico.
 	landing := "dashboard-schooladmin"
 	role := entities.Role{
 		ID:               id,

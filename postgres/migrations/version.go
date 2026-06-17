@@ -820,7 +820,17 @@ import (
 //     (scope school) recibe landing_screen_key=dashboard-schooladmin (antes NULL).
 //     Cierra el 7º rol secundario que quedaba sin landing. Solo dato de seed L1
 //     (L1_SEED_VERSION 1.3.0 → 1.4.0); sin DDL. Recrear BD para reseeding.
-const SchemaVersion = "3.76.0"
+//   - 3.77.0 (2026-06-17): dashboard-home deja de ser "shell muerta" y pasa
+//     a ser el dashboard básico por defecto (home genérico para roles sin
+//     landing_screen_key propio; school.default_landing_screen_key sigue
+//     apuntando aquí). El FE le dará un render real self-contained (otro
+//     frente), así que su slot_data L4 deja de declarar el api_prefix
+//     "learning" (inerte; el dashboard no consume endpoint) y queda solo
+//     {"title":"Inicio"}; el description del instance se actualiza a la
+//     nueva semántica. Solo dato de seed L4 (L4_SEED_VERSION 1.70.0 →
+//     1.71.0) → cambia el hash de seeds → bump obligatorio. Sin DDL ni
+//     cambios de permisos. Recrear BD para reseeding.
+const SchemaVersion = "3.77.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

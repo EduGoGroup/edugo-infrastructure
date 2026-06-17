@@ -9,8 +9,8 @@ package layers
 //
 // 1.3.0 → 1.4.0 (2026-06-17, ADR 0024 sub-deuda "herencia del landing"):
 // el rol announcement_viewer gana landing_screen_key=dashboard-schooladmin
-// (antes NULL → caía a school.default "dashboard-home", shell sin contrato
-// resoluble en el front).
+// (antes NULL → caía a school.default "dashboard-home", el dashboard básico
+// genérico; con landing propio aterriza en el dashboard de su superficie).
 const L1_SEED_VERSION = "1.4.0"
 
 // L1_LAYER_NAME es el nombre canónico de la capa, usado por

@@ -674,7 +674,17 @@ package layers
 //     el front → "contract no resolvable"). El usuario coordinador del playground
 //     base (rol school_coordinator) era el caso roto observado. Solo datos de
 //     roles del contrato → bump del seed para invalidar caché y reseeding.
-const L4_SEED_VERSION = "1.70.0"
+//   - 1.71.0: dashboard-home pasa de "shell muerta" a dashboard basico
+//     por defecto (home generico para roles sin landing_screen_key
+//     propio; school.default_landing_screen_key sigue apuntando aqui). El
+//     FE le dara un render real self-contained (otro frente), asi que su
+//     slot_data deja de declarar api_prefix:"learning" (inerte; el
+//     dashboard no consume endpoint) y queda solo {"title":"Inicio"}; el
+//     description del instance se actualiza a la nueva semantica. Cambia
+//     el slot_data del seed L4 → bump para invalidar la cache SDUI por
+//     contenido. Sin cambios de esquema/permisos. SchemaVersion 3.76.0 →
+//     3.77.0.
+const L4_SEED_VERSION = "1.71.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

@@ -119,9 +119,9 @@ func l4RoleSpecs() []l4RoleSpec {
 		// canónico. La cascada del backend (rol ?? escuela ?? "dashboard-home")
 		// solo mira el campo PROPIO del rol —no resuelve la herencia de grants
 		// (ADR-6) para el landing—, así que un alias con NULL caía al default de
-		// la escuela, que es "dashboard-home" (shell sin contrato resoluble en el
-		// front). Sembrar el landing aquí hace que coordinador/director/asistente
-		// aterricen en su dashboard real en vez de la pantalla shell rota.
+		// la escuela, que es "dashboard-home" (el dashboard básico genérico).
+		// Sembrar el landing aquí hace que coordinador/director/asistente
+		// aterricen en su dashboard real en vez del home genérico.
 		{
 			idStr:            L4_ROLE_SCHOOL_DIRECTOR_ID,
 			name:             L4_ROLE_SCHOOL_DIRECTOR_NAME,
@@ -174,7 +174,8 @@ func l4RoleSpecs() []l4RoleSpec {
 			// readonly_auditor NO hereda de ningún canónico (allow read-only
 			// propio; ver nota abajo). Aterriza en dashboard-teacher: es scope
 			// unit y su acceso es la vista de clase en solo lectura, el dashboard
-			// más cercano a su superficie. Sin landing caería a "dashboard-home".
+			// más cercano a su superficie. Sin landing caería al home genérico
+			// "dashboard-home" en vez del dashboard de su superficie.
 			landingScreenKey: "dashboard-teacher",
 			// NO hereda: su allow read-only no coincide con el de teacher
 			// (teacher carece de academic.guardian_relations/memberships y
