@@ -67,12 +67,11 @@ func usersForm() l4ScreenInstanceRow {
 	}
 }
 
-// schools-list (MP-08 F4, DEC-D): se retira la acción `create` del header
-// (heredada de list-basic-v1 vía actions_removed). Crear una escuela deja de
-// ser un flujo del producto SDUI: el alta de escuelas pasa al admin-tool de Go.
-// Editar una escuela existente se conserva (la fila navega a schools-form, que
-// mantiene el entry-point "Gestionar Conceptos"). Mismo patrón delta que
-// memberships-list / concept-types-list.
+// schools-list (MP-08 F4, DEC-D; bug 0054): pantalla read-only. Se retiran
+// create/edit/delete del header y de las filas (heredados de list-basic-v1 vía
+// actions_removed). La gestión real de escuelas (alta/edición/baja) vive en el
+// admin-tool de Go, no en el producto SDUI del KMP; la pantalla de Escuelas
+// solo lista. Mismo patrón delta que memberships-list / concept-types-list.
 func schoolsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_SCHOOLS_LIST_ID,
@@ -93,7 +92,7 @@ func schoolsList() l4ScreenInstanceRow {
     {"key": "code", "label": "Código"},
     {"key": "is_active", "label": "Activa"}
   ],
-  "actions_removed": ["create"],
+  "actions_removed": ["create", "edit", "delete"],
   "api_prefix": "academic"
 }`,
 	}

@@ -107,8 +107,8 @@ const settingsBasicV1Definition = `{
     ]},
     {"id": "section_notifications", "type": "form-section", "slots": [
       {"id": "notifications_title", "controlType": "label", "style": "title-medium", "bind": "slot:notifications_title"},
-      {"id": "push_notifications", "controlType": "switch", "bind": "slot:push_label", "field": "preferences.push_enabled"},
-      {"id": "email_notifications", "controlType": "switch", "bind": "slot:email_label", "field": "preferences.email_enabled"}
+      {"id": "push_notifications", "controlType": "switch", "bind": "slot:push_label", "field": "preferences.push_enabled", "permission": "admin.system_settings.update"},
+      {"id": "email_notifications", "controlType": "switch", "bind": "slot:email_label", "field": "preferences.email_enabled", "permission": "admin.system_settings.update"}
     ]},
     {"id": "logout", "type": "container", "slots": [
       {"id": "logout_btn", "controlType": "filled-button", "bind": "slot:logout_label", "style": "error"}

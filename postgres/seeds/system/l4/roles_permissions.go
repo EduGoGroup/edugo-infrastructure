@@ -605,7 +605,6 @@ func roleGrantPatterns() map[string][]string {
 		"academic.join_request_approvals.unit.student",
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.users.*",
 		"admin.system_settings.*",
 		"reports.*",
 		"dashboard.*",
@@ -640,10 +639,8 @@ func roleGrantPatterns() map[string][]string {
 		// my-grades-list y route gate del dato propio (GET /api/v1/me/grades).
 		// Espejo de academic.my_memberships.read:own.
 		"academic.my_grades.read:own",
-		"content.assessments.*",
 		"content.assessments_student.*",
 		"content.materials.*",
-		"admin.system_settings.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -662,7 +659,6 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_assessments.read:own",
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.users.*",
 		"admin.system_settings.*",
 		"reports.read",
 		"dashboard.*",

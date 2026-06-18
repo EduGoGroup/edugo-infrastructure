@@ -684,7 +684,32 @@ package layers
 //     el slot_data del seed L4 → bump para invalidar la cache SDUI por
 //     contenido. Sin cambios de esquema/permisos. SchemaVersion 3.76.0 →
 //     3.77.0.
-const L4_SEED_VERSION = "1.71.0"
+//   - 1.72.0 (2026-06-17): saneo de over-grants y read-only de Escuelas
+//     (bugs 0064/0065/0054). (1) bug 0064: se quita el over-grant
+//     `admin.users.*` de teacherPatterns y guardianPatterns (ni docente ni
+//     guardián gestionan usuarios; les daba el panel Usuarios ajeno a su
+//     rol). (2) bug 0065: se quita `admin.system_settings.*` de
+//     studentPatterns (el alumno no edita configuración de notificaciones;
+//     conserva `notifications.*` = la campanita) y los slots
+//     push_notifications/email_notifications del template settings-basic-v1
+//     ganan `permission:"admin.system_settings.update"` para que solo quien
+//     puede editar config vea esos switches (dark_mode/theme quedan sin
+//     permission: el alumno los conserva). (3) bug 0054: el slot_data de
+//     schools-list pasa su actions_removed de ["create"] a
+//     ["create","edit","delete"] → pantalla de Escuelas read-only en el KMP
+//     (gestión real en el admin-tool de Go). Cambian datos de roles +
+//     slot_data de seed L4 → bump para invalidar la caché SDUI por
+//     contenido. Sin cambios de esquema. SchemaVersion 3.77.0 → 3.78.0.
+//   - 1.73.0 (2026-06-17): bug 0048 — se quita el over-grant
+//     `content.assessments.*` de studentPatterns. El alumno NO usa ningún
+//     `content.assessments.*`: ver evaluaciones asignadas, tomar y ver
+//     resultados corre TODO sobre `content.assessments_student.*` (que se
+//     CONSERVA). El wildcard docente le daba publish/delete/update/assign/
+//     create/grade/review → veía los botones de gestión en assessments-form.
+//     Cambia datos de roles del seed L4 → bump para invalidar la caché SDUI
+//     por contenido. Sin cambios de esquema/permisos del catálogo.
+//     SchemaVersion 3.78.0 → 3.79.0.
+const L4_SEED_VERSION = "1.73.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

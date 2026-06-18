@@ -830,7 +830,26 @@ import (
 //     nueva semántica. Solo dato de seed L4 (L4_SEED_VERSION 1.70.0 →
 //     1.71.0) → cambia el hash de seeds → bump obligatorio. Sin DDL ni
 //     cambios de permisos. Recrear BD para reseeding.
-const SchemaVersion = "3.77.0"
+//   - 3.78.0 (2026-06-17): saneo de over-grants + Escuelas read-only
+//     (bugs 0064/0065/0054). (1) bug 0064: se quita `admin.users.*` de
+//     teacher y guardian (over-grant del panel Usuarios). (2) bug 0065: se
+//     quita `admin.system_settings.*` del alumno y los switches
+//     push/email del template settings-basic-v1 ganan
+//     `permission:"admin.system_settings.update"` (dark_mode/theme siguen
+//     sin permission; el alumno conserva `notifications.*`). (3) bug 0054:
+//     schools-list pasa a actions_removed ["create","edit","delete"]
+//     (read-only; gestión en admin-tool de Go). Solo dato de seed L4
+//     (L4_SEED_VERSION 1.71.0 → 1.72.0) → cambia el hash de seeds → bump
+//     obligatorio. Sin DDL. Recrear BD para reseeding.
+//   - 3.79.0 (2026-06-17): bug 0048 — se quita el over-grant
+//     `content.assessments.*` de studentPatterns (el alumno NO usa ningún
+//     `content.assessments.*`: su flujo completo —ver asignadas, tomar, ver
+//     resultados— corre sobre `content.assessments_student.*`, que se
+//     CONSERVA). El wildcard docente le otorgaba publish/delete/update/assign/
+//     create/grade/review → veía los botones de gestión en assessments-form.
+//     Solo dato de seed L4 (L4_SEED_VERSION 1.72.0 → 1.73.0) → cambia el hash
+//     de seeds → bump obligatorio. Sin DDL. Recrear BD para reseeding.
+const SchemaVersion = "3.79.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
