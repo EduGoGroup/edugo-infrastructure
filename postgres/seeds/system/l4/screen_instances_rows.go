@@ -228,12 +228,12 @@ func auditEventsList() l4ScreenInstanceRow {
 		slotData: `{
   "title": "Auditoría",
   "search_placeholder": "Buscar evento...",
-  "filter_ready_label": "Info",
-  "filter_processing_label": "Crítico",
+  "filter_all_label": "Todos",
+  "filter_processing_label": "Solo críticos",
   "columns": [
-    {"key": "event_type", "label": "Tipo"},
-    {"key": "actor", "label": "Actor"},
-    {"key": "target", "label": "Recurso"},
+    {"key": "action", "label": "Acción"},
+    {"key": "actor_email", "label": "Actor"},
+    {"key": "resource_type", "label": "Recurso"},
     {"key": "created_at", "label": "Fecha"}
   ],
   "actions_removed": ["create", "edit", "delete"],
@@ -968,7 +968,7 @@ func gradesList() l4ScreenInstanceRow {
     {"key": "score", "label": "Nota"},
     {"key": "period", "label": "Periodo"}
   ],
-  "actions_removed": ["delete"],
+  "actions_removed": ["create", "edit", "delete"],
   "api_prefix": "academic"
 }`,
 	}

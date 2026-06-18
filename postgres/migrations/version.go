@@ -849,7 +849,17 @@ import (
 //     create/grade/review → veía los botones de gestión en assessments-form.
 //     Solo dato de seed L4 (L4_SEED_VERSION 1.72.0 → 1.73.0) → cambia el hash
 //     de seeds → bump obligatorio. Sin DDL. Recrear BD para reseeding.
-const SchemaVersion = "3.79.0"
+//   - 3.80.0 (2026-06-18): lote triage alpha Grupo 2 (seed SDUI mal
+//     configurado). 0055 auditoría: columnas remapeadas a los campos reales
+//     del DTO (action/actor_email/resource_type) + chip único "Solo críticos"
+//     (filter_all "Todos" + filter_processing severity=critical; se retira el
+//     chip de info). 0062 grades-list pasa a read-only (actions_removed
+//     ["create","edit","delete"]) porque create/edit navegaban a grades-form
+//     ELIMINADA → 404. 0057 form de anuncios expone toggle is_pinned (L2).
+//     Solo datos de seed (L2_SEED_VERSION 1.3.0 → 1.4.0, L4_SEED_VERSION
+//     1.73.0 → 1.74.0) → cambia el hash → bump obligatorio. Sin DDL. Recrear
+//     BD para reseeding.
+const SchemaVersion = "3.80.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

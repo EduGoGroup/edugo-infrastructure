@@ -709,7 +709,17 @@ package layers
 //     Cambia datos de roles del seed L4 → bump para invalidar la caché SDUI
 //     por contenido. Sin cambios de esquema/permisos del catálogo.
 //     SchemaVersion 3.78.0 → 3.79.0.
-const L4_SEED_VERSION = "1.73.0"
+//   - 1.74.0 (2026-06-18): lote triage alpha Grupo 2 (seed SDUI). 0055
+//     auditoría: columnas del slot_data remapeadas a action/actor_email/
+//     resource_type (eran event_type/actor/target, claves inexistentes en el
+//     DTO → filas vacías) + chip único "Solo críticos" (filter_all "Todos" +
+//     filter_processing severity=critical; se retira el chip de info que era
+//     ruido). 0062 grades-list pasa a read-only (actions_removed +create+edit)
+//     porque create/edit navegaban a grades-form ELIMINADA (2026-06-09) → 404;
+//     la captura de notas vive en pantallas nativas por sesión. Solo datos de
+//     seed L4 → bump para invalidar la caché SDUI por contenido. Sin DDL.
+//     SchemaVersion 3.79.0 → 3.80.0.
+const L4_SEED_VERSION = "1.74.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
