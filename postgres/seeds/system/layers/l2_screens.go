@@ -34,6 +34,7 @@ const announcementFormSlotData = `{
       { "label": "Toda la escuela", "value": "school" },
       { "label": "Solo la unidad", "value": "unit" }
     ] },
+    { "key": "is_pinned", "label": "Fijar arriba", "type": "toggle", "default": "false" },
     { "key": "published_at", "label": "Fecha de publicación", "type": "datetime", "required": false }
   ],
   "api_prefix": "platform"

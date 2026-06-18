@@ -663,7 +663,63 @@ package layers
 //     (guardianPatterns enumera el literal; no hay wildcard `my_wards.*`). Lo sirve
 //     el lector real GET /api/v1/me/wards/assessments en edugo-api-learning. Espejo
 //     de my_wards_materials (…28).
-const L4_SEED_VERSION = "1.69.0"
+//   - 1.70.0 (2026-06-17): ADR 0024 sub-deuda "herencia del landing" — los 6 roles
+//     alias ganan landing_screen_key EXPLÍCITO (antes NULL). school_director /
+//     school_coordinator / school_assistant → dashboard-schooladmin;
+//     assistant_teacher / observer → dashboard-teacher; readonly_auditor →
+//     dashboard-teacher. Causa: la cascada del backend (rol ?? escuela ??
+//     "dashboard-home") solo mira el campo PROPIO del rol y NO resuelve la
+//     herencia de grants (ADR-6) para el landing; un alias con NULL caía al
+//     default de la escuela (= "dashboard-home", shell sin contrato resoluble en
+//     el front → "contract no resolvable"). El usuario coordinador del playground
+//     base (rol school_coordinator) era el caso roto observado. Solo datos de
+//     roles del contrato → bump del seed para invalidar caché y reseeding.
+//   - 1.71.0: dashboard-home pasa de "shell muerta" a dashboard basico
+//     por defecto (home generico para roles sin landing_screen_key
+//     propio; school.default_landing_screen_key sigue apuntando aqui). El
+//     FE le dara un render real self-contained (otro frente), asi que su
+//     slot_data deja de declarar api_prefix:"learning" (inerte; el
+//     dashboard no consume endpoint) y queda solo {"title":"Inicio"}; el
+//     description del instance se actualiza a la nueva semantica. Cambia
+//     el slot_data del seed L4 → bump para invalidar la cache SDUI por
+//     contenido. Sin cambios de esquema/permisos. SchemaVersion 3.76.0 →
+//     3.77.0.
+//   - 1.72.0 (2026-06-17): saneo de over-grants y read-only de Escuelas
+//     (bugs 0064/0065/0054). (1) bug 0064: se quita el over-grant
+//     `admin.users.*` de teacherPatterns y guardianPatterns (ni docente ni
+//     guardián gestionan usuarios; les daba el panel Usuarios ajeno a su
+//     rol). (2) bug 0065: se quita `admin.system_settings.*` de
+//     studentPatterns (el alumno no edita configuración de notificaciones;
+//     conserva `notifications.*` = la campanita) y los slots
+//     push_notifications/email_notifications del template settings-basic-v1
+//     ganan `permission:"admin.system_settings.update"` para que solo quien
+//     puede editar config vea esos switches (dark_mode/theme quedan sin
+//     permission: el alumno los conserva). (3) bug 0054: el slot_data de
+//     schools-list pasa su actions_removed de ["create"] a
+//     ["create","edit","delete"] → pantalla de Escuelas read-only en el KMP
+//     (gestión real en el admin-tool de Go). Cambian datos de roles +
+//     slot_data de seed L4 → bump para invalidar la caché SDUI por
+//     contenido. Sin cambios de esquema. SchemaVersion 3.77.0 → 3.78.0.
+//   - 1.73.0 (2026-06-17): bug 0048 — se quita el over-grant
+//     `content.assessments.*` de studentPatterns. El alumno NO usa ningún
+//     `content.assessments.*`: ver evaluaciones asignadas, tomar y ver
+//     resultados corre TODO sobre `content.assessments_student.*` (que se
+//     CONSERVA). El wildcard docente le daba publish/delete/update/assign/
+//     create/grade/review → veía los botones de gestión en assessments-form.
+//     Cambia datos de roles del seed L4 → bump para invalidar la caché SDUI
+//     por contenido. Sin cambios de esquema/permisos del catálogo.
+//     SchemaVersion 3.78.0 → 3.79.0.
+//   - 1.74.0 (2026-06-18): lote triage alpha Grupo 2 (seed SDUI). 0055
+//     auditoría: columnas del slot_data remapeadas a action/actor_email/
+//     resource_type (eran event_type/actor/target, claves inexistentes en el
+//     DTO → filas vacías) + chip único "Solo críticos" (filter_all "Todos" +
+//     filter_processing severity=critical; se retira el chip de info que era
+//     ruido). 0062 grades-list pasa a read-only (actions_removed +create+edit)
+//     porque create/edit navegaban a grades-form ELIMINADA (2026-06-09) → 404;
+//     la captura de notas vive en pantallas nativas por sesión. Solo datos de
+//     seed L4 → bump para invalidar la caché SDUI por contenido. Sin DDL.
+//     SchemaVersion 3.79.0 → 3.80.0.
+const L4_SEED_VERSION = "1.74.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

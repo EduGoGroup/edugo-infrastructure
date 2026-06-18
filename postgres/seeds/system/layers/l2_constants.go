@@ -15,7 +15,11 @@ package layers
 //     usuarios con solo `create` (caso focal-author).
 //   - 1.3.0: F3 (plan 004) — announcement-form migrada a patrón delta
 //     (hereda form-basic-v1; sin cambio semántico).
-const L2_SEED_VERSION = "1.3.0"
+//   - 1.4.0 (2026-06-18): bug 0057 — el form de anuncios expone un toggle
+//     `is_pinned` ("Fijar arriba") para fijar/desfijar desde la app (el dato
+//     ya existía en BD y el backend de platform ya lo persiste; solo faltaba
+//     el control en el form). Sin él no había forma de desfijar un anuncio.
+const L2_SEED_VERSION = "1.4.0"
 
 // L2_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

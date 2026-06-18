@@ -65,9 +65,10 @@ type l4RoleSpec struct {
 	// la herencia se resuelve y aplana en el login.
 	parentIDStr string
 	// landingScreenKey es el screen_key del dashboard de inicio de este rol
-	// (ADR 0024 F0 DEC-2). Vacío → NULL: los alias caen al default de la
-	// escuela o al fallback de sistema (la herencia del landing es mejora
-	// futura, no F0).
+	// (ADR 0024 F0 DEC-2). Vacío → NULL → cae al default de la escuela o al
+	// fallback de sistema. Los 5 canónicos y los 6 alias lo declaran
+	// explícitamente (el landing NO se hereda vía parent_role_id: la cascada
+	// del backend mira solo el campo propio del rol).
 	landingScreenKey string
 }
 
@@ -113,50 +114,69 @@ func l4RoleSpecs() []l4RoleSpec {
 			landingScreenKey: "dashboard-schooladmin",
 		},
 		// --- Alias roles (heredan grants del canónico) ---
+		// landing_screen_key de los alias (ADR 0024 sub-deuda "herencia del
+		// landing"): los 6 alias reciben EXPLÍCITAMENTE el dashboard de su rol
+		// canónico. La cascada del backend (rol ?? escuela ?? "dashboard-home")
+		// solo mira el campo PROPIO del rol —no resuelve la herencia de grants
+		// (ADR-6) para el landing—, así que un alias con NULL caía al default de
+		// la escuela, que es "dashboard-home" (el dashboard básico genérico).
+		// Sembrar el landing aquí hace que coordinador/director/asistente
+		// aterricen en su dashboard real en vez del home genérico.
 		{
-			idStr:       L4_ROLE_SCHOOL_DIRECTOR_ID,
-			name:        L4_ROLE_SCHOOL_DIRECTOR_NAME,
-			displayName: "Director de Escuela",
-			description: "Director de la institución educativa. Alias de school_admin (hereda todos sus permisos).",
-			scope:       "school",
-			parentIDStr: L4_ROLE_SCHOOL_ADMIN_ID,
+			idStr:            L4_ROLE_SCHOOL_DIRECTOR_ID,
+			name:             L4_ROLE_SCHOOL_DIRECTOR_NAME,
+			displayName:      "Director de Escuela",
+			description:      "Director de la institución educativa. Alias de school_admin (hereda todos sus permisos).",
+			scope:            "school",
+			parentIDStr:      L4_ROLE_SCHOOL_ADMIN_ID,
+			landingScreenKey: "dashboard-schooladmin",
 		},
 		{
-			idStr:       L4_ROLE_SCHOOL_COORDINATOR_ID,
-			name:        L4_ROLE_SCHOOL_COORDINATOR_NAME,
-			displayName: "Coordinador de Escuela",
-			description: "Coordinador académico de la institución. Alias de school_admin (hereda todos sus permisos).",
-			scope:       "school",
-			parentIDStr: L4_ROLE_SCHOOL_ADMIN_ID,
+			idStr:            L4_ROLE_SCHOOL_COORDINATOR_ID,
+			name:             L4_ROLE_SCHOOL_COORDINATOR_NAME,
+			displayName:      "Coordinador de Escuela",
+			description:      "Coordinador académico de la institución. Alias de school_admin (hereda todos sus permisos).",
+			scope:            "school",
+			parentIDStr:      L4_ROLE_SCHOOL_ADMIN_ID,
+			landingScreenKey: "dashboard-schooladmin",
 		},
 		{
-			idStr:       L4_ROLE_SCHOOL_ASSISTANT_ID,
-			name:        L4_ROLE_SCHOOL_ASSISTANT_NAME,
-			displayName: "Asistente de Escuela",
-			description: "Personal de apoyo administrativo de la institución. Alias de school_admin (hereda todos sus permisos).",
-			scope:       "school",
-			parentIDStr: L4_ROLE_SCHOOL_ADMIN_ID,
+			idStr:            L4_ROLE_SCHOOL_ASSISTANT_ID,
+			name:             L4_ROLE_SCHOOL_ASSISTANT_NAME,
+			displayName:      "Asistente de Escuela",
+			description:      "Personal de apoyo administrativo de la institución. Alias de school_admin (hereda todos sus permisos).",
+			scope:            "school",
+			parentIDStr:      L4_ROLE_SCHOOL_ADMIN_ID,
+			landingScreenKey: "dashboard-schooladmin",
 		},
 		{
-			idStr:       L4_ROLE_ASSISTANT_TEACHER_ID,
-			name:        L4_ROLE_ASSISTANT_TEACHER_NAME,
-			displayName: "Profesor Asistente",
-			description: "Docente auxiliar. Alias de teacher (hereda todos sus permisos).",
-			scope:       "unit",
-			parentIDStr: L4_ROLE_TEACHER_ID,
+			idStr:            L4_ROLE_ASSISTANT_TEACHER_ID,
+			name:             L4_ROLE_ASSISTANT_TEACHER_NAME,
+			displayName:      "Profesor Asistente",
+			description:      "Docente auxiliar. Alias de teacher (hereda todos sus permisos).",
+			scope:            "unit",
+			parentIDStr:      L4_ROLE_TEACHER_ID,
+			landingScreenKey: "dashboard-teacher",
 		},
 		{
-			idStr:       L4_ROLE_OBSERVER_ID,
-			name:        L4_ROLE_OBSERVER_NAME,
-			displayName: "Observador",
-			description: "Observador con visibilidad sobre la clase. Alias de teacher (hereda todos sus permisos).",
-			scope:       "unit",
-			parentIDStr: L4_ROLE_TEACHER_ID,
+			idStr:            L4_ROLE_OBSERVER_ID,
+			name:             L4_ROLE_OBSERVER_NAME,
+			displayName:      "Observador",
+			description:      "Observador con visibilidad sobre la clase. Alias de teacher (hereda todos sus permisos).",
+			scope:            "unit",
+			parentIDStr:      L4_ROLE_TEACHER_ID,
+			landingScreenKey: "dashboard-teacher",
 		},
 		{
 			idStr:       L4_ROLE_READONLY_AUDITOR_ID,
 			name:        L4_ROLE_READONLY_AUDITOR_NAME,
 			displayName: "Auditor de Solo Lectura",
+			// readonly_auditor NO hereda de ningún canónico (allow read-only
+			// propio; ver nota abajo). Aterriza en dashboard-teacher: es scope
+			// unit y su acceso es la vista de clase en solo lectura, el dashboard
+			// más cercano a su superficie. Sin landing caería al home genérico
+			// "dashboard-home" en vez del dashboard de su superficie.
+			landingScreenKey: "dashboard-teacher",
 			// NO hereda: su allow read-only no coincide con el de teacher
 			// (teacher carece de academic.guardian_relations/memberships y
 			// content.assessments_student, y a la vez aporta
@@ -585,7 +605,6 @@ func roleGrantPatterns() map[string][]string {
 		"academic.join_request_approvals.unit.student",
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.users.*",
 		"admin.system_settings.*",
 		"reports.*",
 		"dashboard.*",
@@ -620,10 +639,8 @@ func roleGrantPatterns() map[string][]string {
 		// my-grades-list y route gate del dato propio (GET /api/v1/me/grades).
 		// Espejo de academic.my_memberships.read:own.
 		"academic.my_grades.read:own",
-		"content.assessments.*",
 		"content.assessments_student.*",
 		"content.materials.*",
-		"admin.system_settings.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -642,7 +659,6 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_assessments.read:own",
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.users.*",
 		"admin.system_settings.*",
 		"reports.read",
 		"dashboard.*",

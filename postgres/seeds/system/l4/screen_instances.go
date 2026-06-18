@@ -244,22 +244,23 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 }`,
 			scope: "system",
 		},
-		// dashboard-home: pantalla shell de routing. El KMP la mapea a
-		// DynamicDashboardScreen, que delega al dashboard especifico del
-		// rol activo (dashboard-teacher/student/superadmin/...). NO se
-		// mapea en resource_screens — el FE la resuelve por screen_key
-		// (mismo patron que app-login / app-settings). El cross-checker
-		// la reportaba como phantom solo porque el seed previo no la
-		// declaraba; se siembra aqui como shell sin mapping.
+		// dashboard-home: dashboard basico por defecto (home generico).
+		// Lo usan los roles que no declaran landing_screen_key propio
+		// (school.default_landing_screen_key apunta aqui). El FE le da un
+		// render real self-contained (no consume endpoint); por eso el
+		// slot_data es minimo y sin api_prefix. NO se mapea en
+		// resource_screens — el FE lo resuelve por screen_key (mismo patron
+		// que app-login / app-settings); por eso el cross-checker lo veria
+		// como phantom si el seed no lo declarara, asi que se siembra aqui
+		// como instancia sin mapping.
 		{
 			id:          L4_SCREEN_INST_DASHBOARD_HOME_ID,
 			screenKey:   "dashboard-home",
 			templateID:  l4TplDashboardV1ID,
 			name:        "Inicio",
-			description: "Pantalla shell de inicio que delega al dashboard del rol activo",
+			description: "Dashboard basico por defecto (home generico) para roles sin landing_screen_key especifico",
 			slotData: `{
-  "title": "Inicio",
-  "api_prefix": "learning"
+  "title": "Inicio"
 }`,
 			scope: "system",
 		},

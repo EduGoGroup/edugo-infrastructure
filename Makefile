@@ -3,6 +3,10 @@ SHELL := /bin/bash
 GO_MODULES = postgres mongodb schemas tools/mock-generator
 RELEASE_MODULES = postgres mongodb schemas tools/mock-generator docker
 
+# Versiones fijadas del toolchain de CI (deben coincidir con .github/workflows/ci.yml)
+GO_VERSION   := 1.25
+LINT_VERSION := v2.4.0
+
 RED = \033[0;31m
 GREEN = \033[0;32m
 YELLOW = \033[0;33m
@@ -19,7 +23,7 @@ MONGO_HOST ?= localhost
 MONGO_PORT ?= 27017
 MONGO_DB ?= edugo
 
-.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
+.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
 
 help: ## Mostrar ayuda
 	@echo "$(BLUE)EduGo Infrastructure - Comandos disponibles:$(NC)"
@@ -196,6 +200,35 @@ deps-all: ## Actualizar dependencias en todos los módulos Go
 
 check-all: fmt-all vet-all lint-all test-all build-all ## Validación completa con formateo
 	@echo "$(GREEN)Validación completa exitosa$(NC)"
+
+# ===================
+# CI (convención EduGo)
+# ===================
+
+tools: ## Instalar herramientas de CI (golangci-lint fijado a $(LINT_VERSION))
+	@echo "$(YELLOW)Instalando golangci-lint $(LINT_VERSION)...$(NC)"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(LINT_VERSION)
+	@echo "$(GREEN)Herramientas instaladas$(NC)"
+
+ci-local: fmt-check-all vet-all lint-all test-all ## Pre-push: fmt + vet + lint + tests con herramientas locales
+	@echo "$(GREEN)CI local OK$(NC)"
+
+ci-docker: ## Simula el CI en Docker (Go $(GO_VERSION) + golangci-lint $(LINT_VERSION)) — requiere Docker
+	@which docker > /dev/null 2>&1 || (echo "$(RED)Docker no instalado$(NC)" && exit 1)
+	@echo "$(YELLOW)Ejecutando CI en Docker (Go $(GO_VERSION) + golangci-lint $(LINT_VERSION))...$(NC)"
+	@docker run --rm \
+		-e GOPRIVATE=github.com/EduGoGroup/* \
+		-e GOFLAGS=-buildvcs=false \
+		-v "$(HOME)/.netrc:/root/.netrc:ro" \
+		-v "$$(go env GOPATH)/pkg/mod:/go/pkg/mod" \
+		-v "$(CURDIR):/workspace" \
+		-w /workspace \
+		golang:$(GO_VERSION)-bookworm \
+		bash -c "set -e; \
+			curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b /usr/local/bin $(LINT_VERSION) && \
+			make fmt-check-all vet-all lint-all test-all" \
+		2>&1
+	@echo "$(GREEN)CI Docker OK$(NC)"
 
 release-check-all: ## Validar todos los módulos listos para release
 	@for module in $(RELEASE_MODULES); do \

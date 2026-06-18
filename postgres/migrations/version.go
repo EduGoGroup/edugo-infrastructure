@@ -810,7 +810,56 @@ import (
 //     worker ramifica por `kind` ('final'→grade_item, 'practice'→practice_result).
 //     Cambio en entity (kind) + nueva entity + post_gorm.sql → ComputeFilesHash()
 //     CAMBIA. Recrear BD, sin ALTER. L*_SEED_VERSION intacto (solo DDL, sin datos).
-const SchemaVersion = "3.74.0"
+//   - 3.75.0 (2026-06-17): ADR 0024 sub-deuda "herencia del landing" — los 6 roles
+//     alias (school_director/coordinator/assistant → dashboard-schooladmin;
+//     assistant_teacher/observer/readonly_auditor → dashboard-teacher) reciben
+//     landing_screen_key explícito (antes NULL → caían a school.default
+//     "dashboard-home", shell sin contrato resoluble). Solo datos de seed L4
+//     (L4_SEED_VERSION 1.69.0 → 1.70.0); sin DDL. Recrear BD para reseeding.
+//   - 3.76.0 (2026-06-17): mismo frente — el rol de contrato L1 announcement_viewer
+//     (scope school) recibe landing_screen_key=dashboard-schooladmin (antes NULL).
+//     Cierra el 7º rol secundario que quedaba sin landing. Solo dato de seed L1
+//     (L1_SEED_VERSION 1.3.0 → 1.4.0); sin DDL. Recrear BD para reseeding.
+//   - 3.77.0 (2026-06-17): dashboard-home deja de ser "shell muerta" y pasa
+//     a ser el dashboard básico por defecto (home genérico para roles sin
+//     landing_screen_key propio; school.default_landing_screen_key sigue
+//     apuntando aquí). El FE le dará un render real self-contained (otro
+//     frente), así que su slot_data L4 deja de declarar el api_prefix
+//     "learning" (inerte; el dashboard no consume endpoint) y queda solo
+//     {"title":"Inicio"}; el description del instance se actualiza a la
+//     nueva semántica. Solo dato de seed L4 (L4_SEED_VERSION 1.70.0 →
+//     1.71.0) → cambia el hash de seeds → bump obligatorio. Sin DDL ni
+//     cambios de permisos. Recrear BD para reseeding.
+//   - 3.78.0 (2026-06-17): saneo de over-grants + Escuelas read-only
+//     (bugs 0064/0065/0054). (1) bug 0064: se quita `admin.users.*` de
+//     teacher y guardian (over-grant del panel Usuarios). (2) bug 0065: se
+//     quita `admin.system_settings.*` del alumno y los switches
+//     push/email del template settings-basic-v1 ganan
+//     `permission:"admin.system_settings.update"` (dark_mode/theme siguen
+//     sin permission; el alumno conserva `notifications.*`). (3) bug 0054:
+//     schools-list pasa a actions_removed ["create","edit","delete"]
+//     (read-only; gestión en admin-tool de Go). Solo dato de seed L4
+//     (L4_SEED_VERSION 1.71.0 → 1.72.0) → cambia el hash de seeds → bump
+//     obligatorio. Sin DDL. Recrear BD para reseeding.
+//   - 3.79.0 (2026-06-17): bug 0048 — se quita el over-grant
+//     `content.assessments.*` de studentPatterns (el alumno NO usa ningún
+//     `content.assessments.*`: su flujo completo —ver asignadas, tomar, ver
+//     resultados— corre sobre `content.assessments_student.*`, que se
+//     CONSERVA). El wildcard docente le otorgaba publish/delete/update/assign/
+//     create/grade/review → veía los botones de gestión en assessments-form.
+//     Solo dato de seed L4 (L4_SEED_VERSION 1.72.0 → 1.73.0) → cambia el hash
+//     de seeds → bump obligatorio. Sin DDL. Recrear BD para reseeding.
+//   - 3.80.0 (2026-06-18): lote triage alpha Grupo 2 (seed SDUI mal
+//     configurado). 0055 auditoría: columnas remapeadas a los campos reales
+//     del DTO (action/actor_email/resource_type) + chip único "Solo críticos"
+//     (filter_all "Todos" + filter_processing severity=critical; se retira el
+//     chip de info). 0062 grades-list pasa a read-only (actions_removed
+//     ["create","edit","delete"]) porque create/edit navegaban a grades-form
+//     ELIMINADA → 404. 0057 form de anuncios expone toggle is_pinned (L2).
+//     Solo datos de seed (L2_SEED_VERSION 1.3.0 → 1.4.0, L4_SEED_VERSION
+//     1.73.0 → 1.74.0) → cambia el hash → bump obligatorio. Sin DDL. Recrear
+//     BD para reseeding.
+const SchemaVersion = "3.80.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

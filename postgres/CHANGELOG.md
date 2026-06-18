@@ -6,6 +6,14 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.11] - 2026-06-15
+
+### Fixed
+- **Mirror `L3ScreenInstances()`**: el accessor devolvía slice vacío desde la poda SDUI material
+  (2026-06-07, v1.3.0), pero el seed real sí siembra la screen_instance mínima `materials-list`
+  para satisfacer la FK `fk_resource_screens_screen_key`. El auditor `seed-audit` reportaba
+  `RS_SCREEN_MISSING` en modo strict. Accessor actualizado para reflejar el seed real (v1.4.0).
+
 ## [0.900.10] - 2026-06-15
 
 Eliminación completa del recurso/pantalla `progress` (`progress-dashboard`). `SchemaVersion`
