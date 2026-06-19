@@ -11,7 +11,9 @@ package layers
 // el rol announcement_viewer gana landing_screen_key=dashboard-schooladmin
 // (antes NULL → caía a school.default "dashboard-home", el dashboard básico
 // genérico; con landing propio aterriza en el dashboard de su superficie).
-const L1_SEED_VERSION = "1.4.0"
+// 1.4.0 → 1.4.1 (2026-06-19, bug 0069): el rol de contrato announcement_viewer
+// se siembra con IsSystem=true (apply + accessor espejo).
+const L1_SEED_VERSION = "1.4.1"
 
 // L1_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

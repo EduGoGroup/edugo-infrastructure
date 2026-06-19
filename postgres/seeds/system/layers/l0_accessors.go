@@ -65,6 +65,7 @@ func L0Roles() ([]entities.Role, error) {
 			Scope:            "system",
 			LandingScreenKey: &landing,
 			IsActive:         true,
+			IsSystem:         true,
 		},
 	}, nil
 }
@@ -101,6 +102,7 @@ func L0Permissions() ([]entities.Permission, error) {
 			Action:      s.action,
 			Scope:       "school",
 			IsActive:    true,
+			IsSystem:    true,
 		})
 	}
 	return out, nil

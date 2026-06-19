@@ -48,6 +48,7 @@ func applyL3Permissions(tx *gorm.DB) error {
 			Action:      s.action,
 			Scope:       "unit",
 			IsActive:    true,
+			IsSystem:    true,
 		})
 	}
 	return tx.Clauses(clause.OnConflict{

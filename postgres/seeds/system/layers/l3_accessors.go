@@ -68,6 +68,7 @@ func L3Permissions() ([]entities.Permission, error) {
 			Action:      s.action,
 			Scope:       "unit",
 			IsActive:    true,
+			IsSystem:    true,
 		})
 	}
 	return out, nil

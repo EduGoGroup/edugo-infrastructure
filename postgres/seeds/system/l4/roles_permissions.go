@@ -224,6 +224,7 @@ func buildL4Roles() ([]entities.Role, error) {
 			ParentRoleID:     parentID,
 			LandingScreenKey: landing,
 			IsActive:         true,
+			IsSystem:         true,
 		})
 	}
 	return roles, nil
@@ -505,6 +506,7 @@ func buildL4Permissions() ([]entities.Permission, error) {
 			Action:      s.action,
 			Scope:       s.scope,
 			IsActive:    true,
+			IsSystem:    true,
 		})
 	}
 	return perms, nil

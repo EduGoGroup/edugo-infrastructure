@@ -19,7 +19,9 @@ package layers
 //     MÍNIMA `materials-list` (no se renderiza; pantalla NATIVA), mismo
 //     patrón que batch-enroll/join-requests-inbox en L4. `material-form`
 //     SIGUE PODADO (sin mapping → sin FK). +1 fila screen_instances.
-const L3_SEED_VERSION = "1.4.0"
+//   - 1.4.1 (2026-06-19, bug 0069): los 3 permisos materials del contrato L3
+//     se siembran con IsSystem=true (apply + accessor espejo).
+const L3_SEED_VERSION = "1.4.1"
 
 // L3_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

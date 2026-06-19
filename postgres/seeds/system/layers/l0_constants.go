@@ -34,7 +34,10 @@ package layers
 //     instancia announcements-list deja de re-listar el array actions;
 //     hereda default_actions del template list-basic-v1 vía el composer.
 //     Sin cambio semántico (mismo set {event_id,permission} compuesto).
-const L0_SEED_VERSION = "1.5.0"
+//   - 1.5.1 (2026-06-19, bug 0069): el rol super_admin y los 4 permisos
+//     announcements del contrato L0 se siembran con IsSystem=true (apply +
+//     accessor espejo). Nueva columna is_system en iam.roles/permissions.
+const L0_SEED_VERSION = "1.5.1"
 
 // L0_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

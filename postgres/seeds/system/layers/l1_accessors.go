@@ -29,6 +29,7 @@ func L1Roles() ([]entities.Role, error) {
 			Description: &desc,
 			Scope:       "school",
 			IsActive:    true,
+			IsSystem:    true,
 		},
 	}, nil
 }

@@ -32,6 +32,7 @@ func applyL1Role(tx *gorm.DB) error {
 		Scope:            "school",
 		LandingScreenKey: &landing,
 		IsActive:         true,
+		IsSystem:         true,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

@@ -52,6 +52,7 @@ func upsertL0Role(tx *gorm.DB) error {
 		Scope:            "system",
 		LandingScreenKey: &landing,
 		IsActive:         true,
+		IsSystem:         true,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -94,6 +95,7 @@ func upsertL0Permissions(tx *gorm.DB) error {
 			Action:      s.action,
 			Scope:       "school",
 			IsActive:    true,
+			IsSystem:    true,
 		})
 	}
 	return tx.Clauses(clause.OnConflict{

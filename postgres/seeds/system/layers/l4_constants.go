@@ -719,7 +719,12 @@ package layers
 //     la captura de notas vive en pantallas nativas por sesión. Solo datos de
 //     seed L4 → bump para invalidar la caché SDUI por contenido. Sin DDL.
 //     SchemaVersion 3.79.0 → 3.80.0.
-const L4_SEED_VERSION = "1.74.0"
+//   - 1.74.1 (2026-06-19, bug 0069): los 11 roles y el catálogo completo de
+//     permisos del contrato L4 se siembran con IsSystem=true (helpers
+//     compartidos buildL4Roles/buildL4Permissions → cubre apply y accessor).
+//     Nueva columna is_system en iam.roles/permissions. SchemaVersion
+//     3.80.0 → 3.81.0.
+const L4_SEED_VERSION = "1.74.1"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

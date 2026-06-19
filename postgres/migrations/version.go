@@ -859,7 +859,18 @@ import (
 //     Solo datos de seed (L2_SEED_VERSION 1.3.0 → 1.4.0, L4_SEED_VERSION
 //     1.73.0 → 1.74.0) → cambia el hash → bump obligatorio. Sin DDL. Recrear
 //     BD para reseeding.
-const SchemaVersion = "3.80.0"
+//   - 3.81.0 (2026-06-19): bug 0069 — flag `is_system` en iam.roles e
+//     iam.permissions (Opción A). Nueva columna `is_system bool NOT NULL
+//     DEFAULT false` (índices parciales idx_roles_system / idx_permissions_system,
+//     vía tag GORM en las entities; AutoMigrate la crea). Los seeds L0–L4
+//     marcan `IsSystem: true` en TODO rol/permiso del contrato (apply +
+//     accessors espejo, para que el cross-checker coincida). Habilita el guard
+//     de runtime en edugo-api-identity (otra tarea) que rechaza delete/update
+//     de entradas del contrato. Cambio en entities + datos de seed L0/L1/L3/L4
+//     (L0_SEED_VERSION 1.5.0 → 1.5.1, L1_SEED_VERSION 1.4.0 → 1.4.1,
+//     L3_SEED_VERSION 1.4.0 → 1.4.1, L4_SEED_VERSION 1.74.0 → 1.74.1; L2 sin
+//     cambio). Recrear BD, sin ALTER.
+const SchemaVersion = "3.81.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -26,10 +26,16 @@ type Role struct {
 	// roles alias (caen al default de la escuela o al fallback de sistema; la
 	// herencia del landing es mejora futura, no F0). Solo dato sembrado; la
 	// resolución vive en el backend (F1).
-	LandingScreenKey *string   `db:"landing_screen_key" gorm:"type:varchar(64)" validate:"omitempty"`
-	IsActive         bool      `db:"is_active" gorm:"not null;default:true;index:idx_roles_active"`
-	CreatedAt        time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt        time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	LandingScreenKey *string `db:"landing_screen_key" gorm:"type:varchar(64)" validate:"omitempty"`
+	IsActive         bool    `db:"is_active" gorm:"not null;default:true;index:idx_roles_active"`
+	// IsSystem marca un rol del contrato del sistema (sembrado por L0–L4).
+	// Cuando es true, el rol es inmutable en runtime: los usecases de
+	// mutación (delete/update) lo rechazan para proteger el contrato de
+	// permisos de borrado/edición vía API (bug 0069). Los roles creados por
+	// usuarios en runtime quedan en false (default).
+	IsSystem  bool      `db:"is_system" gorm:"not null;default:false;index:idx_roles_system"`
+	CreatedAt time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
