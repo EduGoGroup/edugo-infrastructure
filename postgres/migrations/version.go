@@ -870,7 +870,13 @@ import (
 //     (L0_SEED_VERSION 1.5.0 → 1.5.1, L1_SEED_VERSION 1.4.0 → 1.4.1,
 //     L3_SEED_VERSION 1.4.0 → 1.4.1, L4_SEED_VERSION 1.74.0 → 1.74.1; L2 sin
 //     cambio). Recrear BD, sin ALTER.
-const SchemaVersion = "3.81.0"
+//   - 3.82.0 (2026-06-19): over-grant de permisos — school_admin pasa de
+//     `context.*` a `context.browse_units` (`context.browse_schools`, scope
+//     system, queda solo en super_admin). Corrige el "Cambiar escuela" que se
+//     encendía y fallaba con 403 para un coordinador/admin de una sola escuela.
+//     Solo datos de seed (L4_SEED_VERSION 1.74.1 → 1.74.2) → cambia el hash →
+//     bump obligatorio. Sin DDL. Recrear BD para reseeding.
+const SchemaVersion = "3.82.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

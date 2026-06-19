@@ -724,7 +724,12 @@ package layers
 //     compartidos buildL4Roles/buildL4Permissions → cubre apply y accessor).
 //     Nueva columna is_system en iam.roles/permissions. SchemaVersion
 //     3.80.0 → 3.81.0.
-const L4_SEED_VERSION = "1.74.1"
+//   - 1.74.2 (2026-06-19): over-grant `context.*` en school_admin acotado a
+//     `context.browse_units`. `context.browse_schools` (scope system, "listar
+//     todas las escuelas") queda solo en super_admin: deja de encender "Cambiar
+//     escuela" para un admin/coordinador de una sola escuela (fallaba con 403 al
+//     elegir una escuela ajena). SchemaVersion 3.81.0 → 3.82.0.
+const L4_SEED_VERSION = "1.74.2"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

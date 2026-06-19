@@ -562,7 +562,14 @@ func roleGrantPatterns() map[string][]string {
 		"academic.*",
 		"admin.*",
 		"content.*",
-		"context.*",
+		// Grant LITERAL a `context.browse_units` (ver/elegir las unidades de SU escuela
+		// para el selector de contexto), NO el wildcard `context.*`: ese también otorga
+		// `context.browse_schools` (scope `system`: "listar TODAS las escuelas del
+		// sistema"), una capability de super_admin. Heredada por school_admin/coordinator
+		// encendía el "Cambiar escuela" a un admin de UNA sola escuela y fallaba con 403
+		// al elegir una escuela ajena. Mismo criterio que los literales de teacher/student
+		// abajo: literal donde el wildcard sobre-otorgaría.
+		"context.browse_units",
 		"reports.*",
 		"dashboard.*",
 		"menu.*",
