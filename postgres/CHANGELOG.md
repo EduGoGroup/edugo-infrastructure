@@ -6,6 +6,27 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.13] - 2026-06-19
+
+Flag `is_system` para proteger el contrato de roles/permisos del sistema en runtime (deuda 0069).
+`SchemaVersion` 3.80.0 → 3.81.0.
+
+### Added
+
+- **Columna `is_system` (`bool NOT NULL DEFAULT false`) en `iam.roles` e `iam.permissions`**: marca las
+  entradas del contrato del sistema (sembradas por L0–L4) como inmutables en runtime. Cuando es `true`,
+  los usecases de mutación (delete/update) de edugo-api-identity rechazan la operación para impedir que el
+  catálogo de roles/permisos se borre o edite vía API; las entradas creadas por usuarios en runtime quedan
+  en `false` (default). Se añaden índices parciales `idx_roles_system` / `idx_permissions_system` (vía tag
+  GORM en las entities; `AutoMigrate` crea columna e índices). Los seeds L0–L4 marcan `is_system=true` en
+  TODO rol/permiso del contrato (apply + accessors espejo, para que el cross-checker coincida):
+  `L0_SEED_VERSION` 1.5.0 → 1.5.1, `L1_SEED_VERSION` 1.4.0 → 1.4.1, `L3_SEED_VERSION` 1.4.0 → 1.4.1,
+  `L4_SEED_VERSION` 1.74.0 → 1.74.1 (L2 sin cambio). Requiere recrear BD (sin ALTER).
+
+## [0.900.12] - 2026-06-18
+
+Release previo no documentado en su momento (sincronización de seeds/merge dev).
+
 ## [0.900.11] - 2026-06-15
 
 ### Fixed
