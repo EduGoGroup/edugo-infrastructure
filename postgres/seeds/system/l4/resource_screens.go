@@ -329,12 +329,5 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// notifications: mapping retirado en B7-fix junto con la
 		// screen_instance notifications-list (FE no implementa
 		// NotificationsListContract.kt aún).
-
-		// =============================================================
-		// admin → colors (Fase 3 demo data-driven, B7b)
-		// =============================================================
-		// Poda F2 (plan 004-permisologia-mvp): retiradas las pantallas
-		// demo colors-list (e0) / colors-form (e1). El recurso
-		// platform.colors queda sin mapping (huérfano, prune-later).
 	}
 }

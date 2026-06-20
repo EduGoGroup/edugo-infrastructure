@@ -192,12 +192,6 @@ const (
 	// L4_SCREEN_INST_USER_ROLES_ID (…d3) eliminado (2026-06-09): la pantalla
 	// SDUI legacy user-roles quedó huérfana (sin reemplazo, sin entry-point en
 	// el FE). UUID …d3 queda libre para reuso futuro.
-
-	// Fase 3 (B7b) — demo CRUD data-driven sin Kotlin.
-	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de
-	// la pareja demo colors-list 00e0 / colors-form 00e1 junto con sus
-	// constructores y filas en resource_screens.go. UUIDs 00e0..00e1
-	// quedan libres para reuso futuro.
 )
 
 // UUIDs L0 que el bloque B4 necesita referenciar como template_id.

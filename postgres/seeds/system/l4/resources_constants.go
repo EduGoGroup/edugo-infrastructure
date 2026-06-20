@@ -124,7 +124,4 @@ const (
 	L4_RESOURCE_CONTEXT_KEY       = "context"
 	L4_RESOURCE_NOTIFICATIONS_KEY = "notifications"
 	L4_RESOURCE_MENU_KEY          = "menu"
-
-	// Poda menú (2026-05-29): se eliminó el recurso demo `colors` (…e0); su
-	// UUID queda libre. La pareja colors-list/form ya estaba retirada.
 )

@@ -1634,16 +1634,6 @@ func schoolConceptsForm() l4ScreenInstanceRow {
 	}
 }
 
-// ===============================================================
-// Fase 3 (B7b) — Demo CRUD data-driven sin Kotlin (colors)
-// ===============================================================
-//
-// Poda F2 (plan 004-permisologia-mvp): los constructores de la pareja
-// demo `colors-list` / `colors-form` se eliminaron del MVP junto con
-// sus constantes y filas en resource_screens.go. El recurso
-// platform.colors queda huérfano (prune-later, ver
-// docs/plans/004-permisologia-mvp/diferido.md).
-
 // user-roles ELIMINADA (2026-06-09): pantalla SDUI legacy huérfana, sin
 // reemplazo y sin navegación que la abriera (ningún entry-point en el FE).
 // Su campo user_id era un remote_select MUERTO (sin endpoint). Su

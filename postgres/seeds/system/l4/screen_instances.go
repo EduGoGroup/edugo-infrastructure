@@ -534,13 +534,5 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// su screen_instance, su mapping en resource_screens y su constante.
 		schoolConceptsList(),
 		schoolConceptsForm(),
-
-		// ===========================================================
-		// FASE 3 (B7b) — DEMO CRUD DATA-DRIVEN SIN KOTLIN
-		// ===========================================================
-		// Poda F2 (plan 004-permisologia-mvp): colors-list / colors-form
-		// (pareja demo) se retiraron del MVP. Sus constructores y
-		// constantes se eliminaron. El recurso platform.colors queda
-		// huérfano (prune-later); no se toca en esta pasada.
 	}
 }

@@ -200,11 +200,6 @@ var l4Resources = []l4ResourceRow{
 	{ID: L4_RESOURCE_AUDIT_ID, Key: "audit", DisplayName: "Auditoría", Description: "Registro de auditoría del sistema", Icon: "file-search", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 7, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_CONCEPT_TYPES_ID, Key: "concept_types", DisplayName: "Tipos de Concepto", Description: "Tipos de institución y terminología", Icon: "tag", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 8, IsMenuVisible: true, IsActive: true},
 	{ID: L4_RESOURCE_SYSTEM_SETTINGS_ID, Key: "system_settings", DisplayName: "Configuración", Description: "Configuración y mantenimiento del sistema", Icon: "settings", Scope: "system", ParentID: L4_RESOURCE_ADMIN_ID, SortOrder: 9, IsMenuVisible: true, IsActive: true},
-	// Poda menú (2026-05-29): se eliminó el recurso demo `colors` (sort 10).
-	// La pareja colors-list/colors-form ya estaba retirada (poda F2 plan 004);
-	// el recurso quedaba huérfano y abría con error desde el menú. Se eliminan
-	// también sus permisos `platform.colors.*` declarados en edugo-shared no
-	// se tocan (viven fuera del seed); aquí solo se quita el recurso de menú.
 
 	// -------------------------------------------------------------
 	// Hijos de "academic" (gestión académica y comunicaciones)
