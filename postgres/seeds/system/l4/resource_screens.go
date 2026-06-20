@@ -236,6 +236,7 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// =============================================================
 		{id: "b4500000-0000-0000-0000-000000000075", resourceID: L4_RESOURCE_INVITATIONS_ID, resourceKey: L4_RESOURCE_INVITATIONS_KEY, screenKey: "invitations-list", screenType: "list", isDefault: true, sortOrder: 1},
 		{id: "b4500000-0000-0000-0000-000000000076", resourceID: L4_RESOURCE_INVITATIONS_ID, resourceKey: L4_RESOURCE_INVITATIONS_KEY, screenKey: "invitations-form", screenType: "form", isDefault: false, sortOrder: 2},
+		{id: "b4500000-0000-0000-0000-000000000078", resourceID: L4_RESOURCE_INVITATIONS_ID, resourceKey: L4_RESOURCE_INVITATIONS_KEY, screenKey: "invitations-detail", screenType: "detail", isDefault: false, sortOrder: 3},
 
 		// =============================================================
 		// academic → join_requests (N0.4-B, plan 005)

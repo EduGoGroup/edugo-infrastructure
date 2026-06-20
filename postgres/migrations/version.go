@@ -876,7 +876,16 @@ import (
 //     encendía y fallaba con 403 para un coordinador/admin de una sola escuela.
 //     Solo datos de seed (L4_SEED_VERSION 1.74.1 → 1.74.2) → cambia el hash →
 //     bump obligatorio. Sin DDL. Recrear BD para reseeding.
-const SchemaVersion = "3.82.0"
+//   - 3.83.0 (2026-06-19): UI de invitaciones — nueva screen_instance
+//     `invitations-detail` (detalle de solo lectura, form-basic-v1 en modo
+//     lectura) + row-action `copy-code` (copiar código) en `invitations-list`.
+//     Backend gana GET /schools/invitations/{id} (otra tarea, academic). Solo
+//     datos de seed (L4_SEED_VERSION 1.74.2 → 1.74.3) → cambia el hash → bump
+//     obligatorio. Sin DDL. Recrear BD para reseeding.
+//   - 3.84.0 (2026-06-19): detalle de invitación gana campo `Unidad`
+//     (academic_unit_name) — academic lo resuelve por JOIN a academic_units.
+//     Solo datos de seed (L4_SEED_VERSION 1.74.3 → 1.74.4). Sin DDL.
+const SchemaVersion = "3.84.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

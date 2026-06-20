@@ -729,7 +729,12 @@ package layers
 //     todas las escuelas") queda solo en super_admin: deja de encender "Cambiar
 //     escuela" para un admin/coordinador de una sola escuela (fallaba con 403 al
 //     elegir una escuela ajena). SchemaVersion 3.81.0 → 3.82.0.
-const L4_SEED_VERSION = "1.74.2"
+//   - 1.74.3 (2026-06-19): UI de invitaciones — nueva screen_instance
+//     `invitations-detail` (detalle read-only) + resource_screen detail +
+//     row-action `copy-code` en `invitations-list`. SchemaVersion 3.82.0 → 3.83.0.
+//   - 1.74.4 (2026-06-19): `invitations-detail` gana el campo `Unidad`
+//     (academic_unit_name). SchemaVersion 3.83.0 → 3.84.0.
+const L4_SEED_VERSION = "1.74.4"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

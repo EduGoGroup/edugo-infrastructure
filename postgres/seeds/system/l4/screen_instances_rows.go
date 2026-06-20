@@ -656,6 +656,7 @@ func invitationsList() l4ScreenInstanceRow {
   ],
   "actions_removed": ["edit", "delete"],
   "actions_added": [
+    {"id": "copy-code", "scope": "row", "label": "Copiar código", "icon": "copy", "permission": "academic.invitations.read", "condition": "always", "event_id": "copy-code", "order": 10},
     {"id": "revoke", "scope": "row", "label": "Revocar", "icon": "ban", "permission": "academic.invitations.revoke", "condition": "always", "event_id": "revoke", "style": "destructive", "order": 20}
   ],
   "api_prefix": "academic"
@@ -698,6 +699,44 @@ func invitationsForm() l4ScreenInstanceRow {
     {"key": "label", "label": "Etiqueta", "type": "text"},
     {"key": "expires_at", "label": "Expira", "type": "datetime"},
     {"key": "max_uses", "label": "Usos máximos", "type": "number", "min": 1}
+  ],
+  "actions_removed": ["save", "delete"],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// invitations-detail: detalle de SOLO LECTURA de un código de invitación.
+// El tap de fila en invitations-list navega aquí (two-pane en desktop / apilada
+// en móvil). La invitación es inmutable (ciclo crear→revocar), así que NO es un
+// form editable: reusa el template genérico form-basic-v1 en modo lectura
+// (accessMode="view" lo fuerza el panel de detalle) pintando los campos como
+// valores. El fetch lo hace InvitationsDetailContract (KMP) vía
+// GET academic:/api/v1/schools/invitations/{id}; las KEYS de los campos abajo
+// coinciden con los json tags de dto.InvitationResponse para que el prellenado
+// del form mapee 1:1. NO lleva acción "copiar" aquí: copiar el código es una
+// row-action de la lista (event_id "copy-code"), que funciona sin abrir el
+// detalle y no pelea con el panel read-only.
+func invitationsDetail() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_INVITATIONS_DETAIL_ID,
+		screenKey:          "invitations-detail",
+		templateID:         L0_SCREEN_TPL_FORM_ID_REF,
+		name:               "Detalle de Invitación",
+		description:        "Detalle de solo lectura de un código de invitación",
+		scope:              "school",
+		requiredPermission: "academic.invitations.read",
+		slotData: `{
+  "title": "Detalle de Invitación",
+  "fields": [
+    {"key": "code", "label": "Código", "type": "text"},
+    {"key": "invitation_type_label", "label": "Tipo", "type": "text"},
+    {"key": "academic_unit_name", "label": "Unidad", "type": "text"},
+    {"key": "label", "label": "Etiqueta", "type": "text"},
+    {"key": "uses_count", "label": "Usos", "type": "text"},
+    {"key": "max_uses", "label": "Usos máximos", "type": "text"},
+    {"key": "is_active", "label": "Activa", "type": "text"},
+    {"key": "expires_at", "label": "Vence", "type": "text"}
   ],
   "actions_removed": ["save", "delete"],
   "api_prefix": "academic"

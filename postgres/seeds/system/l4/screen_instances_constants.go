@@ -91,6 +91,9 @@ const (
 	L4_SCREEN_INST_PERIODS_FORM_ID     = "b4400000-0000-0000-0000-000000000057"
 	L4_SCREEN_INST_INVITATIONS_LIST_ID = "b4400000-0000-0000-0000-000000000058"
 	L4_SCREEN_INST_INVITATIONS_FORM_ID = "b4400000-0000-0000-0000-000000000059"
+	// invitations-detail: detalle de solo lectura de un código de invitación
+	// (tap de fila en invitations-list). Reusa form-basic-v1 en modo lectura.
+	L4_SCREEN_INST_INVITATIONS_DETAIL_ID = "b4400000-0000-0000-0000-000000000077"
 	// join-requests-inbox (N0.4-B): instancia mínima requerida por la FK
 	// resource_screens.screen_key → screen_instances.screen_key. La
 	// pantalla se renderiza NATIVA en el FE (no SDUI), así que el
