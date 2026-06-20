@@ -734,7 +734,14 @@ package layers
 //     row-action `copy-code` en `invitations-list`. SchemaVersion 3.82.0 → 3.83.0.
 //   - 1.74.4 (2026-06-19): `invitations-detail` gana el campo `Unidad`
 //     (academic_unit_name). SchemaVersion 3.83.0 → 3.84.0.
-const L4_SEED_VERSION = "1.74.4"
+//   - 1.75.0 (2026-06-20): plan 025 F1.1 — system `messaging` (WhatsApp). Nueva
+//     fila iam.systems (key `messaging`) + 8 filas iam.system_roles (super_admin
+//   - árbol teacher + árbol school_admin); nuevo recurso API-only `messaging`
+//     (b4000000-…-d0, sin pantalla/menú) + 3 permisos messaging.{session.pair,
+//     message.send,device.link}; grant wildcard `messaging.*` a teacher y
+//     school_admin (heredan sus aliases vía ADR-6). La API messaging autoriza
+//     por grants del JWT, no por IAM. SchemaVersion 3.84.0 → 3.85.0.
+const L4_SEED_VERSION = "1.75.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

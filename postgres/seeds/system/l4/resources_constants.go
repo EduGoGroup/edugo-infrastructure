@@ -124,4 +124,14 @@ const (
 	L4_RESOURCE_CONTEXT_KEY       = "context"
 	L4_RESOURCE_NOTIFICATIONS_KEY = "notifications"
 	L4_RESOURCE_MENU_KEY          = "menu"
+
+	// Plan 025 (mensajería WhatsApp): recurso API-only que cuelga los permisos
+	// messaging.{session.pair,message.send,device.link}. SIN pantalla SDUI ni
+	// item de menú — la app de mensajería es externa y autoriza por los grants
+	// del JWT (no consulta IAM). Existe sólo como FK de iam.permissions
+	// (uq_permissions_resource_action), igual que `context` agrupa
+	// browse_schools/browse_units. Scope system (la capability no se ata a una
+	// escuela; el alcance efectivo lo da el JWT).
+	L4_RESOURCE_MESSAGING_ID  = "b4000000-0000-0000-0000-0000000000d0"
+	L4_RESOURCE_MESSAGING_KEY = "messaging"
 )

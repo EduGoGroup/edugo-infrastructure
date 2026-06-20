@@ -478,6 +478,16 @@ func l4Permissions() []l4PermissionSpec {
 		{"d1000000-0000-0000-0000-000000000001", L4_RESOURCE_SYSTEM_SETTINGS_ID, "admin.system_settings.settings", "Configuración del Sistema", "Acceder a la configuración y mantenimiento del sistema", "settings", "system"},
 		{"d1000000-0000-0000-0000-000000000002", L4_RESOURCE_SYSTEM_SETTINGS_ID, "admin.system_settings.read", "Leer Configuración del Sistema", "Leer configuración del sistema", "read", "system"},
 		{"d1000000-0000-0000-0000-000000000003", L4_RESOURCE_SYSTEM_SETTINGS_ID, "admin.system_settings.update", "Actualizar Configuración del Sistema", "Actualizar configuración del sistema", "update", "system"},
+
+		// --- messaging (resource b4000000-…-d0): plan 025 (WhatsApp) ---
+		// Permisos del staff para operar la mensajería a las familias. Path de 3
+		// segmentos (messaging.<sub>.<accion>); la API messaging los lee de los
+		// grants del JWT (no consulta IAM). La acción es el path tras el recurso
+		// `messaging` (UNIQUE resource_id+action, las 3 son distintas). Scope
+		// system: la capability no se ata a una escuela; el alcance lo da el JWT.
+		{L4_PERM_MESSAGING_SESSION_PAIR_ID, L4_RESOURCE_MESSAGING_ID, "messaging.session.pair", "Vincular Sesión de WhatsApp", "Vincular (parear) la sesión de WhatsApp de la escuela", "session.pair", "system"},
+		{L4_PERM_MESSAGING_MESSAGE_SEND_ID, L4_RESOURCE_MESSAGING_ID, "messaging.message.send", "Enviar Mensaje de WhatsApp", "Enviar mensajes de WhatsApp a las familias", "message.send", "system"},
+		{L4_PERM_MESSAGING_DEVICE_LINK_ID, L4_RESOURCE_MESSAGING_ID, "messaging.device.link", "Enlazar Dispositivo de WhatsApp", "Enlazar un dispositivo emisor de WhatsApp", "device.link", "system"},
 	}
 }
 
@@ -575,6 +585,10 @@ func roleGrantPatterns() map[string][]string {
 		"menu.*",
 		"notifications.*",
 		"screens.*",
+		// Plan 025: el admin de escuela comunica a las familias por WhatsApp.
+		// Wildcard del subárbol messaging.* (session.pair/message.send/device.link).
+		// Lo heredan school_director/coordinator/assistant (ADR-6).
+		"messaging.*",
 	}
 	teacherPatterns := []string{
 		"academic.announcements.*",
@@ -620,6 +634,10 @@ func roleGrantPatterns() map[string][]string {
 		"menu.*",
 		"notifications.*",
 		"screens.*",
+		// Plan 025: el docente comunica a las familias de su clase por WhatsApp.
+		// Wildcard del subárbol messaging.*. Lo heredan assistant_teacher/observer
+		// (ADR-6). El alumno NO lo recibe (familias = destinatarias, no emisoras).
+		"messaging.*",
 	}
 	studentPatterns := []string{
 		"academic.announcements.*",

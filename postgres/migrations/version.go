@@ -885,7 +885,22 @@ import (
 //   - 3.84.0 (2026-06-19): detalle de invitación gana campo `Unidad`
 //     (academic_unit_name) — academic lo resuelve por JOIN a academic_units.
 //     Solo datos de seed (L4_SEED_VERSION 1.74.3 → 1.74.4). Sin DDL.
-const SchemaVersion = "3.84.0"
+//   - 3.85.0 (2026-06-20): plan 025 F1.1 — system `messaging` (WhatsApp). Seed
+//     L4: nueva fila iam.systems (key `messaging`, "EduGo Mensajería") + 8 filas
+//     iam.system_roles (super_admin + árbol teacher {teacher, assistant_teacher,
+//     observer} + árbol school_admin {school_admin, school_director,
+//     school_coordinator, school_assistant}); nuevo recurso API-only `messaging`
+//     (b4000000-…-d0, IsMenuVisible=false, sin pantalla SDUI) + 3 permisos
+//     messaging.{session.pair, message.send, device.link}; grant WILDCARD
+//     `messaging.*` (allow) a teacher y school_admin (los aliases lo heredan vía
+//     ADR-6; super_admin ya cubre por `*`). student/guardian/readonly_auditor/
+//     announcement_viewer NO lo reciben (las familias son destinatarias, no
+//     emisoras). La API edugo-api-messaging autoriza por los grants del JWT
+//     (no consulta IAM); el system_roles existe para que la web pública/admin
+//     reconozcan el system. Solo datos de seed L4 (L4_SEED_VERSION 1.74.4 →
+//     1.75.0) → cambia el hash de seeds → bump obligatorio. Sin DDL. Recrear
+//     BD para reseeding.
+const SchemaVersion = "3.85.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

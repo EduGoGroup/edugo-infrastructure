@@ -37,11 +37,12 @@ func ApplySystems(tx *gorm.DB) error {
 	}).Create(&systems).Error
 }
 
-// buildL4Systems construye las 2 filas de iam.systems. Helper compartido por
+// buildL4Systems construye las 3 filas de iam.systems. Helper compartido por
 // ApplySystems y por el accessor público Systems().
 func buildL4Systems() []entities.System {
 	kmpDesc := "App principal del ecosistema EduGo para estudiantes, docentes, representantes y staff."
 	adminDesc := "Herramienta de escritorio para la administración del ecosistema EduGo."
+	messagingDesc := "Mensajería WhatsApp del ecosistema EduGo: el staff comunica a las familias por su canal habitual."
 	return []entities.System{
 		{
 			ID:          uuid.MustParse(L4_SYSTEM_KMP_ID),
@@ -55,6 +56,12 @@ func buildL4Systems() []entities.System {
 			Name:        "Herramienta de Administración",
 			Description: &adminDesc,
 		},
+		{
+			ID:          uuid.MustParse(L4_SYSTEM_MESSAGING_ID),
+			Key:         L4_SYSTEM_MESSAGING_KEY,
+			Name:        "EduGo Mensajería",
+			Description: &messagingDesc,
+		},
 	}
 }
 
@@ -64,6 +71,16 @@ func buildL4Systems() []entities.System {
 //   - admin-tool: SOLO staff/admin (super_admin, school_admin,
 //     school_coordinator, school_director, readonly_auditor). REGLA DURA
 //     (DEC-C, MP-08): student/teacher/guardian NO entran a admin-tool.
+//   - messaging:  staff que comunica a las familias por WhatsApp (plan 025).
+//     Mismo conjunto que recibe el grant messaging.* en roleGrantPatterns:
+//     super_admin + el árbol teacher (teacher, assistant_teacher, observer) +
+//     el árbol school_admin (school_admin, school_director, school_coordinator,
+//     school_assistant). NO entran student/guardian (las familias son
+//     DESTINATARIAS, no emisoras) ni readonly_auditor (solo lectura) ni
+//     announcement_viewer. system_roles NO hereda vía parent_role_id (ADR-6
+//     aplana SOLO grants, no esta tabla puente): los aliases que heredan el
+//     grant se listan explícitamente aquí para que la web pública/admin
+//     reconozca su acceso al system.
 //
 // FK: requiere iam.systems (ApplySystems) e iam.roles (ApplyRolesPermissions /
 // L0 / L1) sembrados antes. Idempotente: id derivado SHA1(system:role) para que
@@ -94,7 +111,22 @@ func ApplySystemRoles(tx *gorm.DB) error {
 		L4_ROLE_READONLY_AUDITOR_ID,
 	}
 
-	rows := make([]entities.SystemRole, 0, len(allRoles)+len(adminToolRoles))
+	// messaging (plan 025): staff que emite comunicaciones a las familias.
+	// Mismo conjunto que el grant messaging.* (super_admin + árbol teacher +
+	// árbol school_admin). student/guardian/readonly_auditor/announcement_viewer
+	// excluidos.
+	messagingRoles := []string{
+		l0RoleSuperAdminID,
+		L4_ROLE_TEACHER_ID,
+		L4_ROLE_ASSISTANT_TEACHER_ID,
+		L4_ROLE_OBSERVER_ID,
+		L4_ROLE_SCHOOL_ADMIN_ID,
+		L4_ROLE_SCHOOL_DIRECTOR_ID,
+		L4_ROLE_SCHOOL_COORDINATOR_ID,
+		L4_ROLE_SCHOOL_ASSISTANT_ID,
+	}
+
+	rows := make([]entities.SystemRole, 0, len(allRoles)+len(adminToolRoles)+len(messagingRoles))
 
 	kmpSystemID := uuid.MustParse(L4_SYSTEM_KMP_ID)
 	for _, roleStr := range allRoles {
@@ -112,6 +144,15 @@ func ApplySystemRoles(tx *gorm.DB) error {
 			return fmt.Errorf("ApplySystemRoles: parse admin-tool role id %s: %w", roleStr, err)
 		}
 		rows = append(rows, buildSystemRole(adminToolSystemID, roleID))
+	}
+
+	messagingSystemID := uuid.MustParse(L4_SYSTEM_MESSAGING_ID)
+	for _, roleStr := range messagingRoles {
+		roleID, err := uuid.Parse(roleStr)
+		if err != nil {
+			return fmt.Errorf("ApplySystemRoles: parse messaging role id %s: %w", roleStr, err)
+		}
+		rows = append(rows, buildSystemRole(messagingSystemID, roleID))
 	}
 
 	return tx.Clauses(clause.OnConflict{

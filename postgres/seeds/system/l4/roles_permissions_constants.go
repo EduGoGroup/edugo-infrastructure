@@ -109,4 +109,12 @@ const (
 	L4_PERM_MY_WARDS_ANNOUNCEMENTS_READ_OWN_ID = "b4000000-0002-0027-0000-000000000001"
 	L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID     = "b4000000-0002-0028-0000-000000000001"
 	L4_PERM_MY_WARDS_ASSESSMENTS_READ_OWN_ID   = "b4000000-0002-0029-0000-000000000001"
+
+	// Plan 025 (mensajería WhatsApp): permisos del recurso API-only `messaging`
+	// (suffix 00d0). Path de 3 segmentos messaging.<sub>.<accion>; los roles de
+	// staff reciben el wildcard messaging.* (wildcard-first). La API messaging
+	// autoriza leyendo estos grants del JWT, no la BD de IAM.
+	L4_PERM_MESSAGING_SESSION_PAIR_ID = "b4000000-0002-00d0-0000-000000000001"
+	L4_PERM_MESSAGING_MESSAGE_SEND_ID = "b4000000-0002-00d0-0000-000000000002"
+	L4_PERM_MESSAGING_DEVICE_LINK_ID  = "b4000000-0002-00d0-0000-000000000003"
 )

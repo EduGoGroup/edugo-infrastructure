@@ -29,6 +29,12 @@ const (
 	L4_SYSTEM_KMP_KEY        = "kmp"
 	L4_SYSTEM_ADMIN_TOOL_ID  = "f8000000-0008-0001-0000-000000000002"
 	L4_SYSTEM_ADMIN_TOOL_KEY = "admin-tool"
+	// Plan 025 (mensajería WhatsApp): app de mensajería del ecosistema. La API
+	// edugo-api-messaging autoriza por los grants del JWT (no consulta IAM); esta
+	// fila de iam.systems existe para que la web pública/admin reconozcan el
+	// system vía iam.system_roles (puente sistema↔rol), igual que kmp/admin-tool.
+	L4_SYSTEM_MESSAGING_ID  = "f8000000-0008-0001-0000-000000000003"
+	L4_SYSTEM_MESSAGING_KEY = "messaging"
 )
 
 // -----------------------------------------------------------------
