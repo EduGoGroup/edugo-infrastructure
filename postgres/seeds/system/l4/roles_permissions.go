@@ -488,6 +488,12 @@ func l4Permissions() []l4PermissionSpec {
 		{L4_PERM_MESSAGING_SESSION_PAIR_ID, L4_RESOURCE_MESSAGING_ID, "messaging.session.pair", "Vincular Sesión de WhatsApp", "Vincular (parear) la sesión de WhatsApp de la escuela", "session.pair", "system"},
 		{L4_PERM_MESSAGING_MESSAGE_SEND_ID, L4_RESOURCE_MESSAGING_ID, "messaging.message.send", "Enviar Mensaje de WhatsApp", "Enviar mensajes de WhatsApp a las familias", "message.send", "system"},
 		{L4_PERM_MESSAGING_DEVICE_LINK_ID, L4_RESOURCE_MESSAGING_ID, "messaging.device.link", "Enlazar Dispositivo de WhatsApp", "Enlazar un dispositivo emisor de WhatsApp", "device.link", "system"},
+		// Plan 025 F5: visibilidad de la pantalla nativa de mensajería. Action
+		// `view` (path de 2 segmentos `messaging.view`, distinto de las 3 de 3
+		// segmentos → no colisiona con UNIQUE resource_id+action). slot.permission
+		// de la screen_instance `messaging` y gate del item de menú. Scope system,
+		// igual que las otras messaging.* (la capability no se ata a una escuela).
+		{L4_PERM_MESSAGING_VIEW_ID, L4_RESOURCE_MESSAGING_ID, "messaging.view", "Ver Mensajería", "Ver la pantalla de mensajería del staff hacia las familias", "view", "system"},
 	}
 }
 

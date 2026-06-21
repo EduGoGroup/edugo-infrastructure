@@ -329,5 +329,16 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// notifications: mapping retirado en B7-fix junto con la
 		// screen_instance notifications-list (FE no implementa
 		// NotificationsListContract.kt aún).
+
+		// =============================================================
+		// messaging (plan 025 F5 — WhatsApp del staff hacia familias)
+		// Único mapping (list, is_default=true): el screen_key
+		// `messaging` lo resuelve el FE con una pantalla Compose nativa
+		// (NO SDUI). is_default=true hace que el item de menú abra esta
+		// pantalla. Aparece para quien tenga `messaging.view` (cubierto
+		// por el wildcard `messaging.*` de school_admin/teacher). Sufijo
+		// …e0, espejo de la screen_instance L4_SCREEN_INST_MESSAGING_ID.
+		// =============================================================
+		{id: "b4500000-0000-0000-0000-0000000000e0", resourceID: L4_RESOURCE_MESSAGING_ID, resourceKey: L4_RESOURCE_MESSAGING_KEY, screenKey: "messaging", screenType: "list", isDefault: true, sortOrder: 1},
 	}
 }

@@ -534,5 +534,14 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		// su screen_instance, su mapping en resource_screens y su constante.
 		schoolConceptsList(),
 		schoolConceptsForm(),
+
+		// ===========================================================
+		// MESSAGING (plan 025 F5 — WhatsApp del staff hacia familias)
+		// ===========================================================
+		// Pantalla NATIVA (Compose, NO SDUI). La screen_instance existe
+		// SOLO para satisfacer la FK resource_screens.screen_key →
+		// screen_instances.screen_key y para que el menú resuelva el
+		// screen_key `messaging`.
+		messaging(),
 	}
 }

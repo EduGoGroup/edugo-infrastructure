@@ -286,11 +286,16 @@ var l4Resources = []l4ResourceRow{
 	{ID: L4_RESOURCE_CONTEXT_ID, Key: "context", DisplayName: "Contexto", Description: "Exploración de escuelas y unidades para selección de contexto", Icon: "arrow-left-right", Scope: "system", ParentID: "", SortOrder: 99, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_NOTIFICATIONS_ID, Key: "notifications", DisplayName: "Notificaciones", Description: "Centro de notificaciones del usuario", Icon: "bell", Scope: "system", ParentID: "", SortOrder: 100, IsMenuVisible: false, IsActive: true},
 	{ID: L4_RESOURCE_MENU_ID, Key: "menu", DisplayName: "Menu", Description: "Navegación y menu de la aplicación", Icon: "menu", Scope: "system", ParentID: "", SortOrder: 101, IsMenuVisible: false, IsActive: true},
-	// Plan 025 (mensajería WhatsApp): recurso API-only que cuelga los permisos
-	// messaging.* (session.pair / message.send / device.link). SIN pantalla ni
-	// menú: la app de mensajería autoriza por grants del JWT, no por IAM. Existe
-	// como FK de iam.permissions, espejo de context/notifications/menu.
-	{ID: L4_RESOURCE_MESSAGING_ID, Key: L4_RESOURCE_MESSAGING_KEY, DisplayName: "Mensajería", Description: "Mensajería WhatsApp del staff hacia las familias", Icon: "message-circle", Scope: "system", ParentID: "", SortOrder: 103, IsMenuVisible: false, IsActive: true},
+	// Plan 025 (mensajería WhatsApp): recurso que cuelga los permisos messaging.*
+	// (session.pair / message.send / device.link / view). La API messaging sigue
+	// autorizando por grants del JWT, no por IAM; pero desde F5 el recurso es
+	// NAVEGABLE (IsMenuVisible=true) para exponer la pantalla nativa `messaging`
+	// en el menú lateral. Scope system + raíz (ParentID vacío): aparece como item
+	// raíz (espejo de dashboard), accesible sin escuela activa — la pantalla
+	// nativa F5 resuelve el contexto al enlazar el dispositivo. La aparición se
+	// gatea por el grant `messaging.*` (school_admin/teacher tocan el path
+	// `messaging`); el screen_key a abrir lo da el resource_screen default.
+	{ID: L4_RESOURCE_MESSAGING_ID, Key: L4_RESOURCE_MESSAGING_KEY, DisplayName: "Mensajería", Description: "Mensajería WhatsApp del staff hacia las familias", Icon: "message-circle", Scope: "system", ParentID: "", SortOrder: 103, IsMenuVisible: true, IsActive: true},
 	// Onboarding (plan 005, N0.0): namespace de permisos de aprobación
 	// per-rol. API-only (sin pantalla): la acción del permiso ES el rol que
 	// se admite (academic.join_request_approvals.{student,teacher,guardian}).

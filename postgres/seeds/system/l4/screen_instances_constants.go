@@ -192,6 +192,15 @@ const (
 	// L4_SCREEN_INST_USER_ROLES_ID (…d3) eliminado (2026-06-09): la pantalla
 	// SDUI legacy user-roles quedó huérfana (sin reemplazo, sin entry-point en
 	// el FE). UUID …d3 queda libre para reuso futuro.
+
+	// messaging (plan 025 F5): pantalla NATIVA de mensajería del staff. Igual que
+	// join-requests-inbox / batch-enroll, esta screen_instance existe SOLO para
+	// satisfacer la FK resource_screens.screen_key → screen_instances.screen_key
+	// y para que el menú/handler resuelva el screen_key `messaging`. El slot_data
+	// NO se renderiza por el SDUI engine: el FE intercepta el screen_key y pinta
+	// la pantalla Compose nativa (Route.Messaging). Sufijo …e0 (bloque libre tras
+	// los phantom-nuevas …d0/…d1).
+	L4_SCREEN_INST_MESSAGING_ID = "b4400000-0000-0000-0000-0000000000e0"
 )
 
 // UUIDs L0 que el bloque B4 necesita referenciar como template_id.

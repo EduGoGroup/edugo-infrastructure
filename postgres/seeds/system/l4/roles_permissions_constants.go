@@ -117,4 +117,10 @@ const (
 	L4_PERM_MESSAGING_SESSION_PAIR_ID = "b4000000-0002-00d0-0000-000000000001"
 	L4_PERM_MESSAGING_MESSAGE_SEND_ID = "b4000000-0002-00d0-0000-000000000002"
 	L4_PERM_MESSAGING_DEVICE_LINK_ID  = "b4000000-0002-00d0-0000-000000000003"
+	// Plan 025 F5 (UI nativa de mensajería): permiso de visibilidad de la
+	// pantalla `messaging`. Es el slot.permission (requiredPermission) de la
+	// screen_instance nativa y la condición de aparición del item de menú. No se
+	// enumera por rol: el wildcard `messaging.*` (school_admin/teacher) lo cubre
+	// (wildcard-first). Path de 2 segmentos `messaging.view`; action `view`.
+	L4_PERM_MESSAGING_VIEW_ID = "b4000000-0002-00d0-0000-000000000004"
 )

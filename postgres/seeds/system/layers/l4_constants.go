@@ -741,7 +741,14 @@ package layers
 //     message.send,device.link}; grant wildcard `messaging.*` a teacher y
 //     school_admin (heredan sus aliases vía ADR-6). La API messaging autoriza
 //     por grants del JWT, no por IAM. SchemaVersion 3.84.0 → 3.85.0.
-const L4_SEED_VERSION = "1.75.0"
+//   - 1.76.0 (2026-06-20): plan 025 F5 — `messaging` se vuelve NAVEGABLE. El
+//     recurso messaging pasa a IsMenuVisible=true (item de menú raíz, scope
+//     system); nuevo permiso `messaging.view` (slot.permission de la pantalla,
+//     gate del item; cubierto por el wildcard `messaging.*`, no se enumera por
+//     rol); nueva screen_instance `messaging` (NATIVA, list-basic-v1 por
+//     higiene) + resource_screen default (list) que la liga al recurso. Solo
+//     datos de seed L4. SchemaVersion 3.85.0 → 3.86.0.
+const L4_SEED_VERSION = "1.76.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

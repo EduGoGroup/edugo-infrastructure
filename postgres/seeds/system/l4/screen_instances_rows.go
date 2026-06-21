@@ -1640,3 +1640,38 @@ func schoolConceptsForm() l4ScreenInstanceRow {
 // constructor, su llamada en screen_instances.go, su mapping en
 // resource_screens.go y la constante L4_SCREEN_INST_USER_ROLES_ID
 // (UUID …00d3) se eliminaron. UUID …00d3 queda libre para reuso futuro.
+
+// messaging (plan 025 F5): pantalla NATIVA de mensajería del staff hacia las
+// familias (Compose, NO SDUI). MainScreen intercepta el screen_key `messaging`
+// y pinta Route.Messaging directamente; el slot_data NUNCA se renderiza por el
+// SDUI engine. Esta screen_instance existe SOLO para satisfacer la FK
+// resource_screens.screen_key → screen_instances.screen_key y para que el menú
+// resuelva el screen_key. Se conserva un slot_data mínimo y válido
+// (list-basic-v1) por higiene; SIN `api_prefix` (la pantalla nativa habla con
+// la API messaging por su propio cliente, no por el contrato SDUI genérico, así
+// que no se proyecta bloque "contract").
+//
+// requiredPermission (slot.permission de la pantalla) = messaging.view: gatea
+// tanto el item de menú como el acceso a la pantalla. El wildcard `messaging.*`
+// (school_admin/teacher) lo cubre — no se enumera por rol (wildcard-first).
+// scope=system, coherente con el recurso messaging (la capability no se ata a
+// una escuela; el alcance lo da el JWT).
+func messaging() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_MESSAGING_ID,
+		screenKey:          "messaging",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Mensajería",
+		description:        "Mensajería del staff hacia las familias (pantalla nativa)",
+		scope:              "system",
+		requiredPermission: "messaging.view",
+		slotData: `{
+  "title": "Mensajería",
+  "columns": [
+    {"key": "recipient", "label": "Destinatario"},
+    {"key": "status", "label": "Estado"}
+  ],
+  "actions_removed": ["create", "edit", "delete"]
+}`,
+	}
+}
