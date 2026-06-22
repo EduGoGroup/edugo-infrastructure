@@ -204,6 +204,7 @@ func seedSchools(tx *gorm.DB) error {
 			"subscription_tier": "premium",
 			"max_teachers":      20,
 			"max_students":      300,
+			"grade_profile":     "basic",
 		},
 		{
 			"id":                mustUUID("b3000000-0000-0000-0000-000000000003"),
@@ -220,6 +221,7 @@ func seedSchools(tx *gorm.DB) error {
 			"subscription_tier": "basic",
 			"max_teachers":      10,
 			"max_students":      150,
+			"grade_profile":     "detailed",
 		},
 	}
 	return upsertMaps(
@@ -230,6 +232,7 @@ func seedSchools(tx *gorm.DB) error {
 		[]string{
 			"name", "code", "address", "city", "country", "phone", "email",
 			"concept_type_id", "metadata", "is_active", "subscription_tier", "max_teachers", "max_students",
+			"grade_profile",
 		},
 		true,
 	)
