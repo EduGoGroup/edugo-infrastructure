@@ -916,7 +916,17 @@ import (
 //     Búsqueda server-side + paginación contra academic:/api/v1/units. Solo datos
 //     de seed L4 (L4_SEED_VERSION 1.76.0 → 1.77.0) → cambia el hash de seeds →
 //     bump obligatorio. Sin DDL. Recrear BD para reseeding.
-const SchemaVersion = "3.87.0"
+//   - 3.88.0 (2026-06-21): Plan 026 (overflow de navegación) — priority/pin
+//     ADITIVOS al contrato del menú. La entity iam.resources gana dos columnas
+//     nullable/default (priority *int → NULL, pin bool → false), materializadas
+//     por GORM AutoMigrate igual que sort_order/is_menu_visible (índices parciales
+//     idx_resources_priority / idx_resources_pin vía tag GORM). El seed L4
+//     (l4ResourceRow + UPSERT) propaga ambas; los 31 recursos quedan en MODO
+//     LEGACY (priority NULL, pin false) → cero regresión (el front cae a
+//     sort_order). Cambio en entity (DDL aditiva) + datos de seed L4
+//     (L4_SEED_VERSION 1.77.0 → 1.78.0) → cambia el hash de seeds → bump
+//     obligatorio. Recrear BD, sin ALTER.
+const SchemaVersion = "3.88.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

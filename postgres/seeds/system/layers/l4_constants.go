@@ -754,7 +754,14 @@ package layers
 //     contra academic:/api/v1/units (search_param=search, page_size=20,
 //     picker_title="Buscar unidad padre"). Mismo endpoint/display_field/value_field;
 //     solo cambia el control de UI. Solo datos de seed L4. SchemaVersion 3.86.0 → 3.87.0.
-const L4_SEED_VERSION = "1.77.0"
+//   - 1.78.0 (2026-06-21): Plan 026 (overflow de navegación) — priority/pin
+//     ADITIVOS al contrato del menú. La struct l4ResourceRow gana Priority (*int)
+//     y Pin (bool) y el UPSERT de ApplyResources escribe las nuevas columnas
+//     iam.resources.priority / iam.resources.pin. Los 31 recursos quedan en MODO
+//     LEGACY (Priority nil → el front cae a sort_order; Pin false): solo se habilita
+//     la CAPACIDAD, sin asignar valores por recurso → cero regresión. Acompaña la
+//     DDL aditiva de la entity Resource (SchemaVersion 3.87.0 → 3.88.0).
+const L4_SEED_VERSION = "1.78.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

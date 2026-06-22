@@ -16,6 +16,12 @@ type Resource struct {
 	ParentID      *uuid.UUID `db:"parent_id" gorm:"type:uuid;index;constraint:fk_resources_parent,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	SortOrder     int        `db:"sort_order" gorm:"not null;default:0;index:idx_resources_sort" validate:"required"`
 	IsMenuVisible bool       `db:"is_menu_visible" gorm:"not null;default:true;index:idx_resources_menu_visible"`
+	// Plan 026 (overflow de navegación): priority/pin ADITIVOS al contrato del
+	// menú. Priority nullable (NULL = modo legacy → el front cae a sort_order);
+	// Pin default false (recurso anclado fuera del overflow). Ambos los
+	// materializa GORM AutoMigrate igual que los campos vecinos.
+	Priority *int `db:"priority" gorm:"default:null;index:idx_resources_priority"`
+	Pin      bool `db:"pin" gorm:"not null;default:false;index:idx_resources_pin"`
 	// ENUM: created in pre_gorm.sql
 	Scope     string    `db:"scope" gorm:"not null;type:iam.permission_scope;default:'school'" validate:"required"`
 	IsActive  bool      `db:"is_active" gorm:"not null;default:true;index:idx_resources_active"`

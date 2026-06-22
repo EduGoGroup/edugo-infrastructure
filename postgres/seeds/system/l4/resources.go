@@ -51,8 +51,8 @@ import (
 func ApplyResources(tx *gorm.DB) error {
 	const upsertSQL = `
         INSERT INTO iam.resources
-            (id, key, display_name, description, icon, parent_id, sort_order, is_menu_visible, scope, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::iam.permission_scope, ?, NOW(), NOW())
+            (id, key, display_name, description, icon, parent_id, sort_order, is_menu_visible, scope, is_active, priority, pin, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::iam.permission_scope, ?, ?, ?, NOW(), NOW())
         ON CONFLICT (id) DO UPDATE SET
             key             = EXCLUDED.key,
             display_name    = EXCLUDED.display_name,
@@ -62,7 +62,9 @@ func ApplyResources(tx *gorm.DB) error {
             sort_order      = EXCLUDED.sort_order,
             is_menu_visible = EXCLUDED.is_menu_visible,
             scope           = EXCLUDED.scope,
-            is_active       = EXCLUDED.is_active
+            is_active       = EXCLUDED.is_active,
+            priority        = EXCLUDED.priority,
+            pin             = EXCLUDED.pin
     `
 
 	for _, r := range l4Resources {
@@ -88,6 +90,13 @@ func ApplyResources(tx *gorm.DB) error {
 			icon = r.Icon
 		}
 
+		// Plan 026: priority es nullable (*int). nil → NULL (modo legacy,
+		// el front cae a sort_order). pin es bool con default false.
+		var priority any
+		if r.Priority != nil {
+			priority = *r.Priority
+		}
+
 		if err := tx.Exec(upsertSQL,
 			id,
 			r.Key,
@@ -99,6 +108,8 @@ func ApplyResources(tx *gorm.DB) error {
 			r.IsMenuVisible,
 			r.Scope,
 			r.IsActive,
+			priority,
+			r.Pin,
 		).Error; err != nil {
 			return fmt.Errorf("ApplyResources: upsert %s: %w", r.Key, err)
 		}
@@ -165,6 +176,12 @@ type l4ResourceRow struct {
 	IsMenuVisible bool
 	Scope         string
 	IsActive      bool
+	// Plan 026 (overflow de navegación): contrato ADITIVO del menú. Los 31
+	// recursos quedan en modo legacy (Priority nil → el front cae a sort_order;
+	// Pin false). Aquí solo se habilita la CAPACIDAD; no se asignan valores por
+	// recurso.
+	Priority *int
+	Pin      bool
 }
 
 // l4Resources es la definición final de los 31 recursos sembrados por

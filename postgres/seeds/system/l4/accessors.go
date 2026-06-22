@@ -60,6 +60,10 @@ func Resources() ([]entities.Resource, error) {
 			IsMenuVisible: r.IsMenuVisible,
 			Scope:         r.Scope,
 			IsActive:      r.IsActive,
+			// Plan 026 (overflow de navegación): espeja lo que escribe
+			// ApplyResources (priority nullable, pin default false).
+			Priority: r.Priority,
+			Pin:      r.Pin,
 		})
 	}
 	return out, nil
