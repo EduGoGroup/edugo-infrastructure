@@ -319,7 +319,8 @@ func unitsForm() l4ScreenInstanceRow {
       {"value": "section", "label": "Sección"},
       {"value": "club", "label": "Club"},
       {"value": "department", "label": "Departamento"}
-    ]}
+    ]},
+    {"key": "parent_unit_id", "label": "Unidad Padre", "type": "entity-picker", "required": false, "remote_endpoint": "academic:/api/v1/units", "display_field": "display_name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar unidad padre"}
   ],
   "api_prefix": "academic"
 }`,

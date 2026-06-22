@@ -748,7 +748,13 @@ package layers
 //     rol); nueva screen_instance `messaging` (NATIVA, list-basic-v1 por
 //     higiene) + resource_screen default (list) que la liga al recurso. Solo
 //     datos de seed L4. SchemaVersion 3.85.0 → 3.86.0.
-const L4_SEED_VERSION = "1.76.0"
+//   - 1.77.0 (2026-06-21): `units-form` migra el campo `parent_unit_id` de
+//     `remote_select` (combo/dropdown) a `entity-picker` (lupa) — estándar del
+//     proyecto (plan 017 F2). Abre modal de búsqueda server-side + paginación
+//     contra academic:/api/v1/units (search_param=search, page_size=20,
+//     picker_title="Buscar unidad padre"). Mismo endpoint/display_field/value_field;
+//     solo cambia el control de UI. Solo datos de seed L4. SchemaVersion 3.86.0 → 3.87.0.
+const L4_SEED_VERSION = "1.77.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

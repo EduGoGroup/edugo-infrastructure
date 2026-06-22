@@ -911,7 +911,12 @@ import (
 //     screen_key `messaging` a Route.Messaging (pantalla nativa F5). Solo datos
 //     de seed L4 (L4_SEED_VERSION 1.75.0 → 1.76.0) → cambia el hash de seeds →
 //     bump obligatorio. Sin DDL. Recrear BD para reseeding.
-const SchemaVersion = "3.86.0"
+//   - 3.87.0 (2026-06-21): `units-form` migra el campo `parent_unit_id` de
+//     `remote_select` (combo) a `entity-picker` (lupa) — estándar del proyecto.
+//     Búsqueda server-side + paginación contra academic:/api/v1/units. Solo datos
+//     de seed L4 (L4_SEED_VERSION 1.76.0 → 1.77.0) → cambia el hash de seeds →
+//     bump obligatorio. Sin DDL. Recrear BD para reseeding.
+const SchemaVersion = "3.87.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
