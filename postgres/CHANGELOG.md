@@ -6,6 +6,32 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.15] - 2026-06-24
+
+Plan 027 — permisología por proceso (altitud y arquetipos de acceso). Cierra fugas de ESCRITURA en roles
+de consumo y mueve "ver lo mío" a recursos `my_*` dedicados. `SchemaVersion` 3.88.0 → **3.90.0**;
+`L4_SEED_VERSION` → **1.80.0**. (Agrupa los commits `7fc5620` poda + recursos `my_*`, y `1afba1a` deny F4.8;
+el release previo `v0.900.14` = 3.88.0 quedó sin documentar.)
+
+### Added
+
+- **Recursos `my_teaching` (profesor) y `my_attendance` (alumno)** con `read:own` — patrón "consume-lo-propio"
+  espejo de `my_grades`/`my_memberships`/`my_wards_*`. Habilitan que profesor vea solo sus materias y alumno
+  solo su asistencia, sin allows anchos sobre recursos compartidos.
+
+### Changed
+
+- **Poda de grants de consumo** (`l4/roles_permissions.go`): los wildcards anchos de los roles de consumo
+  (alumno/representante) se recortan a `.read` literal, eliminando las fugas de escritura auditadas en F0
+  (alumno podía `POST /attendance/batch` y crear/borrar anuncios/materiales; representante creaba/publicaba
+  evaluaciones).
+- **`school_admin` — deny F4.8** (`1afba1a`): se añade `deny` de `academic.*.read:own` (quita el ruido de los
+  recursos `my_*` en el menú del admin) y de `admin.roles.{create,update,delete}` (el admin de escuela no crea
+  roles IAM del contrato). Requiere el motor de menú deny-aware de `edugo-api-platform` (release `1920dce`).
+
+> Detalle del plan: `../../../docs/plans/027-permisologia-por-proceso/` · cierre de despliegue:
+> `../../../docs/plans/027-permisologia-por-proceso/despliegue.md`.
+
 ## [0.900.13] - 2026-06-19
 
 Flag `is_system` para proteger el contrato de roles/permisos del sistema en runtime (deuda 0069).
