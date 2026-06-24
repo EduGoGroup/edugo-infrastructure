@@ -45,3 +45,22 @@ Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar 
   `edugo-shared/messaging/events` y con los procesadores del worker.
 - Release por módulo: tags modulares y `release.yml`; cada módulo lleva su `CHANGELOG.md`.
 - Reglas globales: código en inglés, logs/docs en español, fechas UTC en BD y transporte.
+
+## Versionado de dependencias `edugo-shared`: migrar hacia adelante, nunca re-taguear
+
+> **Por qué:** los módulos Go de aquí (`postgres`, `migrator`, `schemas`, `tools/mock-generator`)
+> consumen `edugo-shared`. Si un módulo de shared se **re-taguea** (mismo número, contenido distinto —
+> p. ej. tras un "clean reset"), el build **local pasa** (el `go.work` lo resuelve del filesystem sin
+> checksum) pero **CI/cloud falla**: Go descarga el tag de GitHub, lo hashea y lo compara contra el
+> `go.sum` → `SECURITY ERROR: checksum mismatch`. El "historial" vive en el `go.sum` commiteado (repos
+> privados: no hay sumdb global).
+
+**Regla:** el estándar de versión de los módulos shared es **`0.900.X`** (→ `1.0.0` en producción).
+- **Nunca re-pushees un tag existente.** Si cambia el contenido, **sube el número** (tag nuevo e inmutable).
+- **Si vas a modificar (o tu cambio arrastra) un módulo shared aún en `v0.1.0`, migrálo a `0.900.X`**: bump
+  del tag + bump del `require` en **todos** los consumidores + `go mod tidy`. No lo dejes "bajo estándar".
+- Tras migrar, **retira el `replace` transitorio del `go.work`** (es muleta local, no fix). El objetivo es
+  que CI/cloud resuelva contra el tag real.
+
+> Detalle y el caso `audit`/`audit/postgres` que originó la regla: `../edugo-shared/AGENTS.md`
+> (sección "Versionado de módulos").
