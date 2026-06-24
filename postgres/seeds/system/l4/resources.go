@@ -263,6 +263,24 @@ var l4Resources = []l4ResourceRow{
 	// Scope=unit (el alumno lee dentro de su unidad activa). El contrato KMP
 	// consume GET /api/v1/me/grades. Espejo de my_memberships.
 	{ID: L4_RESOURCE_MY_GRADES_ID, Key: "my_grades", DisplayName: "Mis Notas", Description: "Notas del alumno por sesión de materia", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 14, IsMenuVisible: true, IsActive: true},
+	// "Mis Materias" (recurso my_teaching, plan 027 F3) — item de menú del profesor
+	// que abre la lista readonly de las sesiones que dicta. Recurso separado de
+	// `subjects`/`subject_offerings` (los CRUD/lectura admin): path propio
+	// `academic.my_teaching` que solo matchean grants de ese path → teacher (grant
+	// dedicado academic.my_teaching.read:own) y school_admin (academic.*). Tras
+	// podar subjects.read/subject_offerings.read del teacher (F3), este recurso es
+	// su única vista de "qué dicto". Scope=unit. El contrato KMP consume
+	// GET /api/v1/me/teaching. Espejo de my_grades.
+	{ID: L4_RESOURCE_MY_TEACHING_ID, Key: "my_teaching", DisplayName: "Mis Materias", Description: "Materias y sesiones que dicta el profesor", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: true, IsActive: true},
+	// "Mi Asistencia" (recurso my_attendance, plan 027 F2) — item de menú del
+	// alumno que abre la lista readonly de su propia asistencia. Recurso separado
+	// de `attendance` (CRUD docente): path propio `academic.my_attendance` que
+	// solo matchean grants de ese path → student (grant dedicado
+	// academic.my_attendance.read:own) y school_admin (academic.*). Tras podar
+	// attendance.* del alumno (F1), este recurso es su única vista de asistencia.
+	// Scope=unit. El endpoint GET /me/attendance ya existe (auto-scopeado por JWT);
+	// F2 solo re-gatea esa ruta. Espejo de my_grades.
+	{ID: L4_RESOURCE_MY_ATTENDANCE_ID, Key: "my_attendance", DisplayName: "Mi Asistencia", Description: "Asistencia propia del alumno", Icon: "check-circle", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 18, IsMenuVisible: true, IsActive: true},
 	// Recursos del representante (plan 024 F1). IsMenuVisible:false — la pantalla
 	// "Mis acudidos" llega en F5; aquí solo existen para colgar los permisos `:own`.
 	{ID: L4_RESOURCE_MY_WARDS_GRADES_ID, Key: "my_wards_grades", DisplayName: "Notas de Acudidos", Description: "Notas de los alumnos a cargo del representante", Icon: "star", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 15, IsMenuVisible: false, IsActive: true},

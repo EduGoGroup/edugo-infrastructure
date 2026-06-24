@@ -566,6 +566,68 @@ func myGradesList() l4ScreenInstanceRow {
 	}
 }
 
+// myTeachingList (plan 027 F3): pantalla "Mis Materias" del profesor. Lista
+// readonly de las sesiones de materia que dicta. Espejo de myGradesList: el
+// contrato KMP consume el lector self GET /api/v1/me/teaching (filtra por
+// teacher_membership_id; el seed solo declara columnas/título/permiso).
+// requiredPermission = academic.my_teaching.read:own (permiso ÚNICO del feature
+// self del profesor: slot.permission de la pantalla, route gate del dato y
+// visibilidad del item de menú). Sin acciones de mutación: actions_removed =
+// [create, edit, delete]. Columnas: subject_name (materia), session_name
+// (sesión) y period_name (período).
+func myTeachingList() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_MY_TEACHING_LIST_ID,
+		screenKey:          "my-teaching-list",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Mis Materias",
+		description:        "Materias y sesiones que dicta el profesor",
+		scope:              "unit",
+		requiredPermission: "academic.my_teaching.read:own",
+		slotData: `{
+  "title": "Mis Materias",
+  "search_placeholder": "Buscar materia...",
+  "columns": [
+    {"key": "subject_name", "label": "Materia"},
+    {"key": "session_name", "label": "Sesión"},
+    {"key": "period_name", "label": "Período"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
+// myAttendanceList (plan 027 F2): pantalla "Mi Asistencia" del alumno. Lista
+// readonly de su propia asistencia. Espejo de myGradesList: el contrato KMP
+// consume el lector self GET /api/v1/me/attendance (endpoint ya existente,
+// auto-scopeado por JWT; el seed solo declara columnas/título/permiso).
+// requiredPermission = academic.my_attendance.read:own (permiso ÚNICO del
+// feature self del alumno: slot.permission de la pantalla, route gate del dato y
+// visibilidad del item de menú). Sin acciones de mutación: actions_removed =
+// [create, edit, delete]. Columnas: date (fecha) y status (estado).
+func myAttendanceList() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_MY_ATTENDANCE_LIST_ID,
+		screenKey:          "my-attendance-list",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Mi Asistencia",
+		description:        "Asistencia propia del alumno",
+		scope:              "unit",
+		requiredPermission: "academic.my_attendance.read:own",
+		slotData: `{
+  "title": "Mi Asistencia",
+  "search_placeholder": "Buscar fecha...",
+  "columns": [
+    {"key": "date", "label": "Fecha"},
+    {"key": "status", "label": "Estado"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "api_prefix": "academic"
+}`,
+	}
+}
+
 func periodsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_PERIODS_LIST_ID,

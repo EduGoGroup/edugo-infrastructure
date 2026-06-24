@@ -761,7 +761,20 @@ package layers
 //     LEGACY (Priority nil → el front cae a sort_order; Pin false): solo se habilita
 //     la CAPACIDAD, sin asignar valores por recurso → cero regresión. Acompaña la
 //     DDL aditiva de la entity Resource (SchemaVersion 3.87.0 → 3.88.0).
-const L4_SEED_VERSION = "1.78.0"
+//   - 1.79.0 (2026-06-24): Plan 027 (permisología por proceso). ADITIVO: 2
+//     recursos my_* nuevos (academic.my_teaching para el profesor, academic.
+//     my_attendance para el alumno) con su permiso read:own, nodo de menú,
+//     screen-instance (my-teaching-list / my-attendance-list, template list
+//     readonly) y resource_screens. SUSTRACTIVO (cierre de fugas de escritura):
+//     poda de grants en studentPatterns (quita attendance.*/announcements.*/
+//     materials.*; deja .read/.download + my_attendance.read:own),
+//     guardianPatterns (quita attendance.*/assessments.*/materials.*/
+//     system_settings.*; announcements.*→.read; +materials.read/.download) y
+//     teacherPatterns (quita subjects.read/subject_offerings.read/units.*/
+//     periods.*/invitations.*/join_requests.*/join_request_approvals.unit.student;
+//     +my_teaching.read:own; reports.* se mantiene como deuda). Solo datos de
+//     seed L4. SchemaVersion 3.88.0 → 3.89.0.
+const L4_SEED_VERSION = "1.79.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

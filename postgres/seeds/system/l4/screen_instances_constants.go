@@ -84,13 +84,23 @@ const (
 	// Permiso propio academic.my_grades.read:own. Espejo de my-memberships-list.
 	// Sufijo …0068 (slot libre del bloque academic structure; los …0060..0067
 	// quedaron libres tras la poda de guardian).
-	L4_SCREEN_INST_MY_GRADES_LIST_ID   = "b4400000-0000-0000-0000-000000000068"
-	L4_SCREEN_INST_SUBJECTS_LIST_ID    = "b4400000-0000-0000-0000-000000000054"
-	L4_SCREEN_INST_SUBJECTS_FORM_ID    = "b4400000-0000-0000-0000-000000000055"
-	L4_SCREEN_INST_PERIODS_LIST_ID     = "b4400000-0000-0000-0000-000000000056"
-	L4_SCREEN_INST_PERIODS_FORM_ID     = "b4400000-0000-0000-0000-000000000057"
-	L4_SCREEN_INST_INVITATIONS_LIST_ID = "b4400000-0000-0000-0000-000000000058"
-	L4_SCREEN_INST_INVITATIONS_FORM_ID = "b4400000-0000-0000-0000-000000000059"
+	L4_SCREEN_INST_MY_GRADES_LIST_ID = "b4400000-0000-0000-0000-000000000068"
+	// "Mis Materias" del profesor (plan 027 F3). Lista readonly de las sesiones
+	// que dicta. El contrato KMP consume GET /api/v1/me/teaching; el seed solo
+	// declara columnas/título/permiso. Permiso propio
+	// academic.my_teaching.read:own. Espejo de my-grades-list. Sufijo …006c.
+	L4_SCREEN_INST_MY_TEACHING_LIST_ID = "b4400000-0000-0000-0000-00000000006c"
+	// "Mi Asistencia" del alumno (plan 027 F2). Lista readonly de su asistencia.
+	// El contrato KMP consume GET /api/v1/me/attendance; el seed solo declara
+	// columnas/título/permiso. Permiso propio academic.my_attendance.read:own.
+	// Espejo de my-grades-list. Sufijo …006d.
+	L4_SCREEN_INST_MY_ATTENDANCE_LIST_ID = "b4400000-0000-0000-0000-00000000006d"
+	L4_SCREEN_INST_SUBJECTS_LIST_ID      = "b4400000-0000-0000-0000-000000000054"
+	L4_SCREEN_INST_SUBJECTS_FORM_ID      = "b4400000-0000-0000-0000-000000000055"
+	L4_SCREEN_INST_PERIODS_LIST_ID       = "b4400000-0000-0000-0000-000000000056"
+	L4_SCREEN_INST_PERIODS_FORM_ID       = "b4400000-0000-0000-0000-000000000057"
+	L4_SCREEN_INST_INVITATIONS_LIST_ID   = "b4400000-0000-0000-0000-000000000058"
+	L4_SCREEN_INST_INVITATIONS_FORM_ID   = "b4400000-0000-0000-0000-000000000059"
 	// invitations-detail: detalle de solo lectura de un código de invitación
 	// (tap de fila en invitations-list). Reusa form-basic-v1 en modo lectura.
 	L4_SCREEN_INST_INVITATIONS_DETAIL_ID = "b4400000-0000-0000-0000-000000000077"

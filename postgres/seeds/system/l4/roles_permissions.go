@@ -328,6 +328,27 @@ func l4Permissions() []l4PermissionSpec {
 		// academic.my_memberships.read:own.
 		{L4_PERM_MY_GRADES_READ_OWN_ID, L4_RESOURCE_MY_GRADES_ID, "academic.my_grades.read:own", "Ver Mis Notas", "Ver el item de menú de notas propias del alumno", "read:own", "unit"},
 
+		// --- my_teaching (resource b4000000-…-2a) — plan 027 F3 ---
+		// Permiso único del feature "mis materias" del profesor. Vive bajo un path
+		// PROPIO (academic.my_teaching.*) — NO bajo academic.subjects.* ni
+		// academic.subject_offerings.* — para que tras podar subjects.read/
+		// subject_offerings.read del teacher (F3) siga viendo SOLO lo que dicta.
+		// Cubre las tres caras del feature self del teacher: visibilidad del item
+		// de menú "Mis Materias", slot.permission de la pantalla my-teaching-list y
+		// route gate de GET /api/v1/me/teaching. Espejo de academic.my_grades.read:own.
+		{L4_PERM_MY_TEACHING_READ_OWN_ID, L4_RESOURCE_MY_TEACHING_ID, "academic.my_teaching.read:own", "Ver Mis Materias", "Ver el item de menú de materias propias del profesor", "read:own", "unit"},
+
+		// --- my_attendance (resource b4000000-…-2b) — plan 027 F2 ---
+		// Permiso único del feature "mi asistencia" del alumno. Vive bajo un path
+		// PROPIO (academic.my_attendance.*) — NO bajo academic.attendance.* — para
+		// que tras podar attendance.* del alumno (F1) siga leyendo SOLO su propia
+		// asistencia. Cubre las tres caras del feature self del student:
+		// visibilidad del item de menú "Mi Asistencia", slot.permission de la
+		// pantalla my-attendance-list y route gate de GET /api/v1/me/attendance
+		// (endpoint ya existente, auto-scopeado por JWT). Espejo de
+		// academic.my_grades.read:own.
+		{L4_PERM_MY_ATTENDANCE_READ_OWN_ID, L4_RESOURCE_MY_ATTENDANCE_ID, "academic.my_attendance.read:own", "Ver Mi Asistencia", "Ver el item de menú de asistencia propia del alumno", "read:own", "unit"},
+
 		// --- my_wards (resources b4000000-…-25/26/27/28) — plan 024 F1 ---
 		// Vistas `:own` del acudido para el rol guardián. Cada una bajo su path
 		// propio academic.my_wards_* (gate de menú por prefijo distinto del CRUD
@@ -601,37 +622,38 @@ func roleGrantPatterns() map[string][]string {
 		"academic.attendance.*",
 		"academic.grades.*",
 		// El docente lee membresías para el roster/directorio de su unidad
-		// (unit-directory). Grant LITERAL a `.read`, NO el wildcard
-		// `academic.memberships.*`: el profesor no crea, edita ni elimina
-		// membresías (eso es de school_admin vía academic.*). Mismo criterio
-		// que `academic.join_request_approvals.unit.student` — literal donde el
-		// wildcard sobre-otorgaría. (DIFERIBLE en F0b: se conserva porque tiene
-		// usos vivos roster/unit-directory; la vista "alumnos por materia" que
-		// también lo usaba se retiró, ver plan 010 N1.7.)
+		// (unit-directory = TODA su unidad, decisión del dueño plan 027 F0.2).
+		// Grant LITERAL a `.read`, NO el wildcard `academic.memberships.*`: el
+		// profesor no crea, edita ni elimina membresías (eso es de school_admin
+		// vía academic.*). MANTENIDO en plan 027 (roster vivo).
 		"academic.memberships.read",
-		"academic.periods.*",
-		// Plan 006 (Trozo A): el docente NO gestiona materias por defecto;
-		// solo las ve (decisión del dueño). Grant LITERAL a `.read`, NO el
-		// wildcard `academic.subjects.*`: crear/editar/eliminar materias es
-		// de school_admin (vía academic.*). Mismo criterio que
-		// `academic.memberships.read` arriba.
-		"academic.subjects.read",
-		// Plan 010 (N1.7): el docente VE sus sesiones de materia (lectura),
-		// igual que ve materias. Grant LITERAL a `.read`, NO el wildcard
-		// `academic.subject_offerings.*`: crear/editar/eliminar sesiones e
-		// inscribir es de school_admin (vía academic.*). Si un docente
-		// concreto debe inscribir, se le da `...enroll` vía user_grant.
-		"academic.subject_offerings.read",
-		"academic.units.*",
-		// Onboarding (plan 005, sello × tipo): el profesor gestiona invitaciones
-		// y solicitudes de su clase, pero SOLO firma el sello de UNIDAD de
-		// alumnos (admite alumnos a SU clase) → grant literal a
-		// `.unit.student`. NO firma el sello de COLEGIO (eso es de school_admin
-		// vía academic.*) ni aprobaciones de profesores/apoderados; nunca el
-		// wildcard `.*` sobre approvals.
-		"academic.invitations.*",
-		"academic.join_requests.*",
-		"academic.join_request_approvals.unit.student",
+		// Plan 027 F3: el docente ve SOLO lo que dicta vía el feature self
+		// academic.my_teaching.read:own (recurso my_teaching, abajo) — reemplaza a
+		// subjects.read + subject_offerings.read (podados aquí). Path PROPIO que no
+		// depende de los wildcards admin academic.subjects.*/subject_offerings.*.
+		"academic.my_teaching.read:own",
+		// Plan 027 F1 (poda de capabilities de administración del profesor — las
+		// asume school_admin vía academic.*):
+		// - academic.subjects.read / academic.subject_offerings.read ELIMINADOS:
+		//   reemplazados por academic.my_teaching.read:own (F3). El profesor no
+		//   necesita el catálogo admin de materias/sesiones de la escuela.
+		// - academic.units.* ELIMINADO: las únicas pantallas que exigen
+		//   academic.units.read (units-list/units-form) son recursos de MENÚ scope
+		//   `school` del admin; ninguna pantalla docente las consume y el dashboard
+		//   docente no las exige. No se deja literal (verificado: sin consumidor docente).
+		// - academic.periods.* ELIMINADO: idéntico a units — solo periods-list/
+		//   periods-form (menú admin scope school) los exigen; el profesor no las ve.
+		// - academic.invitations.* / academic.join_requests.* /
+		//   academic.join_request_approvals.unit.student ELIMINADOS: admitir alumnos
+		//   pasa a ser acto de school_admin (decisión del dueño F0.2). El admin ya
+		//   lo cubre vía academic.*.
+		// DEUDA (no fuga de escritura): reports.* se MANTIENE. El item de menú
+		// "Estadísticas" (recurso stats → stats-dashboard) que ve el profesor
+		// apunta a /api/v1/stats/global, que exige reports.stats.global/school.
+		// Acotar a reports.stats.unit rompería esa pantalla (403). Acotar requiere
+		// primero un endpoint /stats/unit + repointar el contrato FE
+		// (StatsDashboardContract.kt) — fuera del alcance de seguridad de ESCRITURA
+		// de este plan. La fuga prioritaria (escritura) ya quedó cerrada arriba.
 		"content.assessments.*",
 		"content.materials.*",
 		"admin.system_settings.*",
@@ -646,8 +668,16 @@ func roleGrantPatterns() map[string][]string {
 		"messaging.*",
 	}
 	studentPatterns := []string{
-		"academic.announcements.*",
-		"academic.attendance.*",
+		// Plan 027 F1 (poda de fugas de escritura del alumno):
+		// - academic.announcements.* → academic.announcements.read (el alumno LEE
+		//   anuncios; NO crea/edita/borra/publica).
+		// - academic.attendance.* ELIMINADO: podía registrar/sobrescribir asistencia
+		//   (POST /attendance/batch). Su única lectura es el feature self
+		//   academic.my_attendance.read:own (abajo), re-gateado en F2 sobre
+		//   GET /me/attendance.
+		// - content.materials.* → content.materials.read + .download (LEE/descarga
+		//   materiales; NO los gestiona).
+		"academic.announcements.read",
 		// El alumno NO recibe el wildcard `academic.grades.*` (CRUD docente):
 		// ese grant lo dejaba ver/crear/editar notas ajenas vía GET/POST /grades
 		// y ver el menú "Calificaciones" (grades-list) — fuga de privacidad
@@ -672,16 +702,36 @@ func roleGrantPatterns() map[string][]string {
 		// my-grades-list y route gate del dato propio (GET /api/v1/me/grades).
 		// Espejo de academic.my_memberships.read:own.
 		"academic.my_grades.read:own",
+		// Permiso ÚNICO del feature "mi asistencia" del alumno (plan 027 F2). Grant
+		// LITERAL al recurso my_attendance, bajo un path PROPIO
+		// (academic.my_attendance.*) — NO el wildcard `academic.attendance.*` (eso
+		// permanece como CRUD docente, no es el lector self del alumno). Cubre la
+		// visibilidad del item de menú "Mi Asistencia", slot.permission de
+		// my-attendance-list y route gate de GET /me/attendance. Espejo de
+		// academic.my_grades.read:own.
+		"academic.my_attendance.read:own",
 		"content.assessments_student.*",
-		"content.materials.*",
+		"content.materials.read",
+		"content.materials.download",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
 		"screens.*",
 	}
 	guardianPatterns := []string{
-		"academic.announcements.*",
-		"academic.attendance.*",
+		// Plan 027 F1 (poda de fugas de escritura del representante):
+		// - academic.announcements.* → academic.announcements.read (el guardián
+		//   LEE anuncios; NO crea/edita/borra/publica — eso es de staff).
+		// - academic.attendance.* ELIMINADO: podía registrar/sobrescribir
+		//   asistencia (POST /attendance/batch). Ve la de su acudido solo vía
+		//   academic.my_wards_attendance.read:own.
+		// - content.assessments.* ELIMINADO: podía crear/editar/borrar/publicar
+		//   evaluaciones. Ve las de su acudido vía academic.my_wards_assessments.read:own.
+		// - content.materials.* → content.materials.read + .download (LEE/descarga
+		//   materiales; NO los gestiona). Ve los de su acudido vía my_wards_materials.
+		// - admin.system_settings.* ELIMINADO (el guardián no opera preferencias de
+		//   sistema; no hay pantalla suya que lo exija).
+		"academic.announcements.read",
 		// academic.grades.* ELIMINADO en F1 (privacidad): el guardián ve solo a su
 		// hijo vía academic.my_wards_*.read:own (lector real en F3).
 		"academic.guardian_relations.*", // revertir poda 2026-05-29 (revive rutas backend)
@@ -690,9 +740,8 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_announcements.read:own",
 		"academic.my_wards_materials.read:own",
 		"academic.my_wards_assessments.read:own",
-		"content.assessments.*",
-		"content.materials.*",
-		"admin.system_settings.*",
+		"content.materials.read",
+		"content.materials.download",
 		"reports.read",
 		"dashboard.*",
 		"menu.*",

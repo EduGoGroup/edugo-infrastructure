@@ -926,7 +926,21 @@ import (
 //     sort_order). Cambio en entity (DDL aditiva) + datos de seed L4
 //     (L4_SEED_VERSION 1.77.0 → 1.78.0) → cambia el hash de seeds → bump
 //     obligatorio. Recrear BD, sin ALTER.
-const SchemaVersion = "3.88.0"
+//   - 3.89.0 (2026-06-24): Plan 027 (permisología por proceso). Seed-only, sin
+//     DDL. ADITIVO: 2 recursos my_* (academic.my_teaching → profesor ve solo lo
+//     que dicta; academic.my_attendance → alumno lee solo su asistencia) con
+//     permiso read:own, nodo de menú, screen-instance readonly (my-teaching-list
+//     / my-attendance-list) y resource_screens. SUSTRACTIVO (cierre de fugas de
+//     ESCRITURA): poda de grants en studentPatterns / guardianPatterns /
+//     teacherPatterns — el alumno y el representante dejan de poder registrar
+//     asistencia (POST /attendance/batch) y crear/editar/publicar anuncios,
+//     materiales y evaluaciones; el profesor pierde capabilities de
+//     administración (units/periods/invitations/join_requests/admisión) que
+//     asume school_admin. reports.* del teacher se mantiene como deuda (acotar a
+//     stats.unit rompería stats-dashboard, que apunta a /stats/global). Solo
+//     datos de seed L4 (L4_SEED_VERSION 1.78.0 → 1.79.0) → cambia el hash de
+//     seeds → bump obligatorio. Recrear BD, sin ALTER.
+const SchemaVersion = "3.89.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

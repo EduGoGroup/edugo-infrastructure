@@ -205,6 +205,16 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		// abre la lista readonly de notas propias. Espejo de my_memberships.
 		{id: "b4500000-0000-0000-0000-000000000068", resourceID: L4_RESOURCE_MY_GRADES_ID, resourceKey: L4_RESOURCE_MY_GRADES_KEY, screenKey: "my-grades-list", screenType: "list", isDefault: true, sortOrder: 1},
 
+		// academic → my_teaching (plan 027 F3): default del item de menú "Mis
+		// Materias" del profesor. Recurso separado de subjects/subject_offerings;
+		// abre la lista readonly de sesiones que dicta. Espejo de my_grades.
+		{id: "b4500000-0000-0000-0000-00000000006e", resourceID: L4_RESOURCE_MY_TEACHING_ID, resourceKey: L4_RESOURCE_MY_TEACHING_KEY, screenKey: "my-teaching-list", screenType: "list", isDefault: true, sortOrder: 1},
+
+		// academic → my_attendance (plan 027 F2): default del item de menú "Mi
+		// Asistencia" del alumno. Recurso separado de attendance (CRUD docente);
+		// abre la lista readonly de su propia asistencia. Espejo de my_grades.
+		{id: "b4500000-0000-0000-0000-00000000006f", resourceID: L4_RESOURCE_MY_ATTENDANCE_ID, resourceKey: L4_RESOURCE_MY_ATTENDANCE_KEY, screenKey: "my-attendance-list", screenType: "list", isDefault: true, sortOrder: 1},
+
 		// academic → subject_offerings (sesiones de materia, plan 010 / ADR
 		// 0009). batch-enroll = "inscripción por lote", pantalla NATIVA del FE
 		// (Compose, NO SDUI). Único mapping del recurso (list, is_default=true):

@@ -103,6 +103,18 @@ const (
 	// filtrar el item de menú admin "grades" por el gate path-prefix ni depender
 	// del wildcard academic.grades.*. N3 F4 (consulta de notas).
 	L4_PERM_MY_GRADES_READ_OWN_ID = "b4000000-0002-0024-0000-000000000001"
+	// Permiso ÚNICO del feature "mis materias" del profesor (resource 2a,
+	// my_teaching; plan 027 F3). Cubre visibilidad de menú, slot.permission de la
+	// pantalla my-teaching-list y route gate de GET /me/teaching. Vive bajo path
+	// propio (academic.my_teaching.*) para no depender de subjects.read/
+	// subject_offerings.read (podados en F3). Espejo de my_grades.read:own.
+	L4_PERM_MY_TEACHING_READ_OWN_ID = "b4000000-0002-002a-0000-000000000001"
+	// Permiso ÚNICO del feature "mi asistencia" del alumno (resource 2b,
+	// my_attendance; plan 027 F2). Cubre visibilidad de menú, slot.permission de
+	// la pantalla my-attendance-list y route gate de GET /me/attendance. Vive bajo
+	// path propio (academic.my_attendance.*) para no depender del wildcard CRUD
+	// docente academic.attendance.* (podado en F1). Espejo de my_grades.read:own.
+	L4_PERM_MY_ATTENDANCE_READ_OWN_ID = "b4000000-0002-002b-0000-000000000001"
 	// Permisos del representante (plan 024 F1): vistas `:own` del acudido.
 	L4_PERM_MY_WARDS_GRADES_READ_OWN_ID        = "b4000000-0002-0025-0000-000000000001"
 	L4_PERM_MY_WARDS_ATTENDANCE_READ_OWN_ID    = "b4000000-0002-0026-0000-000000000001"

@@ -441,6 +441,8 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		membershipsForm(),   // SOLO EDICIÓN (sin save_new): editar una membresía existente; la creación directa se retiró
 		myMembershipsList(), // "Mis materias" (alumno), reintroducida en N1.7 F1 sobre sesiones
 		myGradesList(),      // "Mis notas" (alumno), consulta de notas N3 F4
+		myTeachingList(),    // "Mis materias" (profesor), plan 027 F3
+		myAttendanceList(),  // "Mi asistencia" (alumno), plan 027 F2
 		subjectsList(),
 		subjectsForm(),
 		periodsList(),

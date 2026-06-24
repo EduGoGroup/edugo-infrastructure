@@ -79,6 +79,23 @@ const (
 	// Sufijo …24 (adyacente a subject_offerings …23 / my_memberships …22).
 	L4_RESOURCE_MY_GRADES_ID  = "b4000000-0000-0000-0000-000000000024"
 	L4_RESOURCE_MY_GRADES_KEY = "my_grades"
+	// Recurso de menú "Mis Materias" del profesor (plan 027, F3). Espejo de
+	// my_grades/my_memberships pero para el rol teacher: recurso de MENÚ con path
+	// propio academic.my_teaching para que el gate de menú por path-prefix NO
+	// dependa de subjects.read/subject_offerings.read (que se podan en F3) ni de
+	// los wildcards admin academic.subjects.*/academic.subject_offerings.*. El
+	// dato propio llega vía GET /api/v1/me/teaching (filtra por
+	// teacher_membership_id). Sufijo …2a (bloque my_* libre tras my_wards …29).
+	L4_RESOURCE_MY_TEACHING_ID  = "b4000000-0000-0000-0000-00000000002a"
+	L4_RESOURCE_MY_TEACHING_KEY = "my_teaching"
+	// Recurso de menú "Mi Asistencia" del alumno (plan 027, F2). Espejo de
+	// my_grades: recurso de MENÚ con path propio academic.my_attendance para que
+	// el gate de menú por path-prefix NO dependa del wildcard CRUD docente
+	// academic.attendance.* (que se poda en F1 por fuga de escritura). El
+	// endpoint GET /me/attendance ya existe y se auto-scopea por JWT; F2 solo
+	// re-gatea esa ruta a academic.my_attendance.read:own. Sufijo …2b.
+	L4_RESOURCE_MY_ATTENDANCE_ID  = "b4000000-0000-0000-0000-00000000002b"
+	L4_RESOURCE_MY_ATTENDANCE_KEY = "my_attendance"
 	// Recursos del representante (plan 024 F1): contenedores de las vistas `:own`
 	// del acudido. NO visibles en menú en F1 (la pantalla del representante es F5).
 	L4_RESOURCE_MY_WARDS_GRADES_ID        = "b4000000-0000-0000-0000-000000000025"
