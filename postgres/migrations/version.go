@@ -940,7 +940,11 @@ import (
 //     stats.unit rompería stats-dashboard, que apunta a /stats/global). Solo
 //     datos de seed L4 (L4_SEED_VERSION 1.78.0 → 1.79.0) → cambia el hash de
 //     seeds → bump obligatorio. Recrear BD, sin ALTER.
-const SchemaVersion = "3.89.0"
+//   - 3.90.0 (plan 027 F4.8): deny en school_admin para sanear la amplitud del
+//     arquetipo "Administra" — `academic.*.read:own` (quita ruido de menú my_* del
+//     admin) y `admin.roles.{create,update,delete}` (no define roles IAM del
+//     sistema). Solo datos de seed L4 (L4_SEED_VERSION 1.79.0 → 1.80.0). Recrear BD.
+const SchemaVersion = "3.90.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

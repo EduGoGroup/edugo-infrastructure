@@ -798,6 +798,27 @@ func roleGrantPatterns() map[string][]string {
 // cae automáticamente aquí.
 func roleGrantDenyPatterns() map[string][]string {
 	return map[string][]string{
+		// school_admin (y sus alias director/coordinator/assistant, que heredan al
+		// aplanar en login) — plan 027 F4.8, saneamiento de amplitud del arquetipo
+		// "Administra". Deny-wins sobre sus wildcards `academic.*` / `admin.*`:
+		//   (a) `academic.*.read:own` → quita el RUIDO de menú: los recursos de
+		//       consumo-propio `my_*` (my_teaching/my_attendance/my_grades/
+		//       my_memberships/my_wards_*) los arrastraba `academic.*` aunque son
+		//       vistas personales del alumno/profesor/representante, no del admin
+		//       (devolvían listas vacías). El patrón medio toca SOLO los `:own`
+		//       ACADÉMICOS — no `admin.users.read:own` (perfil propio) ni los reads
+		//       reales del admin (`academic.subjects.read`, etc.). Verificado con
+		//       iam.permission_matches().
+		//   (b) `admin.roles.{create,update,delete}` → el school_admin NO define
+		//       roles IAM del sistema (eso es de super_admin). Conserva
+		//       `admin.roles.read` (listar para asignar) y la asignación de roles a
+		//       usuarios va por `academic.memberships.*`, no por `admin.roles.*`.
+		L4_ROLE_SCHOOL_ADMIN_ID: {
+			"academic.*.read:own",
+			"admin.roles.create",
+			"admin.roles.update",
+			"admin.roles.delete",
+		},
 		L4_ROLE_READONLY_AUDITOR_ID: {
 			"*.create",
 			"*.update",
