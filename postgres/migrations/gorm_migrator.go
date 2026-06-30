@@ -99,6 +99,9 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// content.progress ELIMINADA (MP-04: huerfana — productor y lector removidos).
 		&entities.Material{},
 		&entities.MaterialFile{},
+		// material_assignment: puente material → oferta (calca assessment_assignment).
+		// Va DESPUES de Material por la FK material_id → content.materials.
+		&entities.MaterialAssignment{},
 
 		// Assessment (N4 / ADR 0019: llaveado al modelo de sesion). assessment
 		// primero; question antes de question_option/attempt_answer; attempt antes

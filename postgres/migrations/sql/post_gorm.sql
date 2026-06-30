@@ -461,6 +461,40 @@ END $$;
 -- (y sus FKs material_version_material_fkey / material_version_membership_fkey)
 -- fue ELIMINADA en F2.
 
+-- content.material_assignment → material (CASCADE) / subject_offering
+-- (CASCADE, la sesion/grupo) / membership que asigna (RESTRICT). Calca
+-- assessment.assessment_assignment. GORM no materializa FKs desde el tag
+-- `constraint:` sin campo de relacion, por eso van aqui (incluida material_id,
+-- same-schema content → content).
+DO $$ BEGIN
+    ALTER TABLE content.material_assignment
+        ADD CONSTRAINT material_assignment_material_fkey
+            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_assignment
+        ADD CONSTRAINT material_assignment_offering_fkey
+            FOREIGN KEY (subject_offering_id) REFERENCES academic.subject_offerings(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_assignment
+        ADD CONSTRAINT material_assignment_assigned_by_fkey
+            FOREIGN KEY (assigned_by_membership_id) REFERENCES academic.memberships(id) ON DELETE RESTRICT;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- No duplicar el mismo material a la misma sesion.
+DO $$ BEGIN
+    ALTER TABLE content.material_assignment
+        ADD CONSTRAINT uq_material_assignment_material_offering
+            UNIQUE (material_id, subject_offering_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- assessment.assessment → schools (CASCADE) / membership autor (RESTRICT) /
 -- subjects (RESTRICT, catalogo de escuela)
 DO $$ BEGIN
@@ -734,6 +768,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- content.materials
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON content.materials
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- content.material_assignment
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON content.material_assignment
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- assessment.assessment

@@ -949,7 +949,13 @@ import (
 //     exigía `academic.subjects.read`, podado del teacher en F3 → 403; el nuevo usa
 //     `academic.my_teaching.read:own` y devuelve solo las materias que el docente dicta).
 //     Solo datos de seed L4 (L4_SEED_VERSION 1.80.0 → 1.81.0). Recrear BD, sin ALTER.
-const SchemaVersion = "3.91.0"
+//   - 3.92.0 (plan 032 B1b): nueva tabla content.material_assignment — puente
+//     material → oferta (subject_offering), calca assessment.assessment_assignment.
+//     Entity content/material_assignment.go + registro en gorm_migrator.go; FKs
+//     cross/same-schema (material/offering/membership), UNIQUE
+//     (material_id, subject_offering_id) y trigger set_updated_at en post_gorm.sql.
+//     DDL aditiva (cambia el hash de post_gorm.sql) → bump obligatorio. Recrear BD.
+const SchemaVersion = "3.92.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
