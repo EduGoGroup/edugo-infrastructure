@@ -944,7 +944,12 @@ import (
 //     arquetipo "Administra" — `academic.*.read:own` (quita ruido de menú my_* del
 //     admin) y `admin.roles.{create,update,delete}` (no define roles IAM del
 //     sistema). Solo datos de seed L4 (L4_SEED_VERSION 1.79.0 → 1.80.0). Recrear BD.
-const SchemaVersion = "3.90.0"
+//   - 3.91.0 (bug 0074): el campo `subject_id` del `assessments-form` se repunta de
+//     `academic:/api/v1/subjects` a `academic:/api/v1/me/subjects` (el endpoint admin
+//     exigía `academic.subjects.read`, podado del teacher en F3 → 403; el nuevo usa
+//     `academic.my_teaching.read:own` y devuelve solo las materias que el docente dicta).
+//     Solo datos de seed L4 (L4_SEED_VERSION 1.80.0 → 1.81.0). Recrear BD, sin ALTER.
+const SchemaVersion = "3.91.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

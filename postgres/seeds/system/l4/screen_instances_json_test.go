@@ -74,9 +74,10 @@ func TestL4EntityPickerConformanceFixture(t *testing.T) {
 		"label":           "Materia",
 		"type":            "entity-picker",
 		"required":        true,
-		"remote_endpoint": "academic:/api/v1/subjects",
+		"remote_endpoint": "academic:/api/v1/me/subjects",
 		"display_field":   "name",
 		"value_field":     "id",
+		"subtitle_field":  "code",
 		"search_param":    "search",
 		"page_size":       float64(20), // JSON numbers → float64
 		"picker_title":    "Buscar materia",

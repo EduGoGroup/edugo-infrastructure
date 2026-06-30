@@ -1314,7 +1314,7 @@ func assessmentsForm() l4ScreenInstanceRow {
   "view_when": {"field": "status", "in": ["published", "archived"]},
   "fields": [
     {"key": "title", "label": "Título", "type": "text", "required": true},
-    {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/subjects", "display_field": "name", "value_field": "id", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
+    {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/me/subjects", "display_field": "name", "value_field": "id", "subtitle_field": "code", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
     {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number", "min": 0, "max": 100},
     {"key": "max_attempts", "label": "Intentos máximos", "type": "number", "min": 1},

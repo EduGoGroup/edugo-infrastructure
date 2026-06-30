@@ -777,7 +777,14 @@ package layers
 //   - 1.80.0 (plan 027 F4.8): deny en school_admin — `academic.*.read:own` (quita
 //     ruido de menú my_* del admin) + `admin.roles.{create,update,delete}` (el
 //     school_admin no define roles IAM del sistema). SchemaVersion 3.89.0 → 3.90.0.
-const L4_SEED_VERSION = "1.80.0"
+//   - 1.81.0 (bug 0074): el campo `subject_id` del `assessments-form` apuntaba a
+//     `academic:/api/v1/subjects` (permiso `academic.subjects.read`, podado del
+//     teacher en F3 → 403 "Error al buscar"). Repuntado a `academic:/api/v1/me/subjects`
+//     (permiso `academic.my_teaching.read:own`, que el docente sí tiene; devuelve solo
+//     las materias que dicta). Además `subtitle_field: "code"` en el entity-picker para
+//     mostrar el código de la materia como subtexto (en vez del UUID del value_field).
+//     Solo datos de seed L4. SchemaVersion 3.90.0 → 3.91.0.
+const L4_SEED_VERSION = "1.81.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
