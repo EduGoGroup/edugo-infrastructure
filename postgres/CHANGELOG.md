@@ -6,6 +6,22 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+Plan 033 Bloque B1b — biblioteca de materiales por grupos. `SchemaVersion` 3.90.0 → **3.92.0**;
+`L4_SEED_VERSION` → **1.81.0**.
+
+### Added
+
+- **`content.material_assignment`**: distribución de materiales por grupo (`subject_offering_id`), calco
+  de `assessment_assignment` (`material_id` → offering, `assigned_by_membership_id`,
+  `available_from/until`, `UNIQUE(material_id, offering_id)`, FKs CASCADE/CASCADE/RESTRICT, trigger
+  `updated_at`). Solo estructura; sin tocar seeds de datos.
+
+### Fixed
+
+- **Seed L4 — form de evaluación**: el campo Materia apuntaba al catálogo admin
+  (`academic:/api/v1/subjects`, permiso podado del profesor → 403); ahora usa
+  `academic:/api/v1/me/subjects` con `subtitle_field=code` (bug 0074).
+
 ## [0.900.15] - 2026-06-24
 
 Plan 027 — permisología por proceso (altitud y arquetipos de acceso). Cierra fugas de ESCRITURA en roles
