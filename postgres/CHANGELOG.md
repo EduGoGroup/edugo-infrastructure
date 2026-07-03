@@ -6,6 +6,21 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.17] - 2026-07-03
+
+Fix del bug 0081 (403 al abrir "Tomar Evaluación" como alumno). `SchemaVersion` 3.92.0 → **3.93.0**;
+`L4_SEED_VERSION` 1.81.0 → **1.82.0**.
+
+### Fixed
+
+- **Seed L4 — recurso `assessments_student` ("Tomar Evaluación")**: la pantalla default era
+  `assessments-list` (lista del docente, `GET /assessments`, permiso `content.assessments.read`) → 403
+  al alumno. Se elimina ese mapping del recurso del estudiante; queda `assigned-assessments-list`
+  (`GET /me/assigned-assessments`, permiso `content.assessments_student.read`) como única pantalla
+  (`isDefault`). Bug 0081.
+
+## [0.900.16] - 2026-06-30
+
 Plan 033 Bloque B1b — biblioteca de materiales por grupos. `SchemaVersion` 3.90.0 → **3.92.0**;
 `L4_SEED_VERSION` → **1.81.0**.
 

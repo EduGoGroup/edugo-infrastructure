@@ -317,12 +317,13 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 
 		// =============================================================
 		// content → assessments_student (flujo del estudiante)
-		// Comparte screen_key `assessments-list` con `assessments`
-		// (mismo screen_instance, distinto recurso). Resolución por
-		// permisos: assessments_student:read.
+		// La pantalla del alumno es `assigned-assessments-list`
+		// (GET /me/assigned-assessments, permiso assessments_student:read).
+		// NO se mapea `assessments-list` acá: esa lista pega al endpoint
+		// del docente (GET /assessments, permiso content.assessments.read)
+		// y el alumno no lo tiene → daría 403 al abrir "Tomar Evaluación".
 		// =============================================================
-		{id: "b4500000-0000-0000-0000-0000000000c0", resourceID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_STUDENT_KEY, screenKey: "assessments-list", screenType: "list", isDefault: true, sortOrder: 1},
-		{id: "b4500000-0000-0000-0000-0000000000c1", resourceID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_STUDENT_KEY, screenKey: "assigned-assessments-list", screenType: "assigned-list", isDefault: false, sortOrder: 2},
+		{id: "b4500000-0000-0000-0000-0000000000c1", resourceID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_STUDENT_KEY, screenKey: "assigned-assessments-list", screenType: "assigned-list", isDefault: true, sortOrder: 1},
 
 		// =============================================================
 		// reports → stats (report-card legacy)

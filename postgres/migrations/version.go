@@ -955,7 +955,14 @@ import (
 //     cross/same-schema (material/offering/membership), UNIQUE
 //     (material_id, subject_offering_id) y trigger set_updated_at en post_gorm.sql.
 //     DDL aditiva (cambia el hash de post_gorm.sql) → bump obligatorio. Recrear BD.
-const SchemaVersion = "3.92.0"
+//   - 3.93.0 (bug 0081): el recurso `assessments_student` ("Tomar Evaluación") tenía
+//     `assessments-list` como pantalla default, que pega al endpoint del docente
+//     (GET /assessments, `content.assessments.read`) → 403 al alumno. Se elimina ese
+//     mapping del recurso del estudiante y `assigned-assessments-list`
+//     (GET /me/assigned-assessments) queda como única pantalla (isDefault). Solo datos
+//     de seed L4 (L4_SEED_VERSION 1.81.0 → 1.82.0) → cambia el hash de seeds → bump
+//     obligatorio. Recrear BD, sin ALTER.
+const SchemaVersion = "3.93.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

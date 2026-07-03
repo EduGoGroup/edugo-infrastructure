@@ -784,7 +784,14 @@ package layers
 //     las materias que dicta). Además `subtitle_field: "code"` en el entity-picker para
 //     mostrar el código de la materia como subtexto (en vez del UUID del value_field).
 //     Solo datos de seed L4. SchemaVersion 3.90.0 → 3.91.0.
-const L4_SEED_VERSION = "1.81.0"
+//   - 1.82.0 (bug 0081): el recurso `assessments_student` ("Tomar Evaluación") tenía
+//     como pantalla default `assessments-list`, que pega al endpoint del docente
+//     (GET /assessments, permiso `content.assessments.read`) → 403 al alumno al abrir
+//     la pantalla. Se elimina ese mapping del recurso del estudiante y queda
+//     `assigned-assessments-list` (GET /me/assigned-assessments, permiso
+//     `content.assessments_student.read`) como única pantalla (isDefault).
+//     Solo datos de seed L4. SchemaVersion 3.92.0 → 3.93.0.
+const L4_SEED_VERSION = "1.82.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
