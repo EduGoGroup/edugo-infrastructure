@@ -962,7 +962,14 @@ import (
 //     (GET /me/assigned-assessments) queda como única pantalla (isDefault). Solo datos
 //     de seed L4 (L4_SEED_VERSION 1.81.0 → 1.82.0) → cambia el hash de seeds → bump
 //     obligatorio. Recrear BD, sin ALTER.
-const SchemaVersion = "3.93.0"
+//   - 3.94.0 (plan 033 B2a): nueva tabla content.user_material_tags — etiquetas
+//     personales por usuario (D-B2.6). Entity content/user_material_tag.go +
+//     registro en gorm_migrator.go. Sin FK dura (user_id vive en auth,
+//     material_id en content); UNIQUE (user_id, material_id, tag) e indice
+//     idx_user_material_tags_user via tags GORM (no toca pre/post_gorm.sql).
+//     Cambio solo en entities → el hash no cambia, pero la regla 1 exige el bump.
+//     Aplicada DIRECTO a Neon de forma aditiva (decision del dueno 2026-07-12).
+const SchemaVersion = "3.94.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

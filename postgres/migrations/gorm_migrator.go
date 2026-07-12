@@ -102,6 +102,10 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// material_assignment: puente material → oferta (calca assessment_assignment).
 		// Va DESPUES de Material por la FK material_id → content.materials.
 		&entities.MaterialAssignment{},
+		// user_material_tags: etiquetas personales por usuario (plan 033, D-B2.6).
+		// Sin FK dura (user_id vive en auth, material_id en content);
+		// UNIQUE (user_id, material_id, tag) + indice por user_id via tags GORM.
+		&entities.UserMaterialTag{},
 
 		// Assessment (N4 / ADR 0019: llaveado al modelo de sesion). assessment
 		// primero; question antes de question_option/attempt_answer; attempt antes
