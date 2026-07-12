@@ -29,15 +29,26 @@ La base documental vigente ya cubre tres capas:
 ## Documentacion general
 
 - [docs/README.md](docs/README.md)
-- [docs/phase-1-scope.md](docs/phase-1-scope.md)
 - [docs/repository-map.md](docs/repository-map.md)
 - [docs/processes.md](docs/processes.md)
 - [docs/architecture.md](docs/architecture.md)
-- [docs/ecosystem-integration.md](docs/ecosystem-integration.md)
 - [docs/automation.md](docs/automation.md)
 - [docs/releasing.md](docs/releasing.md)
-- [docs/roadmap.md](docs/roadmap.md)
 - [CHANGELOG.md](CHANGELOG.md)
+
+> Histórico: `docs/archive/` contiene `phase-1-scope.md`, `ecosystem-integration.md` y `roadmap.md`, de
+> marzo (nombres de API viejos y carpeta `Common/`, ya inexistente). No son fuente de verdad.
+
+## Seeds (MP-09)
+
+`postgres/seeds/` tiene dos planos: `system/` = contrato puro y `playground_v2/` = único mundo de datos,
+con `base` como fixture por defecto (2 escuelas, 9 usuarios `@edugo.test`, login `12345678`). Detalle en
+[`AGENTS.md`](AGENTS.md).
+
+Los comandos que **aplican** migraciones y seeds no viven aquí: están en el `Makefile` de
+`../edugo-dev-environment/migrator/` — `make docker-recreate` (system + base) y
+`make docker-playground-v2 P=<fixture>` (fixtures focalizados). Este repo aporta los schemas, entities,
+migraciones y datos; el migrator los ejecuta.
 
 ## Scripts de automatizacion
 

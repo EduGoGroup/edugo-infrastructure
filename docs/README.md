@@ -4,14 +4,14 @@ Indice general de la documentacion vigente del repositorio.
 
 ## Entrada recomendada
 
-1. [phase-1-scope.md](phase-1-scope.md)
-2. [repository-map.md](repository-map.md)
-3. [processes.md](processes.md)
-4. [architecture.md](architecture.md)
-5. [ecosystem-integration.md](ecosystem-integration.md)
-6. [automation.md](automation.md)
-7. [releasing.md](releasing.md)
-8. [roadmap.md](roadmap.md)
+1. [repository-map.md](repository-map.md)
+2. [processes.md](processes.md)
+3. [architecture.md](architecture.md)
+4. [automation.md](automation.md)
+5. [releasing.md](releasing.md)
+
+> Los documentos `phase-1-scope.md`, `ecosystem-integration.md` y `roadmap.md` eran de marzo (nombres de
+> API viejos + carpeta `Common/`) y se movieron a [`archive/`](archive/README.md) como histórico.
 
 ## Modulos
 
