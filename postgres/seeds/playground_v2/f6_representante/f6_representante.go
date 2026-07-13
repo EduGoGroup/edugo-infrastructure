@@ -107,7 +107,8 @@ func Apply(tx *gorm.DB) error {
 
 	// 1) Evaluaciones (assessment.assessment). Ambas published, creadas por la
 	// docente de Mate5A (bb…08), subject Matemáticas (dd…01), school San Ignacio.
-	// kind explícito: 'final' (va al expediente) vs 'practice' (no va).
+	// purpose explícito (plan 035 D-035.1): 'exam' (va al expediente) vs
+	// 'practice' (no va).
 	assessments := []entities.Assessment{
 		{
 			ID:                    common.MustParseUUID(assessmentFinalID),
@@ -117,7 +118,7 @@ func Apply(tx *gorm.DB) error {
 			Title:                 "Examen Final — Fracciones",
 			SourceType:            "manual",
 			Status:                "published",
-			Kind:                  "final",
+			Purpose:               "exam",
 			QuestionsCount:        3,
 			PassThreshold:         70,
 			ShowCorrectAnswers:    true,
@@ -130,7 +131,7 @@ func Apply(tx *gorm.DB) error {
 			Title:                 "Práctica guiada — Geometría",
 			SourceType:            "manual",
 			Status:                "published",
-			Kind:                  "practice",
+			Purpose:               "practice",
 			QuestionsCount:        3,
 			PassThreshold:         70,
 			ShowCorrectAnswers:    true,

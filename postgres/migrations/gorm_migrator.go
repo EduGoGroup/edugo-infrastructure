@@ -120,6 +120,14 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.AssessmentAttemptAnswer{},
 		&entities.AttemptReview{},
 
+		// Plano de PRACTICA (plan 035 D-035.4). practice_session (cabecera del log)
+		// antes de practice_session_answer (FK session_id → practice_session).
+		// user_question_stat es el acumulador acotado del alumno (una fila por
+		// alumno×pregunta). FKs cross-schema y SET NULL en post_gorm.sql.
+		&entities.PracticeSession{},
+		&entities.PracticeSessionAnswer{},
+		&entities.UserQuestionStat{},
+
 		// UI Config (templates before instances due to FK)
 		&entities.ScreenTemplate{},
 		&entities.ScreenInstance{},

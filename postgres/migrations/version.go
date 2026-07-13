@@ -988,7 +988,23 @@ import (
 //     la revision. Campo TeacherFeedback en entities/assessment_attempt.go via tag
 //     GORM (no toca pre/post_gorm.sql → el hash no cambia, pero la regla 1 exige
 //     el bump). Solo LOCAL en esta tarea; Neon lo aplica otro paso del plan.
-const SchemaVersion = "3.97.0"
+//   - 3.98.0 (plan 035 F1a — capa de práctica): diferenciación explícita
+//     purpose + capa de trazas de práctica. En entities/assessment.go se ELIMINA
+//     la columna `kind` (D-035.2: seed = verdad, sin columnas muertas) y se
+//     agregan `purpose` varchar(20) not null default 'exam' CHECK in
+//     (practice,exam,both) — D-035.1 — y `passing_score` smallint not null
+//     default 60 CHECK 0..100 — D-035.8, umbral que bloquea el reintento del
+//     examen. 3 tablas nuevas en el schema assessment (plano de práctica,
+//     D-035.4): `practice_session` (cabecera del log, assessment_id nullable ON
+//     DELETE SET NULL), `practice_session_answer` (detalle append-only, session_id
+//     CASCADE / question_id SET NULL) y `user_question_stat` (acumulador acotado
+//     del alumno: UNIQUE (membership_id, question_id), índices (school_id,
+//     membership_id, subject_id) y (membership_id, next_review_at) para el SRS de
+//     F2, question_id SET NULL). Las 3 entities registradas en el AutoMigrate; las
+//     FKs cross-schema/SET NULL y los triggers set_updated_at de practice_session
+//     y user_question_stat en post_gorm.sql → ComputeFilesHash() CAMBIA. Solo
+//     LOCAL en esta tarea; Neon lo aplica aditivo (F1b) otro paso del plan.
+const SchemaVersion = "3.98.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

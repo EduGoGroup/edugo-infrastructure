@@ -29,17 +29,25 @@ type Assessment struct {
 	Description           *string   `db:"description" gorm:"default:null" validate:"omitempty"`
 	SourceType            string    `db:"source_type" gorm:"not null;type:varchar(20);default:'manual';check:assessment_source_type_check,source_type IN ('manual','ai_generated')" validate:"required,oneof=manual ai_generated"`
 	Status                string    `db:"status" gorm:"not null;type:varchar(20);default:'draft';index;check:assessment_status_check,status IN ('draft','published','archived')" validate:"required,oneof=draft published archived"`
-	// Kind distingue evaluacion practica vs final (plan 024 F6). Una evaluacion
-	// 'final' genera componente de nota (grade_item) en el expediente; una
-	// 'practice' NO va al expediente: su resultado se guarda en
-	// academic.practice_result (estadisticas). El worker ramifica por este campo.
-	// CHECK inline en el tag GORM (mismo patron que Status / SourceType).
-	Kind             string `db:"kind" gorm:"not null;type:varchar(20);default:'final';check:assessment_kind_check,kind IN ('practice','final')" validate:"required,oneof=practice final"`
-	QuestionsCount   int    `db:"questions_count" gorm:"not null;default:0"`
-	PassThreshold    int    `db:"pass_threshold" gorm:"not null;default:70"`
-	MaxAttempts      *int   `db:"max_attempts" gorm:"default:null" validate:"omitempty"`
-	TimeLimitMinutes *int   `db:"time_limit_minutes" gorm:"default:null" validate:"omitempty"`
-	IsTimed          bool   `db:"is_timed" gorm:"not null;default:false"`
+	// Purpose declara el proposito de la evaluacion (plan 035 D-035.1): 'practice'
+	// (solo runtime de practica, ilimitado, sin nota), 'exam' (runtime de examen
+	// con max_attempts + passing_score, nota al expediente) o 'both' (conviven
+	// ambos puntos de entrada; el modo efectivo se DERIVA del punto de entrada, no
+	// se persiste en el intento). Reemplaza al viejo 'kind' (D-035.2: seed = verdad,
+	// sin columnas muertas). CHECK inline en el tag GORM (mismo patron que Status /
+	// SourceType).
+	Purpose        string `db:"purpose" gorm:"not null;type:varchar(20);default:'exam';check:assessment_purpose_check,purpose IN ('practice','exam','both')" validate:"required,oneof=practice exam both"`
+	QuestionsCount int    `db:"questions_count" gorm:"not null;default:0"`
+	PassThreshold  int    `db:"pass_threshold" gorm:"not null;default:70"`
+	// PassingScore es el umbral de aprobacion del examen 0..100 (plan 035 D-035.8):
+	// un intento 'completed' con score >= passing_score bloquea el reintento
+	// (ErrAssessmentAlreadyPassed). Aplica solo al runtime de examen (purpose
+	// exam/both entrando como examen); la practica no tiene umbral. CHECK 0..100
+	// inline en el tag GORM (mismo patron que Status / Purpose).
+	PassingScore     int16 `db:"passing_score" gorm:"not null;type:smallint;default:60;check:assessment_passing_score_check,passing_score >= 0 AND passing_score <= 100" validate:"min=0,max=100"`
+	MaxAttempts      *int  `db:"max_attempts" gorm:"default:null" validate:"omitempty"`
+	TimeLimitMinutes *int  `db:"time_limit_minutes" gorm:"default:null" validate:"omitempty"`
+	IsTimed          bool  `db:"is_timed" gorm:"not null;default:false"`
 	// IsPublic marca la evaluacion como disponible en el catalogo (plan 032 B2a).
 	// Distingue disponibilidad/catalogo vs distribucion por grupos (subject_offering).
 	IsPublic           bool       `db:"is_public" gorm:"not null;default:false"`

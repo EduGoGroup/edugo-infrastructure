@@ -803,7 +803,16 @@ package layers
 //     usan (status=published AND is_public=false / is_public=true); las existentes
 //     no se tocan. Solo cambia slot_data de la instancia → bump para invalidar la
 //     caché SDUI. SchemaVersion 3.95.0 → 3.96.0.
-const L4_SEED_VERSION = "1.83.0"
+//   - 1.84.0: plan 035 F1h — diferenciación de propósito en `assessments-form`.
+//     Nuevo field `purpose` (select practice/exam/both, required, default exam,
+//     hint que advierte que «Ambos» revela las respuestas al practicar — D-035.1).
+//     `max_attempts` y el nuevo field `passing_score` (number 0-100, default 60,
+//     D-035.8) llevan visible_when {"field":"purpose","in":["exam","both"]}: al
+//     elegir «Práctica» desaparecen y no viajan en el body (pruning; soporte de
+//     visible_when en fields ya existe en el front, D-035.7 — cero código KMP).
+//     Solo cambia slot_data de la instancia → bump para invalidar la caché SDUI.
+//     SchemaVersion 3.97.0 → 3.98.0.
+const L4_SEED_VERSION = "1.84.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

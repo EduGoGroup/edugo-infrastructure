@@ -625,6 +625,85 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- Plano de PRACTICA (plan 035 D-035.4). Log prescindible + acumulador acotado.
+-- assessment.practice_session → schools (CASCADE) / membership del alumno
+-- (CASCADE) / subject (CASCADE) / assessment (SET NULL: el historial NO cuelga
+-- del assessment, la sesion sobrevive huerfana al borrarlo).
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session
+        ADD CONSTRAINT practice_session_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session
+        ADD CONSTRAINT practice_session_membership_fkey
+            FOREIGN KEY (membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session
+        ADD CONSTRAINT practice_session_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session
+        ADD CONSTRAINT practice_session_assessment_fkey
+            FOREIGN KEY (assessment_id) REFERENCES assessment.assessment(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.practice_session_answer → practice_session (CASCADE) / question
+-- (SET NULL: el log sobrevive al borrado de la pregunta).
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session_answer
+        ADD CONSTRAINT practice_session_answer_session_fkey
+            FOREIGN KEY (session_id) REFERENCES assessment.practice_session(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.practice_session_answer
+        ADD CONSTRAINT practice_session_answer_question_fkey
+            FOREIGN KEY (question_id) REFERENCES assessment.question(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- assessment.user_question_stat → schools (CASCADE) / membership del alumno
+-- (CASCADE) / subject (CASCADE) / question (SET NULL: el acumulador es historia
+-- del alumno, sobrevive al borrado de la pregunta via question_snapshot).
+DO $$ BEGIN
+    ALTER TABLE assessment.user_question_stat
+        ADD CONSTRAINT user_question_stat_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.user_question_stat
+        ADD CONSTRAINT user_question_stat_membership_fkey
+            FOREIGN KEY (membership_id) REFERENCES academic.memberships(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.user_question_stat
+        ADD CONSTRAINT user_question_stat_subject_fkey
+            FOREIGN KEY (subject_id) REFERENCES academic.subjects(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE assessment.user_question_stat
+        ADD CONSTRAINT user_question_stat_question_fkey
+            FOREIGN KEY (question_id) REFERENCES assessment.question(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- ============================================================
 -- Triggers (CREATE OR REPLACE TRIGGER — PostgreSQL 14+)
 -- ============================================================
@@ -808,6 +887,17 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- assessment.attempt_review
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON assessment.attempt_review
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- assessment.practice_session (plan 035; practice_session_answer no tiene
+-- updated_at, solo answered_at, por eso no lleva trigger).
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.practice_session
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- assessment.user_question_stat (plan 035)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.user_question_stat
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- ui_config.screen_templates

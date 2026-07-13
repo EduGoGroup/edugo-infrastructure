@@ -1328,8 +1328,14 @@ func assessmentsForm() l4ScreenInstanceRow {
     {"key": "title", "label": "Título", "type": "text", "required": true},
     {"key": "subject_id", "label": "Materia", "type": "entity-picker", "required": true, "remote_endpoint": "academic:/api/v1/me/subjects", "display_field": "name", "value_field": "id", "subtitle_field": "code", "search_param": "search", "page_size": 20, "picker_title": "Buscar materia"},
     {"key": "description", "label": "Descripción", "type": "textarea"},
+    {"key": "purpose", "label": "Propósito", "type": "select", "required": true, "default": "exam", "hint": "«Práctica»: el alumno repite sin límite con respuestas al instante, sin nota. «Examen»: intentos limitados y nota al expediente. «Ambos»: conviven práctica y examen — OJO, practicar revela las respuestas correctas del mismo contenido que luego será examen.", "options": [
+      {"value": "practice", "label": "Práctica"},
+      {"value": "exam", "label": "Examen"},
+      {"value": "both", "label": "Ambos"}
+    ]},
     {"key": "pass_threshold", "label": "Umbral de aprobación (%)", "type": "number", "min": 0, "max": 100},
-    {"key": "max_attempts", "label": "Intentos máximos", "type": "number", "min": 1},
+    {"key": "max_attempts", "label": "Intentos máximos", "type": "number", "min": 1, "visible_when": {"field": "purpose", "in": ["exam", "both"]}},
+    {"key": "passing_score", "label": "Nota mínima para aprobar (%)", "type": "number", "min": 0, "max": 100, "default": "60", "hint": "Si el alumno aprueba con esta nota o más, no puede volver a intentar el examen.", "visible_when": {"field": "purpose", "in": ["exam", "both"]}},
     {"key": "time_limit_minutes", "label": "Tiempo límite (min)", "type": "number", "min": 1},
     {"key": "is_timed", "label": "Cronometrada", "type": "boolean"},
     {"key": "shuffle_questions", "label": "Mezclar preguntas", "type": "boolean"},
