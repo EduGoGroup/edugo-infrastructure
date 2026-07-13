@@ -969,7 +969,13 @@ import (
 //     idx_user_material_tags_user via tags GORM (no toca pre/post_gorm.sql).
 //     Cambio solo en entities → el hash no cambia, pero la regla 1 exige el bump.
 //     Aplicada DIRECTO a Neon de forma aditiva (decision del dueno 2026-07-12).
-const SchemaVersion = "3.94.0"
+//   - 3.95.0 (plan 032 B2a): assessment.is_public (catalogo de evaluaciones) —
+//     nueva columna boolean not null default false en assessment.assessment, que
+//     distingue disponibilidad/catalogo vs distribucion por grupos. Campo IsPublic
+//     en entities/assessment.go via tag GORM (no toca pre/post_gorm.sql → el hash
+//     no cambia, pero la regla 1 exige el bump). Aplicada DIRECTO a Neon de forma
+//     aditiva (AutoMigrate focalizado, sin FORCE).
+const SchemaVersion = "3.95.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

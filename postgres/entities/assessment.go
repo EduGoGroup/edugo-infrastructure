@@ -40,6 +40,9 @@ type Assessment struct {
 	MaxAttempts        *int       `db:"max_attempts" gorm:"default:null" validate:"omitempty"`
 	TimeLimitMinutes   *int       `db:"time_limit_minutes" gorm:"default:null" validate:"omitempty"`
 	IsTimed            bool       `db:"is_timed" gorm:"not null;default:false"`
+	// IsPublic marca la evaluacion como disponible en el catalogo (plan 032 B2a).
+	// Distingue disponibilidad/catalogo vs distribucion por grupos (subject_offering).
+	IsPublic           bool       `db:"is_public" gorm:"not null;default:false"`
 	ShuffleQuestions   bool       `db:"shuffle_questions" gorm:"not null;default:false"`
 	ShowCorrectAnswers bool       `db:"show_correct_answers" gorm:"not null;default:true"`
 	AvailableFrom      *time.Time `db:"available_from" gorm:"default:null"`
