@@ -6,6 +6,17 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.18] - 2026-07-12
+
+Plan 033 Bloque B2a — etiquetas personales de materiales. `SchemaVersion` 3.93.0 → **3.94.0**;
+`L4_SEED_VERSION` sin cambios (solo estructura, sin tocar seeds de datos).
+
+### Added
+
+- **`content.user_material_tags`**: etiquetas personales de materiales por usuario. Nueva entity
+  `UserMaterialTag` con `UNIQUE(user_id, material_id, tag)` e índice por `user_id`, registrada en
+  `AutoMigrate`. Aplicada aditivamente a Neon.
+
 ## [0.900.17] - 2026-07-03
 
 Fix del bug 0081 (403 al abrir "Tomar Evaluación" como alumno). `SchemaVersion` 3.92.0 → **3.93.0**;
