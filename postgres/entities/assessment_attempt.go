@@ -31,8 +31,10 @@ type AssessmentAttempt struct {
 	TimeSpentSeconds    *int            `db:"time_spent_seconds" gorm:"default:null;check:assessment_attempt_time_spent_check,time_spent_seconds IS NULL OR (time_spent_seconds > 0 AND time_spent_seconds <= 7200)" validate:"omitempty"`
 	IdempotencyKey      *string         `db:"idempotency_key" gorm:"uniqueIndex;size:64" validate:"omitempty"`
 	Status              string          `db:"status" gorm:"not null;type:varchar(50);index;default:'in_progress';check:assessment_attempt_status_check,status IN ('in_progress','completed','abandoned','pending_review')" validate:"required,oneof=in_progress completed abandoned pending_review"`
-	CreatedAt           time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt           time.Time       `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// TeacherFeedback es el comentario global del profesor al finalizar la revision (plan 036 D-036.4).
+	TeacherFeedback *string   `db:"teacher_feedback" gorm:"type:text;default:null" validate:"omitempty"`
+	CreatedAt       time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt       time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

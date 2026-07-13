@@ -983,7 +983,12 @@ import (
 //     (L4_SEED_VERSION 1.82.0 → 1.83.0) → cambia el hash de seeds → bump
 //     obligatorio. El slot_data del row se aplica DIRECTO a Neon de forma aditiva
 //     (UPDATE del row, sin recrear, sin FORCE).
-const SchemaVersion = "3.96.0"
+//   - 3.97.0 (plan 036 D-036.4): nueva columna teacher_feedback text nullable en
+//     assessment.assessment_attempt — comentario global del profesor al finalizar
+//     la revision. Campo TeacherFeedback en entities/assessment_attempt.go via tag
+//     GORM (no toca pre/post_gorm.sql → el hash no cambia, pero la regla 1 exige
+//     el bump). Solo LOCAL en esta tarea; Neon lo aplica otro paso del plan.
+const SchemaVersion = "3.97.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
