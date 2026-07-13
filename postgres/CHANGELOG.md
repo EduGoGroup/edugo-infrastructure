@@ -6,6 +6,18 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.19] - 2026-07-13
+
+Plan 032 (ola 2) — catálogo de evaluaciones. `SchemaVersion` 3.94.0 → **3.96.0**;
+`L4_SEED_VERSION` 1.82.0 → **1.83.0**. Ambas aplicadas aditivamente a Neon.
+
+### Added
+
+- **`assessment.is_public`** (3.95.0): columna que habilita el catálogo de evaluaciones (visibilidad
+  pública, autor mantiene propiedad).
+- **Seed L4 — recurso `assessments-form`** (3.96.0): acciones `publish-catalog`/`unpublish-catalog`,
+  con `visible_when` en lista combinado en AND. `L4_SEED_VERSION` **1.83.0**.
+
 ## [0.900.18] - 2026-07-12
 
 Plan 033 Bloque B2a — etiquetas personales de materiales. `SchemaVersion` 3.93.0 → **3.94.0**;

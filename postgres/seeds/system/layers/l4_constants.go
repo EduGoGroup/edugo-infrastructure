@@ -791,7 +791,19 @@ package layers
 //     `assigned-assessments-list` (GET /me/assigned-assessments, permiso
 //     `content.assessments_student.read`) como única pantalla (isDefault).
 //     Solo datos de seed L4. SchemaVersion 3.92.0 → 3.93.0.
-const L4_SEED_VERSION = "1.82.0"
+//   - 1.83.0 (plan 032 B2 — toggle catálogo por SDUI): dos acciones de toolbar
+//     nuevas en `assessments-form` (actions_added): `publicar-catalogo`
+//     ("Publicar al catálogo", event_id publish-catalog, order 42) y
+//     `quitar-catalogo` ("Quitar del catálogo", event_id unpublish-catalog,
+//     order 44), ambas permission content.assessments.update, condition edit-only,
+//     scope resource-toolbar (calcan el shape de publish/archive; el endpoint lo
+//     resuelve el cliente por event_id, sin URL). Extiende el shape de
+//     `visible_when` de forma ADITIVA: además del objeto simple {field, equals|in},
+//     admite una LISTA de objetos evaluados en AND. Las dos acciones nuevas la
+//     usan (status=published AND is_public=false / is_public=true); las existentes
+//     no se tocan. Solo cambia slot_data de la instancia → bump para invalidar la
+//     caché SDUI. SchemaVersion 3.95.0 → 3.96.0.
+const L4_SEED_VERSION = "1.83.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

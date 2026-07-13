@@ -34,12 +34,12 @@ type Assessment struct {
 	// 'practice' NO va al expediente: su resultado se guarda en
 	// academic.practice_result (estadisticas). El worker ramifica por este campo.
 	// CHECK inline en el tag GORM (mismo patron que Status / SourceType).
-	Kind               string     `db:"kind" gorm:"not null;type:varchar(20);default:'final';check:assessment_kind_check,kind IN ('practice','final')" validate:"required,oneof=practice final"`
-	QuestionsCount     int        `db:"questions_count" gorm:"not null;default:0"`
-	PassThreshold      int        `db:"pass_threshold" gorm:"not null;default:70"`
-	MaxAttempts        *int       `db:"max_attempts" gorm:"default:null" validate:"omitempty"`
-	TimeLimitMinutes   *int       `db:"time_limit_minutes" gorm:"default:null" validate:"omitempty"`
-	IsTimed            bool       `db:"is_timed" gorm:"not null;default:false"`
+	Kind             string `db:"kind" gorm:"not null;type:varchar(20);default:'final';check:assessment_kind_check,kind IN ('practice','final')" validate:"required,oneof=practice final"`
+	QuestionsCount   int    `db:"questions_count" gorm:"not null;default:0"`
+	PassThreshold    int    `db:"pass_threshold" gorm:"not null;default:70"`
+	MaxAttempts      *int   `db:"max_attempts" gorm:"default:null" validate:"omitempty"`
+	TimeLimitMinutes *int   `db:"time_limit_minutes" gorm:"default:null" validate:"omitempty"`
+	IsTimed          bool   `db:"is_timed" gorm:"not null;default:false"`
 	// IsPublic marca la evaluacion como disponible en el catalogo (plan 032 B2a).
 	// Distingue disponibilidad/catalogo vs distribucion por grupos (subject_offering).
 	IsPublic           bool       `db:"is_public" gorm:"not null;default:false"`

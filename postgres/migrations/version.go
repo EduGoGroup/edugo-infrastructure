@@ -975,7 +975,15 @@ import (
 //     en entities/assessment.go via tag GORM (no toca pre/post_gorm.sql → el hash
 //     no cambia, pero la regla 1 exige el bump). Aplicada DIRECTO a Neon de forma
 //     aditiva (AutoMigrate focalizado, sin FORCE).
-const SchemaVersion = "3.95.0"
+//   - 3.96.0 (plan 032 B2 — toggle catálogo por SDUI): dos acciones de toolbar
+//     nuevas en el screen_instance `assessments-form` (`publicar-catalogo` /
+//     `quitar-catalogo`, event_id publish-catalog / unpublish-catalog) que togglean
+//     assessment.is_public por SDUI. Extiende el shape de `visible_when` de forma
+//     aditiva (objeto simple → o LISTA de objetos en AND). Solo datos de seed L4
+//     (L4_SEED_VERSION 1.82.0 → 1.83.0) → cambia el hash de seeds → bump
+//     obligatorio. El slot_data del row se aplica DIRECTO a Neon de forma aditiva
+//     (UPDATE del row, sin recrear, sin FORCE).
+const SchemaVersion = "3.96.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

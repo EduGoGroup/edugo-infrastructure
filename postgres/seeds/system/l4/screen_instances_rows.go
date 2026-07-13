@@ -1291,6 +1291,18 @@ func assessmentsList() l4ScreenInstanceRow {
 // con modal de crear/editar). El frontend KMP es quien lo interpreta; el
 // backend solo lo persiste como blob.
 //
+// Shape de `visible_when` (ADITIVO, retrocompatible): admite DOS formas y el
+// motor SDUI del KMP debe soportar ambas:
+//   - OBJETO simple  {field, equals|in}  → UNA condición (forma histórica; la
+//     conservan assign/publish/archive/delete).
+//   - LISTA de objetos [{field, equals|in}, ...] → varias condiciones evaluadas
+//     en AND (todas deben cumplirse). La usan las acciones de catálogo nuevas:
+//     `publicar-catalogo` (status=published AND is_public=false) y
+//     `quitar-catalogo` (status=published AND is_public=true). El toggle de
+//     catálogo (is_public) se resuelve por event_id: publish-catalog /
+//     unpublish-catalog (sin URL; el cliente mapea el endpoint, igual que
+//     publish/archive).
+//
 // Contrato N4 (plan 015): POST/GET /api/v1/assessments, GET/PUT/DELETE
 // /assessments/:assessment_id (read/update/delete), POST .../publish y
 // .../archive. El cuerpo de crear NO lleva school_id ni autor (del JWT); el
@@ -1331,9 +1343,11 @@ func assessmentsForm() l4ScreenInstanceRow {
   "actions_removed": ["delete"],
   "actions_added": [
     {"id": "detail",  "scope": "resource-toolbar", "icon": "help_outline", "label": "Preguntas", "permission": "content.assessments.read",   "condition": "edit-only", "event_id": "view-questions", "style": "icon", "order": 15},
-    {"id": "assign",  "scope": "resource-toolbar", "icon": "assignment",   "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20, "visible_when": {"field": "status", "equals": "published"}},
+    {"id": "assign",  "scope": "resource-toolbar", "icon": "assign",       "label": "Asignar",   "permission": "content.assessments.assign", "condition": "edit-only", "event_id": "assign",         "style": "icon", "order": 20, "visible_when": {"field": "status", "equals": "published"}},
     {"id": "publish", "scope": "resource-toolbar", "icon": "check_circle", "label": "Publicar",  "permission": "content.assessments.publish", "condition": "edit-only", "event_id": "publish",        "style": "icon", "order": 30, "visible_when": {"field": "status", "equals": "draft"}},
     {"id": "archive", "scope": "resource-toolbar", "icon": "archive",      "label": "Archivar",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "archive",        "style": "icon", "order": 40, "visible_when": {"field": "status", "equals": "published"}},
+    {"id": "publicar-catalogo", "scope": "resource-toolbar", "icon": "visibility",   "label": "Publicar al catálogo", "permission": "content.assessments.update", "condition": "edit-only", "event_id": "publish-catalog",   "style": "icon", "order": 42, "visible_when": [{"field": "status", "equals": "published"}, {"field": "is_public", "equals": false}]},
+    {"id": "quitar-catalogo",   "scope": "resource-toolbar", "icon": "visibility_off", "label": "Quitar del catálogo",  "permission": "content.assessments.update", "condition": "edit-only", "event_id": "unpublish-catalog", "style": "icon", "order": 44, "visible_when": [{"field": "status", "equals": "published"}, {"field": "is_public", "equals": true}]},
     {"id": "delete",  "scope": "form-submit",      "icon": "trash",        "label": "Eliminar",  "permission": "content.assessments.delete", "condition": "edit-only", "event_id": "delete",         "style": "destructive", "order": 50, "visible_when": {"field": "status", "equals": "draft"}}
   ],
   "api_prefix": "learning"
