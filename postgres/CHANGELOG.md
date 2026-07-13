@@ -6,6 +6,26 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.20] - 2026-07-13
+
+Planes 036 (plano de examen sano) y 035 F1 (capa de práctica). `SchemaVersion` 3.96.0 → **3.98.0**;
+`L4_SEED_VERSION` con el field `purpose` + `visible_when` en `assessments-form`. Todo aplicado
+aditivamente a Neon (3.97.0 y 3.98.0 estampados con hash combinado).
+
+### Added
+
+- **`assessment_attempt.teacher_feedback`** (3.97.0): comentario global del docente al finalizar la
+  revisión (plan 036 D-036.4).
+- **Capa de práctica** (3.98.0, plan 035 F1a): `assessment.purpose` (practice|exam|both, default exam)
+  + `assessment.passing_score`; entities nuevas `practice_session`, `practice_session_answer`,
+  `user_question_stat` (acumulador acotado, UNIQUE membership+question); backfill `purpose` ← `kind`.
+- **Seed L4 `assessments-form`**: select `purpose` con `visible_when` en `max_attempts`/`passing_score`.
+
+### Removed
+
+- **`Assessment.Kind`** fuera de la entity (el seed/BD local nace sin `kind`; el DROP en Neon es la
+  tarea 035-F1k, tras el deploy de learning sin referencias).
+
 ## [0.900.19] - 2026-07-13
 
 Plan 032 (ola 2) — catálogo de evaluaciones. `SchemaVersion` 3.94.0 → **3.96.0**;
