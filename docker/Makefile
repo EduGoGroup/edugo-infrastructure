@@ -18,8 +18,8 @@ validate: ## Validar docker-compose.yml
 	@$(COMPOSE) -f docker-compose.yml config -q
 	@echo "$(GREEN)docker-compose.yml validado$(NC)"
 
-up-core: ## Levantar PostgreSQL + MongoDB
-	@$(COMPOSE) up -d postgres mongodb
+up-core: ## Levantar PostgreSQL
+	@$(COMPOSE) up -d postgres
 
 up-messaging: ## Levantar core + RabbitMQ
 	@$(COMPOSE) --profile messaging up -d

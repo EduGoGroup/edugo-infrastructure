@@ -2,12 +2,11 @@
 
 ## Vista rapida
 
-Este repositorio contiene cinco superficies documentadas y un conjunto transversal de automatizacion.
+Este repositorio contiene cuatro superficies documentadas y un conjunto transversal de automatizacion.
 
 | Superficie | Tipo | Estado observado | Fuente principal |
 | --- | --- | --- | --- |
 | `postgres/` | Modulo Go + SQL | Operativo en tests cortos | SQL embebido, seeds, entities, CLIs |
-| `mongodb/` | Modulo Go + Mongo | Operativo en tests cortos | migraciones Go, seeds, mock data, entities |
 | `schemas/` | Modulo Go | Operativo en tests cortos | JSON Schemas embebidos + validator |
 | `tools/mock-generator/` | Modulo Go CLI | Compila via tests | parser SQL + generador de dataset |
 | `docker/` | Soporte de runtime local | Configurado | `docker-compose.yml` y `.env.example` |
@@ -19,7 +18,6 @@ Este repositorio contiene cinco superficies documentadas y un conjunto transvers
 - `postgres/seeds/system/layers` + `postgres/seeds/system/l4`: capas L0..L4 del rebuild (post-Fase-6)
 - `postgres/seeds/demo`: seed de desarrollo (ex `development/`)
 - `postgres/entities`: 27 structs Go
-- `mongodb/entities`: 3 structs Go
 - `schemas/events`: 4 contratos JSON Schema
 - `.github/workflows`: 9 workflows
 - `.github/actions`: 3 composite actions
@@ -33,7 +31,6 @@ Este repositorio contiene cinco superficies documentadas y un conjunto transvers
 |-- .golangci.yml
 |-- docs/
 |-- docker/
-|-- mongodb/
 |-- postgres/
 |-- schemas/
 |-- scripts/
@@ -44,7 +41,6 @@ Este repositorio contiene cinco superficies documentadas y un conjunto transvers
 ## Modulos y lectura sugerida
 
 - `postgres`: ver [../postgres/docs/processes.md](../postgres/docs/processes.md)
-- `mongodb`: ver [../mongodb/docs/processes.md](../mongodb/docs/processes.md)
 - `schemas`: ver [../schemas/docs/processes.md](../schemas/docs/processes.md)
 - `tools/mock-generator`: ver [../tools/mock-generator/docs/processes.md](../tools/mock-generator/docs/processes.md)
 - `docker`: ver [../docker/docs/processes.md](../docker/docs/processes.md)

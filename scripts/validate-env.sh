@@ -33,13 +33,6 @@ else
     echo "✅ DB_USER=$DB_USER"
 fi
 
-# Validar MongoDB
-if [ -z "$MONGO_HOST" ]; then
-    echo "⚠️  MONGO_HOST no definido (usando localhost)"
-else
-    echo "✅ MONGO_HOST=$MONGO_HOST"
-fi
-
 # Validar RabbitMQ (opcional)
 if [ -z "$RABBITMQ_HOST" ]; then
     echo "⚠️  RABBITMQ_HOST no definido (opcional para desarrollo core)"

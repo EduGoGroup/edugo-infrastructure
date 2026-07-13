@@ -13,7 +13,7 @@ import (
 // F2 (plan 018): el material pasa a ser el TEMA (maestro). Los datos de
 // archivo (file_url/file_type/file_size_bytes) BAJAN al hijo content.material_file
 // (N archivos por tema, DEC-3). Se gana `summary` (markdown a mano del docente,
-// DEC-2; distinto del material_summary de MongoDB que genera la IA del worker).
+// DEC-2: el resumen manual del docente, no un artefacto generado).
 // El `status` se queda en el tema (DEC-4): informativo, NO gatea abrir/descargar.
 //
 // Cambio vs N4:

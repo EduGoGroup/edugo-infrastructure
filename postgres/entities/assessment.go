@@ -18,8 +18,8 @@ import (
 //
 // FKs cross-schema (school_id, created_by_membership_id, subject_id) se
 // materializan en migrations/sql/post_gorm.sql (GORM no crea FK desde el tag
-// `constraint:` sin campo de relacion). mongo_document_id queda reservado para
-// V2 (source_type='ai_generated').
+// `constraint:` sin campo de relacion). mongo_document_id es una columna legada
+// reservada (source_type='ai_generated'), hoy sin backing store documental.
 type Assessment struct {
 	ID                    uuid.UUID `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	SchoolID              uuid.UUID `db:"school_id" gorm:"type:uuid;not null;index;constraint:assessment_school_fkey,OnDelete:CASCADE" validate:"required,uuid"`

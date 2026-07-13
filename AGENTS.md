@@ -7,16 +7,15 @@
 ## Propósito
 
 **Base de infraestructura y contratos compartidos** de EduGo: el esquema relacional Postgres (schemas,
-migraciones, entities, seeds), las collections de MongoDB, los **JSON Schema** que validan los eventos
-del ecosistema, la topología local de Docker Compose, y herramientas de generación de datos. No es un
-servicio de runtime: es el sustrato sobre el que corren las APIs y el worker.
+migraciones, entities, seeds), los **JSON Schema** que validan los eventos del ecosistema, la topología
+local de Docker Compose, y herramientas de generación de datos. No es un servicio de runtime: es el
+sustrato sobre el que corren las APIs y el worker.
 
 ## Módulos
 
 | Módulo | Rol |
 | --- | --- |
 | `postgres` | Schema relacional (`auth`, `iam`, `academic`, `assessment`, `content`, `ui_config`, `notifications`, `audit`, ...), `migrations/`, `entities/`, `seeds/` (`system/` = contrato + `playground_v2/` = datos, con `base` por defecto; ver MP-09), runner. Tiene su propio `go.mod`. |
-| `mongodb` | Collections documentales y fixtures que consume el worker. |
 | `schemas` | Validación de contratos vía JSON Schema para los eventos (`events/`); empareja con `edugo-shared/messaging/events`. |
 | `tools/mock-generator` | Generación de datasets Go desde SQL. |
 | `docker` | Topología local con Docker Compose. |
@@ -24,7 +23,7 @@ servicio de runtime: es el sustrato sobre el que corren las APIs y el worker.
 ## Cómo usar
 
 `Makefile` raíz + un `make` por módulo. Patrón observado: `make -C <modulo> release-check` valida cada
-superficie (postgres, mongodb, schemas, tools/mock-generator, docker).
+superficie (postgres, schemas, tools/mock-generator, docker).
 Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar seeds),
 `module-release.sh` / `auto-release.sh` (release por módulo).
 

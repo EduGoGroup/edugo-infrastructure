@@ -13,7 +13,7 @@ Uso:
 Ejemplos:
   scripts/module-release.sh prepare postgres v0.62.0
   scripts/module-release.sh notes tools/mock-generator v0.1.3
-  scripts/module-release.sh github mongodb v0.54.0
+  scripts/module-release.sh github schemas v0.54.0
 USAGE
 }
 

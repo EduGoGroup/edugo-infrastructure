@@ -86,7 +86,7 @@ make auto-release-help
 ./scripts/auto-release.sh --dry-run --verbose
 
 # Procesar solo módulos específicos
-./scripts/auto-release.sh postgres mongodb
+./scripts/auto-release.sh postgres schemas
 
 # Modo no interactivo (para scripts)
 ./scripts/auto-release.sh --all --yes

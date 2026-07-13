@@ -39,7 +39,7 @@ make auto-release
 ```bash
 # 1. Modifica varios CHANGELOGs (SIN commitear)
 vim postgres/CHANGELOG.md
-vim mongodb/CHANGELOG.md
+vim schemas/CHANGELOG.md
 
 # 2. Procesar todos automáticamente
 make auto-release-all
@@ -52,8 +52,8 @@ make auto-release
 ### Caso 3: Módulos Específicos
 
 ```bash
-# Procesar solo postgres y mongodb
-./scripts/auto-release.sh postgres mongodb
+# Procesar solo postgres y schemas
+./scripts/auto-release.sh postgres schemas
 ```
 
 ## 🎛️ Opciones
@@ -379,7 +379,7 @@ Si procesas múltiples módulos, asegúrate de que todos estén listos:
 ```bash
 # Verifica cada módulo individualmente primero
 make -C postgres release-check
-make -C mongodb release-check
+make -C schemas release-check
 
 # Luego procesa todos
 ./scripts/auto-release.sh --all

@@ -7,7 +7,6 @@
 Sin perfiles adicionales, la topologia arranca:
 
 - PostgreSQL
-- MongoDB
 
 ### 2. Activar mensajeria
 
@@ -22,7 +21,6 @@ Con profile `cache` se agrega Redis.
 Con profile `tools` se agregan:
 
 - PgAdmin
-- Mongo Express
 
 ### 5. Aislar servicios en red local
 

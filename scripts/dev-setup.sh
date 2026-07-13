@@ -21,7 +21,7 @@ else
 fi
 
 echo ""
-echo "Levantando PostgreSQL + MongoDB..."
+echo "Levantando PostgreSQL..."
 make dev-up-core
 
 echo ""
@@ -37,7 +37,6 @@ echo "Setup completado"
 echo ""
 echo "Servicios disponibles:"
 echo "  PostgreSQL: localhost:5432"
-echo "  MongoDB:    localhost:27017"
 echo ""
 echo "Notas:"
 echo "  - Este setup sirve para trabajar edugo-infrastructure de forma aislada."

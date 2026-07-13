@@ -7,7 +7,7 @@ No se tocó código, seeds, docker/, ni .git.
 
 Toda la documentación está vigente, es precisa y consistente con el estado real
 del repo. Se verificó que cada módulo, script y Makefile referenciado existe
-(postgres, mongodb, schemas, tools/mock-generator, docker; scripts/*; make/*.mk).
+(postgres, schemas, tools/mock-generator, docker; scripts/*; make/*.mk).
 No hubo nada que borrar ni rescatar.
 
 ## Veredictos
