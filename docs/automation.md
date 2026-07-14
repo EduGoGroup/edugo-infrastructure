@@ -8,7 +8,6 @@
 | `make/go-module.mk` | Contrato comun para modulos Go | Alineado |
 | `make/module-release.mk` | Contrato comun de changelog, tags y GitHub Release | Alineado |
 | `postgres/Makefile` | build, test, lint, fmt, vet, migraciones, seeds y runner | Alineado |
-| `mongodb/Makefile` | build, test, lint, fmt, vet, migraciones, seeds y runner | Alineado |
 | `schemas/Makefile` | validacion de modulo | Alineado |
 | `tools/mock-generator/Makefile` | validacion de modulo | Alineado |
 | `docker/Makefile` | validacion y operacion de compose local | Alineado |
@@ -29,7 +28,7 @@
 - `make check`
 - `make release-check`
 
-Los modulos `postgres` y `mongodb` agregan sus targets operativos propios para migraciones, runners y seeds. `docker/` adopta solo el contrato de release y validacion que aplica a su superficie.
+El modulo `postgres` agrega sus targets operativos propios para migraciones, runners y seeds. `docker/` adopta solo el contrato de release y validacion que aplica a su superficie.
 
 ## Release por modulo
 
@@ -55,7 +54,6 @@ El `Makefile` raiz expone wrappers equivalentes con `MODULE=<ruta-del-modulo>`.
 Ejecutadas el 2026-03-08:
 
 - `make -C postgres release-check`
-- `make -C mongodb release-check`
 - `make -C schemas release-check`
 - `make -C tools/mock-generator release-check`
 - `make -C docker release-check`
@@ -65,7 +63,7 @@ Las validaciones locales pasaron despues de corregir la comprobacion de formato 
 ## Hooks y scripts
 
 - `scripts/dev-setup.sh`: levanta `docker/`, espera disponibilidad basica y ejecuta `make db-bootstrap`.
-- `scripts/seed-data.sh`: aplica seeds embebidos de PostgreSQL y MongoDB.
+- `scripts/seed-data.sh`: aplica seeds embebidos de PostgreSQL.
 - `scripts/pre-commit-hook.sh`: valida `fmt-check`, `vet` y `test` solo para modulos Go con cambios staged.
 - `scripts/reproduce-failures.sh`: reejecuta `release-check` para todos los modulos Go.
 - `scripts/module-release.sh`: prepara changelog, imprime notas y crea GitHub Releases.

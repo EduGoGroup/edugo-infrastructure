@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODULES=("postgres" "mongodb" "schemas" "tools/mock-generator")
+MODULES=("postgres" "schemas" "tools/mock-generator")
 SUCCESS=0
 FAILED=0
 

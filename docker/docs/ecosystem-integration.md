@@ -10,7 +10,7 @@ La superficie `docker/` de este repo sirve para trabajo local aislado sobre infr
 
 Por eso la relacion correcta es:
 
-- `docker/` en este repo: soporte local para validar Postgres, MongoDB y servicios auxiliares de forma aislada
+- `docker/` en este repo: soporte local para validar Postgres y servicios auxiliares de forma aislada
 - `edugo-dev-environment`: flujo principal de ambiente compartido y migraciones ecosistemicas
 
 ## Cuándo usar esta superficie
@@ -19,7 +19,7 @@ Por eso la relacion correcta es:
 
 - trabajar solo en `edugo-infrastructure`
 - levantar dependencias minimas para tests o validacion manual
-- inspeccionar Postgres y MongoDB con herramientas visuales
+- inspeccionar Postgres con herramientas visuales
 
 ### Uso no canonico
 
@@ -32,7 +32,6 @@ Por eso la relacion correcta es:
 `docker/` da soporte directo a:
 
 - `postgres`
-- `mongodb`
 - pruebas locales de `schemas` si requieren servicios productores/consumidores externos
 
 ## Implicancia

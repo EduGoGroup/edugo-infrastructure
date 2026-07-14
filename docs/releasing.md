@@ -11,7 +11,7 @@
 - `git` con acceso de push al repositorio.
 - `gh` autenticado (`gh auth status` debe pasar).
 - `golangci-lint` instalado para modulos Go.
-- Go instalado para `postgres`, `mongodb`, `schemas` y `tools/mock-generator`.
+- Go instalado para `postgres`, `schemas` y `tools/mock-generator`.
 - Docker Compose disponible si se valida el modulo `docker`.
 
 ---
@@ -139,7 +139,6 @@ go get github.com/EduGoGroup/edugo-infrastructure/postgres@v0.67.0
 ## Alcance de validacion por modulo
 
 - `postgres`: build, tests, lint, vet, fmt-check y changelog.
-- `mongodb`: build, tests, lint, vet, fmt-check y changelog.
 - `schemas`: build, tests, lint, vet, fmt-check y changelog.
 - `tools/mock-generator`: build, tests, lint, vet, fmt-check y changelog.
 - `docker`: `docker compose config -q` y changelog.

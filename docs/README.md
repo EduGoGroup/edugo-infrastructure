@@ -16,7 +16,6 @@ Indice general de la documentacion vigente del repositorio.
 ## Modulos
 
 - [../postgres/README.md](../postgres/README.md)
-- [../mongodb/README.md](../mongodb/README.md)
 - [../schemas/README.md](../schemas/README.md)
 - [../tools/mock-generator/README.md](../tools/mock-generator/README.md)
 - [../docker/README.md](../docker/README.md)

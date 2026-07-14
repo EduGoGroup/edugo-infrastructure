@@ -25,8 +25,10 @@
 // Lo que siembra (2 evaluaciones + 2 asignaciones a la sesión de Sofia):
 //   - "Examen Final — Fracciones" (kind='final', status='published'): genera
 //     componente de nota en el expediente (el worker ramifica por kind).
-//   - "Práctica guiada — Geometría" (kind='practice', status='published'): NO va
-//     al expediente; su resultado se guarda en academic.practice_result.
+//   - "Práctica guiada — Geometría" (purpose='practice', status='published'): NO va
+//     al expediente (la trazabilidad de práctica vive en el plano
+//     assessment.practice_session, plan 035 F1a; academic.practice_result se
+//     eliminó en el plan 037 F1g).
 //     Ambas creadas por la docente de Mate5A (created_by_membership_id = bb…08),
 //     subject_id = Matemáticas (dd…01), school_id = San Ignacio (b1…01).
 //

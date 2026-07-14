@@ -1004,7 +1004,26 @@ import (
 //     FKs cross-schema/SET NULL y los triggers set_updated_at de practice_session
 //     y user_question_stat en post_gorm.sql → ComputeFilesHash() CAMBIA. Solo
 //     LOCAL en esta tarea; Neon lo aplica aditivo (F1b) otro paso del plan.
-const SchemaVersion = "3.98.0"
+//   - 3.99.0 (plan 037 F1g — worker a dieta): se ELIMINA la tabla
+//     academic.practice_result, deprecada por el plan 036 (D-036.3). Era el
+//     espejo de academic.grade_item para evaluaciones de práctica (resultado
+//     fuera del expediente); ya no se materializa como tabla propia — la
+//     trazabilidad de práctica vive en el plano assessment.practice_session /
+//     practice_session_answer / user_question_stat (3.98.0). Se borra
+//     entities/practice_result.go, su registro en el AutoMigrate (gorm_migrator.go)
+//     y sus 3 bloques en post_gorm.sql (6 FKs, trigger set_updated_at, índice
+//     parcial uq_practice_result_attempt) → ComputeFilesHash() CAMBIA → bump
+//     obligatorio. Los índices GORM (idx_practice_result_grain/_attempt) se van
+//     con la entity. Solo LOCAL: la BD nace sin la tabla al recrear; ninguna
+//     dependencia viva la lee (el único uso era el worker por `kind`, ya retirado).
+//   - 3.100.0 (plan 038, import evaluaciones): source_type admite 'imported'
+//     (import externo de evaluaciones vía JSON, Riel 0); valor aditivo, default
+//     sigue 'manual'. Cambio SOLO en el tag GORM de entities/assessment.go (CHECK
+//     assessment_source_type_check + validate oneof); no toca pre/post_gorm.sql →
+//     ComputeFilesHash() NO cambia. Bump obligatorio por la regla 1 (cambio en
+//     entity). AutoMigrate no altera CHECKs existentes: la ampliación efectiva del
+//     CHECK llega al recrear la BD (paso posterior coordinado, no en esta tarea).
+const SchemaVersion = "3.100.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODULES=("postgres" "mongodb" "schemas" "tools/mock-generator")
+MODULES=("postgres" "schemas" "tools/mock-generator")
 GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
 
 if [ -z "$GO_FILES" ]; then

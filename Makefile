@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-GO_MODULES = postgres mongodb schemas tools/mock-generator
-RELEASE_MODULES = postgres mongodb schemas tools/mock-generator docker
+GO_MODULES = postgres schemas tools/mock-generator
+RELEASE_MODULES = postgres schemas tools/mock-generator docker
 
 # Versiones fijadas del toolchain de CI (deben coincidir con .github/workflows/ci.yml)
 GO_VERSION   := 1.25
@@ -19,9 +19,6 @@ DB_NAME ?= edugo_dev
 DB_USER ?= edugo
 DB_PASSWORD ?= changeme
 DB_SSL_MODE ?= disable
-MONGO_HOST ?= localhost
-MONGO_PORT ?= 27017
-MONGO_DB ?= edugo
 
 .PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
 
@@ -54,7 +51,7 @@ require-module:
 dev-setup: ## Setup local del repo (Docker + bootstrap de datos)
 	@./scripts/dev-setup.sh
 
-dev-up-core: ## Levantar PostgreSQL + MongoDB
+dev-up-core: ## Levantar PostgreSQL
 	@$(MAKE) -C docker up-core
 
 dev-up-messaging: ## Levantar core + RabbitMQ
@@ -81,9 +78,6 @@ dev-reset: dev-teardown dev-setup ## Reiniciar completamente el stack local
 db-bootstrap: ## Aplicar estructura y datos base usando los runners del repo
 	@echo "$(BLUE)Aplicando bootstrap PostgreSQL...$(NC)"
 	@$(MAKE) -C postgres runner-up
-	@echo "$(BLUE)Aplicando bootstrap MongoDB...$(NC)"
-	@$(MAKE) -C mongodb runner-up
-	@$(MAKE) -C mongodb seed-all
 	@echo "$(GREEN)Bootstrap completado$(NC)"
 
 # ===================
@@ -102,20 +96,17 @@ migrate-status: ## Ver estado de migraciones legacy de PostgreSQL
 migrate-create: ## Crear nueva migración legacy de PostgreSQL (uso: make migrate-create NAME=nombre)
 	@$(MAKE) -C postgres migrate-create NAME="$(NAME)"
 
-runner-up: ## Ejecutar runners embebidos de PostgreSQL y MongoDB
+runner-up: ## Ejecutar runners embebidos de PostgreSQL
 	@$(MAKE) -C postgres runner-up
-	@$(MAKE) -C mongodb runner-up
 
-seed: ## Aplicar seeds de PostgreSQL y MongoDB
+seed: ## Aplicar seeds de PostgreSQL
 	@./scripts/seed-data.sh
 
-seed-production: ## Aplicar solo datos canónicos de PostgreSQL y MongoDB
+seed-production: ## Aplicar solo datos canónicos de PostgreSQL
 	@$(MAKE) -C postgres seed-production
-	@$(MAKE) -C mongodb seed-canonical
 
 seed-development: ## Aplicar datos de desarrollo completos
 	@$(MAKE) -C postgres seed-all
-	@$(MAKE) -C mongodb seed-all
 
 seed-minimal: seed-production ## Alias de datos mínimos/canónicos
 	@true

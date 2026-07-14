@@ -21,7 +21,6 @@ La base documental vigente ya cubre tres capas:
 | Modulo | Rol actual | Documentacion |
 | --- | --- | --- |
 | `postgres` | Schema relacional, seeds y entities | [postgres/README.md](postgres/README.md) |
-| `mongodb` | Collections documentales y fixtures del worker | [mongodb/README.md](mongodb/README.md) |
 | `schemas` | Validacion de contratos JSON Schema para eventos | [schemas/README.md](schemas/README.md) |
 | `tools/mock-generator` | Generacion de datasets Go desde SQL | [tools/mock-generator/README.md](tools/mock-generator/README.md) |
 | `docker` | Topologia local con Docker Compose | [docker/README.md](docker/README.md) |
@@ -62,7 +61,6 @@ migraciones y datos; el migrator los ejecuta.
 Validaciones ejecutadas localmente el 2026-03-08 sobre este repo:
 
 - `make -C postgres release-check`
-- `make -C mongodb release-check`
 - `make -C schemas release-check`
 - `make -C tools/mock-generator release-check`
 - `make -C docker release-check`

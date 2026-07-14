@@ -183,13 +183,13 @@ detect_modified_changelogs() {
   fi
   
   # Filter only CHANGELOGs from valid module directories
-  # Valid modules: postgres, mongodb, schemas, docker, tools/*
+  # Valid modules: postgres, schemas, docker, tools/*
   local changelogs
-  changelogs=$(echo "$modified_files" | grep -E '^(postgres|mongodb|schemas|docker|tools/[^/]+)/CHANGELOG\.md$' || true)
+  changelogs=$(echo "$modified_files" | grep -E '^(postgres|schemas|docker|tools/[^/]+)/CHANGELOG\.md$' || true)
   
   if [[ -z "$changelogs" ]]; then
     log_verbose "No hay CHANGELOGs de módulos modificados"
-    log_verbose "Solo se procesan CHANGELOGs de: postgres, mongodb, schemas, docker, tools/*"
+    log_verbose "Solo se procesan CHANGELOGs de: postgres, schemas, docker, tools/*"
     return 1
   fi
   
@@ -625,13 +625,13 @@ ${BOLD}Opciones:${NC}
   -y, --yes           Auto-confirmar (no interactivo)
 
 ${BOLD}Argumentos:${NC}
-  MODULES             Módulos específicos a procesar (ej: postgres mongodb)
+  MODULES             Módulos específicos a procesar (ej: postgres schemas)
 
 ${BOLD}Ejemplos:${NC}
   $SCRIPT_NAME                        # Modo interactivo
   $SCRIPT_NAME --all                  # Todos los módulos
   $SCRIPT_NAME postgres               # Solo postgres
-  $SCRIPT_NAME postgres mongodb       # Múltiples específicos
+  $SCRIPT_NAME postgres schemas       # Múltiples específicos
   $SCRIPT_NAME --dry-run -v           # Dry-run con verbose
   $SCRIPT_NAME --all --yes            # Todos sin confirmación
 

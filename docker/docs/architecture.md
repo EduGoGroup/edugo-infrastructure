@@ -15,11 +15,9 @@ docker/
 | Servicio | Tipo | Perfil |
 | --- | --- | --- |
 | `postgres` | base de datos relacional | default |
-| `mongodb` | base de datos documental | default |
 | `rabbitmq` | mensajeria | `messaging` |
 | `redis` | cache | `cache` |
 | `pgadmin` | herramienta visual | `tools` |
-| `mongo-express` | herramienta visual | `tools` |
 
 ## Diagrama local
 
@@ -27,10 +25,9 @@ docker/
 flowchart TB
     ENV[.env values] --> DC[docker-compose.yml]
     DC --> PG[postgres]
-    DC --> MG[mongodb]
     DC --> MQ[rabbitmq profile]
     DC --> RD[redis profile]
-    DC --> TOOLS[pgadmin and mongo-express profile]
+    DC --> TOOLS[pgadmin profile]
 ```
 
 ## Decisiones estructurales visibles
