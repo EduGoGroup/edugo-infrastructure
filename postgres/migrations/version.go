@@ -1038,7 +1038,21 @@ import (
 //     el fixture base siembra settings explícitos a San Ignacio (llm.review.mode=
 //     api, llm.review.flow=teacher); la otra escuela queda sin filas (prueba la
 //     resolución por default). Recrear BD, sin ALTER.
-const SchemaVersion = "3.101.0"
+//   - 3.102.0 (plan 040 F0 — corrección IA prevalidada): dos cambios de contrato
+//     en el schema assessment. (1) En entities/assessment_attempt_answer.go el
+//     CHECK assessment_attempt_answer_review_status_check gana el valor
+//     'ai_reviewed' (review_status IN pending,auto_graded,reviewed,ai_reviewed +
+//     validate oneof); estado que marca la respuesta corregida por IA. (2) En
+//     entities/attempt_review.go nace la columna review_source varchar(20) not
+//     null default 'teacher' CHECK attempt_review_source_check IN (teacher,llm)
+//     — materializa ADR 0033, distingue revisión manual vs corrección IA; filas
+//     históricas quedan 'teacher' por default. Ambos cambios viven en tags GORM
+//     (CHECKs inline) → no tocan pre/post_gorm.sql → ComputeFilesHash() NO cambia;
+//     bump obligatorio por la regla 1 (cambio en entity). AutoMigrate no altera
+//     CHECKs existentes: la ampliación efectiva del CHECK de review_status llega
+//     al recrear la BD local. En Neon el CHECK requiere ALTER manual (drop+add
+//     constraint) en el paso de despliegue coordinado, no en esta tarea.
+const SchemaVersion = "3.102.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

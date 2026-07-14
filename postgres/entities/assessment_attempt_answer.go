@@ -18,7 +18,7 @@ type AssessmentAttemptAnswer struct {
 	QuestionIndex    int        `db:"question_index" gorm:"not null;uniqueIndex:uq_attempt_answer_question,priority:2" validate:"required"`
 	QuestionID       *uuid.UUID `db:"question_id" gorm:"type:uuid;constraint:assessment_attempt_answer_question_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	StudentAnswer    *string    `db:"student_answer" gorm:"default:null" validate:"omitempty"`
-	ReviewStatus     string     `db:"review_status" gorm:"not null;type:varchar(20);default:'pending';check:assessment_attempt_answer_review_status_check,review_status IN ('pending','auto_graded','reviewed')" validate:"required,oneof=pending auto_graded reviewed"`
+	ReviewStatus     string     `db:"review_status" gorm:"not null;type:varchar(20);default:'pending';check:assessment_attempt_answer_review_status_check,review_status IN ('pending','auto_graded','reviewed','ai_reviewed')" validate:"required,oneof=pending auto_graded reviewed ai_reviewed"`
 	IsCorrect        *bool      `db:"is_correct" gorm:"default:null"`
 	PointsEarned     *float64   `db:"points_earned" gorm:"type:decimal(5,2)" validate:"omitempty"`
 	MaxPoints        *float64   `db:"max_points" gorm:"type:decimal(5,2)" validate:"omitempty"`
