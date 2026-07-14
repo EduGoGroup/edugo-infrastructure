@@ -6,6 +6,34 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.21] - 2026-07-14
+
+Planes 037 F1 (worker a dieta) y 038 Riel 0 (import externo de evaluaciones). `SchemaVersion`
+3.98.0 → **3.100.0**, aplicado aditivamente (3.99.0 y 3.100.0). MongoDB sale del ecosistema (D-037.11).
+
+### Added
+
+- **`assessment.source_type = 'imported'`** (3.100.0, plan 038 Riel 0): el CHECK
+  `assessment_source_type_check` admite el nuevo origen `imported` — evaluación creada desde un JSON
+  externo (`assessment_import` v1) — junto a `manual` (UI) y `ai_generated` (LLM interno). El default
+  sigue `manual`; el validador `oneof` se actualiza en paralelo.
+
+### Removed
+
+- **`academic.practice_result`** (3.99.0, plan 037 F1g): se elimina la tabla y su entity
+  (`practice_result.go`), deprecada por el plan 036 (D-036.3). Era el espejo de `academic.grade_item`
+  para evaluaciones de práctica; la trazabilidad de práctica vive ahora en el plano
+  `assessment.practice_session` / `practice_session_answer` / `user_question_stat` (3.98.0). Se retira
+  del AutoMigrate (`gorm_migrator.go`) y sus 3 bloques en `post_gorm.sql` (6 FKs, trigger
+  `set_updated_at`, índice parcial `uq_practice_result_attempt`) → `ComputeFilesHash()` cambia.
+
+### Changed
+
+- **MongoDB fuera del ecosistema** (plan 037 D-037.11): limpieza de las referencias documentales en los
+  comentarios de las entities. `assessment.mongo_document_id` queda como **columna legada reservada**
+  (sin backing store documental); el `summary` de `material` se describe como resumen manual del docente,
+  sin mención a Mongo. Sin cambio de schema.
+
 ## [0.900.20] - 2026-07-13
 
 Planes 036 (plano de examen sano) y 035 F1 (capa de práctica). `SchemaVersion` 3.96.0 → **3.98.0**;
