@@ -27,7 +27,7 @@ type Assessment struct {
 	SubjectID             uuid.UUID `db:"subject_id" gorm:"type:uuid;not null;index;constraint:assessment_subject_fkey,OnDelete:RESTRICT" validate:"required,uuid"`
 	Title                 string    `db:"title" gorm:"not null;size:255" validate:"required,min=1,max=255"`
 	Description           *string   `db:"description" gorm:"default:null" validate:"omitempty"`
-	SourceType            string    `db:"source_type" gorm:"not null;type:varchar(20);default:'manual';check:assessment_source_type_check,source_type IN ('manual','ai_generated')" validate:"required,oneof=manual ai_generated"`
+	SourceType            string    `db:"source_type" gorm:"not null;type:varchar(20);default:'manual';check:assessment_source_type_check,source_type IN ('manual','ai_generated','imported')" validate:"required,oneof=manual ai_generated imported"`
 	Status                string    `db:"status" gorm:"not null;type:varchar(20);default:'draft';index;check:assessment_status_check,status IN ('draft','published','archived')" validate:"required,oneof=draft published archived"`
 	// Purpose declara el proposito de la evaluacion (plan 035 D-035.1): 'practice'
 	// (solo runtime de practica, ilimitado, sin nota), 'exam' (runtime de examen

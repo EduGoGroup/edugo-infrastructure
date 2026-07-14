@@ -1016,7 +1016,14 @@ import (
 //     obligatorio. Los índices GORM (idx_practice_result_grain/_attempt) se van
 //     con la entity. Solo LOCAL: la BD nace sin la tabla al recrear; ninguna
 //     dependencia viva la lee (el único uso era el worker por `kind`, ya retirado).
-const SchemaVersion = "3.99.0"
+//   - 3.100.0 (plan 038, import evaluaciones): source_type admite 'imported'
+//     (import externo de evaluaciones vía JSON, Riel 0); valor aditivo, default
+//     sigue 'manual'. Cambio SOLO en el tag GORM de entities/assessment.go (CHECK
+//     assessment_source_type_check + validate oneof); no toca pre/post_gorm.sql →
+//     ComputeFilesHash() NO cambia. Bump obligatorio por la regla 1 (cambio en
+//     entity). AutoMigrate no altera CHECKs existentes: la ampliación efectiva del
+//     CHECK llega al recrear la BD (paso posterior coordinado, no en esta tarea).
+const SchemaVersion = "3.100.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
