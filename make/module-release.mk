@@ -31,13 +31,13 @@ guard-version:
 	fi
 
 release-prepare: guard-version release-check ## Congelar Unreleased en CHANGELOG para VERSION
-	@$(RELEASE_SCRIPT) prepare $(MODULE_PATH) $(VERSION)
+	@"$(RELEASE_SCRIPT)" prepare $(MODULE_PATH) $(VERSION)
 
 release-notes: guard-version ## Mostrar notas de release para VERSION
-	@$(RELEASE_SCRIPT) notes $(MODULE_PATH) $(VERSION)
+	@"$(RELEASE_SCRIPT)" notes $(MODULE_PATH) $(VERSION)
 
 release-tag: guard-version ## Crear tag local del módulo
-	@$(RELEASE_SCRIPT) notes $(MODULE_PATH) $(VERSION) >/dev/null
+	@"$(RELEASE_SCRIPT)" notes $(MODULE_PATH) $(VERSION) >/dev/null
 	@if git rev-parse "$(MODULE_PATH)/$(VERSION)" >/dev/null 2>&1; then \
 		echo "$(RED)El tag $(MODULE_PATH)/$(VERSION) ya existe$(NC)"; \
 		exit 1; \
@@ -49,4 +49,4 @@ release-push-tag: guard-version ## Publicar tag del módulo en origin
 	@git push origin "$(MODULE_PATH)/$(VERSION)"
 
 release-github: guard-version ## Crear GitHub Release del módulo a partir del tag existente
-	@$(RELEASE_SCRIPT) github $(MODULE_PATH) $(VERSION)
+	@"$(RELEASE_SCRIPT)" github $(MODULE_PATH) $(VERSION)
