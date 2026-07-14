@@ -1023,7 +1023,22 @@ import (
 //     ComputeFilesHash() NO cambia. Bump obligatorio por la regla 1 (cambio en
 //     entity). AutoMigrate no altera CHECKs existentes: la ampliación efectiva del
 //     CHECK llega al recrear la BD (paso posterior coordinado, no en esta tarea).
-const SchemaVersion = "3.100.0"
+//   - 3.101.0 (plan 039 F1 — terreno LLM, config por escuela): nueva tabla
+//     academic.school_settings (entities/school_setting.go), configuración
+//     clave/valor POR ESCUELA (D-039.1). PK compuesta (school_id, key); value
+//     varchar not null; created_at/updated_at. Registrada en el AutoMigrate
+//     (gorm_migrator.go, tras School por la FK). La FK school_id →
+//     academic.schools ON DELETE CASCADE y el trigger set_updated_at viven en
+//     post_gorm.sql (GORM no materializa la FK sin campo de relación) →
+//     ComputeFilesHash() CAMBIA. El catálogo de claves válidas vive en código
+//     (entities/school_setting_catalog.go): llm.generation.mode, llm.review.mode,
+//     llm.review.flow (enums local|api|off / direct|teacher, defaults off/off/
+//     teacher) e import.max_questions / import.max_json_bytes (int, defaults 100 /
+//     1 MiB, env EDUGO_IMPORT_MAX_*). Seeds: SchoolSpec gana Settings opcional y
+//     el fixture base siembra settings explícitos a San Ignacio (llm.review.mode=
+//     api, llm.review.flow=teacher); la otra escuela queda sin filas (prueba la
+//     resolución por default). Recrear BD, sin ALTER.
+const SchemaVersion = "3.101.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
