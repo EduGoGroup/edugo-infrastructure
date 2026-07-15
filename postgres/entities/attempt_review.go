@@ -22,9 +22,9 @@ type AttemptReview struct {
 	// ReviewSource distingue el origen de la revision: 'teacher' (manual) o 'llm'
 	// (corrección IA prevalidada). Materializa ADR 0033. Filas históricas quedan
 	// 'teacher' vía default.
-	ReviewSource         string    `db:"review_source" gorm:"not null;type:varchar(20);default:'teacher';check:attempt_review_source_check,review_source IN ('teacher','llm')" validate:"required,oneof=teacher llm"`
-	CreatedAt            time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt            time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	ReviewSource string    `db:"review_source" gorm:"not null;type:varchar(20);default:'teacher';check:attempt_review_source_check,review_source IN ('teacher','llm')" validate:"required,oneof=teacher llm"`
+	CreatedAt    time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt    time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
