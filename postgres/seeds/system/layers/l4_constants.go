@@ -819,7 +819,15 @@ package layers
 //     repunta de dashboard-basic-v1 a este template y suma los labels de chip
 //     (incl. «Prevalidado IA»). Nuevo template + repunte de instancia → bump.
 //     SchemaVersion 3.102.0 → 3.103.0.
-const L4_SEED_VERSION = "1.85.0"
+//   - 1.86.0: plan 040 T3c — navegación a review-dashboard + fix detalle
+//     grades-list. La instancia assessments-management-list gana la row-action
+//     `review-results` (scope row, permiso content.assessments.read, event_id
+//     `review-results`) que expone el handler KMP ya existente y da el único
+//     punto de entrada a assessment-review-dashboard (antes inalcanzable, P2a).
+//     Solo cambia slot_data de la instancia → bump para invalidar la caché
+//     SDUI. El fix del detalle roto de grades-list (P2b: grades-form ELIMINADA)
+//     vive en KMP, no en este seed. SchemaVersion 3.103.0 → 3.104.0.
+const L4_SEED_VERSION = "1.86.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

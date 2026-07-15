@@ -1366,6 +1366,18 @@ func assessmentsForm() l4ScreenInstanceRow {
 // $resource$ → "content.assessments"). El legacy ya declaraba
 // scope=header/row y los mismos permisos, así que el conjunto invariante
 // {event_id, permission, scope} no cambia (verificado por el harness).
+//
+// Plan 040 T3c (P2a — dar camino a assessment-review-dashboard): se AÑADE la
+// row-action `review-results`. Antes la pantalla de revisión docente
+// (assessment-review-dashboard, seeded como resource_screen no-default …b9)
+// no tenía NINGÚN punto de entrada: el contrato KMP
+// AssessmentsManagementListContract YA declara el handler `review-results`
+// (eventId → NavigateTo("assessment-review-dashboard", {assessmentId: id})),
+// pero sin una action con ese event_id el SDUI nunca lo disparaba. Es
+// scope=row (el handler lee `context.selectedItem["id"]` para pasar el
+// assessmentId) y usa el mismo permiso que la pantalla destino
+// (content.assessments.read, cubierto por el wildcard content.assessments.*
+// del rol teacher). NO requiere handler KMP nuevo: solo expone el existente.
 func assessmentsMgmtList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_MGMT_LIST_ID,
@@ -1384,6 +1396,9 @@ func assessmentsMgmtList() l4ScreenInstanceRow {
     {"key": "subject_name", "label": "Materia"},
     {"key": "questions_count", "label": "Preguntas"},
     {"key": "status", "label": "Estado"}
+  ],
+  "actions_added": [
+    {"id": "review-results", "scope": "row", "label": "Revisar intentos", "icon": "checklist", "permission": "content.assessments.read", "condition": "always", "event_id": "review-results", "style": "icon", "order": 15}
   ],
   "api_prefix": "learning"
 }`,

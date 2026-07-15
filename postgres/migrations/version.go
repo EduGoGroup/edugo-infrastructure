@@ -1062,7 +1062,18 @@ import (
 //     este template y suma los labels de chip (incl. «Prevalidado IA»). Habilita
 //     que el contrato KMP renderice el chip de intentos prevalidados por IA.
 //     Recrear BD para reseeding.
-const SchemaVersion = "3.103.0"
+//   - 3.104.0 (plan 040 T3c — navegación a review-dashboard + fix detalle
+//     grades-list): solo datos de seed L4 (L4_SEED_VERSION 1.85.0 → 1.86.0) →
+//     cambia el hash de seeds → bump obligatorio, sin DDL. (P2a) La instancia
+//     assessments-management-list gana la row-action `review-results` (scope
+//     row, permiso content.assessments.read) que expone el handler KMP ya
+//     existente y da el único punto de entrada a assessment-review-dashboard,
+//     antes inalcanzable. (P2b) El detalle roto de grades-list (el contrato
+//     KMP navegaba a grades-form, ELIMINADA 2026-06-09 → 404) se corrige en
+//     KMP (GradesListContract: select-item → NoOp; grades-list es read-only y
+//     no hay pantalla de detalle docente), fuera de este seed. Recrear BD para
+//     reseeding.
+const SchemaVersion = "3.104.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
