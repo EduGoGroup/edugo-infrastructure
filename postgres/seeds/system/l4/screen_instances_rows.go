@@ -1550,26 +1550,34 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
 // Deuda front: AssessmentModalityContract.kt + su test quedan inertes (sin
 // screen_instance que los resuelva); limpiar en el re-apuntado de UI de F3.1.
 
-// assessmentReviewDashboard: F3 (revisión docente). Dashboard de revisión de
-// intentos por evaluación. Pendiente de re-apuntar a los endpoints de revisión
-// del backend nuevo en F3.1 — aquí queda MÍNIMO (no se inventa el contrato).
+// assessmentReviewDashboard: F3 (revisión docente). Lista de revisión de
+// intentos por evaluación. Plan 040 F3: repuntada del template dashboard
+// (KPIs que nunca se alimentaron → empty-state) al template DEDICADO
+// review-dashboard-v1 (pattern "list"), que expone los 4 chips de filtro con
+// los ids CUSTOM que el contrato KMP ya espera (filter_all / pending_review /
+// ai_reviewed / completed). El chip «Prevalidado IA» distingue los intentos
+// prevalidados por IA (review_status='ai_reviewed') de los pendientes.
 func assessmentReviewDashboard() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_REVIEW_DASH_ID,
 		screenKey:          "assessment-review-dashboard",
-		templateID:         l4TplDashboardV1ID,
+		templateID:         l4TplReviewDashboardV1ID,
 		name:               "Revisión de Evaluación",
-		description:        "Dashboard de revisión de intentos por evaluación",
+		description:        "Lista de revisión de intentos por evaluación",
 		scope:              "unit",
 		requiredPermission: "content.assessments.read",
 		slotData: `{
   "title": "Revisión",
-  "greeting_text": "Evaluación",
-  "kpi_students_label": "Intentos",
-  "kpi_materials_label": "Promedio",
-  "kpi_avg_score_label": "Aprobados",
-  "kpi_completion_label": "Pendientes",
-  "activity_title": "Intentos recientes",
+  "page_title": "Revisión",
+  "search_placeholder": "Buscar estudiante...",
+  "filter_all_label": "Todos",
+  "filter_pending_review_label": "Pendientes",
+  "filter_ai_reviewed_label": "Prevalidado IA",
+  "filter_completed_label": "Completados",
+  "columns": [
+    {"key": "student_name", "label": "Estudiante"},
+    {"key": "status", "label": "Estado"}
+  ],
   "api_prefix": "learning"
 }`,
 	}

@@ -1052,7 +1052,17 @@ import (
 //     CHECKs existentes: la ampliación efectiva del CHECK de review_status llega
 //     al recrear la BD local. En Neon el CHECK requiere ALTER manual (drop+add
 //     constraint) en el paso de despliegue coordinado, no en esta tarea.
-const SchemaVersion = "3.102.0"
+//   - 3.103.0 (plan 040 F3 — template dedicado review-dashboard-v1): solo datos
+//     de seed L4 (L4_SEED_VERSION 1.84.0 → 1.85.0) → cambia el hash de seeds →
+//     bump obligatorio, sin DDL. Nace el template SDUI dedicado
+//     review-dashboard-v1 (pattern "list", UUID a4000000-…-007) con zona de
+//     filtros de 4 CHIP slots custom (filter_all / filter_pending_review /
+//     filter_ai_reviewed / filter_completed) + lista student_name/status; la
+//     instancia assessment-review-dashboard se repunta de dashboard-basic-v1 a
+//     este template y suma los labels de chip (incl. «Prevalidado IA»). Habilita
+//     que el contrato KMP renderice el chip de intentos prevalidados por IA.
+//     Recrear BD para reseeding.
+const SchemaVersion = "3.103.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
