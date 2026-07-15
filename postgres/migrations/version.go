@@ -1023,7 +1023,57 @@ import (
 //     ComputeFilesHash() NO cambia. Bump obligatorio por la regla 1 (cambio en
 //     entity). AutoMigrate no altera CHECKs existentes: la ampliación efectiva del
 //     CHECK llega al recrear la BD (paso posterior coordinado, no en esta tarea).
-const SchemaVersion = "3.100.0"
+//   - 3.101.0 (plan 039 F1 — terreno LLM, config por escuela): nueva tabla
+//     academic.school_settings (entities/school_setting.go), configuración
+//     clave/valor POR ESCUELA (D-039.1). PK compuesta (school_id, key); value
+//     varchar not null; created_at/updated_at. Registrada en el AutoMigrate
+//     (gorm_migrator.go, tras School por la FK). La FK school_id →
+//     academic.schools ON DELETE CASCADE y el trigger set_updated_at viven en
+//     post_gorm.sql (GORM no materializa la FK sin campo de relación) →
+//     ComputeFilesHash() CAMBIA. El catálogo de claves válidas vive en código
+//     (entities/school_setting_catalog.go): llm.generation.mode, llm.review.mode,
+//     llm.review.flow (enums local|api|off / direct|teacher, defaults off/off/
+//     teacher) e import.max_questions / import.max_json_bytes (int, defaults 100 /
+//     1 MiB, env EDUGO_IMPORT_MAX_*). Seeds: SchoolSpec gana Settings opcional y
+//     el fixture base siembra settings explícitos a San Ignacio (llm.review.mode=
+//     api, llm.review.flow=teacher); la otra escuela queda sin filas (prueba la
+//     resolución por default). Recrear BD, sin ALTER.
+//   - 3.102.0 (plan 040 F0 — corrección IA prevalidada): dos cambios de contrato
+//     en el schema assessment. (1) En entities/assessment_attempt_answer.go el
+//     CHECK assessment_attempt_answer_review_status_check gana el valor
+//     'ai_reviewed' (review_status IN pending,auto_graded,reviewed,ai_reviewed +
+//     validate oneof); estado que marca la respuesta corregida por IA. (2) En
+//     entities/attempt_review.go nace la columna review_source varchar(20) not
+//     null default 'teacher' CHECK attempt_review_source_check IN (teacher,llm)
+//     — materializa ADR 0033, distingue revisión manual vs corrección IA; filas
+//     históricas quedan 'teacher' por default. Ambos cambios viven en tags GORM
+//     (CHECKs inline) → no tocan pre/post_gorm.sql → ComputeFilesHash() NO cambia;
+//     bump obligatorio por la regla 1 (cambio en entity). AutoMigrate no altera
+//     CHECKs existentes: la ampliación efectiva del CHECK de review_status llega
+//     al recrear la BD local. En Neon el CHECK requiere ALTER manual (drop+add
+//     constraint) en el paso de despliegue coordinado, no en esta tarea.
+//   - 3.103.0 (plan 040 F3 — template dedicado review-dashboard-v1): solo datos
+//     de seed L4 (L4_SEED_VERSION 1.84.0 → 1.85.0) → cambia el hash de seeds →
+//     bump obligatorio, sin DDL. Nace el template SDUI dedicado
+//     review-dashboard-v1 (pattern "list", UUID a4000000-…-007) con zona de
+//     filtros de 4 CHIP slots custom (filter_all / filter_pending_review /
+//     filter_ai_reviewed / filter_completed) + lista student_name/status; la
+//     instancia assessment-review-dashboard se repunta de dashboard-basic-v1 a
+//     este template y suma los labels de chip (incl. «Prevalidado IA»). Habilita
+//     que el contrato KMP renderice el chip de intentos prevalidados por IA.
+//     Recrear BD para reseeding.
+//   - 3.104.0 (plan 040 T3c — navegación a review-dashboard + fix detalle
+//     grades-list): solo datos de seed L4 (L4_SEED_VERSION 1.85.0 → 1.86.0) →
+//     cambia el hash de seeds → bump obligatorio, sin DDL. (P2a) La instancia
+//     assessments-management-list gana la row-action `review-results` (scope
+//     row, permiso content.assessments.read) que expone el handler KMP ya
+//     existente y da el único punto de entrada a assessment-review-dashboard,
+//     antes inalcanzable. (P2b) El detalle roto de grades-list (el contrato
+//     KMP navegaba a grades-form, ELIMINADA 2026-06-09 → 404) se corrige en
+//     KMP (GradesListContract: select-item → NoOp; grades-list es read-only y
+//     no hay pantalla de detalle docente), fuera de este seed. Recrear BD para
+//     reseeding.
+const SchemaVersion = "3.104.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

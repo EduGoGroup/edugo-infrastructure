@@ -55,6 +55,9 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.ConceptType{},
 		&entities.InvitationType{},
 		&entities.School{},
+		// Configuración clave/valor por escuela (plan 039). Va DESPUES de School
+		// por la FK school_id → academic.schools (materializada en post_gorm.sql).
+		&entities.SchoolSetting{},
 		&entities.AcademicUnit{},
 		&entities.Membership{},
 		&entities.Subject{},

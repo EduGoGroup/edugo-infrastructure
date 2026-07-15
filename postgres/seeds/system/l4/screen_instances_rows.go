@@ -1366,6 +1366,18 @@ func assessmentsForm() l4ScreenInstanceRow {
 // $resource$ → "content.assessments"). El legacy ya declaraba
 // scope=header/row y los mismos permisos, así que el conjunto invariante
 // {event_id, permission, scope} no cambia (verificado por el harness).
+//
+// Plan 040 T3c (P2a — dar camino a assessment-review-dashboard): se AÑADE la
+// row-action `review-results`. Antes la pantalla de revisión docente
+// (assessment-review-dashboard, seeded como resource_screen no-default …b9)
+// no tenía NINGÚN punto de entrada: el contrato KMP
+// AssessmentsManagementListContract YA declara el handler `review-results`
+// (eventId → NavigateTo("assessment-review-dashboard", {assessmentId: id})),
+// pero sin una action con ese event_id el SDUI nunca lo disparaba. Es
+// scope=row (el handler lee `context.selectedItem["id"]` para pasar el
+// assessmentId) y usa el mismo permiso que la pantalla destino
+// (content.assessments.read, cubierto por el wildcard content.assessments.*
+// del rol teacher). NO requiere handler KMP nuevo: solo expone el existente.
 func assessmentsMgmtList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_MGMT_LIST_ID,
@@ -1384,6 +1396,9 @@ func assessmentsMgmtList() l4ScreenInstanceRow {
     {"key": "subject_name", "label": "Materia"},
     {"key": "questions_count", "label": "Preguntas"},
     {"key": "status", "label": "Estado"}
+  ],
+  "actions_added": [
+    {"id": "review-results", "scope": "row", "label": "Revisar intentos", "icon": "checklist", "permission": "content.assessments.read", "condition": "always", "event_id": "review-results", "style": "icon", "order": 15}
   ],
   "api_prefix": "learning"
 }`,
@@ -1550,26 +1565,34 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
 // Deuda front: AssessmentModalityContract.kt + su test quedan inertes (sin
 // screen_instance que los resuelva); limpiar en el re-apuntado de UI de F3.1.
 
-// assessmentReviewDashboard: F3 (revisión docente). Dashboard de revisión de
-// intentos por evaluación. Pendiente de re-apuntar a los endpoints de revisión
-// del backend nuevo en F3.1 — aquí queda MÍNIMO (no se inventa el contrato).
+// assessmentReviewDashboard: F3 (revisión docente). Lista de revisión de
+// intentos por evaluación. Plan 040 F3: repuntada del template dashboard
+// (KPIs que nunca se alimentaron → empty-state) al template DEDICADO
+// review-dashboard-v1 (pattern "list"), que expone los 4 chips de filtro con
+// los ids CUSTOM que el contrato KMP ya espera (filter_all / pending_review /
+// ai_reviewed / completed). El chip «Prevalidado IA» distingue los intentos
+// prevalidados por IA (review_status='ai_reviewed') de los pendientes.
 func assessmentReviewDashboard() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
 		id:                 L4_SCREEN_INST_ASSESS_REVIEW_DASH_ID,
 		screenKey:          "assessment-review-dashboard",
-		templateID:         l4TplDashboardV1ID,
+		templateID:         l4TplReviewDashboardV1ID,
 		name:               "Revisión de Evaluación",
-		description:        "Dashboard de revisión de intentos por evaluación",
+		description:        "Lista de revisión de intentos por evaluación",
 		scope:              "unit",
 		requiredPermission: "content.assessments.read",
 		slotData: `{
   "title": "Revisión",
-  "greeting_text": "Evaluación",
-  "kpi_students_label": "Intentos",
-  "kpi_materials_label": "Promedio",
-  "kpi_avg_score_label": "Aprobados",
-  "kpi_completion_label": "Pendientes",
-  "activity_title": "Intentos recientes",
+  "page_title": "Revisión",
+  "search_placeholder": "Buscar estudiante...",
+  "filter_all_label": "Todos",
+  "filter_pending_review_label": "Pendientes",
+  "filter_ai_reviewed_label": "Prevalidado IA",
+  "filter_completed_label": "Completados",
+  "columns": [
+    {"key": "student_name", "label": "Estudiante"},
+    {"key": "status", "label": "Estado"}
+  ],
   "api_prefix": "learning"
 }`,
 	}

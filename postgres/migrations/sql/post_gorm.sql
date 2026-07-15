@@ -194,6 +194,20 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- ============================================================
+-- academic.school_settings (plan 039, D-039.1) — configuración clave/valor por
+-- escuela. GORM no materializa la FK desde el tag `constraint:` sin campo de
+-- relación (mismo patrón que academic.school_invitation_roles), por eso se
+-- declara aquí. CASCADE: borrar la escuela limpia su configuración. Idempotente.
+-- ============================================================
+
+DO $$ BEGIN
+    ALTER TABLE academic.school_settings
+        ADD CONSTRAINT school_settings_school_fkey
+            FOREIGN KEY (school_id) REFERENCES academic.schools(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- academic.subject_offerings / academic.subject_offering_enrollments
 -- (sesiones de materia + inscripcion, ADR 0009 / plan 010 N1.7).
 -- GORM no materializa FKs desde el tag `constraint:` sin campo de relacion
@@ -699,6 +713,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- academic.schools
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON academic.schools
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- academic.school_settings (plan 039)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON academic.school_settings
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- academic.academic_units

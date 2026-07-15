@@ -812,7 +812,22 @@ package layers
 //     visible_when en fields ya existe en el front, D-035.7 — cero código KMP).
 //     Solo cambia slot_data de la instancia → bump para invalidar la caché SDUI.
 //     SchemaVersion 3.97.0 → 3.98.0.
-const L4_SEED_VERSION = "1.84.0"
+//   - 1.85.0: plan 040 F3 — template dedicado review-dashboard-v1 (pattern
+//     "list", UUID a4000000-…-007) con zona de filtros de 4 CHIP slots custom
+//     (filter_all / filter_pending_review / filter_ai_reviewed / filter_completed)
+//   - lista student_name/status. La instancia assessment-review-dashboard se
+//     repunta de dashboard-basic-v1 a este template y suma los labels de chip
+//     (incl. «Prevalidado IA»). Nuevo template + repunte de instancia → bump.
+//     SchemaVersion 3.102.0 → 3.103.0.
+//   - 1.86.0: plan 040 T3c — navegación a review-dashboard + fix detalle
+//     grades-list. La instancia assessments-management-list gana la row-action
+//     `review-results` (scope row, permiso content.assessments.read, event_id
+//     `review-results`) que expone el handler KMP ya existente y da el único
+//     punto de entrada a assessment-review-dashboard (antes inalcanzable, P2a).
+//     Solo cambia slot_data de la instancia → bump para invalidar la caché
+//     SDUI. El fix del detalle roto de grades-list (P2b: grades-form ELIMINADA)
+//     vive en KMP, no en este seed. SchemaVersion 3.103.0 → 3.104.0.
+const L4_SEED_VERSION = "1.86.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system/l4"
@@ -32,6 +33,11 @@ type SchoolSpec struct {
 	MaxTeachers             int
 	MaxStudents             int
 	Metadata                json.RawMessage // default `{}` si nil
+	// Settings es la configuración clave/valor opcional de la escuela (plan 039):
+	// política LLM por carril, límites de import, etc. nil/vacío = la escuela cae
+	// a los defaults de plataforma (resolución por env → default duro). Cada
+	// clave/valor se valida contra el catálogo (entities) antes de insertarse.
+	Settings map[string]string
 }
 
 // buildSchool mapea SchoolSpec a entities.School aplicando defaults.
@@ -86,5 +92,25 @@ func SeedSchool(tx *gorm.DB, spec SchoolSpec) error {
 	if err := onConflictIgnore(tx, &school); err != nil {
 		return err
 	}
+	if err := seedSchoolSettings(tx, spec.ID, spec.Settings); err != nil {
+		return err
+	}
 	return l4.SeedDefaultSchoolInvitationRoles(tx, spec.ID)
+}
+
+// seedSchoolSettings valida cada setting contra el catálogo (entities) e inserta
+// las filas en academic.school_settings (onConflict ignore por la PK compuesta
+// (school_id, key)). Una clave/valor fuera de catálogo es un bug del fixture, no
+// un error recuperable: se devuelve error para no sembrar configuración inválida.
+func seedSchoolSettings(tx *gorm.DB, schoolID uuid.UUID, settings map[string]string) error {
+	for key, value := range settings {
+		if err := entities.ValidateSetting(key, value); err != nil {
+			return fmt.Errorf("seedSchoolSettings escuela %s: %w", schoolID, err)
+		}
+		row := entities.SchoolSetting{SchoolID: schoolID, Key: key, Value: value}
+		if err := onConflictIgnore(tx, &row); err != nil {
+			return err
+		}
+	}
+	return nil
 }

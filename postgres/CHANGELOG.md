@@ -6,6 +6,29 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.22] - 2026-07-15
+
+Planes 039 (terreno LLM) y 040 (corrección IA prevalidada). `SchemaVersion` 3.100.0 → **3.104.0**,
+aplicado aditivamente (3.101.0 → 3.104.0). Introduce los cimientos de la revisión asistida por IA:
+política por escuela, estado `ai_reviewed`, procedencia de la revisión, el evento
+`attempt.review_requested` y el tablero de revisión de intentos en SDUI.
+
+### Added
+
+- **`identity.school_settings` + catálogo de claves** (3.101.0, plan 039): tabla de configuración por
+  escuela con su catálogo de claves y seeds base; soporta la política por carril del terreno LLM
+  (credenciales LLM viven por env del ecosistema; la escuela solo elige política).
+- **`assessment.review_status = 'ai_reviewed'`** (3.102.0, plan 040 F0): nuevo estado de revisión para
+  intentos corregidos por la IA (prevalidación), junto a los estados existentes.
+- **`assessment.attempt_review.review_source`** (3.102.0, plan 040 F1): procedencia de la revisión
+  (docente vs IA), para distinguir quién produjo la corrección.
+- **Schema del evento `attempt.review_requested`** (3.102.0, plan 040 F1): contrato del evento que
+  dispara la solicitud de revisión asistida (empareja con `edugo-shared/messaging/events`).
+- **Template SDUI `review-dashboard-v1`** (3.103.0, plan 040 F3): plantilla dedicada al
+  `assessment-review-dashboard` con chips de filtro (incl. «Prevalidado IA»).
+- **Row-action «Revisar intentos»** (3.104.0, plan 040 T3c P2a): acción de fila en
+  `assessments-management-list` que navega hacia `assessment-review-dashboard`.
+
 ## [0.900.21] - 2026-07-14
 
 Planes 037 F1 (worker a dieta) y 038 Riel 0 (import externo de evaluaciones). `SchemaVersion`

@@ -39,6 +39,9 @@ func Apply(gdb *gorm.DB) error {
 		if err := seedSchools(tx); err != nil {
 			return err
 		}
+		if err := seedSchoolSettings(tx); err != nil {
+			return err
+		}
 		if err := seedSchoolInvitationRoles(tx); err != nil {
 			return err
 		}
@@ -259,6 +262,41 @@ func seedSchoolInvitationRoles(tx *gorm.DB) error {
 	for _, schoolID := range schools {
 		if err := l4.SeedDefaultSchoolInvitationRoles(tx, schoolID); err != nil {
 			return fmt.Errorf("seedSchoolInvitationRoles: %w", err)
+		}
+	}
+	return nil
+}
+
+// seedSchoolSettings siembra la configuración clave/valor (plan 039) de UNA de
+// las dos escuelas de base para ejercitar la resolución escuela-vs-default: el
+// Colegio San Ignacio (b1…01) declara política de corrección IA explícita
+// (llm.review.mode=api, llm.review.flow=teacher); la Academia Global English
+// (b3…03) NO recibe filas, así que cae a los defaults de plataforma (env →
+// default duro). Cada valor se valida contra el catálogo antes de insertarse
+// (un valor fuera de catálogo sería un bug de este fixture). Idempotente: la PK
+// compuesta (school_id, key) + onConflict DoNothing. academic.school_settings
+// se limpia al truncar academic.schools (TRUNCATE ... CASCADE).
+func seedSchoolSettings(tx *gorm.DB) error {
+	exists, err := tableExists(tx, "academic.school_settings")
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+
+	schoolSI := mustUUID("b1000000-0000-0000-0000-000000000001")
+	settings := map[string]string{
+		entities.SettingLLMReviewMode: "api",
+		entities.SettingLLMReviewFlow: "teacher",
+	}
+	for key, value := range settings {
+		if err := entities.ValidateSetting(key, value); err != nil {
+			return fmt.Errorf("seedSchoolSettings: %w", err)
+		}
+		row := entities.SchoolSetting{SchoolID: schoolSI, Key: key, Value: value}
+		if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&row).Error; err != nil {
+			return fmt.Errorf("seedSchoolSettings: %w", err)
 		}
 	}
 	return nil

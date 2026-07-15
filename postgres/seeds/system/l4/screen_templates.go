@@ -19,11 +19,12 @@ import (
 // (L0_SCREEN_TPL_MASTER_DETAIL_ID_REF = 30000000-...004), no este. El
 // UUID a4000000-...004 queda libre para reuso futuro.
 const (
-	l4TplLoginV1ID          = "a4000000-0000-0000-0000-000000000001"
-	l4TplDashboardV1ID      = "a4000000-0000-0000-0000-000000000002"
-	l4TplSettingsV1ID       = "a4000000-0000-0000-0000-000000000003"
-	l4TplSettingsSystemV1ID = "a4000000-0000-0000-0000-000000000005"
-	l4TplAuditDetailV1ID    = "a4000000-0000-0000-0000-000000000006"
+	l4TplLoginV1ID           = "a4000000-0000-0000-0000-000000000001"
+	l4TplDashboardV1ID       = "a4000000-0000-0000-0000-000000000002"
+	l4TplSettingsV1ID        = "a4000000-0000-0000-0000-000000000003"
+	l4TplSettingsSystemV1ID  = "a4000000-0000-0000-0000-000000000005"
+	l4TplAuditDetailV1ID     = "a4000000-0000-0000-0000-000000000006"
+	l4TplReviewDashboardV1ID = "a4000000-0000-0000-0000-000000000007"
 )
 
 // loginBasicV1Definition — template de login con marca + formulario +
@@ -238,10 +239,62 @@ const auditDetailV1Definition = `{
   ]
 }`
 
+// reviewDashboardV1Definition — template DEDICADO de la pantalla de revisión
+// docente de intentos (assessment-review-dashboard), plan 040 F3. Pattern "list":
+// la etiqueta permite que el PatternRouter del KMP componga por zonas (chips de
+// filtro + lista), a diferencia del pattern "dashboard" anterior que renderizaba
+// KPIs (que nunca se alimentaron: la pantalla quedaba en empty-state).
+//
+// Es un template PROPIO (cero herencia de list-basic-v1) porque los 4 chips de
+// filtro llevan ids CUSTOM que el contrato KMP AssessmentReviewDashboardContract
+// ya espera (filter_all / filter_pending_review / filter_ai_reviewed /
+// filter_completed → apiParam "status", valores pending_review/ai_reviewed/
+// completed). El template genérico de lista solo ofrece filter_all/ready/
+// processing, que no casan. Regla de render KMP (deriveStatusChipIds): un chip se
+// pinta solo si está a la vez en el FilterConfig del contrato Y como CHIP slot de
+// este template.
+//
+// Los chips NO declaran `permission` (igual que todos los filter chips del sistema
+// y que el chipPermissions=null del contrato): ADR 0003 deja el permiso opcional y
+// su ausencia = sin gate. La lista muestra student_name (headline) + status (chip),
+// alineado al fieldMapping del contrato. Sin default_actions CRUD: es una pantalla
+// de revisión, no un CRUD.
+//
+// Zona KPI/metric-grid OMITIDA a propósito: alimentarla exige agregados
+// (total_students/avg_score/...) que el endpoint de intentos
+// (GET learning:/api/v1/assessments/:id/attempts) no devuelve; sería backend nuevo,
+// fuera del alcance de 040 F3.
+const reviewDashboardV1Definition = `{
+  "navigation": {"topBar": {"title": "slot:page_title", "showBack": true}},
+  "zones": [
+    {"id": "search_zone", "type": "container", "slots": [
+      {"id": "search_bar", "controlType": "search-bar", "bind": "slot:search_placeholder", "default": "Buscar estudiante..."}
+    ]},
+    {"id": "list_actions", "type": "action-group", "scope": "header", "slots": []},
+    {"id": "row_actions",  "type": "action-group", "scope": "row",    "slots": []},
+    {"id": "filters", "type": "container", "distribution": "flow-row", "slots": [
+      {"id": "filter_all", "controlType": "chip", "bind": "slot:filter_all_label", "selected": true, "default": "Todos"},
+      {"id": "filter_pending_review", "controlType": "chip", "bind": "slot:filter_pending_review_label", "default": "Pendientes"},
+      {"id": "filter_ai_reviewed", "controlType": "chip", "bind": "slot:filter_ai_reviewed_label", "default": "Prevalidado IA"},
+      {"id": "filter_completed", "controlType": "chip", "bind": "slot:filter_completed_label", "default": "Completados"}
+    ]},
+    {"id": "empty_state", "type": "container", "condition": "data.isEmpty", "slots": [
+      {"id": "empty_icon", "controlType": "icon", "bind": "slot:empty_icon"},
+      {"id": "empty_title", "controlType": "label", "style": "headline", "bind": "slot:empty_state_title", "default": "Sin intentos"},
+      {"id": "empty_desc", "controlType": "label", "style": "body", "bind": "slot:empty_state_description", "default": "Aún no hay intentos para revisar."}
+    ]},
+    {"id": "list_content", "type": "simple-list", "condition": "!data.isEmpty", "itemLayout": {"slots": [
+      {"id": "item_title", "controlType": "label", "style": "headline-small", "field": "student_name"},
+      {"id": "item_status", "controlType": "chip", "field": "status"}
+    ]}}
+  ]
+}`
+
 // (helper strPtr definido en concept_types.go).
 
-// ApplyScreenTemplates siembra los 5 templates adicionales de L4
-// (login, dashboard, settings-user, settings-system, audit-detail). Los 3
+// ApplyScreenTemplates siembra los 6 templates adicionales de L4
+// (login, dashboard, settings-user, settings-system, audit-detail,
+// review-dashboard). Los 3
 // templates base (list/detail/form-basic-v1) están en L0 y su `definition`
 // canónica vive en seeds/system/layers/l0_screens.go (refactor de
 // excepción aplicado en B3 — ver phase-6-layer-l4/design.md §4).
@@ -273,7 +326,7 @@ func ApplyScreenTemplates(tx *gorm.DB) error {
 	return nil
 }
 
-// buildL4ScreenTemplates materializa los 4 templates adicionales de L4
+// buildL4ScreenTemplates materializa los 6 templates adicionales de L4
 // como entities.ScreenTemplate. Helper compartido por
 // ApplyScreenTemplates y por el accessor público l4.ScreenTemplates().
 func buildL4ScreenTemplates() []entities.ScreenTemplate {
@@ -321,6 +374,15 @@ func buildL4ScreenTemplates() []entities.ScreenTemplate {
 			Description: strPtr("Detalle de un evento de auditoría, solo lectura, con los campos reales del evento (sin descarga)"),
 			Version:     1,
 			Definition:  json.RawMessage([]byte(auditDetailV1Definition)),
+			IsActive:    true,
+		},
+		{
+			ID:          mustParseL4UUID(l4TplReviewDashboardV1ID, "l4TplReviewDashboardV1ID"),
+			Pattern:     "list",
+			Name:        "review-dashboard-v1",
+			Description: strPtr("Revisión docente de intentos: chips de filtro (incl. Prevalidado IA) + lista, plan 040 F3"),
+			Version:     1,
+			Definition:  json.RawMessage([]byte(reviewDashboardV1Definition)),
 			IsActive:    true,
 		},
 	}

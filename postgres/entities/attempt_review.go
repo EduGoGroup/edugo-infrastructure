@@ -19,8 +19,12 @@ type AttemptReview struct {
 	ReviewerMembershipID uuid.UUID `db:"reviewer_membership_id" gorm:"type:uuid;not null;constraint:attempt_review_reviewer_fkey,OnDelete:RESTRICT" validate:"required,uuid"`
 	PointsAwarded        float64   `db:"points_awarded" gorm:"type:decimal(5,2);not null" validate:"required"`
 	Feedback             *string   `db:"feedback" gorm:"default:null" validate:"omitempty"`
-	CreatedAt            time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt            time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// ReviewSource distingue el origen de la revision: 'teacher' (manual) o 'llm'
+	// (corrección IA prevalidada). Materializa ADR 0033. Filas históricas quedan
+	// 'teacher' vía default.
+	ReviewSource string    `db:"review_source" gorm:"not null;type:varchar(20);default:'teacher';check:attempt_review_source_check,review_source IN ('teacher','llm')" validate:"required,oneof=teacher llm"`
+	CreatedAt    time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt    time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL
