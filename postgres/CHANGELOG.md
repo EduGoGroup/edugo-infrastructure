@@ -20,13 +20,20 @@ cambios (**3.104.0**): no hay DDL, solo datos de `screenconfig`.
 
 ### Notas de despliegue
 
-- El `ExpectedContentHash` **cambia** aunque `SchemaVersion` no: el hash combina migraciones **y**
-  semillas. Un environment live estampado con el hash anterior reportará «BD DESACTUALIZADA» hasta
-  que se re-estampe.
+- **El `ExpectedContentHash` NO cambia.** Aunque combina migraciones y semillas, la parte de semillas
+  se calcula sobre `nombre de capa + SeedVersion()` declarada (`seeds/version.go`), **no sobre el
+  contenido de los archivos**. Este cambio no toca `L4_SEED_VERSION`, así que el hash queda en
+  `9c21a3421fcf67ea` y `cloud-status` sigue verde. Verificado contra Neon con el migrator compilado
+  contra esta versión.
 - `ApplyScreenInstances` es `ON CONFLICT (screen_key) DO NOTHING` **a propósito** (no pisar
-  customizaciones manuales en live): re-correr la semilla **no** actualiza una pantalla existente.
-  En un environment ya sembrado, esta acción se aplica con un UPDATE focalizado del `slot_data` de
-  `assessments-form`, o recreando. Consumidor real de la semilla: `edugo-dev-environment`.
+  customizaciones manuales en live): re-correr la semilla **no** actualiza una pantalla existente. En
+  un environment ya sembrado, un cambio de `slot_data` se aplica con un UPDATE focalizado, o
+  recreando. En un environment nuevo la semilla ya trae la acción.
+- **Neon (staging) ya tenía esta acción aplicada a mano** (verificada campo por campo el 2026-07-15):
+  este cambio es el código poniéndose al día para que un recreate desde cero la reproduzca. No hizo
+  falta ningún UPDATE.
+
+Consumidor real de la semilla: `edugo-dev-environment`.
 
 ## [0.900.22] - 2026-07-15
 
