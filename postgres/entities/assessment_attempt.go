@@ -32,9 +32,13 @@ type AssessmentAttempt struct {
 	IdempotencyKey      *string         `db:"idempotency_key" gorm:"uniqueIndex;size:64" validate:"omitempty"`
 	Status              string          `db:"status" gorm:"not null;type:varchar(50);index;default:'in_progress';check:assessment_attempt_status_check,status IN ('in_progress','completed','abandoned','pending_review')" validate:"required,oneof=in_progress completed abandoned pending_review"`
 	// TeacherFeedback es el comentario global del profesor al finalizar la revision (plan 036 D-036.4).
-	TeacherFeedback *string   `db:"teacher_feedback" gorm:"type:text;default:null" validate:"omitempty"`
-	CreatedAt       time.Time `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt       time.Time `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	TeacherFeedback *string `db:"teacher_feedback" gorm:"type:text;default:null" validate:"omitempty"`
+	// AIReviewClaimedAt marca cuando un proceso de revision por IA tomo el candado
+	// «en revision por IA» sobre este intento (candado con vencimiento, T4-1).
+	// NULL = sin candado activo. timestamptz aditivo.
+	AIReviewClaimedAt *time.Time `db:"ai_review_claimed_at" gorm:"default:null"`
+	CreatedAt         time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt         time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

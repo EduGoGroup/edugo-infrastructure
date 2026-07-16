@@ -6,6 +6,28 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.24] - 2026-07-16
+
+Plan 040 F4 (candado «en revisión por IA» del carril de corrección IA). `SchemaVersion` 3.104.0 →
+**3.105.0**, aplicado aditivamente. Introduce el campo que evita que dos procesos de revisión por IA
+tomen el mismo intento a la vez.
+
+### Added
+
+- **`assessment.assessment_attempt.ai_review_claimed_at`** (3.105.0, plan 040 F4): columna
+  `timestamptz NULL` (`entities/assessment_attempt.go`, campo `AIReviewClaimedAt *time.Time`) que
+  marca cuándo un proceso de revisión por IA tomó el candado «en revisión por IA» sobre el intento
+  (candado con vencimiento; `NULL` = sin candado activo).
+
+### Notas de despliegue
+
+- **Cambio aditivo**: solo tag GORM del entity (columna nueva `NULL`), no toca `pre_gorm.sql` ni
+  `post_gorm.sql`, así que `ComputeFilesHash()` **no** cambia; el bump de `SchemaVersion` es
+  obligatorio por la regla de cambios en entities. `AutoMigrate` agrega la columna al recrear/migrar
+  la BD local; en Neon el `ADD COLUMN` es aditivo y llega en el paso de despliegue coordinado.
+
+Consumidor real de la semilla: `edugo-dev-environment`.
+
 ## [0.900.23] - 2026-07-15
 
 Semilla SDUI: acción **«Revisiones»** en la toolbar del form de evaluaciones. `SchemaVersion` sin

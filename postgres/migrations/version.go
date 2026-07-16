@@ -1073,7 +1073,16 @@ import (
 //     KMP (GradesListContract: select-item → NoOp; grades-list es read-only y
 //     no hay pantalla de detalle docente), fuera de este seed. Recrear BD para
 //     reseeding.
-const SchemaVersion = "3.104.0"
+//   - 3.105.0 (T4-1 — candado «en revisión por IA» con vencimiento): nueva
+//     columna assessment.assessment_attempt.ai_review_claimed_at (timestamptz
+//     NULL, entities/assessment_attempt.go, campo AIReviewClaimedAt *time.Time).
+//     Marca cuándo un proceso de revisión por IA tomó el candado sobre el intento
+//     (NULL = sin candado activo). Cambio SOLO en tag GORM del entity (columna
+//     aditiva NULL) → no toca pre/post_gorm.sql → ComputeFilesHash() NO cambia;
+//     bump obligatorio por la regla 1 (cambio en entity). AutoMigrate agrega la
+//     columna nueva al recrear/migrar la BD local; en Neon el ADD COLUMN es
+//     aditivo y llega en el paso de despliegue coordinado, no en esta tarea.
+const SchemaVersion = "3.105.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
