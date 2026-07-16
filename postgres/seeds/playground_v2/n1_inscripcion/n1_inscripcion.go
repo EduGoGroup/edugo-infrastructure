@@ -23,9 +23,9 @@
 //  6. iam.user_roles             — admin→school_admin L4, docente→teacher L4, alumnos→student L4.
 //  7. academic.memberships       — admin con alcance COLEGIO (AcademicUnitID=NULL); los demás en la unidad.
 //  8. academic.subject_offerings — 1 sesión por materia (modelo N1.7, plan 010
-//     / ADR 0009). La sesión de Matemáticas lleva teacher_membership_id del
-//     docente (lo dicta); Lenguaje y Ciencias quedan sin docente asignado
-//     (teacher_membership_id NULL).
+//     / ADR 0009). Las tres sesiones (Matemáticas, Lenguaje, Ciencias) llevan
+//     teacher_membership_id del docente-n1 (dicta las tres): un aula con alumnos
+//     inscritos exige docente asignado (deuda 028).
 //  9. academic.subject_offering_enrollments — inscripción del alumno a la sesión:
 //     - alumno 1  → Matemáticas + Lenguaje (inscrito).
 //     - alumno 2  → Matemáticas + Lenguaje + Ciencias (inscrito).
@@ -207,15 +207,18 @@ func Apply(tx *gorm.DB) error {
 	}
 
 	// Sesiones de materia (subject_offerings): una por materia en la unidad.
-	// La de Matemáticas lleva al docente (la dicta); Lenguaje y Ciencias quedan
-	// sin docente asignado (teacher_membership_id NULL) y SIN section_label.
+	// Las tres llevan al mismo docente (docente-n1 dicta en esta unidad). Antes
+	// Lenguaje y Ciencias quedaban sin docente (teacher_membership_id NULL), pero
+	// con la regla de la deuda 028 —no puede haber alumnos inscritos en un aula sin
+	// docente— eso volvía inconsistentes las inscripciones que este fixture crea
+	// más abajo. Todas SIN section_label.
 	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringMathUUID, SchoolID: schoolUUID, SubjectID: subjectMathUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID, TeacherMembershipID: &teacherMembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_math: %w", err)
 	}
-	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringLangUUID, SchoolID: schoolUUID, SubjectID: subjectLangUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID}); err != nil {
+	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringLangUUID, SchoolID: schoolUUID, SubjectID: subjectLangUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID, TeacherMembershipID: &teacherMembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_lang: %w", err)
 	}
-	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringScienceUUID, SchoolID: schoolUUID, SubjectID: subjectScienceUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID}); err != nil {
+	if err := common.SeedOffering(tx, common.OfferingSpec{ID: offeringScienceUUID, SchoolID: schoolUUID, SubjectID: subjectScienceUUID, AcademicUnitID: unitUUID, PeriodID: periodUUID, TeacherMembershipID: &teacherMembUUID}); err != nil {
 		return fmt.Errorf("playground_v2/n1_inscripcion: offering_science: %w", err)
 	}
 
