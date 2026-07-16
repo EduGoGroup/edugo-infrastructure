@@ -6,6 +6,28 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.23] - 2026-07-15
+
+Semilla SDUI: acción **«Revisiones»** en la toolbar del form de evaluaciones. `SchemaVersion` sin
+cambios (**3.104.0**): no hay DDL, solo datos de `screenconfig`.
+
+### Added
+
+- **Acción «Revisiones»** en `assessments-form` (`system/l4/screen_instances_rows.go`): abre el
+  tablero de revisión (`assessment-review-dashboard`, `event_id: view-reviews`) desde la evaluación,
+  que hasta ahora solo se alcanzaba por el tablero «por calificar». Visible sobre evaluaciones
+  `published`, permiso `content.assessments.read`, orden 25.
+
+### Notas de despliegue
+
+- El `ExpectedContentHash` **cambia** aunque `SchemaVersion` no: el hash combina migraciones **y**
+  semillas. Un environment live estampado con el hash anterior reportará «BD DESACTUALIZADA» hasta
+  que se re-estampe.
+- `ApplyScreenInstances` es `ON CONFLICT (screen_key) DO NOTHING` **a propósito** (no pisar
+  customizaciones manuales en live): re-correr la semilla **no** actualiza una pantalla existente.
+  En un environment ya sembrado, esta acción se aplica con un UPDATE focalizado del `slot_data` de
+  `assessments-form`, o recreando. Consumidor real de la semilla: `edugo-dev-environment`.
+
 ## [0.900.22] - 2026-07-15
 
 Planes 039 (terreno LLM) y 040 (corrección IA prevalidada). `SchemaVersion` 3.100.0 → **3.104.0**,
