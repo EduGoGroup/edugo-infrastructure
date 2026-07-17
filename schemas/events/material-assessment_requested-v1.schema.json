@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/EduGoGroup/edugo-infrastructure/schemas/events/material-assessment_requested-v1",
+  "title": "Material Assessment Requested Event",
+  "description": "Evento publicado cuando un docente pide generar una evaluación a partir de un material (plan 043: arranca el pipeline material → evaluación identificado por su job)",
+  "type": "object",
+  "required": ["event_id", "event_type", "event_version", "timestamp", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID único del evento (UUID)"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "material.assessment_requested",
+      "description": "Tipo de evento"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Versión del schema"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 del evento"
+    },
+    "payload": {
+      "type": "object",
+      "required": ["job_id", "material_id", "school_id"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID del job de pipeline en PostgreSQL (content.material_pipeline_job)"
+        },
+        "material_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID del material origen en PostgreSQL"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID de la escuela"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1095,7 +1095,24 @@ import (
 //     entity). AutoMigrate agrega las columnas al recrear/migrar la BD local; en
 //     Neon los ADD COLUMN son aditivos y llegan en el paso de despliegue
 //     coordinado, no en esta tarea.
-const SchemaVersion = "3.106.0"
+//   - 3.107.0 (plan 043 F0 — pipeline material → evaluación): tres tablas nuevas
+//     aditivas en el schema content (entities/material_pipeline_job.go,
+//     material_pipeline_chunk.go, material_pipeline_candidate.go). job = cabecera
+//     (material_id → content.materials CASCADE, school_id/requested_by_membership_id
+//     UUID sin FK dura, status pending|processing|done|failed, phase smallint,
+//     params/assessment_id/last_error, timestamps + completed_at). chunk = detalle
+//     (job_id → job CASCADE, UNIQUE job_id+seq, chunk_text/summary/artifacts,
+//     status pending|processing|done|failed, attempts). candidate = pregunta
+//     candidata (job_id/chunk_id → CASCADE, payload jsonb not null, embedding,
+//     status candidate|dropped_dup|dropped_irrelevant|selected, dedupe_group,
+//     score numeric). Registradas en el AutoMigrate (gorm_migrator.go, tras
+//     UserMaterialTag). Las FKs same-schema y los triggers set_updated_at de job/
+//     chunk viven en post_gorm.sql (GORM no materializa la FK sin campo de
+//     relación); el UNIQUE (job_id, seq) lo materializa GORM (tag uniqueIndex) →
+//     ComputeFilesHash() CAMBIA. Recrear BD para las tablas nuevas; en Neon los
+//     CREATE TABLE son aditivos y llegan en el paso de despliegue coordinado, no
+//     en esta tarea.
+const SchemaVersion = "3.107.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

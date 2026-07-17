@@ -462,6 +462,40 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- content.material_pipeline_* (plan 043 F0) — pipeline material → evaluación.
+-- FKs same-schema content → content (GORM no las materializa desde el tag
+-- `constraint:` sin campo de relacion, mismo caso que material_assignment).
+-- school_id / requested_by_membership_id quedan como UUID indexado SIN FK dura
+-- (mismo criterio que user_material_tags). El UNIQUE (job_id, seq) del chunk lo
+-- materializa GORM (tag uniqueIndex), por eso NO se declara aqui.
+DO $$ BEGIN
+    ALTER TABLE content.material_pipeline_job
+        ADD CONSTRAINT material_pipeline_job_material_fkey
+            FOREIGN KEY (material_id) REFERENCES content.materials(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_pipeline_chunk
+        ADD CONSTRAINT material_pipeline_chunk_job_fkey
+            FOREIGN KEY (job_id) REFERENCES content.material_pipeline_job(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_pipeline_candidate
+        ADD CONSTRAINT material_pipeline_candidate_job_fkey
+            FOREIGN KEY (job_id) REFERENCES content.material_pipeline_job(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE content.material_pipeline_candidate
+        ADD CONSTRAINT material_pipeline_candidate_chunk_fkey
+            FOREIGN KEY (chunk_id) REFERENCES content.material_pipeline_chunk(id) ON DELETE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 -- assessment.assessment → schools (CASCADE) / membership autor (RESTRICT) /
 -- subjects (RESTRICT, catalogo de escuela)
 DO $$ BEGIN
@@ -819,6 +853,17 @@ CREATE OR REPLACE TRIGGER set_updated_at
 -- content.material_assignment
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON content.material_assignment
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- content.material_pipeline_job (plan 043)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON content.material_pipeline_job
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- content.material_pipeline_chunk (plan 043; material_pipeline_candidate solo
+-- tiene created_at, por eso no lleva trigger set_updated_at).
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON content.material_pipeline_chunk
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- assessment.assessment

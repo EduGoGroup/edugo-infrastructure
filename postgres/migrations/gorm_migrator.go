@@ -110,6 +110,14 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		// UNIQUE (user_id, material_id, tag) + indice por user_id via tags GORM.
 		&entities.UserMaterialTag{},
 
+		// Pipeline material → evaluación (plan 043 F0). Cabecera (job) antes que
+		// detalle (chunk, FK job_id) y candidata (FK job_id + chunk_id). FKs
+		// same-schema y triggers set_updated_at en post_gorm.sql; el UNIQUE
+		// (job_id, seq) del chunk lo materializa GORM desde el tag uniqueIndex.
+		&entities.MaterialPipelineJob{},
+		&entities.MaterialPipelineChunk{},
+		&entities.MaterialPipelineCandidate{},
+
 		// Assessment (N4 / ADR 0019: llaveado al modelo de sesion). assessment
 		// primero; question antes de question_option/attempt_answer; attempt antes
 		// de attempt_answer; attempt_answer antes de attempt_review;
