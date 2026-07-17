@@ -210,6 +210,86 @@ func TestStudentEnrolledValidation(t *testing.T) {
 	})
 }
 
+// TestQuestionPrepRequestedValidation valida el evento question.prep_requested (plan 042 F0)
+func TestQuestionPrepRequestedValidation(t *testing.T) {
+	validator, err := schemas.NewEventValidator()
+	if err != nil {
+		t.Fatalf("Error creando validador: %v", err)
+	}
+
+	t.Run("happy_path_valid_event", func(t *testing.T) {
+		validEvent := map[string]interface{}{
+			"event_id":      uuid.New().String(),
+			"event_type":    "question.prep_requested",
+			"event_version": "1.0",
+			"timestamp":     "2026-07-16T10:00:00Z",
+			"payload": map[string]interface{}{
+				"question_id":   uuid.New().String(),
+				"assessment_id": uuid.New().String(),
+				"reason":        "created",
+			},
+		}
+
+		if err := validator.Validate(validEvent); err != nil {
+			t.Errorf("Evento válido rechazado: %v", err)
+		}
+	})
+
+	t.Run("missing_required_field", func(t *testing.T) {
+		invalidEvent := map[string]interface{}{
+			"event_id":      uuid.New().String(),
+			"event_type":    "question.prep_requested",
+			"event_version": "1.0",
+			"timestamp":     "2026-07-16T10:00:00Z",
+			"payload": map[string]interface{}{
+				"question_id":   uuid.New().String(),
+				"assessment_id": uuid.New().String(),
+				// Falta reason
+			},
+		}
+
+		if err := validator.Validate(invalidEvent); err == nil {
+			t.Error("Se esperaba error por campo faltante")
+		}
+	})
+
+	t.Run("invalid_reason_enum", func(t *testing.T) {
+		invalidEvent := map[string]interface{}{
+			"event_id":      uuid.New().String(),
+			"event_type":    "question.prep_requested",
+			"event_version": "1.0",
+			"timestamp":     "2026-07-16T10:00:00Z",
+			"payload": map[string]interface{}{
+				"question_id":   uuid.New().String(),
+				"assessment_id": uuid.New().String(),
+				"reason":        "unknown_reason",
+			},
+		}
+
+		if err := validator.Validate(invalidEvent); err == nil {
+			t.Error("Se esperaba error por reason fuera del enum")
+		}
+	})
+
+	t.Run("invalid_uuid_in_payload", func(t *testing.T) {
+		invalidEvent := map[string]interface{}{
+			"event_id":      uuid.New().String(),
+			"event_type":    "question.prep_requested",
+			"event_version": "1.0",
+			"timestamp":     "2026-07-16T10:00:00Z",
+			"payload": map[string]interface{}{
+				"question_id":   "not-a-uuid",
+				"assessment_id": uuid.New().String(),
+				"reason":        "backfill",
+			},
+		}
+
+		if err := validator.Validate(invalidEvent); err == nil {
+			t.Error("Se esperaba error por UUID inválido")
+		}
+	})
+}
+
 // TestEventTypeValidation valida edge cases relacionados con event_type y event_version
 func TestEventTypeValidation(t *testing.T) {
 	validator, err := schemas.NewEventValidator()
