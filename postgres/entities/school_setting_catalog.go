@@ -29,6 +29,7 @@ const (
 	SettingLLMGenerationMode  = "llm.generation.mode"
 	SettingLLMReviewMode      = "llm.review.mode"
 	SettingLLMReviewFlow      = "llm.review.flow"
+	SettingLLMPipelineMode    = "llm.pipeline.mode"
 	SettingImportMaxQuestions = "import.max_questions"
 	SettingImportMaxJSONBytes = "import.max_json_bytes"
 )
@@ -77,6 +78,16 @@ var schoolSettingCatalog = []SettingSpec{
 		EnvDefault:    "LLM_REVIEW_FLOW_DEFAULT",
 		HardDefault:   "teacher",
 		Description:   "Flujo de la corrección IA: direct (publica directo) o teacher (la revisa el docente).",
+	},
+	{
+		Key:           SettingLLMPipelineMode,
+		Type:          SettingTypeEnum,
+		AllowedValues: []string{"off", "on"},
+		EnvDefault:    "LLM_PIPELINE_MODE_DEFAULT",
+		HardDefault:   "off",
+		// Habilita el riel material→evaluación por escuela (plan 043). NO elige provider:
+		// la fase 1 fuerza el LLM local por código (ADR 0036 §4); esta llave solo prende/apaga.
+		Description: "Habilita la generación de evaluaciones desde material por IA (plan 043): off u on.",
 	},
 	{
 		Key:         SettingImportMaxQuestions,

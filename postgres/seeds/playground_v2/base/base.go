@@ -287,8 +287,9 @@ func seedSchoolSettings(tx *gorm.DB) error {
 
 	schoolSI := mustUUID("b1000000-0000-0000-0000-000000000001")
 	settings := map[string]string{
-		entities.SettingLLMReviewMode: "api",
-		entities.SettingLLMReviewFlow: "teacher",
+		entities.SettingLLMReviewMode:   "api",
+		entities.SettingLLMReviewFlow:   "teacher",
+		entities.SettingLLMPipelineMode: "on",
 	}
 	for key, value := range settings {
 		if err := entities.ValidateSetting(key, value); err != nil {

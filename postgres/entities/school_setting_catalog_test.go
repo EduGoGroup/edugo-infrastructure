@@ -14,6 +14,9 @@ func TestValidateSetting(t *testing.T) {
 		{"enum inválido llm.review.mode=maybe", SettingLLMReviewMode, "maybe", true},
 		{"enum válido llm.review.flow=teacher", SettingLLMReviewFlow, "teacher", false},
 		{"enum válido llm.generation.mode=local", SettingLLMGenerationMode, "local", false},
+		{"enum válido llm.pipeline.mode=on", SettingLLMPipelineMode, "on", false},
+		{"enum válido llm.pipeline.mode=off", SettingLLMPipelineMode, "off", false},
+		{"enum inválido llm.pipeline.mode=local", SettingLLMPipelineMode, "local", true},
 		{"int válido import.max_questions=50", SettingImportMaxQuestions, "50", false},
 		{"int con espacios import.max_questions", SettingImportMaxQuestions, "  200  ", false},
 		{"int cero import.max_questions=0", SettingImportMaxQuestions, "0", true},
@@ -40,6 +43,7 @@ func TestResolveDefaultHardDefaults(t *testing.T) {
 		SettingLLMGenerationMode:  "off",
 		SettingLLMReviewMode:      "off",
 		SettingLLMReviewFlow:      "teacher",
+		SettingLLMPipelineMode:    "off",
 		SettingImportMaxQuestions: "100",
 		SettingImportMaxJSONBytes: "1048576",
 	}
