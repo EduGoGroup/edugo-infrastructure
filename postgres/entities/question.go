@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,8 +25,21 @@ type Question struct {
 	Points        int            `db:"points" gorm:"not null;default:1"`
 	Difficulty    *string        `db:"difficulty" gorm:"type:varchar(20);default:null" validate:"omitempty"`
 	Tags          pq.StringArray `db:"tags" gorm:"type:text[]" validate:"-"`
-	CreatedAt     time.Time      `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt     time.Time      `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// LLMPrep es el artefacto de preparacion para el LLM (contrato versionado v1,
+	// plan 042 D-042.2). JSONB aditivo NULL; solo lo consume el carril LLM, no SQL.
+	LLMPrep json.RawMessage `db:"llm_prep" gorm:"type:jsonb;default:null"`
+	// LLMPrepStatus es el estado del artefacto de preparacion (plan 042 D-042.1).
+	LLMPrepStatus string `db:"llm_prep_status" gorm:"not null;type:varchar(20);default:'none';check:question_llm_prep_status_check,llm_prep_status IN ('none','pending','processing','ready','failed','stale')" validate:"omitempty,oneof=none pending processing ready failed stale"`
+	// LLMPrepSourceHash es el sha256 de question_type+question_text+correct_answer+explanation
+	// que ancla la concurrencia optimista de la preparacion (plan 042 D-042.5). NULL = sin prep aun.
+	LLMPrepSourceHash *string `db:"llm_prep_source_hash" gorm:"type:varchar(64);default:null" validate:"omitempty"`
+	// LLMPrepFeedback es el comentario del profesor para re-preparar; se consume 1 vez
+	// y se limpia al procesarlo (plan 042 D-042.7). NULL = sin comentario pendiente.
+	LLMPrepFeedback *string `db:"llm_prep_feedback" gorm:"type:text;default:null" validate:"omitempty"`
+	// LLMPrepUpdatedAt marca cuando se escribio el prep por ultima vez. timestamptz aditivo NULL.
+	LLMPrepUpdatedAt *time.Time `db:"llm_prep_updated_at" gorm:"default:null"`
+	CreatedAt        time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt        time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

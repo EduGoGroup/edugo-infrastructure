@@ -1082,7 +1082,37 @@ import (
 //     bump obligatorio por la regla 1 (cambio en entity). AutoMigrate agrega la
 //     columna nueva al recrear/migrar la BD local; en Neon el ADD COLUMN es
 //     aditivo y llega en el paso de despliegue coordinado, no en esta tarea.
-const SchemaVersion = "3.105.0"
+//   - 3.106.0 (plan 042 F0 — artefacto «llm_prep» por pregunta): cinco columnas
+//     aditivas en assessment.question (entities/question.go):
+//     llm_prep (jsonb NULL, artefacto de preparacion, contrato versionado v1),
+//     llm_prep_status (varchar(20) NOT NULL DEFAULT 'none', CHECK inline
+//     none|pending|processing|ready|failed|stale), llm_prep_source_hash
+//     (varchar(64) NULL, sha256 de question_type+question_text+correct_answer+
+//     explanation), llm_prep_feedback (text NULL, comentario del profesor que se
+//     consume 1 vez) y llm_prep_updated_at (timestamptz NULL). Cambio SOLO en el
+//     entity (columnas aditivas, CHECK en tag GORM) → no toca pre/post_gorm.sql →
+//     ComputeFilesHash() NO cambia; bump obligatorio por la regla 1 (cambio en
+//     entity). AutoMigrate agrega las columnas al recrear/migrar la BD local; en
+//     Neon los ADD COLUMN son aditivos y llegan en el paso de despliegue
+//     coordinado, no en esta tarea.
+//   - 3.107.0 (plan 043 F0 — pipeline material → evaluación): tres tablas nuevas
+//     aditivas en el schema content (entities/material_pipeline_job.go,
+//     material_pipeline_chunk.go, material_pipeline_candidate.go). job = cabecera
+//     (material_id → content.materials CASCADE, school_id/requested_by_membership_id
+//     UUID sin FK dura, status pending|processing|done|failed, phase smallint,
+//     params/assessment_id/last_error, timestamps + completed_at). chunk = detalle
+//     (job_id → job CASCADE, UNIQUE job_id+seq, chunk_text/summary/artifacts,
+//     status pending|processing|done|failed, attempts). candidate = pregunta
+//     candidata (job_id/chunk_id → CASCADE, payload jsonb not null, embedding,
+//     status candidate|dropped_dup|dropped_irrelevant|selected, dedupe_group,
+//     score numeric). Registradas en el AutoMigrate (gorm_migrator.go, tras
+//     UserMaterialTag). Las FKs same-schema y los triggers set_updated_at de job/
+//     chunk viven en post_gorm.sql (GORM no materializa la FK sin campo de
+//     relación); el UNIQUE (job_id, seq) lo materializa GORM (tag uniqueIndex) →
+//     ComputeFilesHash() CAMBIA. Recrear BD para las tablas nuevas; en Neon los
+//     CREATE TABLE son aditivos y llegan en el paso de despliegue coordinado, no
+//     en esta tarea.
+const SchemaVersion = "3.107.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

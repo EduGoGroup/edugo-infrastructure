@@ -270,7 +270,8 @@ func seedSchoolInvitationRoles(tx *gorm.DB) error {
 // seedSchoolSettings siembra la configuración clave/valor (plan 039) de UNA de
 // las dos escuelas de base para ejercitar la resolución escuela-vs-default: el
 // Colegio San Ignacio (b1…01) declara política de corrección IA explícita
-// (llm.review.mode=api, llm.review.flow=teacher); la Academia Global English
+// (llm.review.mode=local, llm.review.flow=teacher — fase alpha: todo local con
+// Ollama; el modo api se activará cuando el carril esté pulido); la Academia Global English
 // (b3…03) NO recibe filas, así que cae a los defaults de plataforma (env →
 // default duro). Cada valor se valida contra el catálogo antes de insertarse
 // (un valor fuera de catálogo sería un bug de este fixture). Idempotente: la PK
@@ -287,8 +288,9 @@ func seedSchoolSettings(tx *gorm.DB) error {
 
 	schoolSI := mustUUID("b1000000-0000-0000-0000-000000000001")
 	settings := map[string]string{
-		entities.SettingLLMReviewMode: "api",
-		entities.SettingLLMReviewFlow: "teacher",
+		entities.SettingLLMReviewMode:   "local",
+		entities.SettingLLMReviewFlow:   "teacher",
+		entities.SettingLLMPipelineMode: "on",
 	}
 	for key, value := range settings {
 		if err := entities.ValidateSetting(key, value); err != nil {

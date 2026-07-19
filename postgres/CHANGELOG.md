@@ -6,6 +6,38 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.25] - 2026-07-16
+
+Plan 042 F0 (artefacto «llm_prep» por pregunta — preparación para el LLM). `SchemaVersion` 3.105.0 →
+**3.106.0**, aplicado aditivamente. Introduce las columnas donde vive el artefacto de preparación de
+cada pregunta y su estado/anclaje de concurrencia.
+
+### Added
+
+- **`assessment.question.llm_prep`** (3.106.0, plan 042 F0): columna `jsonb NULL`
+  (`entities/question.go`, campo `LLMPrep json.RawMessage`) con el artefacto de preparación
+  (contrato versionado v1, D-042.2). Solo lo consume el carril LLM, nunca SQL.
+- **`assessment.question.llm_prep_status`** (`varchar(20) NOT NULL DEFAULT 'none'`, campo
+  `LLMPrepStatus string`): estado del artefacto con CHECK inline
+  `none|pending|processing|ready|failed|stale`.
+- **`assessment.question.llm_prep_source_hash`** (`varchar(64) NULL`, campo
+  `LLMPrepSourceHash *string`): sha256 de `question_type+question_text+correct_answer+explanation`
+  que ancla la concurrencia optimista de la preparación (D-042.5).
+- **`assessment.question.llm_prep_feedback`** (`text NULL`, campo `LLMPrepFeedback *string`):
+  comentario del profesor para re-preparar; se consume 1 vez y se limpia (D-042.7).
+- **`assessment.question.llm_prep_updated_at`** (`timestamptz NULL`, campo
+  `LLMPrepUpdatedAt *time.Time`): marca cuándo se escribió el prep por última vez.
+
+### Notas de despliegue
+
+- **Cambio aditivo**: solo tags GORM del entity (columnas nuevas, CHECK inline en el tag), no toca
+  `pre_gorm.sql` ni `post_gorm.sql`, así que `ComputeFilesHash()` **no** cambia; el bump de
+  `SchemaVersion` es obligatorio por la regla de cambios en entities. `AutoMigrate` agrega las
+  columnas al recrear/migrar la BD local; en Neon los `ADD COLUMN` son aditivos y llegan en el paso
+  de despliegue coordinado.
+
+Consumidor real de la semilla: `edugo-dev-environment`.
+
 ## [0.900.24] - 2026-07-16
 
 Plan 040 F4 (candado «en revisión por IA» del carril de corrección IA). `SchemaVersion` 3.104.0 →
