@@ -172,11 +172,19 @@ func l4RoleSpecs() []l4RoleSpec {
 			name:        L4_ROLE_READONLY_AUDITOR_NAME,
 			displayName: "Auditor de Solo Lectura",
 			// readonly_auditor NO hereda de ningún canónico (allow read-only
-			// propio; ver nota abajo). Aterriza en dashboard-teacher: es scope
-			// unit y su acceso es la vista de clase en solo lectura, el dashboard
-			// más cercano a su superficie. Sin landing caería al home genérico
+			// propio; ver nota abajo). Sin landing caería al home genérico
 			// "dashboard-home" en vez del dashboard de su superficie.
-			landingScreenKey: "dashboard-teacher",
+			//
+			// Plan 052 F4 (QA-11, bug 0068 reabierto): aterrizaba en
+			// `dashboard-teacher`, y ese panel le pedía «sus» sesiones —
+			// GET /me/teaching, GET /me/subject-offerings— que el auditor NO tiene:
+			// no es profesor de nada y no tiene unidad activa. Devolvían
+			// 428 NO_ACTIVE_UNIT y el cliente los pintaba como tres errores
+			// apilados culpando a la conexión. `dashboard-schooladmin` encaja con
+			// lo que sí puede ver: los indicadores del colegio vía
+			// GET /stats/school, que le responde 200 desde que este mismo frente
+			// le dio `reports.stats.school`. (Decisión del dueño 2026-08-01.)
+			landingScreenKey: "dashboard-schooladmin",
 			// NO hereda: su allow read-only no coincide con el de teacher
 			// (teacher carece de academic.guardian_relations/memberships y
 			// content.assessments_student, y a la vez aporta
@@ -845,26 +853,64 @@ func roleGrantDenyPatterns() map[string][]string {
 			// devuelven listas vacías porque el auditor no es ni profesor ni alumno
 			// —y además dejaban DOS ítems «Mis Materias» idénticos en el menú—.
 			"academic.*.read:own",
-			"*.create",
-			"*.update",
-			"*.delete",
-			"*.publish",
-			"*.finalize",
-			"*.activate",
-			"*.approve",
-			"*.grade",
-			"*.attempt",
-			"*.assign",
-			"*.review",
-			"*.manage",
-			"*.request",
+			// Plan 052 F4 (QA-25 / frontera Identity-core): estos deny eran
+			// comodines de PRIMER NIVEL (`*.create`, `*.update`…). El matcher
+			// expande `*.suffix` a CUALQUIER permiso que termine así, venga del
+			// dominio que venga, así que en cuanto identity migre su permisología
+			// al mismo evaluador estos patrones bloquearían `identity.systems.manage`
+			// o `identity.sessions.revoke` con un 403 que NINGÚN allow puede
+			// rescatar —deny gana siempre (ADR-0023)—. Identity ya lo tenía
+			// catalogado como riesgo latente sin dueño
+			// (`002/inventario-patrones-permisos.md:113,205`) y ningún plan suyo
+			// (004/009/010) tenía casilla para arreglarlo.
+			//
+			// Se acotan a los DOS dominios donde el auditor tiene allow amplio con
+			// verbos mutativos reales: `academic.` y `content.` (verificado contra
+			// el catálogo: de los 80 permisos que alcanza, los 40 mutativos caen
+			// todos en esos dos). Se conserva la lista COMPLETA de 15 verbos en
+			// ambos, en vez de solo los que hoy tienen permiso, para que un permiso
+			// nuevo DENTRO de esos dominios siga naciendo denegado.
+			//
+			// Lo que sí se pierde: un dominio NUEVO con verbos mutativos ya no
+			// quedaría denegado solo (antes `*.create` lo cubría). Ese hueco lo
+			// vigila `TestContratoGrants_AuditorSigueSiendoDeSoloLectura` en
+			// roles_contract_test.go, que falla si el auditor alcanza cualquier
+			// mutativo: el fallo pasa de silencioso a ruidoso.
+			"academic.*.create",
+			"academic.*.update",
+			"academic.*.delete",
+			"academic.*.publish",
+			"academic.*.finalize",
+			"academic.*.activate",
+			"academic.*.approve",
+			"academic.*.grade",
+			"academic.*.attempt",
+			"academic.*.assign",
+			"academic.*.review",
+			"academic.*.manage",
+			"academic.*.request",
+			"content.*.create",
+			"content.*.update",
+			"content.*.delete",
+			"content.*.publish",
+			"content.*.finalize",
+			"content.*.activate",
+			"content.*.approve",
+			"content.*.grade",
+			"content.*.attempt",
+			"content.*.assign",
+			"content.*.review",
+			"content.*.manage",
+			"content.*.request",
 			// Onboarding (plan 005): higiene deny-wins. readonly_auditor
 			// tiene allow `academic.*`; sin estos deny podría revocar
 			// invitaciones, rechazar solicitudes o aprobar ingresos. El
 			// namespace de aprobación no es un verbo de mutación clásico, así
 			// que se deniega completo (la acción ES el rol).
-			"*.revoke",
-			"*.reject",
+			"academic.*.revoke",
+			"academic.*.reject",
+			"content.*.revoke",
+			"content.*.reject",
 			"academic.join_request_approvals.*",
 		},
 	}

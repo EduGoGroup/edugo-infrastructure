@@ -852,7 +852,31 @@ package layers
 //	    el mismo icono; ahora «Materias en las que estoy inscrito» / «Materias que
 //	    dicto», tanto en el menú como en el título de la pantalla.
 //	Bump para invalidar la caché SDUI del cliente.
-const L4_SEED_VERSION = "1.88.0"
+//
+// 1.89.0 (plan 052, Frente 4 — QA-11 / bug 0068): el `readonly_auditor` deja de
+//
+//	aterrizar en `dashboard-teacher` y pasa a `dashboard-schooladmin`. Aquel panel
+//	le pedía «sus» sesiones (GET /me/teaching, /me/subject-offerings) que el
+//	auditor no tiene —no es profesor de nada ni tiene unidad activa—, así que
+//	devolvían 428 NO_ACTIVE_UNIT y el cliente los pintaba como tres errores
+//	apilados culpando a la conexión. El panel de admin de colegio pide
+//	GET /stats/school, que le responde 200 desde que 1.88.0 le dio
+//	`reports.stats.school`. Va en versión propia y no dentro de 1.88.0 porque esa
+//	ya quedó aplicada en STAGING. Decisión del dueño 2026-08-01.
+//
+// 1.90.0 (plan 052, Frente 4 — QA-25 / frontera Identity-core): los deny del
+//
+//	`readonly_auditor` dejan de ser comodines de primer nivel (`*.create`) y pasan
+//	a estar namespaceados por dominio (`academic.*.create`, `content.*.create`).
+//	`*.suffix` casa con CUALQUIER dominio, así que al migrar identity habrían
+//	bloqueado `identity.systems.manage` / `identity.sessions.revoke` con un 403
+//	irrecuperable (deny gana, ADR-0023). Verificado contra los 105 permisos del
+//	catálogo: **0 permisos cambian de resultado** para el auditor, y los tres
+//	permisos de identity pasan de BLOQUEADO a libre. Se conserva la lista completa
+//	de 15 verbos en ambos dominios para que un permiso nuevo DENTRO de ellos siga
+//	naciendo denegado; el hueco de un dominio NUEVO lo vigila
+//	TestContratoGrants_AuditorSigueSiendoDeSoloLectura.
+const L4_SEED_VERSION = "1.90.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
