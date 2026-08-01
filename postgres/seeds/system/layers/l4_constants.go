@@ -827,7 +827,15 @@ package layers
 //     Solo cambia slot_data de la instancia → bump para invalidar la caché
 //     SDUI. El fix del detalle roto de grades-list (P2b: grades-form ELIMINADA)
 //     vive en KMP, no en este seed. SchemaVersion 3.103.0 → 3.104.0.
-const L4_SEED_VERSION = "1.86.0"
+//
+// 1.87.0 (plan 052, task 3.4 — QA-10): `attendance-list` gana
+//
+//	`empty_state_title`/`empty_state_description`. La pantalla NO funciona sin
+//	`subjectId` (su `endpointFor` devuelve null), pero cuelga del menú, donde ese
+//	parámetro no existe: el recorrido de QA la vio como una PANTALLA EN BLANCO.
+//	El renderer ya leía esos campos del slot_data, así que no hubo código: solo
+//	seed. Bump para invalidar la caché SDUI del cliente.
+const L4_SEED_VERSION = "1.87.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
