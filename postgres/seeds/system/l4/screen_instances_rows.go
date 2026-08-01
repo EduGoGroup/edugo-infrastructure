@@ -1096,6 +1096,8 @@ func attendanceList() l4ScreenInstanceRow {
 		slotData: `{
   "title": "Asistencia",
   "search_placeholder": "Buscar registro...",
+  "empty_state_title": "Elige una materia",
+  "empty_state_description": "La asistencia se pasa por materia. Abre una de tus materias y entra en su sesión para ver o registrar la asistencia.",
   "columns": [
     {"key": "student_name", "label": "Estudiante"},
     {"key": "date", "label": "Fecha"},
