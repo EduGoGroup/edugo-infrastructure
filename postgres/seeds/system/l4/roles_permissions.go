@@ -647,17 +647,25 @@ func roleGrantPatterns() map[string][]string {
 		//   academic.join_request_approvals.unit.student ELIMINADOS: admitir alumnos
 		//   pasa a ser acto de school_admin (decisión del dueño F0.2). El admin ya
 		//   lo cubre vía academic.*.
-		// DEUDA (no fuga de escritura): reports.* se MANTIENE. El item de menú
-		// "Estadísticas" (recurso stats → stats-dashboard) que ve el profesor
-		// apunta a /api/v1/stats/global, que exige reports.stats.global/school.
-		// Acotar a reports.stats.unit rompería esa pantalla (403). Acotar requiere
-		// primero un endpoint /stats/unit + repointar el contrato FE
-		// (StatsDashboardContract.kt) — fuera del alcance de seguridad de ESCRITURA
-		// de este plan. La fuga prioritaria (escritura) ya quedó cerrada arriba.
+		// Plan 052 F4 (QA-08): `reports.*` ELIMINADO. Cubría `reports.stats.global`
+		// (= GET /stats/global), que devuelve totales de TODA la plataforma: un
+		// profesor veía los agregados de los dos colegios. La DEUDA que este
+		// comentario declaraba en 027 ya no aplica — se mantenía porque acotar
+		// rompía la pantalla de Estadísticas con 403 y no existía alternativa, y el
+		// Frente 3 de este plan creó GET /stats/school. NO se devuelve ningún
+		// literal de `reports.`: ninguna ruta que el profesor use exige
+		// `reports.read` ni `reports.progress.*` (verificado sobre las 4 APIs; los
+		// únicos permisos del árbol que exige alguna ruta son reports.stats.global
+		// y reports.stats.school), y QA-08 pide expresamente que no vea el panel.
+		//
+		// Plan 052 F4: `admin.system_settings.*` ELIMINADO. Destapaba el ítem
+		// «Administración > Configuración» en el menú del profesor. Ninguna ruta de
+		// las 4 APIs lo exige, así que no rompe ninguna llamada suya. Es el OTRO
+		// hijo del mismo nodo «Administración» que señala QA-09: dejarlo habría
+		// convertido el fix de QA-09 en cosmético, porque el nodo padre seguiría
+		// apareciendo. (Decisión del dueño 2026-08-01.)
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.system_settings.*",
-		"reports.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -742,7 +750,11 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_assessments.read:own",
 		"content.materials.read",
 		"content.materials.download",
-		"reports.read",
+		// Plan 052 F4 (QA-12): `reports.read` ELIMINADO. No lo exige ninguna ruta de
+		// ninguna API, pero SÍ «tocaba» el recurso de menú `reports`
+		// (patternTouchesResource: HasPrefix("reports.read", "reports.")), así que
+		// le pintaba un ítem raíz «Reportes» cuyo único hijo —`stats`— el propio
+		// permiso no le habilitaba: un nodo vacío que no navegaba a ningún sitio.
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -778,7 +790,14 @@ func roleGrantPatterns() map[string][]string {
 		L4_ROLE_READONLY_AUDITOR_ID: {
 			"academic.*",
 			"content.*",
-			"reports.*",
+			// Plan 052 F4 (decisión del dueño 2026-08-01): el auditor audita SU
+			// colegio, no la plataforma. `reports.*` cubría `reports.stats.global`
+			// (totales de TODOS los colegios) y su contexto tiene school_id fijado,
+			// así que la amplitud contradecía su propio alcance. Se cambia por el
+			// literal de colegio, que además MANTIENE visible el ítem de menú
+			// «Estadísticas»: el resourcePath del recurso es `reports.stats` y el
+			// literal lo toca por prefijo.
+			"reports.stats.school",
 			"dashboard.*",
 			"menu.*",
 			"notifications.*",
@@ -820,6 +839,12 @@ func roleGrantDenyPatterns() map[string][]string {
 			"admin.roles.delete",
 		},
 		L4_ROLE_READONLY_AUDITOR_ID: {
+			// Plan 052 F4 (QA-25): mismo deny que ya lleva school_admin (027 F4.8).
+			// Sin él, el allow `academic.*` le arrastraba los cuatro recursos "self"
+			// (my_teaching / my_memberships / my_grades / my_attendance), que
+			// devuelven listas vacías porque el auditor no es ni profesor ni alumno
+			// —y además dejaban DOS ítems «Mis Materias» idénticos en el menú—.
+			"academic.*.read:own",
 			"*.create",
 			"*.update",
 			"*.delete",

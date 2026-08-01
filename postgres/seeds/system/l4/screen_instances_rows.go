@@ -514,15 +514,17 @@ func subjectsForm() l4ScreenInstanceRow {
 // Reintroducida en N1.7 F1 sobre el modelo de sesiones.
 func myMembershipsList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_MY_MEMBERSHIPS_LIST_ID,
-		screenKey:          "my-memberships-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Mis Materias",
+		id:         L4_SCREEN_INST_MY_MEMBERSHIPS_LIST_ID,
+		screenKey:  "my-memberships-list",
+		templateID: L0_SCREEN_TPL_LIST_ID_REF,
+		// Plan 052 F4 (QA-25): título desambiguado del de my-teaching-list, para que
+		// el usuario aterrice en una pantalla con el mismo nombre que pulsó en el menú.
+		name:               "Materias en las que estoy inscrito",
 		description:        "Materias en las que el alumno está inscrito",
 		scope:              "unit",
 		requiredPermission: "academic.my_memberships.read:own",
 		slotData: `{
-  "title": "Mis Materias",
+  "title": "Materias en las que estoy inscrito",
   "search_placeholder": "Buscar materia...",
   "columns": [
     {"key": "name", "label": "Materia"},
@@ -577,15 +579,16 @@ func myGradesList() l4ScreenInstanceRow {
 // (sesión) y period_name (período).
 func myTeachingList() l4ScreenInstanceRow {
 	return l4ScreenInstanceRow{
-		id:                 L4_SCREEN_INST_MY_TEACHING_LIST_ID,
-		screenKey:          "my-teaching-list",
-		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
-		name:               "Mis Materias",
+		id:         L4_SCREEN_INST_MY_TEACHING_LIST_ID,
+		screenKey:  "my-teaching-list",
+		templateID: L0_SCREEN_TPL_LIST_ID_REF,
+		// Plan 052 F4 (QA-25): título desambiguado — ver la nota en myMembershipsList.
+		name:               "Materias que dicto",
 		description:        "Materias y sesiones que dicta el profesor",
 		scope:              "unit",
 		requiredPermission: "academic.my_teaching.read:own",
 		slotData: `{
-  "title": "Mis Materias",
+  "title": "Materias que dicto",
   "search_placeholder": "Buscar materia...",
   "columns": [
     {"key": "subject_name", "label": "Materia"},

@@ -835,7 +835,24 @@ package layers
 //	parámetro no existe: el recorrido de QA la vio como una PANTALLA EN BLANCO.
 //	El renderer ya leía esos campos del slot_data, así que no hubo código: solo
 //	seed. Bump para invalidar la caché SDUI del cliente.
-const L4_SEED_VERSION = "1.87.0"
+//
+// 1.88.0 (plan 052, Frente 4 — QA-08 / QA-09 / QA-12 / QA-25): saneamiento de
+//
+//	comodines de permiso en tres roles, más desambiguación de etiquetas.
+//	  - `teacher`: fuera `reports.*` (cubría `reports.stats.global`, o sea los
+//	    totales de TODA la plataforma: un profesor veía los agregados de los dos
+//	    colegios) y fuera `admin.system_settings.*` (le pintaba «Administración >
+//	    Configuración»). Ninguna ruta de las 4 APIs exige ninguno de los dos.
+//	  - `guardian`: fuera `reports.read`, que no lo exige ninguna ruta pero le
+//	    pintaba un ítem raíz «Reportes» sin ningún hijo visible.
+//	  - `readonly_auditor`: `reports.*` → `reports.stats.school` (audita SU
+//	    colegio, no la plataforma) y nuevo deny `academic.*.read:own`, el mismo
+//	    que ya llevaba `school_admin` desde 027 F4.8.
+//	  - `my_memberships` / `my_teaching`: los dos se llamaban «Mis Materias» con
+//	    el mismo icono; ahora «Materias en las que estoy inscrito» / «Materias que
+//	    dicto», tanto en el menú como en el título de la pantalla.
+//	Bump para invalidar la caché SDUI del cliente.
+const L4_SEED_VERSION = "1.88.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.
