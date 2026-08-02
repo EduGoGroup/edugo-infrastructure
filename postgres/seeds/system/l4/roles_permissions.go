@@ -172,11 +172,19 @@ func l4RoleSpecs() []l4RoleSpec {
 			name:        L4_ROLE_READONLY_AUDITOR_NAME,
 			displayName: "Auditor de Solo Lectura",
 			// readonly_auditor NO hereda de ningún canónico (allow read-only
-			// propio; ver nota abajo). Aterriza en dashboard-teacher: es scope
-			// unit y su acceso es la vista de clase en solo lectura, el dashboard
-			// más cercano a su superficie. Sin landing caería al home genérico
+			// propio; ver nota abajo). Sin landing caería al home genérico
 			// "dashboard-home" en vez del dashboard de su superficie.
-			landingScreenKey: "dashboard-teacher",
+			//
+			// Plan 052 F4 (QA-11, bug 0068 reabierto): aterrizaba en
+			// `dashboard-teacher`, y ese panel le pedía «sus» sesiones —
+			// GET /me/teaching, GET /me/subject-offerings— que el auditor NO tiene:
+			// no es profesor de nada y no tiene unidad activa. Devolvían
+			// 428 NO_ACTIVE_UNIT y el cliente los pintaba como tres errores
+			// apilados culpando a la conexión. `dashboard-schooladmin` encaja con
+			// lo que sí puede ver: los indicadores del colegio vía
+			// GET /stats/school, que le responde 200 desde que este mismo frente
+			// le dio `reports.stats.school`. (Decisión del dueño 2026-08-01.)
+			landingScreenKey: "dashboard-schooladmin",
 			// NO hereda: su allow read-only no coincide con el de teacher
 			// (teacher carece de academic.guardian_relations/memberships y
 			// content.assessments_student, y a la vez aporta
@@ -647,17 +655,25 @@ func roleGrantPatterns() map[string][]string {
 		//   academic.join_request_approvals.unit.student ELIMINADOS: admitir alumnos
 		//   pasa a ser acto de school_admin (decisión del dueño F0.2). El admin ya
 		//   lo cubre vía academic.*.
-		// DEUDA (no fuga de escritura): reports.* se MANTIENE. El item de menú
-		// "Estadísticas" (recurso stats → stats-dashboard) que ve el profesor
-		// apunta a /api/v1/stats/global, que exige reports.stats.global/school.
-		// Acotar a reports.stats.unit rompería esa pantalla (403). Acotar requiere
-		// primero un endpoint /stats/unit + repointar el contrato FE
-		// (StatsDashboardContract.kt) — fuera del alcance de seguridad de ESCRITURA
-		// de este plan. La fuga prioritaria (escritura) ya quedó cerrada arriba.
+		// Plan 052 F4 (QA-08): `reports.*` ELIMINADO. Cubría `reports.stats.global`
+		// (= GET /stats/global), que devuelve totales de TODA la plataforma: un
+		// profesor veía los agregados de los dos colegios. La DEUDA que este
+		// comentario declaraba en 027 ya no aplica — se mantenía porque acotar
+		// rompía la pantalla de Estadísticas con 403 y no existía alternativa, y el
+		// Frente 3 de este plan creó GET /stats/school. NO se devuelve ningún
+		// literal de `reports.`: ninguna ruta que el profesor use exige
+		// `reports.read` ni `reports.progress.*` (verificado sobre las 4 APIs; los
+		// únicos permisos del árbol que exige alguna ruta son reports.stats.global
+		// y reports.stats.school), y QA-08 pide expresamente que no vea el panel.
+		//
+		// Plan 052 F4: `admin.system_settings.*` ELIMINADO. Destapaba el ítem
+		// «Administración > Configuración» en el menú del profesor. Ninguna ruta de
+		// las 4 APIs lo exige, así que no rompe ninguna llamada suya. Es el OTRO
+		// hijo del mismo nodo «Administración» que señala QA-09: dejarlo habría
+		// convertido el fix de QA-09 en cosmético, porque el nodo padre seguiría
+		// apareciendo. (Decisión del dueño 2026-08-01.)
 		"content.assessments.*",
 		"content.materials.*",
-		"admin.system_settings.*",
-		"reports.*",
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -742,7 +758,11 @@ func roleGrantPatterns() map[string][]string {
 		"academic.my_wards_assessments.read:own",
 		"content.materials.read",
 		"content.materials.download",
-		"reports.read",
+		// Plan 052 F4 (QA-12): `reports.read` ELIMINADO. No lo exige ninguna ruta de
+		// ninguna API, pero SÍ «tocaba» el recurso de menú `reports`
+		// (patternTouchesResource: HasPrefix("reports.read", "reports.")), así que
+		// le pintaba un ítem raíz «Reportes» cuyo único hijo —`stats`— el propio
+		// permiso no le habilitaba: un nodo vacío que no navegaba a ningún sitio.
 		"dashboard.*",
 		"menu.*",
 		"notifications.*",
@@ -778,7 +798,14 @@ func roleGrantPatterns() map[string][]string {
 		L4_ROLE_READONLY_AUDITOR_ID: {
 			"academic.*",
 			"content.*",
-			"reports.*",
+			// Plan 052 F4 (decisión del dueño 2026-08-01): el auditor audita SU
+			// colegio, no la plataforma. `reports.*` cubría `reports.stats.global`
+			// (totales de TODOS los colegios) y su contexto tiene school_id fijado,
+			// así que la amplitud contradecía su propio alcance. Se cambia por el
+			// literal de colegio, que además MANTIENE visible el ítem de menú
+			// «Estadísticas»: el resourcePath del recurso es `reports.stats` y el
+			// literal lo toca por prefijo.
+			"reports.stats.school",
 			"dashboard.*",
 			"menu.*",
 			"notifications.*",
@@ -820,26 +847,70 @@ func roleGrantDenyPatterns() map[string][]string {
 			"admin.roles.delete",
 		},
 		L4_ROLE_READONLY_AUDITOR_ID: {
-			"*.create",
-			"*.update",
-			"*.delete",
-			"*.publish",
-			"*.finalize",
-			"*.activate",
-			"*.approve",
-			"*.grade",
-			"*.attempt",
-			"*.assign",
-			"*.review",
-			"*.manage",
-			"*.request",
+			// Plan 052 F4 (QA-25): mismo deny que ya lleva school_admin (027 F4.8).
+			// Sin él, el allow `academic.*` le arrastraba los cuatro recursos "self"
+			// (my_teaching / my_memberships / my_grades / my_attendance), que
+			// devuelven listas vacías porque el auditor no es ni profesor ni alumno
+			// —y además dejaban DOS ítems «Mis Materias» idénticos en el menú—.
+			"academic.*.read:own",
+			// Plan 052 F4 (QA-25 / frontera Identity-core): estos deny eran
+			// comodines de PRIMER NIVEL (`*.create`, `*.update`…). El matcher
+			// expande `*.suffix` a CUALQUIER permiso que termine así, venga del
+			// dominio que venga, así que en cuanto identity migre su permisología
+			// al mismo evaluador estos patrones bloquearían `identity.systems.manage`
+			// o `identity.sessions.revoke` con un 403 que NINGÚN allow puede
+			// rescatar —deny gana siempre (ADR-0023)—. Identity ya lo tenía
+			// catalogado como riesgo latente sin dueño
+			// (`002/inventario-patrones-permisos.md:113,205`) y ningún plan suyo
+			// (004/009/010) tenía casilla para arreglarlo.
+			//
+			// Se acotan a los DOS dominios donde el auditor tiene allow amplio con
+			// verbos mutativos reales: `academic.` y `content.` (verificado contra
+			// el catálogo: de los 80 permisos que alcanza, los 40 mutativos caen
+			// todos en esos dos). Se conserva la lista COMPLETA de 15 verbos en
+			// ambos, en vez de solo los que hoy tienen permiso, para que un permiso
+			// nuevo DENTRO de esos dominios siga naciendo denegado.
+			//
+			// Lo que sí se pierde: un dominio NUEVO con verbos mutativos ya no
+			// quedaría denegado solo (antes `*.create` lo cubría). Ese hueco lo
+			// vigila `TestContratoGrants_AuditorSigueSiendoDeSoloLectura` en
+			// roles_contract_test.go, que falla si el auditor alcanza cualquier
+			// mutativo: el fallo pasa de silencioso a ruidoso.
+			"academic.*.create",
+			"academic.*.update",
+			"academic.*.delete",
+			"academic.*.publish",
+			"academic.*.finalize",
+			"academic.*.activate",
+			"academic.*.approve",
+			"academic.*.grade",
+			"academic.*.attempt",
+			"academic.*.assign",
+			"academic.*.review",
+			"academic.*.manage",
+			"academic.*.request",
+			"content.*.create",
+			"content.*.update",
+			"content.*.delete",
+			"content.*.publish",
+			"content.*.finalize",
+			"content.*.activate",
+			"content.*.approve",
+			"content.*.grade",
+			"content.*.attempt",
+			"content.*.assign",
+			"content.*.review",
+			"content.*.manage",
+			"content.*.request",
 			// Onboarding (plan 005): higiene deny-wins. readonly_auditor
 			// tiene allow `academic.*`; sin estos deny podría revocar
 			// invitaciones, rechazar solicitudes o aprobar ingresos. El
 			// namespace de aprobación no es un verbo de mutación clásico, así
 			// que se deniega completo (la acción ES el rol).
-			"*.revoke",
-			"*.reject",
+			"academic.*.revoke",
+			"academic.*.reject",
+			"content.*.revoke",
+			"content.*.reject",
 			"academic.join_request_approvals.*",
 		},
 	}

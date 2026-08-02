@@ -452,8 +452,9 @@ func seedUserRoles(tx *gorm.DB) error {
 
 // seedUserGrants — P4-2: overrides puntuales por usuario en iam.user_grants.
 // Demuestra deny > allow (override prohibitivo sobre lectura de notas a un
-// student) y allow temporal con expires_at (concede admin.users.create extra a
-// un teacher). El expires_at es relativo a la fecha de aplicación (un año en el
+// student) y allow temporal con expires_at (concede
+// academic.join_request_approvals.unit.teacher extra a un teacher).
+// El expires_at es relativo a la fecha de aplicación (un año en el
 // futuro) para que el grant siga ACTIVO en pruebas sin importar cuándo se
 // siembre. Idempotente vía OnConflict.DoNothing sobre id.
 func seedUserGrants(tx *gorm.DB) error {
@@ -468,9 +469,24 @@ func seedUserGrants(tx *gorm.DB) error {
 			GrantedBy:         &grantedBy,
 		},
 		{
-			ID:                mustUUID("ee000000-0000-0000-0000-000000000002"),
-			UserID:            mustUUID("00000000-0000-0000-0000-000000000005"),
-			PermissionPattern: "admin.users.create",
+			ID:     mustUUID("ee000000-0000-0000-0000-000000000002"),
+			UserID: mustUUID("00000000-0000-0000-0000-000000000005"),
+			// Plan 052 F4 (QA-09): era `admin.users.create`. Este grant existe para
+			// DEMOSTRAR el allow temporal con expires_at, pero el permiso elegido le
+			// destapaba a prof.martinez el ítem de menú «Administración > Usuarios»,
+			// y el recorrido de QA lo fichó como fuga de permisos del rol `teacher`
+			// — cuando el rol nunca lo tuvo: se aplana ENCIMA en el login.
+			//
+			// El sustituto se eligió con dos condiciones: (a) que el recurso NO sea
+			// `is_menu_visible`, para que la demo no vuelva a inventarle un ítem de
+			// menú al profesor —descartado `academic.periods.read` por esto mismo:
+			// `periods` es un recurso de menú admin que el plan 027 F1 le quitó
+			// expresamente—; y (b) que sea algo que el rol de verdad NO tenga, o la
+			// demostración no demostraría nada. `join_request_approvals` cumple las
+			// dos y además da un caso de negocio creíble para un permiso caduco:
+			// durante la matrícula el docente firma el sello de SU unidad, capacidad
+			// que 027 F0.2 movió a school_admin.
+			PermissionPattern: "academic.join_request_approvals.unit.teacher",
 			Effect:            "allow",
 			ExpiresAt:         &expiresInOneYear,
 			GrantedBy:         &grantedBy,

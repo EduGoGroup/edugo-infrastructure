@@ -252,7 +252,10 @@ var l4Resources = []l4ResourceRow{
 	// que NO toca este path, así que no lo ve. Scope=unit (el alumno lee dentro
 	// de su unidad activa). Reintroducido en N1.7 F1 sobre el modelo de sesiones
 	// (lector A: GET /api/v1/me/subject-offerings).
-	{ID: L4_RESOURCE_MY_MEMBERSHIPS_ID, Key: "my_memberships", DisplayName: "Mis Materias", Description: "Materias en las que el alumno está inscrito", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 13, IsMenuVisible: true, IsActive: true},
+	// Plan 052 F4 (QA-25): DisplayName desambiguado. Colisionaba literalmente con
+	// el de `my_teaching` («Mis Materias», mismo icono `book`), así que el auditor
+	// —que por `academic.*` veía ambos— tenía dos entradas idénticas en el menú.
+	{ID: L4_RESOURCE_MY_MEMBERSHIPS_ID, Key: "my_memberships", DisplayName: "Materias en las que estoy inscrito", Description: "Materias en las que el alumno está inscrito", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 13, IsMenuVisible: true, IsActive: true},
 	// "Mis notas" (recurso my_grades, N3 F4 — consulta de notas) — item de menú
 	// del alumno que abre la lista readonly de sus notas por sesión de materia.
 	// Recurso separado de `grades` (CRUD docente): la pantalla default y el gate
@@ -271,7 +274,8 @@ var l4Resources = []l4ResourceRow{
 	// podar subjects.read/subject_offerings.read del teacher (F3), este recurso es
 	// su única vista de "qué dicto". Scope=unit. El contrato KMP consume
 	// GET /api/v1/me/teaching. Espejo de my_grades.
-	{ID: L4_RESOURCE_MY_TEACHING_ID, Key: "my_teaching", DisplayName: "Mis Materias", Description: "Materias y sesiones que dicta el profesor", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: true, IsActive: true},
+	// Plan 052 F4 (QA-25): DisplayName desambiguado — ver la nota en my_memberships.
+	{ID: L4_RESOURCE_MY_TEACHING_ID, Key: "my_teaching", DisplayName: "Materias que dicto", Description: "Materias y sesiones que dicta el profesor", Icon: "book", Scope: "unit", ParentID: L4_RESOURCE_ACADEMIC_ID, SortOrder: 17, IsMenuVisible: true, IsActive: true},
 	// "Mi Asistencia" (recurso my_attendance, plan 027 F2) — item de menú del
 	// alumno que abre la lista readonly de su propia asistencia. Recurso separado
 	// de `attendance` (CRUD docente): path propio `academic.my_attendance` que
