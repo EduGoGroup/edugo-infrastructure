@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// ApplyRolesPermissions siembra 11 roles (5 canónicos + 6 alias)
+// ApplyRolesPermissions siembra 10 roles (4 canónicos + 6 alias)
 // implementados en KMP — student, teacher, guardian, school_admin más
 // los 6 alias school_director, school_coordinator, school_assistant,
 // assistant_teacher, observer, readonly_auditor — más los permisos del
