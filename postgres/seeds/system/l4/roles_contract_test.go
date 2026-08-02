@@ -220,6 +220,100 @@ func TestContratoGrants_AuditorSigueSiendoDeSoloLectura(t *testing.T) {
 	)
 }
 
+// TestContratoRoles_CadaRolAterrizaEnElDashboardDeSuArquetipo fija el
+// landing_screen_key de LOS 10 ROLES de L4 (4 canónicos + 6 alias).
+//
+// Por qué merece un golden propio: el landing NO se hereda. La cascada del
+// backend es (landing del rol ?? default de la escuela ?? "dashboard-home") y
+// mira SOLO el campo propio del rol —no resuelve parent_role_id (ADR 0024,
+// nota en l4RoleSpecs)—, así que un alias con el campo vacío no aterriza donde
+// su canónico: cae al home genérico. Es un fallo silencioso: nadie ve un 403,
+// el usuario simplemente entra a otra pantalla. Los grants no lo detectan
+// (assertAllowed/assertDenied no miran esta columna) y el Frente 4 acaba de
+// mover el del auditor de `dashboard-teacher` a `dashboard-schooladmin`
+// (QA-11) sin nada que lo sujete.
+//
+// Además de la tabla, el test exige dos invariantes:
+//   - ningún rol se queda sin landing (vacío → NULL → home genérico);
+//   - el landing apunta a una screen_instance que EXISTE en el seed (un typo
+//     o el borrado de una pantalla dejaría al rol aterrizando en el vacío).
+//
+// Alcance: los roles de L4. `super_admin` (L0) y `announcement_viewer` (L1)
+// declaran el suyo en el paquete `layers` y quedan fuera de este paquete.
+func TestContratoRoles_CadaRolAterrizaEnElDashboardDeSuArquetipo(t *testing.T) {
+	landingEsperado := map[string]string{
+		// Canónicos: cada arquetipo a su panel.
+		L4_ROLE_STUDENT_ID:      "dashboard-student",
+		L4_ROLE_TEACHER_ID:      "dashboard-teacher",
+		L4_ROLE_GUARDIAN_ID:     "dashboard-guardian",
+		L4_ROLE_SCHOOL_ADMIN_ID: "dashboard-schooladmin",
+		// Alias de school_admin: lo reciben EXPLÍCITO (no se hereda).
+		L4_ROLE_SCHOOL_DIRECTOR_ID:    "dashboard-schooladmin",
+		L4_ROLE_SCHOOL_COORDINATOR_ID: "dashboard-schooladmin",
+		L4_ROLE_SCHOOL_ASSISTANT_ID:   "dashboard-schooladmin",
+		// Alias de teacher: idem.
+		L4_ROLE_ASSISTANT_TEACHER_ID: "dashboard-teacher",
+		L4_ROLE_OBSERVER_ID:          "dashboard-teacher",
+		// readonly_auditor no hereda de nadie y el Frente 4 lo movió aquí
+		// (QA-11): en `dashboard-teacher` el panel le pedía «sus» sesiones —
+		// GET /me/teaching, GET /me/subject-offerings— que él no tiene, y
+		// devolvían 428 apilados. `dashboard-schooladmin` sí encaja: los
+		// indicadores del colegio vía GET /stats/school, que le responde 200
+		// desde que este mismo frente le dio `reports.stats.school`.
+		L4_ROLE_READONLY_AUDITOR_ID: "dashboard-schooladmin",
+	}
+
+	specs := l4RoleSpecs()
+	if len(specs) != len(landingEsperado) {
+		t.Fatalf("el seed declara %d roles y la tabla del contrato fija %d: si agregaste o quitaste un rol, decláralo aquí con su landing",
+			len(specs), len(landingEsperado))
+	}
+
+	// Las pantallas que L4 siembra, para verificar que el landing existe.
+	pantallas := make(map[string]struct{})
+	for _, inst := range buildL4ScreenInstances() {
+		pantallas[inst.ScreenKey] = struct{}{}
+	}
+
+	for _, s := range specs {
+		esperado, fijado := landingEsperado[s.idStr]
+		if !fijado {
+			t.Errorf("el rol %s (%s) no está en la tabla del contrato: agrégalo con el landing que le corresponde", s.name, s.idStr)
+			continue
+		}
+		if s.landingScreenKey == "" {
+			t.Errorf("el rol %s se quedó SIN landing: el campo vacío se siembra como NULL y la cascada lo manda al home genérico «dashboard-home», no a %q (el landing NO se hereda del rol padre)",
+				s.name, esperado)
+			continue
+		}
+		if s.landingScreenKey != esperado {
+			t.Errorf("el rol %s aterriza en %q y el contrato fija %q", s.name, s.landingScreenKey, esperado)
+			continue
+		}
+		if _, existe := pantallas[s.landingScreenKey]; !existe {
+			t.Errorf("el rol %s aterriza en %q, que NO es ninguna screen_instance sembrada: el rol quedaría sin pantalla de inicio",
+				s.name, s.landingScreenKey)
+		}
+	}
+
+	// La spec es declarativa; lo que llega a la BD lo escribe buildL4Roles.
+	// Si el builder dejara de propagar el campo, la tabla de arriba seguiría
+	// verde y el producto estaría roto igual.
+	roles, err := buildL4Roles()
+	if err != nil {
+		t.Fatalf("buildL4Roles: %v", err)
+	}
+	for _, r := range roles {
+		if r.LandingScreenKey == nil {
+			t.Errorf("buildL4Roles no propagó el landing del rol %s: llegaría NULL a iam.roles", r.Name)
+			continue
+		}
+		if got, want := *r.LandingScreenKey, landingEsperado[r.ID.String()]; got != want {
+			t.Errorf("buildL4Roles materializa el landing del rol %s como %q; el contrato fija %q", r.Name, got, want)
+		}
+	}
+}
+
 // TestContratoRecursos_NoHayDosEtiquetasDeMenuIgualesBajoElMismoPadre fija
 // la otra mitad de QA-25: `my_memberships` («Mis Materias» del alumno) y
 // `my_teaching` («Mis Materias» del profesor) tenían DisplayName idéntico y
