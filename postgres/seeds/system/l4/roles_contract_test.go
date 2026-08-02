@@ -1,6 +1,10 @@
 package l4
 
-import "testing"
+import (
+	"sort"
+	"strings"
+	"testing"
+)
 
 // Suite de CONTRATO de los grants por rol (plan 052, Frente 4).
 //
@@ -218,6 +222,293 @@ func TestContratoGrants_AuditorSigueSiendoDeSoloLectura(t *testing.T) {
 		"content.materials.delete",
 		"academic.subjects.manage",
 	)
+}
+
+// TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI es el ancla
+// del golden de filtrado SDUI que vive en la otra punta del ecosistema:
+// `edugo-api-platform/internal/core/usecase/screen_config/resolve_permission_golden_test.go`.
+//
+// Aquel golden fija qué ve cada rol al abrir una pantalla, evaluando el
+// `slot.permission` con el motor real (auth.EvaluateGrants) y el composer
+// real (screenconfig) sobre las screen_instances del seed — REQ-C4 del plan
+// 004 de Identity-core. Para hacerlo necesita los grants del rol como
+// ENTRADA, igual que los recibirá del Context Token, y los lleva copiados
+// porque este módulo no exporta los patterns sin pasar por la BD
+// (`RoleGrants` pide un *gorm.DB) y platform no puede leerlos en un test
+// unitario.
+//
+// Este caso es lo que impide que esa copia se pudra: fija aquí, en la
+// fuente de verdad, los mismos patterns efectivos. Si alguien toca los
+// grants del seed, esto se cae ANTES —con el rol, el pattern y el archivo
+// que hay que sincronizar— en vez de dejar que el golden de platform siga
+// verde afirmando algo que ya no es cierto.
+//
+// Sólo los 5 roles que el golden nombra. Los alias no hacen falta:
+// TestRoleInheritance_AliasEffectiveEqualsCanonical ya demuestra que su
+// decisión es idéntica a la del canónico sobre todo el catálogo.
+func TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI(t *testing.T) {
+	const goldenSDUI = "edugo-api-platform/internal/core/usecase/screen_config/resolve_permission_golden_test.go (grantsPorRol)"
+
+	casos := []struct {
+		roleID string
+		nombre string
+		allow  []string
+		deny   []string
+	}{
+		{
+			roleID: L4_ROLE_STUDENT_ID,
+			nombre: "student",
+			allow: []string{
+				"academic.announcements.read",
+				"academic.my_memberships.read:own",
+				"academic.my_grades.read:own",
+				"academic.my_attendance.read:own",
+				"content.assessments_student.*",
+				"content.materials.read",
+				"content.materials.download",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_TEACHER_ID,
+			nombre: "teacher",
+			allow: []string{
+				"academic.announcements.*",
+				"academic.attendance.*",
+				"academic.grades.*",
+				"academic.memberships.read",
+				"academic.my_teaching.read:own",
+				"content.assessments.*",
+				"content.materials.*",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"messaging.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_GUARDIAN_ID,
+			nombre: "guardian",
+			allow: []string{
+				"academic.announcements.read",
+				"academic.guardian_relations.*",
+				"academic.my_wards_grades.read:own",
+				"academic.my_wards_attendance.read:own",
+				"academic.my_wards_announcements.read:own",
+				"academic.my_wards_materials.read:own",
+				"academic.my_wards_assessments.read:own",
+				"content.materials.read",
+				"content.materials.download",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_SCHOOL_ADMIN_ID,
+			nombre: "school_admin",
+			allow: []string{
+				"academic.*",
+				"admin.*",
+				"content.*",
+				"context.browse_units",
+				"reports.*",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"messaging.*",
+			},
+			deny: []string{
+				"academic.*.read:own",
+				"admin.roles.create",
+				"admin.roles.update",
+				"admin.roles.delete",
+			},
+		},
+		{
+			roleID: L4_ROLE_READONLY_AUDITOR_ID,
+			nombre: "readonly_auditor",
+			allow: []string{
+				"academic.*",
+				"content.*",
+				"reports.stats.school",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"admin.users.read",
+				"admin.users.read:own",
+				"admin.system_settings.read",
+			},
+			deny: []string{
+				"academic.*.read:own",
+				"academic.*.create", "academic.*.update", "academic.*.delete",
+				"academic.*.publish", "academic.*.finalize", "academic.*.activate",
+				"academic.*.approve", "academic.*.grade", "academic.*.attempt",
+				"academic.*.assign", "academic.*.review", "academic.*.manage",
+				"academic.*.request",
+				"content.*.create", "content.*.update", "content.*.delete",
+				"content.*.publish", "content.*.finalize", "content.*.activate",
+				"content.*.approve", "content.*.grade", "content.*.attempt",
+				"content.*.assign", "content.*.review", "content.*.manage",
+				"content.*.request",
+				"academic.*.revoke", "academic.*.reject",
+				"content.*.revoke", "content.*.reject",
+				"academic.join_request_approvals.*",
+			},
+		},
+	}
+
+	for _, c := range casos {
+		t.Run(c.nombre, func(t *testing.T) {
+			allow, deny := flattenRoleGrants(t, c.roleID)
+			compararPatterns(t, c.nombre, "allow", allow, c.allow, goldenSDUI)
+			compararPatterns(t, c.nombre, "deny", deny, c.deny, goldenSDUI)
+		})
+	}
+}
+
+// compararPatterns reporta la diferencia entre los patterns que el seed da
+// hoy y los que el contrato fija, diciendo cuáles sobran y cuáles faltan.
+func compararPatterns(t *testing.T, rol, efecto string, delSeed, delContrato []string, goldenSDUI string) {
+	t.Helper()
+
+	esperados := append([]string(nil), delContrato...)
+	sort.Strings(esperados)
+
+	enSeed := map[string]bool{}
+	for _, p := range delSeed {
+		enSeed[p] = true
+	}
+	enContrato := map[string]bool{}
+	for _, p := range esperados {
+		enContrato[p] = true
+	}
+
+	var nuevos, retirados []string
+	for _, p := range delSeed {
+		if !enContrato[p] {
+			nuevos = append(nuevos, p)
+		}
+	}
+	for _, p := range esperados {
+		if !enSeed[p] {
+			retirados = append(retirados, p)
+		}
+	}
+	if len(nuevos) == 0 && len(retirados) == 0 {
+		return
+	}
+	t.Errorf("los patterns %s de %s cambiaron (nuevos: %s | retirados: %s). Si el cambio es intencional, sincroniza también el golden de filtrado SDUI en %s, que los lleva copiados y seguiría verde afirmando lo que ya no es cierto",
+		efecto, rol,
+		listaOVacio(nuevos), listaOVacio(retirados), goldenSDUI)
+}
+
+func listaOVacio(in []string) string {
+	if len(in) == 0 {
+		return "ninguno"
+	}
+	return strings.Join(in, ", ")
+}
+
+// TestContratoRoles_CadaRolAterrizaEnElDashboardDeSuArquetipo fija el
+// landing_screen_key de LOS 10 ROLES de L4 (4 canónicos + 6 alias).
+//
+// Por qué merece un golden propio: el landing NO se hereda. La cascada del
+// backend es (landing del rol ?? default de la escuela ?? "dashboard-home") y
+// mira SOLO el campo propio del rol —no resuelve parent_role_id (ADR 0024,
+// nota en l4RoleSpecs)—, así que un alias con el campo vacío no aterriza donde
+// su canónico: cae al home genérico. Es un fallo silencioso: nadie ve un 403,
+// el usuario simplemente entra a otra pantalla. Los grants no lo detectan
+// (assertAllowed/assertDenied no miran esta columna) y el Frente 4 acaba de
+// mover el del auditor de `dashboard-teacher` a `dashboard-schooladmin`
+// (QA-11) sin nada que lo sujete.
+//
+// Además de la tabla, el test exige dos invariantes:
+//   - ningún rol se queda sin landing (vacío → NULL → home genérico);
+//   - el landing apunta a una screen_instance que EXISTE en el seed (un typo
+//     o el borrado de una pantalla dejaría al rol aterrizando en el vacío).
+//
+// Alcance: los roles de L4. `super_admin` (L0) y `announcement_viewer` (L1)
+// declaran el suyo en el paquete `layers` y quedan fuera de este paquete.
+func TestContratoRoles_CadaRolAterrizaEnElDashboardDeSuArquetipo(t *testing.T) {
+	landingEsperado := map[string]string{
+		// Canónicos: cada arquetipo a su panel.
+		L4_ROLE_STUDENT_ID:      "dashboard-student",
+		L4_ROLE_TEACHER_ID:      "dashboard-teacher",
+		L4_ROLE_GUARDIAN_ID:     "dashboard-guardian",
+		L4_ROLE_SCHOOL_ADMIN_ID: "dashboard-schooladmin",
+		// Alias de school_admin: lo reciben EXPLÍCITO (no se hereda).
+		L4_ROLE_SCHOOL_DIRECTOR_ID:    "dashboard-schooladmin",
+		L4_ROLE_SCHOOL_COORDINATOR_ID: "dashboard-schooladmin",
+		L4_ROLE_SCHOOL_ASSISTANT_ID:   "dashboard-schooladmin",
+		// Alias de teacher: idem.
+		L4_ROLE_ASSISTANT_TEACHER_ID: "dashboard-teacher",
+		L4_ROLE_OBSERVER_ID:          "dashboard-teacher",
+		// readonly_auditor no hereda de nadie y el Frente 4 lo movió aquí
+		// (QA-11): en `dashboard-teacher` el panel le pedía «sus» sesiones —
+		// GET /me/teaching, GET /me/subject-offerings— que él no tiene, y
+		// devolvían 428 apilados. `dashboard-schooladmin` sí encaja: los
+		// indicadores del colegio vía GET /stats/school, que le responde 200
+		// desde que este mismo frente le dio `reports.stats.school`.
+		L4_ROLE_READONLY_AUDITOR_ID: "dashboard-schooladmin",
+	}
+
+	specs := l4RoleSpecs()
+	if len(specs) != len(landingEsperado) {
+		t.Fatalf("el seed declara %d roles y la tabla del contrato fija %d: si agregaste o quitaste un rol, decláralo aquí con su landing",
+			len(specs), len(landingEsperado))
+	}
+
+	// Las pantallas que L4 siembra, para verificar que el landing existe.
+	pantallas := make(map[string]struct{})
+	for _, inst := range buildL4ScreenInstances() {
+		pantallas[inst.ScreenKey] = struct{}{}
+	}
+
+	for _, s := range specs {
+		esperado, fijado := landingEsperado[s.idStr]
+		if !fijado {
+			t.Errorf("el rol %s (%s) no está en la tabla del contrato: agrégalo con el landing que le corresponde", s.name, s.idStr)
+			continue
+		}
+		if s.landingScreenKey == "" {
+			t.Errorf("el rol %s se quedó SIN landing: el campo vacío se siembra como NULL y la cascada lo manda al home genérico «dashboard-home», no a %q (el landing NO se hereda del rol padre)",
+				s.name, esperado)
+			continue
+		}
+		if s.landingScreenKey != esperado {
+			t.Errorf("el rol %s aterriza en %q y el contrato fija %q", s.name, s.landingScreenKey, esperado)
+			continue
+		}
+		if _, existe := pantallas[s.landingScreenKey]; !existe {
+			t.Errorf("el rol %s aterriza en %q, que NO es ninguna screen_instance sembrada: el rol quedaría sin pantalla de inicio",
+				s.name, s.landingScreenKey)
+		}
+	}
+
+	// La spec es declarativa; lo que llega a la BD lo escribe buildL4Roles.
+	// Si el builder dejara de propagar el campo, la tabla de arriba seguiría
+	// verde y el producto estaría roto igual.
+	roles, err := buildL4Roles()
+	if err != nil {
+		t.Fatalf("buildL4Roles: %v", err)
+	}
+	for _, r := range roles {
+		if r.LandingScreenKey == nil {
+			t.Errorf("buildL4Roles no propagó el landing del rol %s: llegaría NULL a iam.roles", r.Name)
+			continue
+		}
+		if got, want := *r.LandingScreenKey, landingEsperado[r.ID.String()]; got != want {
+			t.Errorf("buildL4Roles materializa el landing del rol %s como %q; el contrato fija %q", r.Name, got, want)
+		}
+	}
 }
 
 // TestContratoRecursos_NoHayDosEtiquetasDeMenuIgualesBajoElMismoPadre fija
