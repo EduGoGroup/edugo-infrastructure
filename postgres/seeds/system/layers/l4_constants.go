@@ -876,7 +876,16 @@ package layers
 //	de 15 verbos en ambos dominios para que un permiso nuevo DENTRO de ellos siga
 //	naciendo denegado; el hueco de un dominio NUEVO lo vigila
 //	TestContratoGrants_AuditorSigueSiendoDeSoloLectura.
-const L4_SEED_VERSION = "1.90.0"
+//
+// 1.91.0 (plan 052, tarea 5.2 — QA-20): `system-settings` vacía sus dos literales
+//
+//	muertos del slot_data. `app_version_value: "1.0.0"` mentía (el server no puede
+//	saber la versión del CLIENTE — el login muestra la real de AppBuildInfo) y
+//	`schema_version_value: "see /admin/version"` era una nota de desarrollador
+//	publicada como UI (nadie llama a ese endpoint). La pantalla pasa a render
+//	nativo unificado en KMP (diseño 5.2, plan 052) que ni lee estos valores; el
+//	vaciado sanea los clientes viejos. Decisión del dueño 2026-08-02.
+const L4_SEED_VERSION = "1.91.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

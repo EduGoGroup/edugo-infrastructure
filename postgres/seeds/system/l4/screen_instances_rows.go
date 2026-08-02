@@ -155,9 +155,9 @@ func systemSettings() l4ScreenInstanceRow {
   "clear_cache_label": "Limpiar cache",
   "info_title": "Información",
   "app_version_label": "Versión de la app",
-  "app_version_value": "1.0.0",
+  "app_version_value": "",
   "schema_version_label": "Versión del schema",
-  "schema_version_value": "see /admin/version",
+  "schema_version_value": "",
   "api_prefix": "platform"
 }`,
 	}
