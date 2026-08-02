@@ -1,6 +1,10 @@
 package l4
 
-import "testing"
+import (
+	"sort"
+	"strings"
+	"testing"
+)
 
 // Suite de CONTRATO de los grants por rol (plan 052, Frente 4).
 //
@@ -218,6 +222,199 @@ func TestContratoGrants_AuditorSigueSiendoDeSoloLectura(t *testing.T) {
 		"content.materials.delete",
 		"academic.subjects.manage",
 	)
+}
+
+// TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI es el ancla
+// del golden de filtrado SDUI que vive en la otra punta del ecosistema:
+// `edugo-api-platform/internal/core/usecase/screen_config/resolve_permission_golden_test.go`.
+//
+// Aquel golden fija qué ve cada rol al abrir una pantalla, evaluando el
+// `slot.permission` con el motor real (auth.EvaluateGrants) y el composer
+// real (screenconfig) sobre las screen_instances del seed — REQ-C4 del plan
+// 004 de Identity-core. Para hacerlo necesita los grants del rol como
+// ENTRADA, igual que los recibirá del Context Token, y los lleva copiados
+// porque este módulo no exporta los patterns sin pasar por la BD
+// (`RoleGrants` pide un *gorm.DB) y platform no puede leerlos en un test
+// unitario.
+//
+// Este caso es lo que impide que esa copia se pudra: fija aquí, en la
+// fuente de verdad, los mismos patterns efectivos. Si alguien toca los
+// grants del seed, esto se cae ANTES —con el rol, el pattern y el archivo
+// que hay que sincronizar— en vez de dejar que el golden de platform siga
+// verde afirmando algo que ya no es cierto.
+//
+// Sólo los 5 roles que el golden nombra. Los alias no hacen falta:
+// TestRoleInheritance_AliasEffectiveEqualsCanonical ya demuestra que su
+// decisión es idéntica a la del canónico sobre todo el catálogo.
+func TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI(t *testing.T) {
+	const goldenSDUI = "edugo-api-platform/internal/core/usecase/screen_config/resolve_permission_golden_test.go (grantsPorRol)"
+
+	casos := []struct {
+		roleID string
+		nombre string
+		allow  []string
+		deny   []string
+	}{
+		{
+			roleID: L4_ROLE_STUDENT_ID,
+			nombre: "student",
+			allow: []string{
+				"academic.announcements.read",
+				"academic.my_memberships.read:own",
+				"academic.my_grades.read:own",
+				"academic.my_attendance.read:own",
+				"content.assessments_student.*",
+				"content.materials.read",
+				"content.materials.download",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_TEACHER_ID,
+			nombre: "teacher",
+			allow: []string{
+				"academic.announcements.*",
+				"academic.attendance.*",
+				"academic.grades.*",
+				"academic.memberships.read",
+				"academic.my_teaching.read:own",
+				"content.assessments.*",
+				"content.materials.*",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"messaging.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_GUARDIAN_ID,
+			nombre: "guardian",
+			allow: []string{
+				"academic.announcements.read",
+				"academic.guardian_relations.*",
+				"academic.my_wards_grades.read:own",
+				"academic.my_wards_attendance.read:own",
+				"academic.my_wards_announcements.read:own",
+				"academic.my_wards_materials.read:own",
+				"academic.my_wards_assessments.read:own",
+				"content.materials.read",
+				"content.materials.download",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+			},
+		},
+		{
+			roleID: L4_ROLE_SCHOOL_ADMIN_ID,
+			nombre: "school_admin",
+			allow: []string{
+				"academic.*",
+				"admin.*",
+				"content.*",
+				"context.browse_units",
+				"reports.*",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"messaging.*",
+			},
+			deny: []string{
+				"academic.*.read:own",
+				"admin.roles.create",
+				"admin.roles.update",
+				"admin.roles.delete",
+			},
+		},
+		{
+			roleID: L4_ROLE_READONLY_AUDITOR_ID,
+			nombre: "readonly_auditor",
+			allow: []string{
+				"academic.*",
+				"content.*",
+				"reports.stats.school",
+				"dashboard.*",
+				"menu.*",
+				"notifications.*",
+				"screens.*",
+				"admin.users.read",
+				"admin.users.read:own",
+				"admin.system_settings.read",
+			},
+			deny: []string{
+				"academic.*.read:own",
+				"academic.*.create", "academic.*.update", "academic.*.delete",
+				"academic.*.publish", "academic.*.finalize", "academic.*.activate",
+				"academic.*.approve", "academic.*.grade", "academic.*.attempt",
+				"academic.*.assign", "academic.*.review", "academic.*.manage",
+				"academic.*.request",
+				"content.*.create", "content.*.update", "content.*.delete",
+				"content.*.publish", "content.*.finalize", "content.*.activate",
+				"content.*.approve", "content.*.grade", "content.*.attempt",
+				"content.*.assign", "content.*.review", "content.*.manage",
+				"content.*.request",
+				"academic.*.revoke", "academic.*.reject",
+				"content.*.revoke", "content.*.reject",
+				"academic.join_request_approvals.*",
+			},
+		},
+	}
+
+	for _, c := range casos {
+		t.Run(c.nombre, func(t *testing.T) {
+			allow, deny := flattenRoleGrants(t, c.roleID)
+			compararPatterns(t, c.nombre, "allow", allow, c.allow, goldenSDUI)
+			compararPatterns(t, c.nombre, "deny", deny, c.deny, goldenSDUI)
+		})
+	}
+}
+
+// compararPatterns reporta la diferencia entre los patterns que el seed da
+// hoy y los que el contrato fija, diciendo cuáles sobran y cuáles faltan.
+func compararPatterns(t *testing.T, rol, efecto string, delSeed, delContrato []string, goldenSDUI string) {
+	t.Helper()
+
+	esperados := append([]string(nil), delContrato...)
+	sort.Strings(esperados)
+
+	enSeed := map[string]bool{}
+	for _, p := range delSeed {
+		enSeed[p] = true
+	}
+	enContrato := map[string]bool{}
+	for _, p := range esperados {
+		enContrato[p] = true
+	}
+
+	var nuevos, retirados []string
+	for _, p := range delSeed {
+		if !enContrato[p] {
+			nuevos = append(nuevos, p)
+		}
+	}
+	for _, p := range esperados {
+		if !enSeed[p] {
+			retirados = append(retirados, p)
+		}
+	}
+	if len(nuevos) == 0 && len(retirados) == 0 {
+		return
+	}
+	t.Errorf("los patterns %s de %s cambiaron (nuevos: %s | retirados: %s). Si el cambio es intencional, sincroniza también el golden de filtrado SDUI en %s, que los lleva copiados y seguiría verde afirmando lo que ya no es cierto",
+		efecto, rol,
+		listaOVacio(nuevos), listaOVacio(retirados), goldenSDUI)
+}
+
+func listaOVacio(in []string) string {
+	if len(in) == 0 {
+		return "ninguno"
+	}
+	return strings.Join(in, ", ")
 }
 
 // TestContratoRoles_CadaRolAterrizaEnElDashboardDeSuArquetipo fija el
