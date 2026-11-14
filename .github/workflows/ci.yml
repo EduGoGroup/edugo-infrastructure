@@ -9,6 +9,7 @@ on:
 env:
   GO_VERSION: "1.27.4"
   GOLANGCI_LINT_VERSION: "v2.14.0"
+  GOVULNCHECK_VERSION: "v1.9.0"
   GOWORK: "off"
 
 jobs:
@@ -116,3 +117,10 @@ jobs:
 
       - name: Tests del módulo
         run: make -C "${{ matrix.module }}" test
+
+      # Sin continue-on-error: una vulnerabilidad alcanzable pone el job en rojo (plan 054, H.2).
+      - name: govulncheck
+        working-directory: ${{ matrix.module }}
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@${{ env.GOVULNCHECK_VERSION }}
+          "$(go env GOPATH)/bin/govulncheck" ./...

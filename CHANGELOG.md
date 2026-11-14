@@ -7,6 +7,7 @@ El historial narrativo anterior a 2026-03-08 no se reconstruyo en esta fase. Los
 ## [Unreleased]
 
 ### Added
+- `govulncheck` v1.9.0 en la CI (`ci.yml`, job por modulo) y en `make vuln` / `make ci-local`; una vulnerabilidad alcanzable pone la CI en rojo (plan 054, H.2).
 - Nueva base documental de fase 1 para el repositorio.
 - Estructura general `docs/` centrada en alcance, mapa, procesos, arquitectura, integracion ecosistemica, automatizacion y roadmap.
 - Documentacion homogenea por modulo con `README.md`, `docs/`, integracion ecosistemica y `CHANGELOG.md`.

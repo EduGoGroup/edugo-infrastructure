@@ -24,6 +24,10 @@ sustrato sobre el que corren las APIs y el worker.
 
 `Makefile` raíz + un `make` por módulo. Patrón observado: `make -C <modulo> release-check` valida cada
 superficie (postgres, schemas, tools/mock-generator, docker).
+Gates antes de un PR, desde la raíz y con `GOWORK=off`: `make ci-local` (fmt-check + vet + lint + tests +
+`make vuln`). `make vuln` corre `govulncheck` (versión en `GOVULNCHECK_VERSION` del `Makefile`, espejo de
+`tools.govulncheck` en `.github/config/versions.yml` y del `env` de `ci.yml`) en cada módulo Go; la CI lo corre
+en el job por módulo y **falla** si hay una vulnerabilidad alcanzable (plan 054, H.2; Dependabot apagado).
 Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar seeds),
 `module-release.sh` / `auto-release.sh` (release por módulo).
 
