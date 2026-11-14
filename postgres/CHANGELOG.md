@@ -6,6 +6,24 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.27] - 2026-11-14
+
+Plan 054 (homologación de Go y dependencias), HU-E0.1. Solo toolchain y dependencias: **sin cambios de
+esquema, migraciones, seeds ni lógica**. `SchemaVersion` y `ComputeFilesHash()` no cambian.
+
+### Changed
+
+- Directiva `go 1.25.0` → **`go 1.27.4`**.
+- Dependencias directas: `testcontainers-go` v0.42.0 → v0.45.0, `golang.org/x/crypto` v0.53.0 → v0.59.0,
+  `gorm.io/gorm` v1.31.1 → v1.31.2, `gorm.io/driver/postgres` v1.6.0 → v1.6.3.
+- Indirectas con aviso de seguridad, subidas por encima del mínimo con arreglo: `jackc/pgx/v5` v5.9.1 →
+  v5.10.0, `klauspost/compress` v1.18.5 → v1.20.4 (GO-2026-6865), `moby/go-archive` v0.2.0 → v0.3.3,
+  `golang.org/x/text` v0.38.0 → v0.44.0.
+
+### Security
+
+- `govulncheck v1.9.0` con `go1.27.4` y `GOWORK=off`: 0 vulnerabilidades alcanzables.
+
 ## [0.900.25] - 2026-07-16
 
 Plan 042 F0 (artefacto «llm_prep» por pregunta — preparación para el LLM). `SchemaVersion` 3.105.0 →

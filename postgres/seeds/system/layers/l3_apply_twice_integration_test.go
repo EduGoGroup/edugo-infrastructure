@@ -41,7 +41,8 @@ import (
 //   - F5-REQ-1.1: el recurso `materials` existe (1 fila en iam.resources).
 //   - F5-REQ-2.1: 3 permisos materials:{read,create,update}; NO existe
 //     `materials:delete` en iam.permissions (assertion explícita).
-//   - F5-REQ-2.2: 3 role_permissions super_admin × cada permiso L3.
+//   - F5-REQ-2.2 (post P4-1): L3 no siembra asignaciones rol×permiso; el
+//     super_admin no tiene grants hasta L4 (assertion negativa).
 //   - F5-REQ-3.x (post-poda + F2): 1 ScreenInstance MÍNIMA `materials-list`
 //     (FK-satisfying, no renderizada) + 1 ResourceScreen para materials
 //     (solo `list` default; la pantalla es nativa). `material-form` sigue
@@ -122,8 +123,8 @@ func TestL3_ApplyTwice_Idempotent(t *testing.T) {
 }
 
 // assertL3Counts valida los conteos canónicos de L3 (post-poda SDUI:
-// resource + 3 permisos + 3 role_permissions + 1 resource_screen, 0
-// screen_instances) filtrados por los IDs específicos de L3, más las
+// resource + 3 permisos + 1 screen_instance mínima + 1 resource_screen,
+// sin asignaciones rol×permiso) filtrados por los IDs específicos de L3, más las
 // invariantes macro post-L3 (cadena viewer, conteo de resource_screens
 // para announcements).
 func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
@@ -158,17 +159,18 @@ func assertL3Counts(t *testing.T, gdb *gorm.DB, stage string) {
 			args:  []any{"content.materials.delete"},
 			want:  0,
 		},
-		// F5-REQ-2.2: 3 role_permissions super_admin × materials.
+		// F5-REQ-2.2 (post P4-1): L3 NO siembra asignaciones rol×permiso.
+		// P4-1 (plan B, SchemaVersion 3.21.0) eliminó iam.role_permissions
+		// y los 3 role_permissions super_admin × materials (ver l3.go). El
+		// super_admin cubre materials.* con el grant `*` de iam.role_grants,
+		// que siembra L4; como este test siembra solo hasta L3, la
+		// invariante de "L3 por sí solo" es que no hay ningún grant del
+		// super_admin. Assertion negativa.
 		{
-			desc:  "iam.role_permissions [role_id=L0 super_admin AND permission_id IN L3 perms]",
-			query: `SELECT COUNT(*) FROM iam.role_permissions WHERE role_id = ?::uuid AND permission_id IN (?::uuid, ?::uuid, ?::uuid)`,
-			args: []any{
-				layers.L0_ROLE_SUPER_ADMIN_ID,
-				layers.L3_PERM_MATERIALS_READ_ID,
-				layers.L3_PERM_MATERIALS_CREATE_ID,
-				layers.L3_PERM_MATERIALS_UPDATE_ID,
-			},
-			want: 3,
+			desc:  "iam.role_grants [role_id=L0 super_admin] (negativa — los grants son de L4)",
+			query: `SELECT COUNT(*) FROM iam.role_grants WHERE role_id = ?::uuid`,
+			args:  []any{layers.L0_ROLE_SUPER_ADMIN_ID},
+			want:  0,
 		},
 		// Corrección F2 (2026-06-08): `materials-list` SÍ existe como
 		// screen_instance MÍNIMA (no se renderiza; pantalla NATIVA),

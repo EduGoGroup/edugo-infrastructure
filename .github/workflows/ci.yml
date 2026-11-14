@@ -7,8 +7,9 @@ on:
     branches: [main, dev]
 
 env:
-  GO_VERSION: "1.25"
-  GOLANGCI_LINT_VERSION: "v2.4.0"
+  GO_VERSION: "1.27.4"
+  GOLANGCI_LINT_VERSION: "v2.14.0"
+  GOWORK: "off"
 
 jobs:
   # ──────────────────────────────────────────────────────────────

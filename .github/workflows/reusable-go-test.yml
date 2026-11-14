@@ -7,7 +7,7 @@ on:
         description: 'Version de Go a usar'
         required: false
         type: string
-        default: '1.25'
+        default: '1.27.4'
 
       coverage-threshold:
         description: 'Umbral minimo de cobertura (%)'
@@ -47,6 +47,9 @@ on:
       test-result:
         description: 'Resultado de los tests'
         value: ${{ jobs.test.outputs.result }}
+
+env:
+  GOWORK: 'off'
 
 jobs:
   test:

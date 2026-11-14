@@ -25,18 +25,26 @@ import (
 
 // TestL4_RolesAlias_Seeded verifica que tras aplicar la capa L4 (que
 // internamente invoca ApplyRolesPermissions) existen los 10 roles
-// esperados — 4 canónicos + 6 alias — y que la herencia de
-// role_permissions se cumple:
+// esperados — 4 canónicos + 6 alias — y que la herencia de permisos
+// efectivos se cumple:
 //
 //  1. Los 4 canónicos (student, teacher, guardian, school_admin) están
 //     en iam.roles. (PRE-4: platform_admin fue eliminado.)
 //  2. Los 6 alias (school_director, school_coordinator, school_assistant,
 //     assistant_teacher, observer, readonly_auditor) están en iam.roles.
-//  3. Cada alias tiene AL MENOS los mismos permission_ids que su rol
-//     canónico, con la excepción de readonly_auditor: éste debe ser un
-//     subconjunto del conjunto de teacher SIN ninguna permission cuya
-//     `Action` esté en {create, update, delete, *:create, *:update,
-//     *:delete}.
+//  3. Cada alias que hereda (parent_role_id) tiene AL MENOS los mismos
+//     permisos efectivos que su rol canónico.
+//  4. readonly_auditor NO hereda de nadie (standalone; ver la nota en
+//     l4RoleSpecs y TestRoleInheritance_ReadonlyAuditorStandalone): su
+//     set efectivo es no vacío y no contiene ninguna permission cuya
+//     `Action` sea de mutación.
+//
+// P4-1 (plan B, SchemaVersion 3.21.0): iam.role_permissions (asignación
+// 1:1 rol×permiso) ya no existe. El permiso efectivo de un rol se
+// resuelve con los patterns de iam.role_grants (allow + deny, deny-wins)
+// del rol y de su cadena parent_role_id (ADR-6). Este test lo computa en
+// SQL con iam.permission_matches (ver effectivePermissionsSQL), que es
+// el espejo en BD del matcher del backend.
 //
 // Ejecución:
 //
@@ -71,7 +79,7 @@ func TestL4_RolesAlias_Seeded(t *testing.T) {
 		l4.L4_ROLE_READONLY_AUDITOR_ID,
 	}
 
-	// (1) y (2): los 11 roles existen.
+	// (1) y (2): los 10 roles existen.
 	for _, rid := range append(append([]string(nil), canonicalRoleIDs...), aliasRoleIDs...) {
 		var cnt int64
 		if err := gdb.Raw(`SELECT COUNT(*) FROM iam.roles WHERE id = ?::uuid`, rid).Scan(&cnt).Error; err != nil {
@@ -110,18 +118,29 @@ func TestL4_RolesAlias_Seeded(t *testing.T) {
 		}
 	}
 
-	// (4): readonly_auditor — subset de teacher SIN acciones de mutación.
-	teacherPerms := loadRolePermissionIDs(t, gdb, l4.L4_ROLE_TEACHER_ID)
+	// (4): readonly_auditor — set propio, no vacío, SIN acciones de mutación.
+	//
+	// El check "subset de teacher" se retiró: el seed lo declara standalone
+	// a propósito. Su allow read-only (academic.*, content.*,
+	// reports.stats.school, admin.users.read, admin.system_settings.read)
+	// cubre permisos que teacher no tiene, y desde el plan 052 F4 teacher
+	// tampoco tiene admin.system_settings.*. La invariante que el seed sí
+	// garantiza es la de solo lectura.
 	readonlyPerms := loadRolePermissionIDs(t, gdb, l4.L4_ROLE_READONLY_AUDITOR_ID)
 
 	if len(readonlyPerms) == 0 {
-		t.Errorf("readonly_auditor has no permissions assigned (expected non-empty read-only subset of teacher)")
+		t.Errorf("readonly_auditor has no effective permissions (expected non-empty read-only set)")
 	}
-	// Subset: cada permiso de readonly_auditor está en teacher.
-	for pid := range readonlyPerms {
-		if _, ok := teacherPerms[pid]; !ok {
-			t.Errorf("readonly_auditor has permission %s that is NOT in teacher's set (subset violation)", pid)
-		}
+
+	var readonlyParents int64
+	if err := gdb.Raw(
+		`SELECT COUNT(*) FROM iam.roles WHERE id = ?::uuid AND parent_role_id IS NOT NULL`,
+		l4.L4_ROLE_READONLY_AUDITOR_ID,
+	).Scan(&readonlyParents).Error; err != nil {
+		t.Fatalf("query readonly_auditor parent_role_id: %v", err)
+	}
+	if readonlyParents != 0 {
+		t.Errorf("readonly_auditor must be standalone (parent_role_id NULL)")
 	}
 
 	// Sin acciones de mutación: ninguna permission asignada a
@@ -134,10 +153,7 @@ func TestL4_RolesAlias_Seeded(t *testing.T) {
 	}
 	var rows []perm
 	if err := gdb.Raw(
-		`SELECT p.id::text AS id, p.name, p.action `+
-			`FROM iam.role_permissions rp `+
-			`JOIN iam.permissions p ON rp.permission_id = p.id `+
-			`WHERE rp.role_id = ?::uuid`,
+		`SELECT p.id::text AS id, p.name, p.action FROM (`+effectivePermissionsSQL+`) p`,
 		l4.L4_ROLE_READONLY_AUDITOR_ID,
 	).Scan(&rows).Error; err != nil {
 		t.Fatalf("load readonly_auditor perms with actions: %v", err)
@@ -155,25 +171,36 @@ func TestL4_RolesAlias_Seeded(t *testing.T) {
 // TestL4_SystemSettings_ReadUpdate_Seeded verifica el bloque R-F7-1:
 // los dos permisos system_settings:read y system_settings:update están
 // sembrados sobre el recurso system_settings (b4...90) y sus grants
-// llegan a los roles esperados (9 para :read, 5 para :update —
-// post-PRE-4, platform_admin removido).
+// llegan a los roles esperados (7 para :read, 5 para :update).
+//
+// Los grants se evalúan como permiso EFECTIVO sobre iam.role_grants
+// (patterns + herencia por parent_role_id), no como filas de la tabla
+// iam.role_permissions, eliminada en P4-1.
 //
 // Permisos esperados:
 //
 //	d1000000-0000-0000-0000-000000000002 → system_settings:read
 //	d1000000-0000-0000-0000-000000000003 → system_settings:update
 //
-// Roles esperados :read (9):
+// Roles esperados :read (7):
 //
-//	super_admin (L0), school_admin, school_director, school_coordinator,
-//	school_assistant, teacher, student, guardian, announcement_viewer (L1).
+//	super_admin (L0, pattern `*`), school_admin (`admin.*`),
+//	school_director, school_coordinator, school_assistant (heredan de
+//	school_admin), readonly_auditor y announcement_viewer (L1) (literal
+//	`admin.system_settings.read`).
+//
+// teacher, student y guardian ya NO lo tienen: el plan 027 podó los
+// grants de consumo y el plan 052 F4 eliminó `admin.system_settings.*`
+// de teacher y guardian (destapaba el ítem de menú Configuración). Con
+// teacher lo pierden también sus alias assistant_teacher y observer.
 //
 // Roles esperados :update (5):
 //
 //	super_admin, school_admin, school_director, school_coordinator,
 //	school_assistant.
 //
-// El test también valida que :update NO llega a teacher/student/
+// El test también valida que :read NO llega a teacher/student/guardian/
+// assistant_teacher/observer, y que :update NO llega a teacher/student/
 // guardian/announcement_viewer/assistant_teacher/observer/
 // readonly_auditor.
 func TestL4_SystemSettings_ReadUpdate_Seeded(t *testing.T) {
@@ -248,40 +275,36 @@ func TestL4_SystemSettings_ReadUpdate_Seeded(t *testing.T) {
 		t.Errorf("l4.Permissions() missing system_settings:update (%s)", permUpdateID)
 	}
 
-	// (3) Grants de :read llegan a los 9 roles esperados.
+	// (3) Grants de :read llegan a los 7 roles esperados.
 	// PRE-4: platform_admin (L4_ROLE_ADMIN_ID) removido del catálogo.
+	// Plan 027 / plan 052 F4: teacher, student y guardian ya no lo tienen.
 	readRoles := []string{
 		roleSuperAdmin,
 		l4.L4_ROLE_SCHOOL_ADMIN_ID,
 		l4.L4_ROLE_SCHOOL_DIRECTOR_ID,
 		l4.L4_ROLE_SCHOOL_COORDINATOR_ID,
 		l4.L4_ROLE_SCHOOL_ASSISTANT_ID,
-		l4.L4_ROLE_TEACHER_ID,
-		l4.L4_ROLE_STUDENT_ID,
-		l4.L4_ROLE_GUARDIAN_ID,
+		l4.L4_ROLE_READONLY_AUDITOR_ID,
 		roleAnnViewer,
 	}
 	for _, rid := range readRoles {
-		var cnt int64
-		if err := gdb.Raw(
-			`SELECT COUNT(*) FROM iam.role_permissions `+
-				`WHERE role_id = ?::uuid AND permission_id = ?::uuid`,
-			rid, permReadID,
-		).Scan(&cnt).Error; err != nil {
-			t.Fatalf("count grant role=%s perm=read: %v", rid, err)
-		}
-		if cnt != 1 {
-			t.Errorf("role %s missing system_settings:read grant (got %d, want 1)", rid, cnt)
+		if !roleHasPermission(t, gdb, rid, permReadID) {
+			t.Errorf("role %s missing system_settings:read grant", rid)
 		}
 	}
-	var totalRead int64
-	if err := gdb.Raw(
-		`SELECT COUNT(*) FROM iam.role_permissions WHERE permission_id = ?::uuid`,
-		permReadID,
-	).Scan(&totalRead).Error; err != nil {
-		t.Fatalf("count total :read grants: %v", err)
+	forbiddenRead := []string{
+		l4.L4_ROLE_TEACHER_ID,
+		l4.L4_ROLE_STUDENT_ID,
+		l4.L4_ROLE_GUARDIAN_ID,
+		l4.L4_ROLE_ASSISTANT_TEACHER_ID,
+		l4.L4_ROLE_OBSERVER_ID,
 	}
-	if totalRead != int64(len(readRoles)) {
+	for _, rid := range forbiddenRead {
+		if roleHasPermission(t, gdb, rid, permReadID) {
+			t.Errorf("role %s unexpectedly has system_settings:read grant", rid)
+		}
+	}
+	if totalRead := countRolesWithPermission(t, gdb, permReadID); totalRead != int64(len(readRoles)) {
 		t.Errorf("total :read grants: got %d, want %d", totalRead, len(readRoles))
 	}
 
@@ -295,16 +318,8 @@ func TestL4_SystemSettings_ReadUpdate_Seeded(t *testing.T) {
 		l4.L4_ROLE_SCHOOL_ASSISTANT_ID,
 	}
 	for _, rid := range updateRoles {
-		var cnt int64
-		if err := gdb.Raw(
-			`SELECT COUNT(*) FROM iam.role_permissions `+
-				`WHERE role_id = ?::uuid AND permission_id = ?::uuid`,
-			rid, permUpdateID,
-		).Scan(&cnt).Error; err != nil {
-			t.Fatalf("count grant role=%s perm=update: %v", rid, err)
-		}
-		if cnt != 1 {
-			t.Errorf("role %s missing system_settings:update grant (got %d, want 1)", rid, cnt)
+		if !roleHasPermission(t, gdb, rid, permUpdateID) {
+			t.Errorf("role %s missing system_settings:update grant", rid)
 		}
 	}
 
@@ -320,40 +335,83 @@ func TestL4_SystemSettings_ReadUpdate_Seeded(t *testing.T) {
 		l4.L4_ROLE_READONLY_AUDITOR_ID,
 	}
 	for _, rid := range forbiddenUpdate {
-		var cnt int64
-		if err := gdb.Raw(
-			`SELECT COUNT(*) FROM iam.role_permissions `+
-				`WHERE role_id = ?::uuid AND permission_id = ?::uuid`,
-			rid, permUpdateID,
-		).Scan(&cnt).Error; err != nil {
-			t.Fatalf("count forbidden grant role=%s perm=update: %v", rid, err)
-		}
-		if cnt != 0 {
-			t.Errorf("role %s unexpectedly has system_settings:update grant (got %d, want 0)", rid, cnt)
+		if roleHasPermission(t, gdb, rid, permUpdateID) {
+			t.Errorf("role %s unexpectedly has system_settings:update grant", rid)
 		}
 	}
-	var totalUpdate int64
-	if err := gdb.Raw(
-		`SELECT COUNT(*) FROM iam.role_permissions WHERE permission_id = ?::uuid`,
-		permUpdateID,
-	).Scan(&totalUpdate).Error; err != nil {
-		t.Fatalf("count total :update grants: %v", err)
-	}
-	if totalUpdate != int64(len(updateRoles)) {
+	if totalUpdate := countRolesWithPermission(t, gdb, permUpdateID); totalUpdate != int64(len(updateRoles)) {
 		t.Errorf("total :update grants: got %d, want %d", totalUpdate, len(updateRoles))
 	}
 }
 
+// effectivePermissionsSQL selecciona las filas de iam.permissions que un
+// rol (único parámetro: role_id) tiene como permiso EFECTIVO en el modelo
+// de iam.role_grants:
+//
+//   - `chain` recorre el rol y sus ancestros por parent_role_id (ADR-6:
+//     el alias hereda los grants del canónico; el backend los aplana en
+//     el login).
+//   - Un permiso es efectivo si algún grant allow de la cadena lo cubre
+//     (iam.permission_matches(pattern, permissions.name)) y ningún grant
+//     deny de la cadena lo cubre (deny-wins, default deny).
+//
+// Reemplaza a la lectura directa de iam.role_permissions, tabla
+// eliminada en P4-1 (plan B).
+const effectivePermissionsSQL = `
+	WITH RECURSIVE chain AS (
+		SELECT id, parent_role_id FROM iam.roles WHERE id = ?::uuid
+		UNION ALL
+		SELECT r.id, r.parent_role_id
+		FROM iam.roles r
+		JOIN chain c ON r.id = c.parent_role_id
+	)
+	SELECT p.id, p.name, p.action
+	FROM iam.permissions p
+	WHERE EXISTS (
+		SELECT 1 FROM iam.role_grants g
+		JOIN chain c ON c.id = g.role_id
+		WHERE g.effect = 'allow' AND iam.permission_matches(g.pattern, p.name)
+	)
+	AND NOT EXISTS (
+		SELECT 1 FROM iam.role_grants g
+		JOIN chain c ON c.id = g.role_id
+		WHERE g.effect = 'deny' AND iam.permission_matches(g.pattern, p.name)
+	)`
+
+// roleHasPermission indica si permissionID está en el set efectivo del rol.
+func roleHasPermission(t *testing.T, gdb *gorm.DB, roleID, permissionID string) bool {
+	t.Helper()
+	_, ok := loadRolePermissionIDs(t, gdb, roleID)[permissionID]
+	return ok
+}
+
+// countRolesWithPermission cuenta los roles de iam.roles cuyo set
+// efectivo contiene permissionID.
+func countRolesWithPermission(t *testing.T, gdb *gorm.DB, permissionID string) int64 {
+	t.Helper()
+	var roleIDs []string
+	if err := gdb.Raw(`SELECT id::text FROM iam.roles`).Scan(&roleIDs).Error; err != nil {
+		t.Fatalf("load iam.roles: %v", err)
+	}
+	var total int64
+	for _, rid := range roleIDs {
+		if roleHasPermission(t, gdb, rid, permissionID) {
+			total++
+		}
+	}
+	return total
+}
+
 // loadRolePermissionIDs retorna el set de permission_id (como string)
-// asignados a un role_id.
+// efectivos de un role_id (ver effectivePermissionsSQL).
 func loadRolePermissionIDs(t *testing.T, gdb *gorm.DB, roleID string) map[string]struct{} {
 	t.Helper()
 	var ids []string
 	if err := gdb.Raw(
-		`SELECT permission_id::text FROM iam.role_permissions WHERE role_id = ?::uuid`,
+		`SELECT p.id::text FROM (`+effectivePermissionsSQL+`) p`,
 		roleID,
 	).Scan(&ids).Error; err != nil {
-		t.Fatalf("load role_permissions for %s: %v", roleID, err)
+		t.Fatalf("load effective permissions for %s: %v", roleID, err)
 	}
 	out := make(map[string]struct{}, len(ids))
 	for _, id := range ids {

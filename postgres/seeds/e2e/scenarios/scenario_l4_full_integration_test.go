@@ -30,8 +30,10 @@ import (
 //  3. Genera la matriz `roleKey → []resource_keys accesibles` y
 //     `roleKey → []screen_keys accesibles` PROGRAMÁTICAMENTE desde:
 //
-//     - iam.role_permissions JOIN iam.permissions p ON … →
-//     permission_name → resource_key (prefijo antes del primer `:`).
+//     - iam.role_grants (patterns allow/deny + herencia por
+//     parent_role_id) evaluados con iam.permission_matches contra
+//     iam.permissions → permiso efectivo → resource_key (por
+//     permissions.resource_id).
 //     - iam.resources WHERE is_menu_visible=true AND is_active=true
 //     filtrados por las resource_keys, propagando visibilidad a
 //     ancestros (mismo algoritmo que
@@ -56,9 +58,8 @@ import (
 //
 //  5. Sanity checks de aislamiento por rol:
 //     - cada rol tiene > 0 screens (acceso mínimo al menú).
-//     - super_admin NO debe tener TODOS los screens del sistema —
-//     L0 sólo le da announcements:*. Si hereda screens de L4
-//     accidentalmente, hay drift en el seed.
+//     - super_admin tiene acceso global (grant `*` en iam.role_grants
+//     desde P4-1): ve al menos todo recurso que ve cualquier otro rol.
 //     - teacher y student tienen subsets distintos: simétrica !=
 //     identidad (sanidad contra collapse del modelo RBAC).
 //     - student ⊆ teacher en assessments/grades NO se asume — son
@@ -204,27 +205,30 @@ func TestScenarioL4Full_Integration(t *testing.T) {
 	}
 
 	// 5. Sanity checks de aislamiento por rol.
-	t.Run("F6-REQ-6.1_super_admin_minimal_inheritance", func(t *testing.T) {
-		// super_admin recibe `announcements:*` en L0 y `materials:*` en
-		// L3 (L3 siembra explícitamente super_admin × materials para
-		// preservar el flujo administrativo). NO debe heredar otros
-		// recursos del catálogo L4 (que sólo van a los 5 roles nuevos).
-		// El set esperado es exactamente {announcements, materials}.
+	t.Run("F6-REQ-6.1_super_admin_global_access", func(t *testing.T) {
+		// P4-1 (plan B) invirtió esta invariante. Con iam.role_permissions,
+		// super_admin sólo tenía las filas explícitas de L0 (announcements)
+		// y L3 (materials), y el test exigía exactamente ese set. Hoy esas
+		// filas no existen: L4 le siembra un único grant `*` en
+		// iam.role_grants (roleGrantPatterns), que es acceso global — por
+		// eso PRE-4 pudo retirar platform_admin. La invariante vigente es
+		// que super_admin ve, como mínimo, todo recurso que ve cualquier
+		// otro rol.
 		sa := matrix["super_admin"]
-		allowed := map[string]bool{"announcements": true, "materials": true}
-		extras := []string{}
-		for _, rkey := range sa.Resources {
-			if !allowed[rkey] {
-				extras = append(extras, rkey)
+		got := setOf(sa.Resources)
+		for role, access := range matrix {
+			if role == "super_admin" {
+				continue
+			}
+			for _, rkey := range access.Resources {
+				if !got[rkey] {
+					t.Errorf("super_admin no ve resource %q que sí ve %s — el grant `*` no cubre el catálogo", rkey, role)
+				}
 			}
 		}
-		if len(extras) != 0 {
-			t.Errorf("super_admin tiene resources fuera de {announcements, materials}: %v — drift de herencia L4", extras)
-		}
-		// Defensa positiva: si falta alguno de los 2 esperados, también
-		// hay drift (los seeds previos no se ejecutaron).
-		got := setOf(sa.Resources)
-		for k := range allowed {
+		// Defensa positiva: los recursos de L0 y L3 siguen visibles (si
+		// falta alguno, los seeds previos no se ejecutaron).
+		for _, k := range []string{"announcements", "materials"} {
 			if !got[k] {
 				t.Errorf("super_admin no ve resource %q — drift L0/L3", k)
 			}
@@ -339,13 +343,13 @@ type resourceRow struct {
 // Implementación:
 //
 //  1. Cargar TODOS los iam.resources activos.
-//  2. Cargar TODAS las filas (role_name, permission_name) de
-//     iam.role_permissions JOIN iam.permissions p ON
-//     rp.permission_id=p.id JOIN iam.roles ro ON rp.role_id=ro.id.
+//  2. Cargar TODAS las filas (role_name, permission_name, resource_key)
+//     de permisos EFECTIVOS: iam.role_grants de la cadena parent_role_id
+//     del rol, evaluados con iam.permission_matches (deny-wins).
 //  3. Cargar TODOS los ui_config.resource_screens activos (resource_key
 //     → screen_key).
 //  4. Para cada rol:
-//     - Extraer resource_keys del rol = { permission_name antes del `:` }.
+//     - Extraer resource_keys del rol = recursos de sus permisos efectivos.
 //     - Filtrar resources que coinciden con esos keys AND
 //     is_menu_visible=true AND is_active=true.
 //     - Propagar visibilidad a ancestros (parent_id) — sin esto, los
@@ -369,12 +373,12 @@ func computeAccessMatrix(t *testing.T, gdb *gorm.DB) map[string]*roleAccess {
 	for rows.Next() {
 		var r resourceRow
 		if err := rows.Scan(&r.ID, &r.Key, &r.ParentID, &r.IsMenuVisible, &r.IsActive); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			t.Fatalf("computeAccessMatrix: scan iam.resources: %v", err)
 		}
 		resourceRows = append(resourceRows, r)
 	}
-	rows.Close()
+	_ = rows.Close()
 	resByID := make(map[string]*resourceRow, len(resourceRows))
 	resByKey := make(map[string]*resourceRow, len(resourceRows))
 	for i := range resourceRows {
@@ -383,40 +387,68 @@ func computeAccessMatrix(t *testing.T, gdb *gorm.DB) map[string]*roleAccess {
 		resByKey[r.Key] = r
 	}
 
-	// 2. role → []permission_name. Filtramos por roles activos y
-	//    permisos activos.
+	// 2. role → []permiso EFECTIVO (con el resource_key de su recurso).
+	//    Filtramos por roles activos y permisos activos.
+	//
+	//    P4-1 (plan B, SchemaVersion 3.21.0): iam.role_permissions ya no
+	//    existe. El permiso efectivo se resuelve sobre iam.role_grants:
+	//    `chain` aplana la herencia por parent_role_id (ADR-6) y un
+	//    permiso cuenta si algún grant allow de la cadena lo cubre
+	//    (iam.permission_matches) y ningún grant deny lo cubre.
 	type rolePermRow struct {
-		RoleName string
-		PermName string
+		RoleName    string
+		PermName    string
+		ResourceKey string
 	}
 	var rpRows []rolePermRow
 	rows, err = gdb.Raw(
-		`SELECT ro.name, p.name
-		 FROM iam.role_permissions rp
-		   JOIN iam.permissions p ON rp.permission_id = p.id
-		   JOIN iam.roles       ro ON rp.role_id      = ro.id
-		 WHERE ro.is_active = true AND p.is_active = true`,
+		`WITH RECURSIVE chain(role_id, ancestor_id) AS (
+		     SELECT id, id FROM iam.roles WHERE is_active = true
+		     UNION ALL
+		     SELECT c.role_id, r.parent_role_id
+		     FROM chain c
+		       JOIN iam.roles r ON r.id = c.ancestor_id
+		     WHERE r.parent_role_id IS NOT NULL
+		 )
+		 SELECT ro.name, p.name, res.key
+		 FROM iam.roles ro
+		   JOIN iam.permissions p   ON p.is_active = true
+		   JOIN iam.resources   res ON res.id = p.resource_id
+		 WHERE ro.is_active = true
+		   AND EXISTS (
+		       SELECT 1 FROM iam.role_grants g
+		         JOIN chain c ON c.ancestor_id = g.role_id
+		       WHERE c.role_id = ro.id AND g.effect = 'allow'
+		         AND iam.permission_matches(g.pattern, p.name)
+		   )
+		   AND NOT EXISTS (
+		       SELECT 1 FROM iam.role_grants g
+		         JOIN chain c ON c.ancestor_id = g.role_id
+		       WHERE c.role_id = ro.id AND g.effect = 'deny'
+		         AND iam.permission_matches(g.pattern, p.name)
+		   )`,
 	).Rows()
 	if err != nil {
-		t.Fatalf("computeAccessMatrix: query role_permissions: %v", err)
+		t.Fatalf("computeAccessMatrix: query role_grants: %v", err)
 	}
 	for rows.Next() {
 		var rp rolePermRow
-		if err := rows.Scan(&rp.RoleName, &rp.PermName); err != nil {
-			rows.Close()
-			t.Fatalf("computeAccessMatrix: scan role_permissions: %v", err)
+		if err := rows.Scan(&rp.RoleName, &rp.PermName, &rp.ResourceKey); err != nil {
+			_ = rows.Close()
+			t.Fatalf("computeAccessMatrix: scan role_grants: %v", err)
 		}
 		rpRows = append(rpRows, rp)
 	}
-	rows.Close()
+	_ = rows.Close()
 
-	// permsByRole[role_name] = set(permission_name)
-	permsByRole := make(map[string]map[string]bool)
+	// resourcesByRole[role_name] = set(resource_key) con al menos un
+	// permiso efectivo.
+	resourcesByRole := make(map[string]map[string]bool)
 	for _, rp := range rpRows {
-		if permsByRole[rp.RoleName] == nil {
-			permsByRole[rp.RoleName] = make(map[string]bool)
+		if resourcesByRole[rp.RoleName] == nil {
+			resourcesByRole[rp.RoleName] = make(map[string]bool)
 		}
-		permsByRole[rp.RoleName][rp.PermName] = true
+		resourcesByRole[rp.RoleName][rp.ResourceKey] = true
 	}
 
 	// 3. resource_screens activos.
@@ -436,28 +468,27 @@ func computeAccessMatrix(t *testing.T, gdb *gorm.DB) map[string]*roleAccess {
 	for rows.Next() {
 		var r resScrRow
 		if err := rows.Scan(&r.ResourceKey, &r.ScreenKey); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			t.Fatalf("computeAccessMatrix: scan resource_screens: %v", err)
 		}
 		rsRows = append(rsRows, r)
 	}
-	rows.Close()
+	_ = rows.Close()
 	screensByResource := make(map[string][]string)
 	for _, r := range rsRows {
 		screensByResource[r.ResourceKey] = append(screensByResource[r.ResourceKey], r.ScreenKey)
 	}
 
 	// 4. construir la matriz por rol.
-	matrix := make(map[string]*roleAccess, len(permsByRole))
-	for roleName, perms := range permsByRole {
-		// resource_keys = prefijo de permission_name antes del primer `:`.
-		visibleKeys := make(map[string]bool)
-		for permName := range perms {
-			idx := strings.IndexByte(permName, ':')
-			if idx <= 0 {
-				continue
-			}
-			visibleKeys[permName[:idx]] = true
+	matrix := make(map[string]*roleAccess, len(resourcesByRole))
+	for roleName, roleResources := range resourcesByRole {
+		// resource_keys = recurso (iam.permissions.resource_id) de cada
+		// permiso efectivo. El nombre del permiso ya no sirve para
+		// derivarlo: pasó de `recurso:accion` a un path
+		// `dominio.recurso.accion[:own]`.
+		visibleKeys := make(map[string]bool, len(roleResources))
+		for key := range roleResources {
+			visibleKeys[key] = true
 		}
 
 		// Propagar a ancestros — sin esto los contenedores

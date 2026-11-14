@@ -9,6 +9,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
@@ -89,12 +90,21 @@ func TestIntegration(t *testing.T) {
 		//
 		// P4-1 (plan B): iam.role_permissions fue eliminada. El conteo
 		// de filas se valida ahora sobre iam.role_grants (patterns
-		// wildcard). Mínimo conservador: ~130 grants (12 roles × 11
-		// patterns prom).
+		// wildcard).
+		//
+		// El piso de role_grants era 130 («12 roles × 11 patterns prom»),
+		// de cuando cada alias copiaba los grants de su canónico. Hoy el
+		// seed L4 (roleGrantPatterns + roleGrantDenyPatterns) declara 95:
+		// 59 allow (super_admin 1, announcement_viewer 2, student 11,
+		// teacher 12, guardian 13, school_admin 10, readonly_auditor 10)
+		// y 36 deny (school_admin 4, readonly_auditor 32). Los 5 alias
+		// que heredan por parent_role_id no declaran grants propios
+		// (ADR-6), PRE-4 retiró platform_admin, y los planes 027 y 052 F4
+		// podaron grants de consumo.
 		assertCountAtLeast(t, db, "iam.resources", 30)             // 1 L0 + 1 L3 + 31 L4
 		assertCountAtLeast(t, db, "iam.roles", 7)                  // 1 L0 + 1 L1 + 5 L4
 		assertCountAtLeast(t, db, "iam.permissions", 90)           // 4 L0 + 3 L3 + ~89 L4
-		assertCountAtLeast(t, db, "iam.role_grants", 130)          // patterns wildcard por rol
+		assertCountAtLeast(t, db, "iam.role_grants", 95)           // 59 allow + 36 deny (ver arriba)
 		assertCountAtLeast(t, db, "ui_config.screen_templates", 8) // 3 L0 + 5 L4
 		assertCountAtLeast(t, db, "ui_config.screen_instances", 1) // sube a ~78 al cerrar B4
 		assertCountAtLeast(t, db, "ui_config.resource_screens", 1) // sube a ~64 al cerrar B5
@@ -163,8 +173,16 @@ func TestIntegration(t *testing.T) {
 		seedSchoolID := mustUUID(t, "b1000000-0000-0000-0000-000000000001")
 		// N4 (ADR 0019): content.materials.uploaded_by_membership_id es FK a
 		// academic.memberships (era uploaded_by_teacher_id → auth.users). Se usa
-		// la membresía docente bb…08 (user …05, school b1…01, unidad ac…03) del
-		// demo seed.
+		// la membresía docente bb…08 (user …05, school b1…01, unidad ac…03).
+		//
+		// MP-09: migrations.Migrate solo siembra system/, que es contrato
+		// puro (sin escuelas, unidades ni membresías), y el paquete
+		// seeds/demo que aportaba estas filas se eliminó. El mundo de datos
+		// es playground_v2 `base` (el que `make docker-recreate` aplica por
+		// defecto), así que el test lo siembra antes de usar sus IDs.
+		if err := playground_v2.Apply(gdb, "base"); err != nil {
+			t.Fatalf("Error aplicando playground_v2 base: %v", err)
+		}
 		seedTeacherMembershipID := mustUUID(t, "bb000000-0000-0000-0000-000000000008")
 		seedUnitID := mustUUID(t, "ac000000-0000-0000-0000-000000000003")
 

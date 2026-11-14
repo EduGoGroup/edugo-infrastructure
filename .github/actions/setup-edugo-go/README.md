@@ -34,7 +34,7 @@ steps:
   - name: Setup Go
     uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
     with:
-      go-version: '1.25'
+      go-version: '1.27.4'
       cache: true
       cache-dependency-path: '**/go.sum'
       github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -46,7 +46,7 @@ steps:
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `go-version` | No | `1.25` | Version de Go |
+| `go-version` | No | `1.27.4` | Version de Go |
 | `cache` | No | `true` | Habilitar cache |
 | `cache-dependency-path` | No | `go.sum` | Path para cache |
 | `github-token` | No | `github.token` | Token para repos privados |
@@ -68,7 +68,7 @@ steps:
 ```yaml
 - uses: actions/setup-go@v7
   with:
-    go-version: '1.25'
+    go-version: '1.27.4'
     cache: true
 
 - name: Configurar repos privados
