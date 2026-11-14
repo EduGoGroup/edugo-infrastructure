@@ -23,7 +23,7 @@ import (
 
 // TestL0_ApplyTwice_Idempotent verifica que aplicar la capa L0 dos
 // veces consecutivas produce exactamente el mismo dataset que aplicarla
-// una sola vez: 17 filas en 9 tablas, sin duplicados ni errores.
+// una sola vez: 13 filas en 8 tablas, sin duplicados ni errores.
 //
 // Justificación: la idempotencia de L0 es contrato (todos los inserts
 // usan ON CONFLICT). Si una de las cuatro funciones applyL0_* perdiera
@@ -72,9 +72,15 @@ func TestL0_ApplyTwice_Idempotent(t *testing.T) {
 	assertL0Counts(t, gdb, "after Apply #3")
 }
 
-// assertL0Counts valida los nueve conteos canónicos de L0 (17 filas
-// distribuidas en 9 tablas) filtrados por los IDs/keys específicos
+// assertL0Counts valida los ocho conteos canónicos de L0 (13 filas
+// distribuidas en 8 tablas) filtrados por los IDs/keys específicos
 // de L0 para no contaminar con dataset legado u otras capas.
+//
+// P4-1 (plan B, SchemaVersion 3.21.0): iam.role_permissions ya no
+// existe y L0 dejó de sembrar los 4 role_permissions del super_admin
+// (ver l0_minimal.go / l0_roles.go). El permiso efectivo del rol se
+// otorga vía iam.role_grants (pattern `*`) desde L4, y se valida aparte
+// en assertSuperAdminWildcardGrant porque no es una fila de L0.
 func assertL0Counts(t *testing.T, gdb *gorm.DB, stage string) {
 	t.Helper()
 
@@ -99,22 +105,21 @@ func assertL0Counts(t *testing.T, gdb *gorm.DB, stage string) {
 			want:  1,
 		},
 		{
-			desc:  "iam.permissions [name LIKE announcements:%]",
-			query: `SELECT COUNT(*) FROM iam.permissions WHERE name LIKE ?`,
-			args:  []any{"announcements:%"},
-			want:  4,
-		},
-		{
-			// Filtrado por resource_id=L0 announcements (vía JOIN a
-			// permissions) para que el check siga siendo invariante L0
-			// incluso cuando capas superiores (L3 materials, futuras)
-			// agreguen role_permissions sobre nuevos resources al mismo
-			// super_admin.
-			desc: "iam.role_permissions [role_id=L0 super_admin, resource=announcements]",
-			query: `SELECT COUNT(*) FROM iam.role_permissions rp ` +
-				`JOIN iam.permissions p ON p.id = rp.permission_id ` +
-				`WHERE rp.role_id = ? AND p.resource_id = ?::uuid`,
-			args: []any{layers.L0_ROLE_SUPER_ADMIN_ID, layers.L0_RESOURCE_ANNOUNCEMENTS_ID},
+			// Los 4 permisos CRUD de L0 se llaman
+			// academic.announcements.{read,create,update,delete}
+			// (formato path; el formato legacy era `announcements:<accion>`).
+			// Se filtra por los 4 IDs de L0 para que el check siga siendo
+			// invariante L0 aunque otra capa añada permisos al recurso.
+			desc: "iam.permissions [id IN L0 announcements CRUD, name LIKE academic.announcements.%]",
+			query: `SELECT COUNT(*) FROM iam.permissions ` +
+				`WHERE id IN (?::uuid, ?::uuid, ?::uuid, ?::uuid) AND name LIKE ?`,
+			args: []any{
+				layers.L0_PERM_ANNOUNCEMENTS_READ,
+				layers.L0_PERM_ANNOUNCEMENTS_CREATE,
+				layers.L0_PERM_ANNOUNCEMENTS_UPDATE,
+				layers.L0_PERM_ANNOUNCEMENTS_DELETE,
+				"academic.announcements.%",
+			},
 			want: 4,
 		},
 		{
@@ -165,10 +170,33 @@ func assertL0Counts(t *testing.T, gdb *gorm.DB, stage string) {
 		total += got
 	}
 
-	// Total canónico L0: 1 + 1 + 4 + 4 + 3 + 1 + 1 + 1 + 1 = 17.
-	const wantTotal int64 = 17
+	// Total canónico L0: 1 + 1 + 4 + 3 + 1 + 1 + 1 + 1 = 13.
+	const wantTotal int64 = 13
 	if total != wantTotal {
 		t.Errorf("[%s] total L0 rows: got %d, want %d", stage, total, wantTotal)
+	}
+
+	assertSuperAdminWildcardGrant(t, gdb, stage)
+}
+
+// assertSuperAdminWildcardGrant valida que el super_admin de L0 conserva
+// su permiso efectivo: exactamente 1 grant `*` con effect=allow en
+// iam.role_grants. Sustituye al conteo de los 4 iam.role_permissions
+// super_admin × announcements, tabla eliminada en P4-1. El grant lo
+// siembra L4 (applyL4RoleGrants), no L0: por eso no entra en el total
+// de filas de L0, y reaplicar L0 no debe alterarlo.
+func assertSuperAdminWildcardGrant(t *testing.T, gdb *gorm.DB, stage string) {
+	t.Helper()
+
+	var got int64
+	if err := gdb.Raw(
+		`SELECT COUNT(*) FROM iam.role_grants WHERE role_id = ?::uuid AND pattern = ? AND effect = ?`,
+		layers.L0_ROLE_SUPER_ADMIN_ID, "*", "allow",
+	).Scan(&got).Error; err != nil {
+		t.Fatalf("[%s] count iam.role_grants [role_id=L0 super_admin, pattern=*]: %v", stage, err)
+	}
+	if got != 1 {
+		t.Errorf("[%s] iam.role_grants [role_id=L0 super_admin, pattern=*, effect=allow]: got %d, want 1", stage, got)
 	}
 }
 
