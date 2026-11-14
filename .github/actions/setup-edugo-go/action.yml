@@ -10,7 +10,7 @@ inputs:
   go-version:
     description: 'Version de Go a usar'
     required: false
-    default: '1.25'
+    default: '1.27.4'
 
   cache:
     description: 'Habilitar cache de Go modules'

@@ -7,13 +7,13 @@ on:
         description: 'Version de Go a usar'
         required: false
         type: string
-        default: '1.25'
+        default: '1.27.4'
 
       golangci-lint-version:
         description: 'Version de golangci-lint'
         required: false
         type: string
-        default: 'v2.4.0'
+        default: 'v2.14.0'
 
       working-directory:
         description: 'Directorio de trabajo'
@@ -37,6 +37,9 @@ on:
       result:
         description: 'Resultado del linting'
         value: ${{ jobs.lint.outputs.result }}
+
+env:
+  GOWORK: 'off'
 
 jobs:
   lint:
