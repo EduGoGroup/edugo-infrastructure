@@ -65,6 +65,8 @@ Validaciones ejecutadas localmente el 2026-03-08 sobre este repo:
 - `make -C tools/mock-generator release-check`
 - `make -C docker release-check`
 
+Gates de cada PR (2026-11-14): `make ci-local` corre fmt-check, vet, lint, tests y `make vuln` (`govulncheck` fijado en `GOVULNCHECK_VERSION`) sobre `postgres`, `schemas` y `tools/mock-generator`. La CI (`.github/workflows/ci.yml`) corre el mismo `govulncheck` por modulo y falla si encuentra una vulnerabilidad alcanzable.
+
 Esas superficies pasan en local. El flujo de release por modulo tambien queda documentado y soportado por `scripts/module-release.sh`, `make/module-release.mk` y `.github/workflows/release.yml`.
 
 ## Principios de esta nueva documentacion

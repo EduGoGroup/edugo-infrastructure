@@ -6,6 +6,7 @@ RELEASE_MODULES = postgres schemas tools/mock-generator docker
 # Versiones fijadas del toolchain de CI (deben coincidir con .github/workflows/ci.yml)
 GO_VERSION   := 1.27.4
 LINT_VERSION := v2.14.0
+GOVULNCHECK_VERSION := v1.9.0
 
 RED = \033[0;31m
 GREEN = \033[0;32m
@@ -20,7 +21,7 @@ DB_USER ?= edugo
 DB_PASSWORD ?= changeme
 DB_SSL_MODE ?= disable
 
-.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
+.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all vuln tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
 
 help: ## Mostrar ayuda
 	@echo "$(BLUE)EduGo Infrastructure - Comandos disponibles:$(NC)"
@@ -189,6 +190,14 @@ deps-all: ## Actualizar dependencias en todos los módulos Go
 	done
 	@echo "$(GREEN)Dependencias actualizadas en todos los módulos$(NC)"
 
+vuln: ## Ejecutar govulncheck ($(GOVULNCHECK_VERSION)) en todos los módulos Go
+	@for module in $(GO_MODULES); do \
+		echo "$(YELLOW)govulncheck $$module...$(NC)"; \
+		(cd $$module && GOWORK=off go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) ./...) || exit 1; \
+		echo ""; \
+	done
+	@echo "$(GREEN)govulncheck sin vulnerabilidades alcanzables en todos los módulos$(NC)"
+
 check-all: fmt-all vet-all lint-all test-all build-all ## Validación completa con formateo
 	@echo "$(GREEN)Validación completa exitosa$(NC)"
 
@@ -201,7 +210,7 @@ tools: ## Instalar herramientas de CI (golangci-lint fijado a $(LINT_VERSION))
 	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINT_VERSION)
 	@echo "$(GREEN)Herramientas instaladas$(NC)"
 
-ci-local: fmt-check-all vet-all lint-all test-all ## Pre-push: fmt + vet + lint + tests con herramientas locales
+ci-local: fmt-check-all vet-all lint-all test-all vuln ## Pre-push: fmt + vet + lint + tests + govulncheck con herramientas locales
 	@echo "$(GREEN)CI local OK$(NC)"
 
 ci-docker: ## Simula el CI en Docker (Go $(GO_VERSION) + golangci-lint $(LINT_VERSION)) — requiere Docker
@@ -217,7 +226,7 @@ ci-docker: ## Simula el CI en Docker (Go $(GO_VERSION) + golangci-lint $(LINT_VE
 		golang:$(GO_VERSION)-bookworm \
 		bash -c "set -e; \
 			curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b /usr/local/bin $(LINT_VERSION) && \
-			make fmt-check-all vet-all lint-all test-all" \
+			make fmt-check-all vet-all lint-all test-all vuln" \
 		2>&1
 	@echo "$(GREEN)CI Docker OK$(NC)"
 
