@@ -1,80 +1,35 @@
-# Workflows Reusables - EduGo
+# Workflows y actions reutilizables de EduGo
 
-Este directorio contiene workflows reusables que pueden ser consumidos por cualquier proyecto del ecosistema EduGo.
+Lo que otros repos consumen de aquí, medido el 2026-11-14 contra los `.github/` del ecosistema.
 
----
+## Workflows reutilizables (`workflow_call`)
 
-## Workflows Disponibles
-
-| Workflow | Archivo | Propósito | Usado por |
-|----------|---------|-----------|-----------|
-| Go Test | `go-test.yml` | Tests unitarios y de integración | Todas las apps Go |
-| Go Lint | `go-lint.yml` | Linter con golangci-lint | Todas las apps Go |
-| Sync Branches | `sync-branches.yml` | Sincronización main - dev | Todos los repos |
-| Docker Build | `docker-build.yml` | Build de imágenes Docker | APIs y Worker |
-
----
-
-## Composite Actions
-
-| Action | Directorio | Propósito |
-|--------|-----------|-----------|
-| Setup EduGo Go | `../actions/setup-edugo-go/` | Setup Go + GOPRIVATE |
-| Coverage Check | `../actions/coverage-check/` | Validar cobertura |
-| Docker Build | `../actions/docker-build-edugo/` | Build Docker estándar |
-
----
-
-## Como Usar
-
-### Workflow Reusable
+| Workflow | Consumidores |
+|---|---|
+| `reusable-go-lint.yml` | APIs, worker y fronts Go (11 referencias) |
+| `reusable-go-test.yml` | `edugo-worker` |
 
 ```yaml
-name: CI
-
-on: [push, pull_request]
-
 jobs:
-  test:
-    uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@main
-    with:
-      go-version: '1.25'
-      coverage-threshold: 33
+  lint:
+    uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable-go-lint.yml@main
 ```
 
-### Composite Action
+## Composite actions
+
+| Action | Para qué |
+|---|---|
+| `../actions/setup-edugo-go/` | Go, `GOPRIVATE` y caché de módulos |
+| `../actions/coverage-check/` | Umbral de cobertura |
+| `../actions/docker-build-edugo/` | Build Docker estándar |
 
 ```yaml
-steps:
-  - uses: actions/checkout@v4
-
-  - name: Setup Go
-    uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
+- uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
 ```
 
----
+## Retirados (2026-11-14, plan 054)
 
-## Versionado
-
-**Recomendaciones:**
-- **Produccion:** Usar tag especifico `@v1.0.0`
-- **Desarrollo:** Usar `@dev` o `@main`
-
-```yaml
-# Produccion (recomendado)
-uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@v1.0.0
-
-# Desarrollo
-uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable/go-test.yml@dev
-```
-
----
-
-## Documentacion Completa
-
-Ver: [docs/workflows-reusables/](../../../docs/workflows-reusables/)
-
----
-
-**Ultima actualizacion:** 21 Nov 2025
-**Version:** 1.0
+`reusable-docker-build.yml`, `reusable-sync-branches.yml` y `test-workflows-reusables.yml`. Ningún repo
+los consumía. Los dos primeros declaraban `GITHUB_TOKEN` como secreto de `workflow_call`, un nombre
+reservado, y el tercero apuntaba a rutas `reusable/*.yml` que no existen. GitHub los daba por inválidos y
+generaba un run fallido en cada push.
