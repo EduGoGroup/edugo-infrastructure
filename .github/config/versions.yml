@@ -10,8 +10,8 @@ tools:
   golangci-lint: "v1.64.7"
 
 github-actions:
-  checkout: "v4"
-  setup-go: "v5"
+  checkout: "v7"
+  setup-go: "v7"
   upload-artifact: "v4"
   download-artifact: "v4"
   github-script: "v7"

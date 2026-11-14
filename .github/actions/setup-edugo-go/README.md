@@ -19,7 +19,7 @@ Composite action para configurar el entorno Go estandar de EduGo.
 
 ```yaml
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v7
 
   - name: Setup Go
     uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
@@ -66,7 +66,7 @@ steps:
 
 **Antes (15+ lineas):**
 ```yaml
-- uses: actions/setup-go@v5
+- uses: actions/setup-go@v7
   with:
     go-version: '1.25'
     cache: true
