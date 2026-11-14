@@ -7,7 +7,7 @@ on:
         description: 'Version de Go a usar'
         required: false
         type: string
-        default: '1.25'
+        default: '1.27.4'
 
       coverage-threshold:
         description: 'Umbral minimo de cobertura (%)'
@@ -48,6 +48,9 @@ on:
         description: 'Resultado de los tests'
         value: ${{ jobs.test.outputs.result }}
 
+env:
+  GOWORK: 'off'
+
 jobs:
   test:
     name: Run Tests
@@ -59,7 +62,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Go Environment
         uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main

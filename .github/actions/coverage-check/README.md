@@ -18,7 +18,7 @@ Composite action para validar cobertura de tests y generar reportes.
 
 ```yaml
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v7
 
   - name: Setup Go
     uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main

@@ -18,7 +18,7 @@ Composite action para build y push de imagenes Docker con configuracion estandar
 
 ```yaml
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v7
 
   - name: Build and push
     uses: EduGoGroup/edugo-infrastructure/.github/actions/docker-build-edugo@main

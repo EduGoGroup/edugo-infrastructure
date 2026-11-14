@@ -23,7 +23,7 @@ import (
 
 // TestL1_ApplyTwice_Idempotent verifica que aplicar las capas L0 + L1
 // dos veces consecutivas produce exactamente el mismo dataset que
-// aplicarlas una sola vez: 18 filas (17 de L0 + 1 de L1) sin duplicados.
+// aplicarlas una sola vez: 14 filas (13 de L0 + 1 de L1) sin duplicados.
 //
 // Justificación: la idempotencia de L1 es contrato (el insert usa
 // ON CONFLICT DO NOTHING). Si applyL1Role perdiera el OnConflict, este

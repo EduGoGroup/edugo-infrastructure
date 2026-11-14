@@ -2,16 +2,16 @@
 # Actualizar aqui y todos los workflows se actualizan
 
 go:
-  version: "1.25"
+  version: "1.27.4"
   versions_matrix:
-    - "1.25"
+    - "1.27.4"
 
 tools:
-  golangci-lint: "v1.64.7"
+  golangci-lint: "v2.14.0"
 
 github-actions:
-  checkout: "v4"
-  setup-go: "v5"
+  checkout: "v7"
+  setup-go: "v7"
   upload-artifact: "v4"
   download-artifact: "v4"
   github-script: "v7"
