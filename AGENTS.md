@@ -39,7 +39,7 @@ Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar 
 - **Schemas separados, una sola BD**: Postgres está particionado por schemas de dominio; cada API declara
   su `search_path` (p.ej. identity `auth,iam,academic,audit,public`; learning `content,assessment,auth,public`).
   Las entities y migraciones aquí definen esos schemas.
-- **Permisos SDUI** se siembran vía `slot.permission` en los seeds (única fuente; ver `../../docs/adr/0003`).
+- **Permisos SDUI** se siembran vía `slot.permission` en los seeds (única fuente; ver `../../documentacion/adrs/0003-permisos-unificados-slot-permission.md`).
 - **Contratos de eventos**: si cambias un schema en `schemas/events/`, sincroniza con
   `edugo-shared/messaging/events` y con los procesadores del worker.
 - Release por módulo: tags modulares y `release.yml`; cada módulo lleva su `CHANGELOG.md`.
