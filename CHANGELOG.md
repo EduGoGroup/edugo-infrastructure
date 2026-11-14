@@ -8,7 +8,7 @@ El historial narrativo anterior a 2026-03-08 no se reconstruyo en esta fase. Los
 
 ### Added
 - `make test-integration` (raiz y `postgres/`): integracion de `postgres/` con Docker, `GOWORK=off`, `-tags integration` y `ENABLE_INTEGRATION_TESTS=true`. Gate local obligatorio antes de un PR que toque `postgres/`; la CI no lo corre (plan 054, S.6).
-- `.golangci.yml`: `run.build-tags: [integration]`, para que el lint vea los ficheros `//go:build integration`.
+- `.golangci.yml`: `run.build-tags: [integration]`, para que el lint vea los ficheros `//go:build integration`; `issues.max-same-issues: 0` y `max-issues-per-linter: 0`, para que no recorte hallazgos, y `run.allow-parallel-runners: true`.
 - `govulncheck` v1.9.0 en la CI (`ci.yml`, job por modulo) y en `make vuln` / `make ci-local`; una vulnerabilidad alcanzable pone la CI en rojo (plan 054, H.2).
 - Nueva base documental de fase 1 para el repositorio.
 - Estructura general `docs/` centrada en alcance, mapa, procesos, arquitectura, integracion ecosistemica, automatizacion y roadmap.

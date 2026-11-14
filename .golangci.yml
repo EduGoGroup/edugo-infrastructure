@@ -5,7 +5,14 @@ version: "2"
 run:
   build-tags:
     - integration
+  allow-parallel-runners: true
 
 linters:
   enable:
     - errcheck
+
+# Sin recorte: por defecto golangci-lint calla los hallazgos que repiten texto
+# (max-same-issues: 3) y corta a 50 por linter. La cifra que da es la real.
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
