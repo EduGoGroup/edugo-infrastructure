@@ -1,25 +1,11 @@
 version: "2"
 
+# Los ficheros `//go:build integration` de postgres/ también pasan por lint y typecheck
+# (plan 054, S.6). Sin el tag, golangci-lint no los ve.
+run:
+  build-tags:
+    - integration
+
 linters:
   enable:
     - errcheck
-
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (io.Closer).Close
-      - (*database/sql.Rows).Close
-      - (*database/sql.DB).Close
-      - (*github.com/testcontainers/testcontainers-go.Container).Terminate
-      - (*database/sql.Row).Scan
-      - (*github.com/dop251/goja.Object).Set
-      - (*github.com/dop251/goja.Runtime).Set
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-    - path: cmd/
-      linters:
-        - errcheck

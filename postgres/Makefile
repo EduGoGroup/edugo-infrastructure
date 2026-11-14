@@ -6,7 +6,18 @@ BUILD_COMMAND = mkdir -p $(BUILD_DIR) && go build -o $(BUILD_DIR)/runner ./cmd/r
 
 include ../make/go-module.mk
 
-.PHONY: runner-up seed seed-production seed-development seed-all
+.PHONY: test-integration runner-up seed seed-production seed-development seed-all
+
+# Gate local obligatorio (plan 054, S.6): la CI no lo corre. Levanta Postgres con
+# testcontainers, por eso pide Docker. GOWORK=off para medir contra los tags reales.
+TEST_INTEGRATION_FLAGS ?= -tags integration -count=1 -timeout 20m -v
+
+test-integration: ## Ejecutar tests de integración (requiere Docker; gate local, no de CI)
+	@command -v docker >/dev/null 2>&1 || { echo "$(RED)Docker no está instalado$(NC)"; exit 1; }
+	@docker info >/dev/null 2>&1 || { echo "$(RED)Docker no está corriendo$(NC)"; exit 1; }
+	@echo "$(BLUE)Ejecutando tests de integración...$(NC)"
+	@ENABLE_INTEGRATION_TESTS=true GOWORK=off $(GO) test $(TEST_INTEGRATION_FLAGS) ./...
+	@echo "$(GREEN)Tests de integración completados$(NC)"
 
 runner-up: ## Aplicar estructura + seeds de producción + seeds de desarrollo
 	@go run ./cmd/runner all

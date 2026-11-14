@@ -21,7 +21,7 @@ DB_USER ?= edugo
 DB_PASSWORD ?= changeme
 DB_SSL_MODE ?= disable
 
-.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all vuln tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
+.PHONY: help require-module dev-setup dev-up-core dev-up-messaging dev-up-full dev-logs dev-ps dev-down dev-teardown dev-reset db-bootstrap migrate-up migrate-down migrate-status migrate-create runner-up seed seed-production seed-development seed-minimal validate-env validate-schemas build-all test-all test-integration lint-all fmt-all fmt-check-all vet-all tidy-all deps-all check-all vuln tools ci-local ci-docker release-check-all release-check release-prepare release-notes release-tag release-push-tag release-github clean status
 
 help: ## Mostrar ayuda
 	@echo "$(BLUE)EduGo Infrastructure - Comandos disponibles:$(NC)"
@@ -141,6 +141,9 @@ test-all: ## Ejecutar tests en todos los módulos Go
 		echo ""; \
 	done
 	@echo "$(GREEN)Tests completados para todos los módulos$(NC)"
+
+test-integration: ## Integración de postgres (requiere Docker). Gate local obligatorio antes de un PR que toque postgres/; la CI no lo corre
+	@$(MAKE) -C postgres test-integration
 
 lint-all: ## Ejecutar linter en todos los módulos Go
 	@for module in $(GO_MODULES); do \
