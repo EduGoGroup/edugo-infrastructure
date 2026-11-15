@@ -10,7 +10,9 @@ include ../make/go-module.mk
 
 # Gate local obligatorio (plan 054, S.6): la CI no lo corre. Levanta Postgres con
 # testcontainers, por eso pide Docker. GOWORK=off para medir contra los tags reales.
-TEST_INTEGRATION_FLAGS ?= -tags integration -count=1 -timeout 20m -v
+# `-p 1`: un paquete a la vez. Cada paquete arranca su propio Postgres con 60 s de espera;
+# en paralelo y con la máquina cargada, el arranque vence y el test falla sin ser un fallo real.
+TEST_INTEGRATION_FLAGS ?= -tags integration -count=1 -timeout 30m -v -p 1
 
 test-integration: ## Ejecutar tests de integración (requiere Docker; gate local, no de CI)
 	@command -v docker >/dev/null 2>&1 || { echo "$(RED)Docker no está instalado$(NC)"; exit 1; }
