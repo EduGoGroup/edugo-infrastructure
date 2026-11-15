@@ -28,6 +28,14 @@ Gates antes de un PR, desde la raíz y con `GOWORK=off`: `make ci-local` (fmt-ch
 `make vuln`). `make vuln` corre `govulncheck` (versión en `GOVULNCHECK_VERSION` del `Makefile`, espejo de
 `tools.govulncheck` en `.github/config/versions.yml` y del `env` de `ci.yml`) en cada módulo Go; la CI lo corre
 en el job por módulo y **falla** si hay una vulnerabilidad alcanzable (plan 054, H.2; Dependabot apagado).
+**Gate local obligatorio: `GOWORK=off make test-integration`** (plan 054, S.6; decisión del dueño del
+2026-11-14). Corre la integración de `postgres/` (`ENABLE_INTEGRATION_TESTS=true`, `-tags integration`,
+`-count=1`, `-p 1`) contra un Postgres de testcontainers, así que **pide Docker en marcha**. Va un paquete
+a la vez porque cada uno arranca su contenedor con 60 s de espera: en paralelo y con la máquina cargada, el
+arranque vence («context deadline exceeded») sin que haya un fallo real. Vara: 151 tests en verde. Se corre **antes de cada
+PR que toque `postgres/`**, sobre todo migraciones, seeds o entities, y el código de salida se lee sin pipe.
+**La CI no lo corre**: `make test` y `make ci-local` van con `-short` y sin el tag, de modo que un verde de CI
+no dice nada de la integración. El lint sí ve esos ficheros: `.golangci.yml` lleva `run.build-tags: [integration]`.
 Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar seeds),
 `module-release.sh` / `auto-release.sh` (release por módulo).
 
