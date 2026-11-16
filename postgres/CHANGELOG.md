@@ -6,6 +6,37 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.28] - 2026-11-16
+
+Plan 053 T3.7 (ADR 0040: escrituras hacia sistemas externos fuera de la transacción, outbox).
+`SchemaVersion` 3.107.0 → **3.108.0**, aplicado aditivamente. Introduce el outbox de la sincronización de accesos con identity-core. **Sin
+cambios de seeds.**
+
+### Added
+
+- **`auth.identity_sync_outbox`** (3.108.0, plan 053 T3.7): tabla nueva
+  (`entities/identity_sync_outbox.go`, entity `IdentitySyncOutbox`). Outbox de la sincronización de
+  accesos con identity-core: la transacción de negocio solo apunta aquí que los accesos de un usuario
+  cambiaron y un proceso aparte hace la llamada externa fuera de la transacción. Una fila por usuario:
+  - `user_id uuid` PK, **sin FK** a `auth.users` a propósito (la fila no debe atar el ciclo de vida del
+    usuario).
+  - `generation bigint NOT NULL DEFAULT 1`: sube en cada apunte; el envío solo borra la fila si
+    `generation` sigue siendo la que leyó.
+  - `attempts integer NOT NULL DEFAULT 0`.
+  - `next_attempt_at timestamptz NOT NULL DEFAULT now()`, con índice
+    `idx_identity_sync_outbox_next_attempt`.
+  - `locked_until timestamptz NULL`: lease del proceso que está enviando.
+  - `last_error text NULL`.
+  - `created_at` / `updated_at timestamptz NOT NULL DEFAULT now()`; el trigger `set_updated_at` y el
+    `COMMENT ON TABLE` viven en `post_gorm.sql`.
+
+### Notas de despliegue
+
+- **Cambio aditivo**: tabla nueva registrada en el `AutoMigrate` (bloque Auth de `gorm_migrator.go`).
+  Toca `post_gorm.sql` (trigger + comentario), así que `ComputeFilesHash()` **cambia**; el bump de
+  `SchemaVersion` es obligatorio. Recrear la BD local para tener la tabla; en Neon el `CREATE TABLE` es
+  aditivo y llega en el paso de despliegue coordinado, no con este release.
+
 ## [0.900.27] - 2026-11-14
 
 Plan 054 (homologación de Go y dependencias), HU-E0.1. Solo toolchain y dependencias: **sin cambios de

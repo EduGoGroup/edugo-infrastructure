@@ -33,6 +33,8 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.RefreshToken{},
 		&entities.ServiceClient{},
 		&entities.LoginAttempt{},
+		// Outbox de la sincronización con identity-core (plan 053 T3.7, ADR 0040).
+		&entities.IdentitySyncOutbox{},
 
 		// IAM (depends on iam ENUM types created in pre_gorm.sql)
 		&entities.Resource{},

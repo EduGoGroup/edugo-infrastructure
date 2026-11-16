@@ -714,6 +714,14 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- auth.identity_sync_outbox (plan 053 T3.7, ADR 0040)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON auth.identity_sync_outbox
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+COMMENT ON TABLE auth.identity_sync_outbox IS
+    'Outbox de la sincronización de accesos con identity-core (ADR 0040). Una fila por usuario; generation sube en cada apunte y el envío solo borra la fila si generation no cambió.';
+
 -- iam.resources
 CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON iam.resources
