@@ -57,6 +57,7 @@ func TestIntegration(t *testing.T) {
 		}
 
 		assertTableExists(t, db, "auth", "users")
+		assertTableExists(t, db, "auth", "identity_sync_outbox")
 		assertTableExists(t, db, "iam", "resources")
 		assertTableExists(t, db, "academic", "schools")
 		assertTableExists(t, db, "content", "materials")

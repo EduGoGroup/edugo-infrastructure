@@ -1112,7 +1112,19 @@ import (
 //     ComputeFilesHash() CAMBIA. Recrear BD para las tablas nuevas; en Neon los
 //     CREATE TABLE son aditivos y llegan en el paso de despliegue coordinado, no
 //     en esta tarea.
-const SchemaVersion = "3.107.0"
+//   - 3.108.0 (plan 053 T3.7 — outbox de la sincronización con identity-core,
+//     ADR 0040): tabla nueva aditiva auth.identity_sync_outbox
+//     (entities/identity_sync_outbox.go). Una fila por usuario: user_id uuid PK
+//     sin FK a auth.users, generation bigint default 1 (sube en cada apunte),
+//     attempts integer default 0, next_attempt_at timestamptz default now()
+//     con índice idx_identity_sync_outbox_next_attempt, locked_until (lease) y
+//     last_error nullables, created_at/updated_at default now(). Registrada en
+//     el AutoMigrate (bloque Auth de gorm_migrator.go, tras LoginAttempt). El
+//     trigger set_updated_at y el COMMENT ON TABLE viven en post_gorm.sql →
+//     ComputeFilesHash() CAMBIA. Recrear BD para la tabla nueva; en Neon el
+//     CREATE TABLE es aditivo y llega en el paso de despliegue coordinado, no
+//     en esta tarea.
+const SchemaVersion = "3.108.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
