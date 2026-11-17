@@ -174,7 +174,6 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 		"academic.school_concepts",
 		"ui_config.screen_user_preferences",
 		"auth.refresh_tokens",
-		"auth.login_attempts",
 		"academic.schools",
 	}
 	for _, table := range required {

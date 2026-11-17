@@ -19,7 +19,7 @@
 // roles L4 school_admin/teacher/student (ver system/l4/roles_permissions.go)
 // para que los usuarios tengan contexto de login real — NO inventa roles ni
 // permisos. El login resuelve active_context desde academic.memberships +
-// iam.user_roles, así que cada usuario sembrado lleva ambas filas.
+// iam.user_roles, así que cada usuario del escenario lleva ambas filas.
 //
 // Convive con los demás playgrounds sin colisionar: rango UUID propio
 // 68000000-... (distinto del 67000000 de n17_secciones y del 66000000 de
@@ -33,12 +33,15 @@
 //  3. academic.subjects          — 4 materias de ESCUELA (AcademicUnitID=NULL,
 //     ADR 0016), nombres distintos "… Norte" / "… Sur" → UNIQUE(school_id, name).
 //  4. academic.academic_periods  — 1 período ACTIVO (is_active=true).
-//  5. auth.users                 — 1 admin + 2 docentes + 2 alumnos, password "12345678".
+//  5. auth.users                 — NADA (plan 053 T5.2, escenario on-top).
+//     1 admin + 2 docentes + 2 alumnos
+//     los crea antes la API de identidad (Users()) y aquí se resuelven por email.
 //  6. iam.user_roles             — admin→school_admin L4, docentes→teacher L4, alumnos→student L4.
 //  7. academic.memberships       — admin con alcance COLEGIO (AcademicUnitID=NULL);
 //     docente+alumno Norte en "Sede Norte"; docente+alumno Sur en "Sede Sur".
 //
-// Credenciales (todas password "12345678"):
+// Usuarios (los crea la API de identidad con su propia contraseña; el seed ya
+// no lleva bcrypt):
 //
 //	admin-multi@multi.edugo.local        school_admin — director (alcance colegio, 2 unidades)
 //	docente-norte@multi.edugo.local      teacher      — Sede Norte
@@ -58,13 +61,12 @@ import (
 )
 
 const (
-	// Credenciales de los usuarios sembrados.
+	// Emails de los usuarios que el escenario necesita (Users()).
 	AdminEmail        = "admin-multi@multi.edugo.local"
 	TeacherNorteEmail = "docente-norte@multi.edugo.local"
 	TeacherSurEmail   = "docente-sur@multi.edugo.local"
 	StudentNorteEmail = "alumno-norte@multi.edugo.local"
 	StudentSurEmail   = "alumno-sur@multi.edugo.local"
-	Password          = "12345678"
 
 	// Rango UUID 68000000-...: reservado para el playground multi_unidad.
 	schoolID    = "68000000-0000-0000-0000-000000000001"
@@ -81,12 +83,6 @@ const (
 	// es por (school_id, academic_unit_id), así que cada sede lleva el suyo.
 	periodNorteID = "68000000-0000-0000-0000-000000000008"
 	periodSurID   = "68000000-0000-0000-0000-000000000009"
-
-	adminUserID        = "68000000-0000-0000-0000-000000000010"
-	teacherNorteUserID = "68000000-0000-0000-0000-000000000011"
-	teacherSurUserID   = "68000000-0000-0000-0000-000000000012"
-	studentNorteUserID = "68000000-0000-0000-0000-000000000013"
-	studentSurUserID   = "68000000-0000-0000-0000-000000000014"
 
 	adminMembID        = "68000000-0000-0000-0000-000000000020"
 	teacherNorteMembID = "68000000-0000-0000-0000-000000000021"
@@ -105,11 +101,27 @@ const (
 	academicYear = 2026
 )
 
+// Users lista los usuarios que el escenario necesita en auth.users (los crea
+// la API de identidad; el escenario solo los resuelve por email).
+func Users() []common.ScenarioUser {
+	return []common.ScenarioUser{
+		{Email: AdminEmail, FirstName: "Admin", LastName: "Multi"},
+		{Email: TeacherNorteEmail, FirstName: "Docente", LastName: "Norte"},
+		{Email: TeacherSurEmail, FirstName: "Docente", LastName: "Sur"},
+		{Email: StudentNorteEmail, FirstName: "Alumno", LastName: "Norte"},
+		{Email: StudentSurEmail, FirstName: "Alumno", LastName: "Sur"},
+	}
+}
+
 // Apply siembra el playground multi_unidad. Asume que L0..L4 corrieron (los
 // roles school_admin/teacher/student y el esquema academic completo ya
-// existen). Orden: school → units → subjects → period → users → user_roles →
+// existen) y que users trae el id de cada usuario de Users(). Orden: school →
+// units → subjects → period → user_roles →
 // memberships. Idempotente.
-func Apply(tx *gorm.DB) error {
+func Apply(tx *gorm.DB, users common.UserIDs) error {
+	if err := users.Require(Users()); err != nil {
+		return fmt.Errorf("playground_v2/multi_unidad: %w", err)
+	}
 	sid := common.MustParseUUID(schoolID)
 	unitNorte := common.MustParseUUID(unitNorteID)
 	unitSur := common.MustParseUUID(unitSurID)
@@ -175,27 +187,11 @@ func Apply(tx *gorm.DB) error {
 	}
 
 	// Usuarios.
-	adminUser := common.MustParseUUID(adminUserID)
-	teacherNorteUser := common.MustParseUUID(teacherNorteUserID)
-	teacherSurUser := common.MustParseUUID(teacherSurUserID)
-	studentNorteUser := common.MustParseUUID(studentNorteUserID)
-	studentSurUser := common.MustParseUUID(studentSurUserID)
-
-	if err := common.SeedUser(tx, common.UserSpec{ID: adminUser, Email: AdminEmail, Password: Password, FirstName: "Admin", LastName: "Multi"}); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: admin_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: teacherNorteUser, Email: TeacherNorteEmail, Password: Password, FirstName: "Docente", LastName: "Norte"}); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: teacher_norte_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: teacherSurUser, Email: TeacherSurEmail, Password: Password, FirstName: "Docente", LastName: "Sur"}); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: teacher_sur_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: studentNorteUser, Email: StudentNorteEmail, Password: Password, FirstName: "Alumno", LastName: "Norte"}); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: student_norte_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: studentSurUser, Email: StudentSurEmail, Password: Password, FirstName: "Alumno", LastName: "Sur"}); err != nil {
-		return fmt.Errorf("playground_v2/multi_unidad: student_sur_user: %w", err)
-	}
+	adminUser := users[AdminEmail]
+	teacherNorteUser := users[TeacherNorteEmail]
+	teacherSurUser := users[TeacherSurEmail]
+	studentNorteUser := users[StudentNorteEmail]
+	studentSurUser := users[StudentSurEmail]
 
 	// Roles L4 para contexto de login (no se crean roles nuevos).
 	if err := common.SeedUserRole(tx, adminUser, common.MustParseUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID)); err != nil {

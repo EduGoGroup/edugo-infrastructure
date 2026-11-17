@@ -6,6 +6,34 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.29] - 2026-11-16
+
+Plan 053 Ola 5 (T5.1 y T5.2 opción a). `SchemaVersion` 3.108.0 → **3.109.0**.
+
+### Removed
+
+- **`auth.login_attempts`** (T5.1): no tenía lector ni escritor en ningún repo. Se borran el entity
+  `LoginAttempt`, su registro en el `AutoMigrate`, el índice `idx_login_attempts_rate_limit` y su
+  `TRUNCATE` en `playground_v2/base`. `post_gorm.sql` lleva `DROP TABLE IF EXISTS auth.login_attempts`
+  (AutoMigrate no borra tablas).
+
+### Changed
+
+- **Escenarios on-top de `playground_v2`** (T5.2): `onboarding`, `n1_inscripcion`, `n17_secciones`,
+  `n4_evaluacion`, `multi_unidad` y `n0n1_escuelas` dejan de crear usuarios. Contrato nuevo en
+  `playground_v2`: `ScenarioUser`, `OnTopScenarios()`, `ScenarioUsers(name)` y `ApplyOnTop(gdb, name)`,
+  que resuelve los usuarios por email (error con todos los ausentes, sin escribir) y encola su
+  sincronización en `auth.identity_sync_outbox`, en una transacción. `Apply(name)` de un on-top delega
+  en `ApplyOnTop`; `all` solo expande a los autónomos (`base`, `mp10_material`, `f6_representante`).
+  `SeedVersion` de `playground_v2` v0.2.0 → v0.3.0.
+
+### Notas de despliegue
+
+- `post_gorm.sql` cambia, así que `ComputeFilesHash()` **cambia**. Recrear la BD local.
+- El migrador no re-aplica `post_gorm.sql` sobre una BD con tablas (`NeedsForce`) y el fichero no es
+  re-aplicable entero, así que el `DROP` no llega solo a una BD ya migrada: la tabla desaparece al recrear
+  (`docker-recreate` / `cloud-recreate`) o ejecutando la sentencia a mano.
+
 ## [0.900.28] - 2026-11-16
 
 Plan 053 T3.7 (ADR 0040: escrituras hacia sistemas externos fuera de la transacción, outbox).

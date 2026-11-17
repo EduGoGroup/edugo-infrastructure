@@ -1124,7 +1124,25 @@ import (
 //     ComputeFilesHash() CAMBIA. Recrear BD para la tabla nueva; en Neon el
 //     CREATE TABLE es aditivo y llega en el paso de despliegue coordinado, no
 //     en esta tarea.
-const SchemaVersion = "3.108.0"
+//   - 3.109.0 (plan 053 Ola 5): (1) T5.1 — se retira auth.login_attempts, que
+//     no tenía lector ni escritor en ningún repo. Sale el entity
+//     (entities/login_attempt.go), su línea del AutoMigrate (bloque Auth de
+//     gorm_migrator.go), el índice parcial idx_login_attempts_rate_limit de
+//     post_gorm.sql y su TRUNCATE en playground_v2/base. Como AutoMigrate no
+//     borra tablas, post_gorm.sql (bloque -- auth) lleva un
+//     DROP TABLE IF EXISTS auth.login_attempts explícito → ComputeFilesHash()
+//     CAMBIA. Ojo: el migrador no re-aplica post_gorm.sql sobre una BD con
+//     tablas (NeedsForce) y el fichero no es re-aplicable entero, así que el
+//     DROP solo actúa en una BD que se recrea (donde la tabla ya no nace) o si
+//     alguien ejecuta la sentencia a mano; en Neon la tabla desaparece al
+//     recrear (cloud-recreate). (2) T5.2 opción (a) — los 6 escenarios de playground_v2 con
+//     usuarios (onboarding, n1_inscripcion, n17_secciones, n4_evaluacion,
+//     multi_unidad, n0n1_escuelas) pasan a on-top: dejan de insertar en
+//     auth.users (41 usuarios @edugo.local con UUID literal y bcrypt), los
+//     resuelven por email y playground_v2.ApplyOnTop encola su sincronización
+//     en auth.identity_sync_outbox. "all" ya no los incluye. playground_v2
+//     SeedVersion v0.2.0 → v0.3.0 (no entra en el hash).
+const SchemaVersion = "3.109.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).
