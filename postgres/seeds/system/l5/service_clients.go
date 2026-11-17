@@ -13,7 +13,7 @@ const ScopeNotificationsDispatch = "notifications.dispatch"
 
 // devServiceClientSecretHash es bcrypt(DefaultCost) de "change-me-dev-only"
 // (valor en push-secrets.env / SERVICE_CLIENT_SECRET; nunca persiste en claro).
-// Método: bcrypt vía golang.org/x/crypto/bcrypt (mismo algoritmo que auth.users.password_hash).
+// Método: bcrypt vía golang.org/x/crypto/bcrypt.
 // Precomputado para determinismo del seed; en runtime la validación usa bcrypt.CompareHashAndPassword.
 const devServiceClientSecretHash = "$2a$10$64yROwHnbokxE7wrWGCzzeMYfierzsRq53iZVI7l.qbSe74gf/C7K"
 

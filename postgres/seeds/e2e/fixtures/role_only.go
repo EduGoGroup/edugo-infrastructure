@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -63,8 +62,9 @@ type RoleOnly struct {
 	// "school_admin"). Se valida contra productionRoleIDs en Apply.
 	RoleCode string
 
-	// Password en claro para el usuario creado. Se hashea con bcrypt.
-	// Si está vacío se usa el default "E2EUser2026!".
+	// Password en claro que se exporta en fixtures-constants.json. Si está
+	// vacío se usa el default "E2EUser2026!". Ya no se persiste: el login
+	// lo hace identity-core (plan 053 T6.2).
 	Password string
 }
 
@@ -118,11 +118,6 @@ func (f *RoleOnly) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	schoolCode := framework.MakeCode(ctx, "SCHOOL", "01")
 	userEmail := framework.MakeEmail(ctx, f.RoleCode, "role_only")
 
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("role_only: bcrypt: %w", err)
-	}
-
 	school := entities.School{
 		ID:               uuid.MustParse(schoolID),
 		Name:             "RoleOnly Test School",
@@ -147,12 +142,11 @@ func (f *RoleOnly) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error {
 	}
 
 	user := entities.User{
-		ID:           uuid.MustParse(userID),
-		Email:        userEmail,
-		PasswordHash: string(hashed),
-		FirstName:    "E2E",
-		LastName:     "RoleOnly",
-		IsActive:     true,
+		ID:        uuid.MustParse(userID),
+		Email:     userEmail,
+		FirstName: "E2E",
+		LastName:  "RoleOnly",
+		IsActive:  true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},

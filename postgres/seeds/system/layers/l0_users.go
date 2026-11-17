@@ -6,7 +6,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -14,13 +13,9 @@ import (
 // applyL0Users siembra el usuario super_admin@edugo.system de L0 con
 // su ligadura al rol super_admin. Idempotente por id.
 //
-// SEGURIDAD: el password L0_SUPER_ADMIN_PASSWORD es constante de
-// bootstrapping. Rotar antes del primer login productivo en cloud.
-//
-// NOTA: bcrypt genera un salt aleatorio por invocación, por lo que el
-// hash es no-determinístico. La idempotencia se garantiza vía
-// OnConflict DoNothing por columna `id`: si el usuario ya existe no
-// se reescribe el hash existente.
+// Sin credencial (plan 053 T6.2): auth.users ya no guarda password_hash; el
+// login lo hace identity-core. La idempotencia se garantiza vía OnConflict
+// DoNothing por columna `id`: si el usuario ya existe no se reescribe.
 func applyL0Users(tx *gorm.DB) error {
 	if err := upsertL0User(tx); err != nil {
 		return err
@@ -36,17 +31,12 @@ func upsertL0User(tx *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("upsertL0User: parse id: %w", err)
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(L0_SUPER_ADMIN_PASSWORD), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("upsertL0User: bcrypt: %w", err)
-	}
 	user := entities.User{
-		ID:           id,
-		Email:        L0_SUPER_ADMIN_EMAIL,
-		PasswordHash: string(hash),
-		FirstName:    "Super",
-		LastName:     "Admin",
-		IsActive:     true,
+		ID:        id,
+		Email:     L0_SUPER_ADMIN_EMAIL,
+		FirstName: "Super",
+		LastName:  "Admin",
+		IsActive:  true,
 	}
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

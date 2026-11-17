@@ -74,7 +74,7 @@ Procesos cubiertos por esos seeds:
 
 El directorio `postgres/entities/` contiene 27 structs, entre ellos:
 
-- autenticacion: `User`, `RefreshToken`
+- autenticacion: `User` (sin credenciales; plan 053 T6.2)
 - IAM: `Resource`, `Role`, `Permission`, `RolePermission`, `UserRole`
 - academico: `School`, `AcademicUnit`, `Membership`, `Subject`, `GuardianRelation`, `ConceptType`, `ConceptDefinition`, `SchoolConcept`, `Unit`
 - contenido: `Material`, `MaterialVersion`, `Progress`
