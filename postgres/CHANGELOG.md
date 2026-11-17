@@ -6,6 +6,38 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+Se publicará como `postgres/v0.900.30`. Plan 053 T6.2, Ola D (fin del login propio y del HS256 de
+usuario; OK del dueño del 2026-11-17). `SchemaVersion` 3.109.0 → **3.110.0**.
+
+### Removed
+
+- **`auth.refresh_tokens`**: su único escritor era la rama HS256 de `switch-context` de identity, que la
+  Ola B retiró. Se borran el entity `RefreshToken` (`entities/refresh_token.go`), su registro en el
+  `AutoMigrate`, el índice parcial `idx_refresh_tokens_revoked_at` y su `TRUNCATE` en
+  `playground_v2/base`. `post_gorm.sql` lleva `DROP TABLE IF EXISTS auth.refresh_tokens;`.
+- **`auth.users.password_hash` y `auth.users.token_version`**: el login lo hace identity-core. Salen los
+  campos públicos `entities.User.PasswordHash` y `entities.User.TokenVersion`. `post_gorm.sql` lleva
+  `ALTER TABLE auth.users DROP COLUMN IF EXISTS password_hash;` y lo mismo para `token_version`.
+- **Seeds sin credencial**, con los mismos usuarios, UUID y datos: `playground_v2/base` deja de sembrar
+  `password_hash`; `common.UserSpec` pierde el campo `Password` y `common.BcryptHash` desaparece (solo
+  alimentaban el hash); `fixtures.GuardianRelation` pierde `Password` (solo alimentaba el hash); L0 y los
+  fixtures e2e dejan de hashear. Se quedan, porque los exporta `fixtures-constants.json`,
+  `layers.L0_SUPER_ADMIN_PASSWORD` y el campo `Password` de `RoleOnly` y `GlobalUserNoMembership`.
+  `L0_SEED_VERSION` 1.5.1 → 1.5.2; `SeedVersion` de `playground_v2` v0.3.0 → v0.4.0.
+- `golang.org/x/crypto` pasa a dependencia indirecta.
+
+### Notas de despliegue
+
+- `post_gorm.sql` y `L0_SEED_VERSION` cambian, así que `ExpectedContentHash()` **cambia**. Recrear la BD
+  local.
+- Los `DROP` son idempotentes, pero, como en 0.900.29, no llegan solos a una BD ya migrada: el migrador
+  responde `NeedsForce` y `post_gorm.sql` no es re-aplicable entero.
+- En Neon, por el camino aditivo y **en este orden**, porque `password_hash` es `NOT NULL` sin default y
+  el código de `main` aún la escribe: (1) `ALTER TABLE auth.users ALTER COLUMN password_hash DROP NOT
+  NULL;`, (2) desplegar el código nuevo, (3) los tres `DROP`.
+- Los consumidores que construyen `entities.User` con `PasswordHash`, o que insertan `password_hash` en
+  SQL crudo, dejan de compilar o fallan al subir a esta versión.
+
 ## [0.900.29] - 2026-11-16
 
 Plan 053 Ola 5 (T5.1 y T5.2 opción a). `SchemaVersion` 3.108.0 → **3.109.0**.

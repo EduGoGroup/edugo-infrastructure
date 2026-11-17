@@ -27,8 +27,7 @@ const (
 	// grades/attendance/schedules repuntadas al id sobreviviente.
 	// v5: los academic_periods ganan academic_unit_id (período atado a la
 	// unidad raíz de cada colegio); el activo es exclusivo por (school, unit).
-	SeedVersion         = "development-gorm-v5"
-	defaultPasswordHash = "$2a$10$w9EyJdpR0T0leuTr9rso4O5xnOPdnVmVnkowe3MRJPEr94sRytzau"
+	SeedVersion = "development-gorm-v5"
 )
 
 func Apply(gdb *gorm.DB) error {
@@ -173,7 +172,6 @@ func truncateDevelopmentData(tx *gorm.DB) error {
 		"academic.guardian_relations",
 		"academic.school_concepts",
 		"ui_config.screen_user_preferences",
-		"auth.refresh_tokens",
 		"academic.schools",
 	}
 	for _, table := range required {
@@ -326,19 +324,19 @@ func seedAcademicUnits(tx *gorm.DB) error {
 
 func seedUsers(tx *gorm.DB) error {
 	rows := []map[string]any{
-		{"id": mustUUID("00000000-0000-0000-0000-000000000001"), "email": "super@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Santiago", "last_name": "Ramirez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000002"), "email": "admin.sanignacio@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Carmen", "last_name": "Valdes", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000004"), "email": "coord.academico@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Lucia", "last_name": "Fernandez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000005"), "email": "prof.martinez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Maria", "last_name": "Martinez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000006"), "email": "prof.gonzalez@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Pedro", "last_name": "Gonzalez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000008"), "email": "est.carlos@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Carlos", "last_name": "Mendoza", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000001"), "email": "super@edugo.test", "first_name": "Santiago", "last_name": "Ramirez", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000002"), "email": "admin.sanignacio@edugo.test", "first_name": "Carmen", "last_name": "Valdes", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000004"), "email": "coord.academico@edugo.test", "first_name": "Lucia", "last_name": "Fernandez", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000005"), "email": "prof.martinez@edugo.test", "first_name": "Maria", "last_name": "Martinez", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000006"), "email": "prof.gonzalez@edugo.test", "first_name": "Pedro", "last_name": "Gonzalez", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000008"), "email": "est.carlos@edugo.test", "first_name": "Carlos", "last_name": "Mendoza", "is_active": true},
 		// est.sofia (…0009): alumna de S1/5A, espejo de est.diego pero en la
 		// sección A (compañera de carlos). MP-09-base-logica la incluye; base la
 		// sembraba sin ella, plan 024 F1 la reconcilia para colgar un representante.
-		{"id": mustUUID("00000000-0000-0000-0000-000000000009"), "email": "est.sofia@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Sofia", "last_name": "Rojas", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000010"), "email": "est.diego@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Diego", "last_name": "Vargas", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000018"), "email": "asist.prof@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Andres", "last_name": "Gomez", "is_active": true},
-		{"id": mustUUID("00000000-0000-0000-0000-000000000021"), "email": "readonly@edugo.test", "password_hash": defaultPasswordHash, "first_name": "Test", "last_name": "ReadOnly", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000009"), "email": "est.sofia@edugo.test", "first_name": "Sofia", "last_name": "Rojas", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000010"), "email": "est.diego@edugo.test", "first_name": "Diego", "last_name": "Vargas", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000018"), "email": "asist.prof@edugo.test", "first_name": "Andres", "last_name": "Gomez", "is_active": true},
+		{"id": mustUUID("00000000-0000-0000-0000-000000000021"), "email": "readonly@edugo.test", "first_name": "Test", "last_name": "ReadOnly", "is_active": true},
 	}
 
 	return upsertMaps(
@@ -346,7 +344,7 @@ func seedUsers(tx *gorm.DB) error {
 		"auth.users",
 		rows,
 		[]string{"id"},
-		[]string{"email", "password_hash", "first_name", "last_name", "is_active"},
+		[]string{"email", "first_name", "last_name", "is_active"},
 		true,
 	)
 }
@@ -800,10 +798,10 @@ func seedGuardianTejido(tx *gorm.DB) error {
 		guardianB = "00000000-0000-0000-0000-000000000012" // Miguel Castro
 	)
 
-	// 1) Usuarios representante (password 12345678 vía helper común con bcrypt).
+	// 1) Usuarios representante (sin credencial: el login lo hace identity-core).
 	guardians := []common.UserSpec{
-		{ID: mustUUID(guardianA), Email: "tutor.mendoza@edugo.test", Password: "12345678", FirstName: "Laura", LastName: "Mendoza"},
-		{ID: mustUUID(guardianB), Email: "tutor.castro@edugo.test", Password: "12345678", FirstName: "Miguel", LastName: "Castro"},
+		{ID: mustUUID(guardianA), Email: "tutor.mendoza@edugo.test", FirstName: "Laura", LastName: "Mendoza"},
+		{ID: mustUUID(guardianB), Email: "tutor.castro@edugo.test", FirstName: "Miguel", LastName: "Castro"},
 	}
 	for _, spec := range guardians {
 		if err := common.SeedUser(tx, spec); err != nil {

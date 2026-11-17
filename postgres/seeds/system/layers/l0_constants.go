@@ -37,7 +37,11 @@ package layers
 //   - 1.5.1 (2026-06-19, bug 0069): el rol super_admin y los 4 permisos
 //     announcements del contrato L0 se siembran con IsSystem=true (apply +
 //     accessor espejo). Nueva columna is_system en iam.roles/permissions.
-const L0_SEED_VERSION = "1.5.1"
+//   - 1.5.2 (2026-11-17, plan 053 T6.2): el usuario super_admin@edugo.system
+//     se siembra sin password_hash (la columna se retira; el login lo hace
+//     identity-core). L0_SUPER_ADMIN_PASSWORD se queda: lo exporta
+//     fixtures-constants.json.
+const L0_SEED_VERSION = "1.5.2"
 
 // L0_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

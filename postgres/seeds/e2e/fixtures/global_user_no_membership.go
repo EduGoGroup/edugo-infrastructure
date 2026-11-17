@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -23,7 +22,7 @@ import (
 //
 // Inserta:
 //
-//   - 1 fila en `auth.users` (email global-super@e2e.test, password hash).
+//   - 1 fila en `auth.users` (email global-super@e2e.test, sin credencial).
 //   - 1 fila en `iam.user_roles` con role_id = L0 super_admin UUID y
 //     school_id = NULL, academic_unit_id = NULL (rol GLOBAL).
 //   - NINGUNA fila en `academic.memberships` — clave del test.
@@ -33,9 +32,9 @@ import (
 //
 // Idempotente vía OnConflict DoNothing por id en cada inserción.
 type GlobalUserNoMembership struct {
-	// Password en claro para el usuario creado. Si está vacío se usa el
-	// default "GlobalSuper2026!". Se hashea con bcrypt antes de
-	// persistir.
+	// Password en claro que se exporta en fixtures-constants.json. Si está
+	// vacío se usa el default "GlobalSuper2026!". Ya no se persiste: el
+	// login lo hace identity-core (plan 053 T6.2).
 	Password string
 }
 
@@ -79,19 +78,13 @@ func (f *GlobalUserNoMembership) Apply(tx *gorm.DB, ctx *framework.ApplyContext)
 
 	userEmail := framework.MakeEmail(ctx, "global-super", "no_membership")
 
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("global_user_no_membership: bcrypt: %w", err)
-	}
-
 	userUUID := uuid.MustParse(userID)
 	user := entities.User{
-		ID:           userUUID,
-		Email:        userEmail,
-		PasswordHash: string(hashed),
-		FirstName:    "Global",
-		LastName:     "SuperAdmin",
-		IsActive:     true,
+		ID:        userUUID,
+		Email:     userEmail,
+		FirstName: "Global",
+		LastName:  "SuperAdmin",
+		IsActive:  true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},
