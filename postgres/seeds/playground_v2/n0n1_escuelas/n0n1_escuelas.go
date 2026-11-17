@@ -12,7 +12,9 @@
 // Total 32 subject_offerings, todas SIN docente asignado (teacher_membership_id
 // NULL) — la asignación docente↔sesión queda para ejercitarse en la app.
 //
-// Usuarios (password "12345678", emails @edugo.local en minúscula sin acentos):
+// Usuarios (emails @edugo.local en minúscula sin acentos). Escenario on-top
+// (plan 053 T5.2): NO crea filas en auth.users; los crea antes la API de
+// identidad (Users()) y aquí se resuelven por email:
 //   - 1 admin global (admin@edugo.local) con rol L0 super_admin (acceso "*") +
 //     membresía "admin" con alcance COLEGIO en las 3 escuelas.
 //   - 13 profesores con membresías "teacher" de alcance UNIDAD (17 membresías:
@@ -42,8 +44,10 @@ import (
 )
 
 const (
-	// Password compartido por todos los usuarios sembrados.
-	Password = "12345678"
+	// Emails de los usuarios que no son profesores (los profesores van en
+	// teacherSeeds).
+	AdminEmail       = "admin@edugo.local"
+	SolicitanteEmail = "carlos.estudiante@edugo.local"
 
 	// Rol L0 super_admin (reusado, NO se crea) para el admin global.
 	superAdminRoleID = "10000000-0000-0000-0000-000000000001"
@@ -80,10 +84,6 @@ const (
 	subjCasIID = "69000000-0000-0000-0000-000000000136" // UCV Castellano I
 	subjCsoUID = "69000000-0000-0000-0000-000000000137" // UCV Ciencia Sociales
 	subjGraID  = "69000000-0000-0000-0000-000000000138" // InglesLab Gramática
-
-	// Usuarios.
-	adminUserID       = "69000000-0000-0000-0000-000000001001"
-	solicitanteUserID = "69000000-0000-0000-0000-000000001020"
 
 	// Membresías del admin (alcance colegio en cada escuela).
 	adminMembCristoReyID = "69000000-0000-0000-0000-000000001311"
@@ -178,65 +178,66 @@ var offeringGroups = []offeringGroup{
 	{schoolID: schoolInglesLabID, unitID: unitINGLNBID, periodID: periodInglesLabID, subjectIDs: []string{subjGraID}, sections: []string{"Mañana", "Tarde"}},
 }
 
-// teacherSeed describe un profesor: id, nombre, apellido y email derivado.
+// teacherSeed describe un profesor: nombre, apellido y email. El id lo pone la
+// API de identidad al crearlo; aquí se resuelve por email.
 type teacherSeed struct {
-	id, first, last, email string
+	first, last, email string
 }
 
 var teacherSeeds = []teacherSeed{
-	{id: "69000000-0000-0000-0000-000000001011", first: "Pedro", last: "Perez", email: "pedro.perez@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001012", first: "Juan", last: "Perez", email: "juan.perez@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001013", first: "Pilar", last: "Irragory", email: "pilar.irragory@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001014", first: "Juan", last: "Soto", email: "juan.soto@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001015", first: "Many", last: "Ramirez", email: "many.ramirez@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001016", first: "Francisco", last: "I", email: "francisco.i@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001017", first: "Wladimir", last: "Guerrero", email: "wladimir.guerrero@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001018", first: "Luis", last: "Sojo", email: "luis.sojo@edugo.local"},
-	{id: "69000000-0000-0000-0000-000000001019", first: "Juan", last: "23", email: "juan.23@edugo.local"},
-	{id: "69000000-0000-0000-0000-00000000101a", first: "Felipe", last: "Lira", email: "felipe.lira@edugo.local"},
-	{id: "69000000-0000-0000-0000-00000000101b", first: "Gustavo", last: "Dudamel", email: "gustavo.dudamel@edugo.local"},
-	{id: "69000000-0000-0000-0000-00000000101c", first: "Luis", last: "Silva", email: "luis.silva@edugo.local"},
-	{id: "69000000-0000-0000-0000-00000000101d", first: "Sheldon", last: "Cooper", email: "sheldon.cooper@edugo.local"},
+	{first: "Pedro", last: "Perez", email: "pedro.perez@edugo.local"},
+	{first: "Juan", last: "Perez", email: "juan.perez@edugo.local"},
+	{first: "Pilar", last: "Irragory", email: "pilar.irragory@edugo.local"},
+	{first: "Juan", last: "Soto", email: "juan.soto@edugo.local"},
+	{first: "Many", last: "Ramirez", email: "many.ramirez@edugo.local"},
+	{first: "Francisco", last: "I", email: "francisco.i@edugo.local"},
+	{first: "Wladimir", last: "Guerrero", email: "wladimir.guerrero@edugo.local"},
+	{first: "Luis", last: "Sojo", email: "luis.sojo@edugo.local"},
+	{first: "Juan", last: "23", email: "juan.23@edugo.local"},
+	{first: "Felipe", last: "Lira", email: "felipe.lira@edugo.local"},
+	{first: "Gustavo", last: "Dudamel", email: "gustavo.dudamel@edugo.local"},
+	{first: "Luis", last: "Silva", email: "luis.silva@edugo.local"},
+	{first: "Sheldon", last: "Cooper", email: "sheldon.cooper@edugo.local"},
 }
 
 // teacherMembershipSeed describe una membresía "teacher" (alcance UNIDAD).
 // Cada profesor puede tener 1 o 2 membresías (enseña en 1 o 2 unidades).
 type teacherMembershipSeed struct {
-	id, teacherUserID, schoolID, unitID string
+	id, teacherEmail, schoolID, unitID string
 }
 
 // teacherMembershipSeeds: 17 membresías teacher, ids 69..1321..69..1331.
 var teacherMembershipSeeds = []teacherMembershipSeed{
 	// Pedro Perez (1011) → CR Primer Grado + UCV Primer Semestre.
-	{id: "69000000-0000-0000-0000-000000001321", teacherUserID: "69000000-0000-0000-0000-000000001011", schoolID: schoolCristoReyID, unitID: unitCR1ID},
-	{id: "69000000-0000-0000-0000-000000001322", teacherUserID: "69000000-0000-0000-0000-000000001011", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-000000001321", teacherEmail: "pedro.perez@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR1ID},
+	{id: "69000000-0000-0000-0000-000000001322", teacherEmail: "pedro.perez@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
 	// Juan Perez (1012) → CR Primer Grado + UCV Primer Semestre.
-	{id: "69000000-0000-0000-0000-000000001323", teacherUserID: "69000000-0000-0000-0000-000000001012", schoolID: schoolCristoReyID, unitID: unitCR1ID},
-	{id: "69000000-0000-0000-0000-000000001324", teacherUserID: "69000000-0000-0000-0000-000000001012", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-000000001323", teacherEmail: "juan.perez@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR1ID},
+	{id: "69000000-0000-0000-0000-000000001324", teacherEmail: "juan.perez@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
 	// Pilar Irragory (1013) → CR Primer Grado.
-	{id: "69000000-0000-0000-0000-000000001325", teacherUserID: "69000000-0000-0000-0000-000000001013", schoolID: schoolCristoReyID, unitID: unitCR1ID},
+	{id: "69000000-0000-0000-0000-000000001325", teacherEmail: "pilar.irragory@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR1ID},
 	// Juan Soto (1014) → CR Segundo Grado.
-	{id: "69000000-0000-0000-0000-000000001326", teacherUserID: "69000000-0000-0000-0000-000000001014", schoolID: schoolCristoReyID, unitID: unitCR2ID},
+	{id: "69000000-0000-0000-0000-000000001326", teacherEmail: "juan.soto@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR2ID},
 	// Many Ramirez (1015) → CR Segundo Grado.
-	{id: "69000000-0000-0000-0000-000000001327", teacherUserID: "69000000-0000-0000-0000-000000001015", schoolID: schoolCristoReyID, unitID: unitCR2ID},
+	{id: "69000000-0000-0000-0000-000000001327", teacherEmail: "many.ramirez@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR2ID},
 	// Francisco I (1016) → CR Segundo Grado.
-	{id: "69000000-0000-0000-0000-000000001328", teacherUserID: "69000000-0000-0000-0000-000000001016", schoolID: schoolCristoReyID, unitID: unitCR2ID},
+	{id: "69000000-0000-0000-0000-000000001328", teacherEmail: "francisco.i@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR2ID},
 	// Wladimir Guerrero (1017) → CR Tercer Grado.
-	{id: "69000000-0000-0000-0000-000000001329", teacherUserID: "69000000-0000-0000-0000-000000001017", schoolID: schoolCristoReyID, unitID: unitCR3ID},
+	{id: "69000000-0000-0000-0000-000000001329", teacherEmail: "wladimir.guerrero@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR3ID},
 	// Luis Sojo (1018) → CR Tercer Grado.
-	{id: "69000000-0000-0000-0000-00000000132a", teacherUserID: "69000000-0000-0000-0000-000000001018", schoolID: schoolCristoReyID, unitID: unitCR3ID},
+	{id: "69000000-0000-0000-0000-00000000132a", teacherEmail: "luis.sojo@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR3ID},
 	// Juan 23 (1019) → CR Tercer Grado.
-	{id: "69000000-0000-0000-0000-00000000132b", teacherUserID: "69000000-0000-0000-0000-000000001019", schoolID: schoolCristoReyID, unitID: unitCR3ID},
+	{id: "69000000-0000-0000-0000-00000000132b", teacherEmail: "juan.23@edugo.local", schoolID: schoolCristoReyID, unitID: unitCR3ID},
 	// Felipe Lira (101a) → UCV Primer Semestre + InglesLab Nivel Básico.
-	{id: "69000000-0000-0000-0000-00000000132c", teacherUserID: "69000000-0000-0000-0000-00000000101a", schoolID: schoolUCVID, unitID: unitUCVS1ID},
-	{id: "69000000-0000-0000-0000-00000000132d", teacherUserID: "69000000-0000-0000-0000-00000000101a", schoolID: schoolInglesLabID, unitID: unitINGLNBID},
+	{id: "69000000-0000-0000-0000-00000000132c", teacherEmail: "felipe.lira@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-00000000132d", teacherEmail: "felipe.lira@edugo.local", schoolID: schoolInglesLabID, unitID: unitINGLNBID},
 	// Gustavo Dudamel (101b) → UCV Primer Semestre + InglesLab Nivel Básico.
-	{id: "69000000-0000-0000-0000-00000000132e", teacherUserID: "69000000-0000-0000-0000-00000000101b", schoolID: schoolUCVID, unitID: unitUCVS1ID},
-	{id: "69000000-0000-0000-0000-00000000132f", teacherUserID: "69000000-0000-0000-0000-00000000101b", schoolID: schoolInglesLabID, unitID: unitINGLNBID},
+	{id: "69000000-0000-0000-0000-00000000132e", teacherEmail: "gustavo.dudamel@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-00000000132f", teacherEmail: "gustavo.dudamel@edugo.local", schoolID: schoolInglesLabID, unitID: unitINGLNBID},
 	// Luis Silva (101c) → UCV Primer Semestre.
-	{id: "69000000-0000-0000-0000-000000001330", teacherUserID: "69000000-0000-0000-0000-00000000101c", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-000000001330", teacherEmail: "luis.silva@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
 	// Sheldon Cooper (101d) → UCV Primer Semestre.
-	{id: "69000000-0000-0000-0000-000000001331", teacherUserID: "69000000-0000-0000-0000-00000000101d", schoolID: schoolUCVID, unitID: unitUCVS1ID},
+	{id: "69000000-0000-0000-0000-000000001331", teacherEmail: "sheldon.cooper@edugo.local", schoolID: schoolUCVID, unitID: unitUCVS1ID},
 }
 
 // adminMembershipSeed describe una membresía "admin" con alcance COLEGIO.
@@ -250,12 +251,27 @@ var adminMembershipSeeds = []adminMembershipSeed{
 	{id: adminMembInglesLabID, schoolID: schoolInglesLabID},
 }
 
+// Users lista los 15 usuarios que el escenario necesita en auth.users: el
+// admin global, los 13 profesores y el solicitante N0.
+func Users() []common.ScenarioUser {
+	out := make([]common.ScenarioUser, 0, len(teacherSeeds)+2)
+	out = append(out, common.ScenarioUser{Email: AdminEmail, FirstName: "Admin", LastName: "Total"})
+	for _, t := range teacherSeeds {
+		out = append(out, common.ScenarioUser{Email: t.email, FirstName: t.first, LastName: t.last})
+	}
+	out = append(out, common.ScenarioUser{Email: SolicitanteEmail, FirstName: "Carlos", LastName: "Estudiante"})
+	return out
+}
+
 // Apply siembra el playground n0n1_escuelas. Asume que L0..L4 corrieron (rol
-// super_admin y concept_types primary_school/workshop ya existen). Orden:
-// concept_type university → schools → periods → units → subjects →
-// subject_offerings → users → user_role admin → memberships → join_request.
-// Idempotente.
-func Apply(tx *gorm.DB) error {
+// super_admin y concept_types primary_school/workshop ya existen) y que users
+// trae el id de cada usuario de Users(). Orden: concept_type university →
+// schools → periods → units → subjects → subject_offerings → user_role admin →
+// memberships → join_request. Idempotente.
+func Apply(tx *gorm.DB, users common.UserIDs) error {
+	if err := users.Require(Users()); err != nil {
+		return fmt.Errorf("playground_v2/n0n1_escuelas: %w", err)
+	}
 	if err := upsertConceptType(tx); err != nil {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: concept_type: %w", err)
 	}
@@ -283,21 +299,8 @@ func Apply(tx *gorm.DB) error {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: offerings: %w", err)
 	}
 
-	// Admin global.
-	adminUser := common.MustParseUUID(adminUserID)
-	if err := common.SeedUser(tx, common.UserSpec{ID: adminUser, Email: "admin@edugo.local", Password: Password, FirstName: "Admin", LastName: "Total"}); err != nil {
-		return fmt.Errorf("playground_v2/n0n1_escuelas: admin_user: %w", err)
-	}
-	// Profesores.
-	for _, t := range teacherSeeds {
-		if err := common.SeedUser(tx, common.UserSpec{ID: common.MustParseUUID(t.id), Email: t.email, Password: Password, FirstName: t.first, LastName: t.last}); err != nil {
-			return fmt.Errorf("playground_v2/n0n1_escuelas: teacher_user %s: %w", t.email, err)
-		}
-	}
-	// Solicitante N0.
-	if err := common.SeedUser(tx, common.UserSpec{ID: common.MustParseUUID(solicitanteUserID), Email: "carlos.estudiante@edugo.local", Password: Password, FirstName: "Carlos", LastName: "Estudiante"}); err != nil {
-		return fmt.Errorf("playground_v2/n0n1_escuelas: solicitante_user: %w", err)
-	}
+	// Usuarios: los crea la API de identidad; aquí solo se usan sus ids.
+	adminUser := users[AdminEmail]
 
 	// UserRole admin → super_admin (acceso global "*" vía BeforeSave del UserRole).
 	// El id se deriva SHA1(userID:roleID) en el común; la constante explícita
@@ -319,14 +322,14 @@ func Apply(tx *gorm.DB) error {
 	for _, m := range teacherMembershipSeeds {
 		unitID := common.MustParseUUID(m.unitID)
 		if err := common.SeedMembership(tx, common.MembershipSpec{
-			ID: common.MustParseUUID(m.id), UserID: common.MustParseUUID(m.teacherUserID), SchoolID: common.MustParseUUID(m.schoolID), AcademicUnitID: &unitID, Role: "teacher",
+			ID: common.MustParseUUID(m.id), UserID: users[m.teacherEmail], SchoolID: common.MustParseUUID(m.schoolID), AcademicUnitID: &unitID, Role: "teacher",
 		}); err != nil {
 			return fmt.Errorf("playground_v2/n0n1_escuelas: teacher_membership %s: %w", m.id, err)
 		}
 	}
 
 	// School join request pendiente (N0): Carlos → InglesLab / Nivel Básico.
-	if err := upsertJoinRequest(tx); err != nil {
+	if err := upsertJoinRequest(tx, users[SolicitanteEmail]); err != nil {
 		return fmt.Errorf("playground_v2/n0n1_escuelas: join_request: %w", err)
 	}
 
@@ -434,12 +437,8 @@ func upsertOfferings(tx *gorm.DB) error {
 
 // upsertJoinRequest crea la solicitud N0 PENDIENTE (sin firmas) del solicitante
 // Carlos a InglesLab / Nivel Básico, role "student". Idempotente por id.
-func upsertJoinRequest(tx *gorm.DB) error {
+func upsertJoinRequest(tx *gorm.DB, uid uuid.UUID) error {
 	id, err := uuid.Parse(joinRequestID)
-	if err != nil {
-		return err
-	}
-	uid, err := uuid.Parse(solicitanteUserID)
 	if err != nil {
 		return err
 	}

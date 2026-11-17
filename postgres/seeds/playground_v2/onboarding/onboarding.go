@@ -26,11 +26,13 @@
 // Lo que siembra:
 //  1. academic.schools          — 1 colegio "Onboarding".
 //  2. academic.academic_units   — 2 unidades (A y B) bajo ese colegio.
-//  3. auth.users                — 3 usuarios sembrados con password "12345678":
+//  3. auth.users                — NADA (plan 053 T5.2): el escenario es on-top.
+//     Sus 3 usuarios (Users()) los crea antes la API de identidad
+//     y aquí solo se resuelven por email:
 //     colegio-admin (school_admin),
 //     profesor-a    (teacher en unidad A),
 //     ya-miembro    (student en unidad A).
-//     El usuario NUEVO del flujo E2E NO se siembra:
+//     El usuario NUEVO del flujo E2E tampoco se siembra:
 //     se registra por signup en runtime.
 //  4. iam.user_roles            — assignments 1×1 a los roles L4.
 //  5. academic.memberships      — colegio-admin con academic_unit_id NULL
@@ -60,12 +62,11 @@ import (
 )
 
 const (
-	// Credenciales de los usuarios SEMBRADOS (el usuario nuevo del E2E se
-	// registra por signup en runtime, no aparece aquí).
+	// Emails de los usuarios que el escenario necesita (los crea la API; el
+	// usuario nuevo del E2E se registra por signup en runtime, no aparece aquí).
 	AdminEmail    = "colegio-admin@edugo.local"
 	ProfesorEmail = "profesor-a@edugo.local"
 	MiembroEmail  = "ya-miembro@edugo.local"
-	Password      = "12345678"
 
 	// Códigos de invitación (legibles, conocidos para el E2E).
 	CodeStudentA = "ONB-STUDENT-A" // unidad A, role=student (flujo usuario nuevo)
@@ -76,10 +77,6 @@ const (
 	schoolID = "64000000-0000-0000-0000-000000000001"
 	unitAID  = "64000000-0000-0000-0000-000000000002"
 	unitBID  = "64000000-0000-0000-0000-000000000003"
-
-	adminUserID    = "64000000-0000-0000-0000-000000000010"
-	profesorUserID = "64000000-0000-0000-0000-000000000011"
-	miembroUserID  = "64000000-0000-0000-0000-000000000012"
 
 	adminMembID    = "64000000-0000-0000-0000-000000000020"
 	profesorMembID = "64000000-0000-0000-0000-000000000021"
@@ -99,11 +96,23 @@ const (
 	academicYear = 2026
 )
 
+// Users lista los usuarios que el escenario necesita en auth.users.
+func Users() []common.ScenarioUser {
+	return []common.ScenarioUser{
+		{Email: AdminEmail, FirstName: "Admin", LastName: "Colegio"},
+		{Email: ProfesorEmail, FirstName: "Profesor", LastName: "Unidad A"},
+		{Email: MiembroEmail, FirstName: "Ya", LastName: "Miembro"},
+	}
+}
+
 // Apply siembra el playground onboarding. Asume que L0..L4 corrieron (los
 // roles school_admin/teacher/student y los recursos/permisos de onboarding
-// ya existen). Orden: school → units → users → user_roles → memberships →
-// invitations. Idempotente.
-func Apply(tx *gorm.DB) error {
+// ya existen) y que users trae el id de cada usuario de Users(). Orden:
+// school → units → user_roles → memberships → invitations. Idempotente.
+func Apply(tx *gorm.DB, users common.UserIDs) error {
+	if err := users.Require(Users()); err != nil {
+		return fmt.Errorf("playground_v2/onboarding: %w", err)
+	}
 	sid := common.MustParseUUID(schoolID)
 	unitA := common.MustParseUUID(unitAID)
 	unitB := common.MustParseUUID(unitBID)
@@ -124,19 +133,9 @@ func Apply(tx *gorm.DB) error {
 		return fmt.Errorf("playground_v2/onboarding: unit_b: %w", err)
 	}
 
-	adminUser := common.MustParseUUID(adminUserID)
-	profesorUser := common.MustParseUUID(profesorUserID)
-	miembroUser := common.MustParseUUID(miembroUserID)
-
-	if err := common.SeedUser(tx, common.UserSpec{ID: adminUser, Email: AdminEmail, Password: Password, FirstName: "Admin", LastName: "Colegio"}); err != nil {
-		return fmt.Errorf("playground_v2/onboarding: admin_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: profesorUser, Email: ProfesorEmail, Password: Password, FirstName: "Profesor", LastName: "Unidad A"}); err != nil {
-		return fmt.Errorf("playground_v2/onboarding: profesor_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: miembroUser, Email: MiembroEmail, Password: Password, FirstName: "Ya", LastName: "Miembro"}); err != nil {
-		return fmt.Errorf("playground_v2/onboarding: miembro_user: %w", err)
-	}
+	adminUser := users[AdminEmail]
+	profesorUser := users[ProfesorEmail]
+	miembroUser := users[MiembroEmail]
 
 	// Asignación de roles L4 (no se crean roles nuevos).
 	if err := common.SeedUserRole(tx, adminUser, common.MustParseUUID(l4.L4_ROLE_SCHOOL_ADMIN_ID)); err != nil {
