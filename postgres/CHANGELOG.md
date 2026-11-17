@@ -6,7 +6,9 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
-Se publicará como `postgres/v0.900.30`. Plan 053 T6.2, Ola D (fin del login propio y del HS256 de
+## [0.900.30] - 2026-11-17
+
+Plan 053 T6.2, Ola D (fin del login propio y del HS256 de
 usuario; OK del dueño del 2026-11-17). `SchemaVersion` 3.109.0 → **3.110.0**.
 
 ### Removed
