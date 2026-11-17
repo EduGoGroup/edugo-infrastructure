@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.29] - 2026-11-16
+
 Plan 053 Ola 5 (T5.1 y T5.2 opción a). `SchemaVersion` 3.108.0 → **3.109.0**.
 
 ### Removed
