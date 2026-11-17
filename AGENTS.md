@@ -46,7 +46,7 @@ Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar 
   las APIs y al worker.
 - **Un solo mundo de seeds (MP-09, 2026-06-14):** `system/` (L0–L4) = **contrato puro**; `playground_v2/`
   = **único mundo de datos**, con `base` como fixture **por defecto**. `make docker-recreate` sin flags →
-  `system` + `base` (2 escuelas, 9 usuarios `@edugo.test`, login `12345678`). Fixtures autónomos:
+  `system` + `base` (2 escuelas, 9 usuarios `@edugo.test`; entran por identity-core con `12345678`, sin credencial en infra). Fixtures autónomos:
   `make docker-playground-v2 P=<fixture>` (`base`, `mp10_material`, `f6_representante`; `all` = esos tres).
   Los 6 escenarios con usuarios son **on-top** (plan 053 T5.2): no crean usuarios; sus usuarios
   (`playground_v2.ScenarioUsers`) los crea la API y luego se llama a `playground_v2.ApplyOnTop`. `seeds/demo/` y `seeds/playground/` (v1) **fueron eliminados**.
