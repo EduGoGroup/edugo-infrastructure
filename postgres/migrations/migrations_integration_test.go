@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
@@ -76,6 +77,33 @@ func TestIntegration(t *testing.T) {
 		}
 		for _, idx := range expectedAuditIndexes {
 			assertIndexExists(t, db, "audit", "events", idx)
+		}
+	})
+
+	t.Run("LoginAttemptsRetired", func(t *testing.T) {
+		// Plan 053 T5.1: auth.login_attempts ya no se crea, y post_gorm.sql
+		// lleva el DROP explícito para una BD que la arrastre. post_gorm.sql
+		// entero no se puede re-aplicar sobre una BD ya migrada (no es del todo
+		// idempotente), así que se ejecuta solo su sentencia de DROP.
+		if tableExists(t, db, "auth", "login_attempts") {
+			t.Fatalf("auth.login_attempts no debería existir tras migrar")
+		}
+		const dropStmt = "DROP TABLE IF EXISTS auth.login_attempts;"
+		content, err := os.ReadFile("sql/post_gorm.sql")
+		if err != nil {
+			t.Fatalf("Error leyendo post_gorm.sql: %v", err)
+		}
+		if !strings.Contains(string(content), dropStmt) {
+			t.Fatalf("post_gorm.sql no contiene %q", dropStmt)
+		}
+		if _, err := db.Exec(`CREATE TABLE auth.login_attempts (id uuid PRIMARY KEY)`); err != nil {
+			t.Fatalf("Error creando la tabla vieja: %v", err)
+		}
+		if _, err := db.Exec(dropStmt); err != nil {
+			t.Fatalf("Error ejecutando el DROP: %v", err)
+		}
+		if tableExists(t, db, "auth", "login_attempts") {
+			t.Fatalf("el DROP no borró auth.login_attempts")
 		}
 	})
 
@@ -338,6 +366,13 @@ func assertSchemaExists(t *testing.T, db *sql.DB, schema string) {
 
 func assertTableExists(t *testing.T, db *sql.DB, schema, table string) {
 	t.Helper()
+	if !tableExists(t, db, schema, table) {
+		t.Fatalf("Tabla %s.%s no existe", schema, table)
+	}
+}
+
+func tableExists(t *testing.T, db *sql.DB, schema, table string) bool {
+	t.Helper()
 	var exists bool
 	err := db.QueryRow(`
 		SELECT EXISTS (
@@ -350,9 +385,7 @@ func assertTableExists(t *testing.T, db *sql.DB, schema, table string) {
 	if err != nil {
 		t.Fatalf("Error verificando tabla %s.%s: %v", schema, table, err)
 	}
-	if !exists {
-		t.Fatalf("Tabla %s.%s no existe", schema, table)
-	}
+	return exists
 }
 
 func assertIndexExists(t *testing.T, db *sql.DB, schema, table, index string) {

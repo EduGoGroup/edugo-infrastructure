@@ -22,8 +22,9 @@ e2e/                   — Framework Fase C de fixtures compositivas + scenarios
 ```
 
 > **MP-09 (2026-06-14):** se eliminaron `seeds/demo/` y `seeds/playground/` (v1). El default de
-> `docker-recreate`/`cloud-migrate` es ahora `system` + `playground_v2/base`. Para un dataset focalizado:
-> `make docker-playground-v2 P=<fixture>`.
+> `docker-recreate`/`cloud-migrate` es ahora `system` + `playground_v2/base`. Para un fixture autónomo:
+> `make docker-playground-v2 P=<fixture>`. Los escenarios on-top (plan 053 T5.2) no van por el migrador:
+> ver «Cómo ejecutar».
 
 ## Cómo ejecutar
 
@@ -33,8 +34,14 @@ cd /Users/jhoanmedina/source/EduGo/EduBack/edugo-dev-environment
 # Recrear Docker completa (contrato system + playground_v2/base, sin flags)
 make docker-recreate
 
-# Recrear con un fixture focalizado
-make docker-playground-v2 P=n4_evaluacion
+# Recrear con un fixture autónomo (base, mp10_material, f6_representante)
+make docker-playground-v2 P=mp10_material
+
+# Los escenarios on-top (n4_evaluacion, onboarding, n1_inscripcion, n17_secciones,
+# multi_unidad, n0n1_escuelas) NO crean usuarios desde el plan 053 T5.2: van encima
+# de base, sus usuarios (playground_v2.ScenarioUsers) los crea antes la API de
+# identidad y luego se aplica playground_v2.ApplyOnTop. Pedirlos por el migrador
+# sobre una BD recién recreada falla listando los usuarios ausentes.
 
 # Aplicar hasta una capa específica del contrato
 make docker-seed-layer LAYER=l4

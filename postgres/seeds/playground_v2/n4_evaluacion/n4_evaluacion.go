@@ -18,7 +18,7 @@
 // roles L4 school_admin/teacher/student (ver system/l4/roles_permissions.go)
 // para que los usuarios tengan contexto de login real — NO inventa roles ni
 // permisos. El login resuelve active_context desde academic.memberships +
-// iam.user_roles, así que cada usuario sembrado lleva ambas filas.
+// iam.user_roles, así que cada usuario del escenario lleva ambas filas.
 //
 // Convive con los demás playgrounds sin colisionar: rango UUID propio
 // 6a000000-... (LIBRE; tomados: 10000000 n0n1, 64000000 onboarding, 66000000
@@ -33,7 +33,9 @@
 //  3. academic.subjects          — 2 materias de ESCUELA (AcademicUnitID=NULL,
 //     ADR 0016): Ciencias Naturales (CIE), Matemáticas (MAT).
 //  4. academic.academic_periods  — 1 período ACTIVO (is_active=true).
-//  5. auth.users                 — 1 admin + 1 docente + 3 alumnos, password "12345678".
+//  5. auth.users                 — NADA (plan 053 T5.2, escenario on-top).
+//     1 admin + 1 docente + 3 alumnos
+//     los crea antes la API de identidad (Users()) y aquí se resuelven por email.
 //  6. iam.user_roles             — admin→school_admin L4, docente→teacher L4, alumnos→student L4.
 //  7. academic.memberships       — admin con alcance COLEGIO (AcademicUnitID=NULL); los demás en la unidad.
 //  8. academic.subject_offerings — 1 sesión: Ciencias Naturales, sección "A", docente.
@@ -44,7 +46,8 @@
 //     (multiple_choice, multiple_select, true_false, short_answer, open_ended)
 //     para probar la pantalla de toma con cobertura de los 5 tipos.
 //
-// Credenciales (todas password "12345678"):
+// Usuarios (los crea la API de identidad con su propia contraseña; el seed ya
+// no lleva bcrypt):
 //
 //	admin-n4@n4.edugo.local       school_admin — director (alcance colegio)
 //	profe-ciencias@n4.edugo.local teacher      — dicta Ciencias Naturales (sección A)
@@ -69,13 +72,12 @@ import (
 )
 
 const (
-	// Credenciales de los usuarios sembrados.
+	// Emails de los usuarios que el escenario necesita (Users()).
 	AdminEmail        = "admin-n4@n4.edugo.local"
 	TeacherEmail      = "profe-ciencias@n4.edugo.local"
 	StudentAnaEmail   = "ana@n4.edugo.local"
 	StudentBrunoEmail = "bruno@n4.edugo.local"
 	StudentCaroEmail  = "caro@n4.edugo.local"
-	Password          = "12345678"
 
 	// Rango UUID 6a000000-...: reservado para el playground n4_evaluacion.
 	schoolID = "6a000000-0000-0000-0000-000000000001"
@@ -85,12 +87,6 @@ const (
 	subjectMathID    = "6a000000-0000-0000-0000-000000000004"
 
 	periodID = "6a000000-0000-0000-0000-000000000006"
-
-	adminUserID        = "6a000000-0000-0000-0000-000000000010"
-	teacherUserID      = "6a000000-0000-0000-0000-000000000011"
-	studentAnaUserID   = "6a000000-0000-0000-0000-000000000012"
-	studentBrunoUserID = "6a000000-0000-0000-0000-000000000013"
-	studentCaroUserID  = "6a000000-0000-0000-0000-000000000014"
 
 	adminMembID        = "6a000000-0000-0000-0000-000000000020"
 	teacherMembID      = "6a000000-0000-0000-0000-000000000021"
@@ -115,11 +111,27 @@ const (
 	academicYear = 2026
 )
 
+// Users lista los usuarios que el escenario necesita en auth.users (los crea
+// la API de identidad; el escenario solo los resuelve por email).
+func Users() []common.ScenarioUser {
+	return []common.ScenarioUser{
+		{Email: AdminEmail, FirstName: "Admin", LastName: "N4"},
+		{Email: TeacherEmail, FirstName: "Profe", LastName: "Ciencias"},
+		{Email: StudentAnaEmail, FirstName: "Ana", LastName: "Alumna"},
+		{Email: StudentBrunoEmail, FirstName: "Bruno", LastName: "Alumno"},
+		{Email: StudentCaroEmail, FirstName: "Caro", LastName: "Alumna"},
+	}
+}
+
 // Apply siembra el playground n4_evaluacion. Asume que L0..L4 corrieron (los
-// roles teacher/student y el esquema academic completo ya existen). Orden:
-// school → unit → subjects → period → users → user_roles → memberships →
+// roles teacher/student y el esquema academic completo ya existen) y que users trae el id de cada usuario de
+// Users(). Orden:
+// school → unit → subjects → period → user_roles → memberships →
 // subject_offerings → subject_offering_enrollments. Idempotente.
-func Apply(tx *gorm.DB) error {
+func Apply(tx *gorm.DB, users common.UserIDs) error {
+	if err := users.Require(Users()); err != nil {
+		return fmt.Errorf("playground_v2/n4_evaluacion: %w", err)
+	}
 	// Ids del playground (constantes string) parseados una sola vez. El común
 	// recibe uuid.UUID ya parseado; los ids son fijos → MustParseUUID es seguro.
 	schoolUUID := common.MustParseUUID(schoolID)
@@ -128,11 +140,11 @@ func Apply(tx *gorm.DB) error {
 	subjectMathUUID := common.MustParseUUID(subjectMathID)
 	periodUUID := common.MustParseUUID(periodID)
 
-	adminUserUUID := common.MustParseUUID(adminUserID)
-	teacherUserUUID := common.MustParseUUID(teacherUserID)
-	studentAnaUserUUID := common.MustParseUUID(studentAnaUserID)
-	studentBrunoUserUUID := common.MustParseUUID(studentBrunoUserID)
-	studentCaroUserUUID := common.MustParseUUID(studentCaroUserID)
+	adminUserUUID := users[AdminEmail]
+	teacherUserUUID := users[TeacherEmail]
+	studentAnaUserUUID := users[StudentAnaEmail]
+	studentBrunoUserUUID := users[StudentBrunoEmail]
+	studentCaroUserUUID := users[StudentCaroEmail]
 
 	adminMembUUID := common.MustParseUUID(adminMembID)
 	teacherMembUUID := common.MustParseUUID(teacherMembID)
@@ -192,22 +204,6 @@ func Apply(tx *gorm.DB) error {
 		SortOrder:      1,
 	}); err != nil {
 		return fmt.Errorf("playground_v2/n4_evaluacion: academic_period: %w", err)
-	}
-
-	if err := common.SeedUser(tx, common.UserSpec{ID: adminUserUUID, Email: AdminEmail, Password: Password, FirstName: "Admin", LastName: "N4"}); err != nil {
-		return fmt.Errorf("playground_v2/n4_evaluacion: admin_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: teacherUserUUID, Email: TeacherEmail, Password: Password, FirstName: "Profe", LastName: "Ciencias"}); err != nil {
-		return fmt.Errorf("playground_v2/n4_evaluacion: teacher_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: studentAnaUserUUID, Email: StudentAnaEmail, Password: Password, FirstName: "Ana", LastName: "Alumna"}); err != nil {
-		return fmt.Errorf("playground_v2/n4_evaluacion: student_ana_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: studentBrunoUserUUID, Email: StudentBrunoEmail, Password: Password, FirstName: "Bruno", LastName: "Alumno"}); err != nil {
-		return fmt.Errorf("playground_v2/n4_evaluacion: student_bruno_user: %w", err)
-	}
-	if err := common.SeedUser(tx, common.UserSpec{ID: studentCaroUserUUID, Email: StudentCaroEmail, Password: Password, FirstName: "Caro", LastName: "Alumna"}); err != nil {
-		return fmt.Errorf("playground_v2/n4_evaluacion: student_caro_user: %w", err)
 	}
 
 	// Roles L4 para contexto de login (no se crean roles nuevos).

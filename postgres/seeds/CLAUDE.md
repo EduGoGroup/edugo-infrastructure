@@ -23,7 +23,11 @@ Fuera del rebuild, cualquier cambio que altere el output de `ComputeFilesHash()`
 > - `playground_v2/` = **único mundo de datos** (fotos inmutables, versionadas, componibles). `base` es
 >   el **fixture por defecto**: `make docker-recreate` / `cloud-migrate` siembran `system` + `base`.
 >   Los focalizados (`n4_evaluacion`, `onboarding`, `n1_inscripcion`, `n17_secciones`, `multi_unidad`,
->   `n0n1_escuelas`) se piden explícitos con `make docker-playground-v2 P=<fixture>`.
+>   `n0n1_escuelas`) son **on-top** desde el plan 053 T5.2: no crean usuarios. Van encima de `base`;
+>   sus usuarios (`playground_v2.ScenarioUsers`) los crea antes la API de identidad y luego se aplica
+>   `playground_v2.ApplyOnTop`, que los resuelve por email y encola su sync en
+>   `auth.identity_sync_outbox`. `all` solo expande a los autónomos (`base`, `mp10_material`,
+>   `f6_representante`), que invocan `base.Apply` (trunca todo): aplícalos antes que cualquier on-top.
 > - **Eliminados:** `seeds/demo/` y `seeds/playground/` (v1). Ya no existen ni se invocan. Si ves
 >   referencias a ellos en docs viejas/journal, es historia.
 

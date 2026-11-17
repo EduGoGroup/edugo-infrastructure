@@ -1128,8 +1128,11 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_revoked_at
 CREATE INDEX IF NOT EXISTS idx_service_clients_active
     ON auth.service_clients (client_id) WHERE is_active = true;
 
-CREATE INDEX IF NOT EXISTS idx_login_attempts_rate_limit
-    ON auth.login_attempts (identifier, successful, attempted_at) WHERE successful = false;
+-- auth.login_attempts se retira (plan 053 T5.1): ninguna pieza la leía ni la
+-- escribía. AutoMigrate no borra tablas, así que una BD ya migrada la conserva
+-- hasta este DROP explícito (con ella se van sus índices, incluido el parcial
+-- idx_login_attempts_rate_limit que vivía aquí).
+DROP TABLE IF EXISTS auth.login_attempts;
 
 -- iam
 CREATE INDEX IF NOT EXISTS idx_user_roles_active

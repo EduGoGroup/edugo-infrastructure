@@ -88,9 +88,12 @@ func Migrate(db *sql.DB, opts MigrateOptions) (MigrateResult, error) {
 	}
 
 	if opts.PlaygroundV2 != "" {
-		// playground_v2.Apply usa registry propio. "all" expande a todos los
-		// registrados. Acá tratamos al valor como opaco: pasamos lo que venga
-		// desde el CLI sin special-casing.
+		// playground_v2.Apply usa registry propio. "all" expande a los fixtures
+		// autónomos (base, mp10_material, f6_representante); un escenario on-top
+		// (plan 053 T5.2) falla aquí listando los usuarios ausentes, porque en una
+		// BD recién forzada no existen los usuarios que crea la API (el camino es
+		// migrar con base, crear los usuarios y llamar a playground_v2.ApplyOnTop).
+		// Acá tratamos al valor como opaco: pasamos lo que venga desde el CLI.
 		if err := playground_v2.Apply(gdb, opts.PlaygroundV2); err != nil {
 			return MigrateResult{}, fmt.Errorf("error aplicando playground_v2 %q: %w", opts.PlaygroundV2, err)
 		}
