@@ -64,7 +64,7 @@ import (
 //   - 3.15.0: P1-1 (permissions-redesign Pass 1) — schema migration:
 //     nuevas tablas iam.role_grants e iam.user_grants, funciones SQL
 //     iam.permission_matches() e iam.scope_covers(), columna
-//     auth.users.token_version (default 1) y columna nullable
+//     auth.users.token_version (default 1; retirada en 3.110.0) y columna nullable
 //     iam.user_roles.scope_pattern. Sin datos aún; backfill en P1-2.
 //   - 3.16.0: P1-2 (permissions-redesign Pass 1) — backfill 1:1 de
 //     iam.role_grants desde iam.role_permissions (effect='allow', IDs
@@ -1142,7 +1142,22 @@ import (
 //     resuelven por email y playground_v2.ApplyOnTop encola su sincronización
 //     en auth.identity_sync_outbox. "all" ya no los incluye. playground_v2
 //     SeedVersion v0.2.0 → v0.3.0 (no entra en el hash).
-const SchemaVersion = "3.109.0"
+//   - 3.110.0 (plan 053 T6.2, Ola D — fin del login propio y del HS256 de
+//     usuario): se retiran auth.refresh_tokens (sale entities/refresh_token.go,
+//     su línea del AutoMigrate y el índice parcial idx_refresh_tokens_revoked_at
+//     de post_gorm.sql) y las columnas auth.users.password_hash y
+//     auth.users.token_version (salen los campos PasswordHash y TokenVersion de
+//     entities.User). post_gorm.sql (bloque -- auth) lleva
+//     DROP TABLE IF EXISTS auth.refresh_tokens y dos
+//     ALTER TABLE auth.users DROP COLUMN IF EXISTS, idempotentes →
+//     ComputeFilesHash() CAMBIA. Seeds sin password_hash (playground_v2/base,
+//     common.UserSpec sin Password, L0 y fixtures e2e); L0_SEED_VERSION
+//     1.5.1 → 1.5.2 (entra en el hash de seeds); playground_v2 SeedVersion
+//     v0.3.0 → v0.4.0. Mismo aviso que 3.109.0: el DROP no llega solo a una BD
+//     ya migrada (NeedsForce). En Neon, por el camino aditivo y en orden:
+//     (1) ALTER COLUMN password_hash DROP NOT NULL, (2) desplegar el código
+//     nuevo, (3) los DROP.
+const SchemaVersion = "3.110.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

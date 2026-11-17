@@ -107,6 +107,60 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
+	t.Run("LoginPropioRetired", func(t *testing.T) {
+		// Plan 053 T6.2: auth.refresh_tokens y las columnas password_hash y
+		// token_version de auth.users ya no se crean, y post_gorm.sql lleva los
+		// DROP explícitos para una BD que las arrastre. Se ejecutan solo esas
+		// sentencias (post_gorm.sql entero no es re-aplicable), dos veces: la
+		// segunda prueba que son idempotentes sobre una BD que ya no las tiene.
+		if tableExists(t, db, "auth", "refresh_tokens") {
+			t.Fatalf("auth.refresh_tokens no debería existir tras migrar")
+		}
+		for _, col := range []string{"password_hash", "token_version"} {
+			if columnExists(t, db, "auth", "users", col) {
+				t.Fatalf("auth.users.%s no debería existir tras migrar", col)
+			}
+		}
+		dropStmts := []string{
+			"DROP TABLE IF EXISTS auth.refresh_tokens;",
+			"ALTER TABLE auth.users DROP COLUMN IF EXISTS password_hash;",
+			"ALTER TABLE auth.users DROP COLUMN IF EXISTS token_version;",
+		}
+		content, err := os.ReadFile("sql/post_gorm.sql")
+		if err != nil {
+			t.Fatalf("Error leyendo post_gorm.sql: %v", err)
+		}
+		for _, stmt := range dropStmts {
+			if !strings.Contains(string(content), stmt) {
+				t.Fatalf("post_gorm.sql no contiene %q", stmt)
+			}
+		}
+		for _, stmt := range []string{
+			`CREATE TABLE auth.refresh_tokens (id uuid PRIMARY KEY, user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE)`,
+			`ALTER TABLE auth.users ADD COLUMN password_hash varchar(255) NOT NULL DEFAULT 'x'`,
+			`ALTER TABLE auth.users ADD COLUMN token_version integer NOT NULL DEFAULT 1`,
+		} {
+			if _, err := db.Exec(stmt); err != nil {
+				t.Fatalf("Error recreando el esquema viejo (%s): %v", stmt, err)
+			}
+		}
+		for pass := 1; pass <= 2; pass++ {
+			for _, stmt := range dropStmts {
+				if _, err := db.Exec(stmt); err != nil {
+					t.Fatalf("pasada %d: error ejecutando %q: %v", pass, stmt, err)
+				}
+			}
+			if tableExists(t, db, "auth", "refresh_tokens") {
+				t.Fatalf("pasada %d: el DROP no borró auth.refresh_tokens", pass)
+			}
+			for _, col := range []string{"password_hash", "token_version"} {
+				if columnExists(t, db, "auth", "users", col) {
+					t.Fatalf("pasada %d: el DROP no borró auth.users.%s", pass, col)
+				}
+			}
+		}
+	})
+
 	t.Run("ProductionSeedsApplied", func(t *testing.T) {
 		// Floors POST-Fase-6 (rebuild de seeds, ADR-6).
 		//
@@ -142,12 +196,11 @@ func TestIntegration(t *testing.T) {
 
 	t.Run("CRUD_Users_GORM", func(t *testing.T) {
 		user := entities.User{
-			ID:           uuid.New(),
-			Email:        fmt.Sprintf("integration-%s@edugo.test", uuid.NewString()),
-			PasswordHash: "hash123",
-			FirstName:    "Integration",
-			LastName:     "User",
-			IsActive:     true,
+			ID:        uuid.New(),
+			Email:     fmt.Sprintf("integration-%s@edugo.test", uuid.NewString()),
+			FirstName: "Integration",
+			LastName:  "User",
+			IsActive:  true,
 		}
 		if err := gdb.Create(&user).Error; err != nil {
 			t.Fatalf("Error creando user: %v", err)
@@ -384,6 +437,21 @@ func tableExists(t *testing.T, db *sql.DB, schema, table string) bool {
 	`, schema, table).Scan(&exists)
 	if err != nil {
 		t.Fatalf("Error verificando tabla %s.%s: %v", schema, table, err)
+	}
+	return exists
+}
+
+func columnExists(t *testing.T, db *sql.DB, schema, table, column string) bool {
+	t.Helper()
+	var exists bool
+	err := db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1 FROM information_schema.columns
+			WHERE table_schema = $1 AND table_name = $2 AND column_name = $3
+		)
+	`, schema, table, column).Scan(&exists)
+	if err != nil {
+		t.Fatalf("Error verificando columna %s.%s.%s: %v", schema, table, column, err)
 	}
 	return exists
 }

@@ -1122,9 +1122,6 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_users_active
     ON auth.users (is_active) WHERE is_active = true;
 
-CREATE INDEX IF NOT EXISTS idx_refresh_tokens_revoked_at
-    ON auth.refresh_tokens (revoked_at) WHERE revoked_at IS NOT NULL;
-
 CREATE INDEX IF NOT EXISTS idx_service_clients_active
     ON auth.service_clients (client_id) WHERE is_active = true;
 
@@ -1133,6 +1130,16 @@ CREATE INDEX IF NOT EXISTS idx_service_clients_active
 -- hasta este DROP explícito (con ella se van sus índices, incluido el parcial
 -- idx_login_attempts_rate_limit que vivía aquí).
 DROP TABLE IF EXISTS auth.login_attempts;
+
+-- auth.refresh_tokens y las columnas password_hash y token_version de
+-- auth.users se retiran (plan 053 T6.2): el login y el refresh los hace
+-- identity-core y el token de usuario es solo ES256. AutoMigrate no borra
+-- tablas ni columnas, así que una BD ya migrada las conserva hasta estos DROP
+-- explícitos (con la tabla se va su índice parcial
+-- idx_refresh_tokens_revoked_at, que vivía aquí). Son idempotentes.
+DROP TABLE IF EXISTS auth.refresh_tokens;
+ALTER TABLE auth.users DROP COLUMN IF EXISTS password_hash;
+ALTER TABLE auth.users DROP COLUMN IF EXISTS token_version;
 
 -- iam
 CREATE INDEX IF NOT EXISTS idx_user_roles_active

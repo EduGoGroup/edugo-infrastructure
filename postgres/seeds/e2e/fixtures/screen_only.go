@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -159,17 +158,12 @@ func (f *ScreenOnly) applyAssessmentsList(tx *gorm.DB, ctx *framework.ApplyConte
 		return fmt.Errorf("screen_only: teacher user UUID inválido (%q): %w", teacherUserIDStr, err)
 	}
 	teacherEmail := framework.MakeEmail(ctx, "teacher", "screen_only_assessments")
-	hashed, err := bcrypt.GenerateFromPassword([]byte("E2EUser2026!"), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("screen_only: bcrypt: %w", err)
-	}
 	teacherUser := entities.User{
-		ID:           teacherUserID,
-		Email:        teacherEmail,
-		PasswordHash: string(hashed),
-		FirstName:    "ScreenOnly",
-		LastName:     "Teacher",
-		IsActive:     true,
+		ID:        teacherUserID,
+		Email:     teacherEmail,
+		FirstName: "ScreenOnly",
+		LastName:  "Teacher",
+		IsActive:  true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},
@@ -372,17 +366,12 @@ func (f *ScreenOnly) applyGradesList(tx *gorm.DB, ctx *framework.ApplyContext, s
 		return fmt.Errorf("screen_only: student UUID inválido (%q): %w", studentIDStr, err)
 	}
 	studentEmail := framework.MakeEmail(ctx, "student", "screen_only_grades")
-	hashed, err := bcrypt.GenerateFromPassword([]byte("E2EUser2026!"), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("screen_only: bcrypt: %w", err)
-	}
 	student := entities.User{
-		ID:           studentID,
-		Email:        studentEmail,
-		PasswordHash: string(hashed),
-		FirstName:    "ScreenOnly",
-		LastName:     "Student",
-		IsActive:     true,
+		ID:        studentID,
+		Email:     studentEmail,
+		FirstName: "ScreenOnly",
+		LastName:  "Student",
+		IsActive:  true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},

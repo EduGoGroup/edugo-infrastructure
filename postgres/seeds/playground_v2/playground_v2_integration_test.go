@@ -151,17 +151,16 @@ func countWhere(t *testing.T, gdb *gorm.DB, table, where string, args ...any) in
 }
 
 // createUsers inserta los usuarios como lo haría la API de identidad: UUID
-// nuevo (no el literal que llevaba el seed) y un hash que no sirve para entrar.
+// nuevo (no el literal que llevaba el seed) y sin credencial (plan 053 T6.2).
 func createUsers(t *testing.T, gdb *gorm.DB, users []playground_v2.ScenarioUser) {
 	t.Helper()
 	for _, u := range users {
 		row := entities.User{
-			ID:           uuid.New(),
-			Email:        u.Email,
-			PasswordHash: "!unusable",
-			FirstName:    u.FirstName,
-			LastName:     u.LastName,
-			IsActive:     true,
+			ID:        uuid.New(),
+			Email:     u.Email,
+			FirstName: u.FirstName,
+			LastName:  u.LastName,
+			IsActive:  true,
 		}
 		if err := gdb.Create(&row).Error; err != nil {
 			t.Fatalf("creando usuario %s: %v", u.Email, err)

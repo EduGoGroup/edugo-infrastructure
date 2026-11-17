@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -34,11 +33,7 @@ import (
 //   - Cleanup borra sólo lo creado por esta fixture: el student.user,
 //     su membership y la guardian_relation. NO toca al guardian (lo
 //     creó RoleOnly y lo limpia RoleOnly).
-type GuardianRelation struct {
-	// Password en claro para el student creado. Si está vacío se
-	// usa el default "E2EUser2026!".
-	Password string
-}
+type GuardianRelation struct{}
 
 // Constantes exportadas en el JSON de fixtures-constants.json.
 const (
@@ -102,11 +97,6 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 		return fmt.Errorf("guardian_relation: nil transaction")
 	}
 
-	password := f.Password
-	if password == "" {
-		password = "E2EUser2026!"
-	}
-
 	studentID := framework.MakeUUID(ctx, guardianRelationStudentUserSuffix)
 	membershipID := framework.MakeUUID(ctx, guardianRelationStudentMembershipSuffix)
 	relationID := framework.MakeUUID(ctx, guardianRelationSuffix)
@@ -118,11 +108,6 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 	}
 
 	studentEmail := framework.MakeEmail(ctx, "student", "guardian_relation")
-
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("guardian_relation: bcrypt: %w", err)
-	}
 
 	studentUUID, err := uuid.Parse(studentID)
 	if err != nil {
@@ -138,12 +123,11 @@ func (f *GuardianRelation) Apply(tx *gorm.DB, ctx *framework.ApplyContext) error
 	}
 
 	student := entities.User{
-		ID:           studentUUID,
-		Email:        studentEmail,
-		PasswordHash: string(hashed),
-		FirstName:    "E2E",
-		LastName:     "Student",
-		IsActive:     true,
+		ID:        studentUUID,
+		Email:     studentEmail,
+		FirstName: "E2E",
+		LastName:  "Student",
+		IsActive:  true,
 	}
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},

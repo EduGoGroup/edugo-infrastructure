@@ -33,7 +33,7 @@ El pipeline `migrate.go` ejecuta en este orden:
 ## Numeracion de bloques SQL (en pre_gorm.sql y post_gorm.sql)
 
 - `000-009`: Schemas, extensiones, funciones compartidas, version
-- `010-019`: auth (users, refresh_tokens)
+- `010-019`: auth (users, service_clients, identity_sync_outbox)
 - `020-029`: iam (resources, roles, permissions, role_permissions, user_roles, role_grants, user_grants)
 - `030-039`: academic (schools, academic_units, memberships, subjects, guardian_relations, concept_types)
 - `040-049`: content (materials, material_versions, progress)

@@ -54,7 +54,11 @@ import (
 // on-top. Dejan de insertar en auth.users (41 usuarios @edugo.local con UUID
 // literal y bcrypt del seed); los resuelven por email y ApplyOnTop encola su
 // sincronización. "all" deja de incluirlos.
-const SeedVersion = "v0.3.0"
+//
+// v0.4.0 (2026-11-17, plan 053 T6.2): base deja de sembrar password_hash (sus
+// 10 usuarios y los 2 representantes) y de truncar auth.refresh_tokens; el
+// login lo hace identity-core. Mismos usuarios, UUID y datos.
+const SeedVersion = "v0.4.0"
 
 // ApplyFunc es la firma estable de la función Apply de cada playground v2
 // autónomo.
