@@ -43,6 +43,13 @@ func TestDemoWorld(t *testing.T) {
 		t.Errorf("la escuela de demo no tiene equivalencias de invitación")
 	}
 
+	// Sus conceptos, copiados del tipo, con ids del rango propio (nacen al escribir, no en el mundo en Go).
+	if n := scalarInt(t, gdb, `SELECT count(*) FROM academic.school_concepts WHERE school_id = ?`, school); n == 0 {
+		t.Errorf("la escuela de demo no tiene conceptos")
+	}
+	expectInt(t, gdb, 0, `SELECT count(*) FROM academic.school_concepts WHERE school_id = ? AND id::text NOT LIKE ?`,
+		school, demo.IDPrefix+"%")
+
 	// La raíz y una unidad de trabajo hija de la raíz.
 	expectInt(t, gdb, 2, `SELECT count(*) FROM academic.academic_units WHERE school_id = ?`, school)
 	expectInt(t, gdb, 1, `SELECT count(*) FROM academic.academic_units
