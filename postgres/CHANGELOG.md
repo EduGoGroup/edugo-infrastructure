@@ -6,6 +6,23 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+HU-DEMO.5 (MVP-DEMO, fase 4): el mundo de datos de la demo en KMP. `SchemaVersion` no cambia
+(`playground_v2/` no entra en la huella); `playground_v2.SeedVersion` v0.4.0 → **v0.5.0**.
+
+### Added
+
+- **`playground_v2/demo/`**, el fixture `demo`: «Colegio Los Aromos» con la unidad «8.º Básico A», el
+  período activo en la raíz (de −60 a +120 días del momento de aplicar), tres materias y tres sesiones de
+  la docente; las cuatro cuentas de demo con el `sub` de identity-core como id y 18 alumnos de relleno sin
+  login; cuatro evaluaciones (E-B en borrador, E-X por rendir, E-P de práctica y E-R con 4 intentos
+  `pending_review`), el tema T1 con su archivo en `materials/{T1}/files/{F1}`, notas, asistencia de las
+  tres últimas semanas, tres anuncios y los avisos de cada cuenta con el id de la fórmula de la API; y el
+  recorte de la V5 (tres `deny` en `iam.user_grants`). Rango de ids propio `de0000DD-…`. No trunca: se
+  niega si la base tiene otra escuela. No encola nada en `auth.identity_sync_outbox`.
+- **Un registro aparte en `playground_v2.go`** (`standalone`): `Apply("demo")` y `Available()` lo
+  recorren y `"all"` no. Pruebas: `demo_test.go` (sin base) y `demo_integration_test.go` y
+  `demo_scenes_integration_test.go` (testcontainers).
+
 ## [0.900.30] - 2026-11-17
 
 Plan 053 T6.2, Ola D (fin del login propio y del HS256 de
