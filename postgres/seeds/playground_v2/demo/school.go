@@ -75,16 +75,6 @@ func buildSchool(w *world) {
 	}
 }
 
-// offeringSubject devuelve la materia de una sesión de demo.
-func (w *world) offeringSubject(offeringID uuid.UUID) uuid.UUID {
-	for _, o := range w.offerings {
-		if o.ID == offeringID {
-			return o.SubjectID
-		}
-	}
-	panic(fmt.Sprintf("demo: sesión desconocida %s", offeringID))
-}
-
 // writeSchool escribe la escuela (con sus equivalencias de invitación, que
 // common.SeedSchool siembra en la misma llamada), sus conceptos, las unidades,
 // el período y las materias.

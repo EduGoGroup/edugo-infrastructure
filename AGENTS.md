@@ -32,7 +32,7 @@ en el job por módulo y **falla** si hay una vulnerabilidad alcanzable (plan 054
 2026-11-14). Corre la integración de `postgres/` (`ENABLE_INTEGRATION_TESTS=true`, `-tags integration`,
 `-count=1`, `-p 1`) contra un Postgres de testcontainers, así que **pide Docker en marcha**. Va un paquete
 a la vez porque cada uno arranca su contenedor con 60 s de espera: en paralelo y con la máquina cargada, el
-arranque vence («context deadline exceeded») sin que haya un fallo real. Vara: 155 tests en verde (`--- PASS` de nivel superior; 227 contando subtests). Se corre **antes de cada
+arranque vence («context deadline exceeded») sin que haya un fallo real. Vara: 165 tests en verde (`--- PASS` de nivel superior; 247 contando subtests; HU-DEMO.5 sumó 10). Se corre **antes de cada
 PR que toque `postgres/`**, sobre todo migraciones, seeds o entities, y el código de salida se lee sin pipe.
 **La CI no lo corre**: `make test` y `make ci-local` van con `-short` y sin el tag, de modo que un verde de CI
 no dice nada de la integración. El lint sí ve esos ficheros: `.golangci.yml` lleva `run.build-tags: [integration]`.
