@@ -38,8 +38,11 @@ make docker-recreate
 make docker-playground-v2 P=mp10_material
 
 # demo (HU-DEMO.5) es autónomo pero queda fuera de "all": solo va en la base de demo,
-# recién recreada, con --playground-v2=demo (el envoltorio de la AR-DEMO.1). No trunca y
-# se niega si encuentra otra escuela. No es el viejo seeds/demo/, que se eliminó.
+# recién recreada, con --playground-v2=demo (el envoltorio de la AR-DEMO.1). No trunca.
+# OJO: --playground-v2 fuerza la recreación, así que por el migrador se borra la base a la
+# que apunte ANTES de sembrar; el «se niega si encuentra otra escuela» de demo.Apply no llega
+# a actuar. La guarda contra la base equivocada es ese envoltorio (demo-db-guard.sh, en el raíz).
+# No es el viejo seeds/demo/, que se eliminó.
 
 # Los escenarios on-top (n4_evaluacion, onboarding, n1_inscripcion, n17_secciones,
 # multi_unidad, n0n1_escuelas) NO crean usuarios desde el plan 053 T5.2: van encima
