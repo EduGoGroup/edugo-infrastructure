@@ -12,8 +12,10 @@
 //     todo lo que necesitan; base (y los que lo componen) trunca y resiembra
 //     el mundo, incluido auth.users. Son los que expande "all".
 //   - Autónomos fuera de "all" (`standalone`): demo, el mundo de la base de
-//     demo (MVP-DEMO). Siembra todo, pero no trunca: se niega si encuentra otra
-//     escuela, así que solo va sobre una base recién recreada.
+//     demo (MVP-DEMO). Siembra todo, pero no trunca: va sobre una base recién
+//     recreada. Llamado como librería se niega si encuentra otra escuela; por el
+//     migrador esa comprobación no actúa (--playground-v2 borra los esquemas
+//     antes), así que no protege de apuntar a la base equivocada.
 //   - On-top (`onTop`): onboarding, n1_inscripcion, n17_secciones,
 //     n4_evaluacion, multi_unidad, n0n1_escuelas. Se aplican ENCIMA de una BD
 //     ya migrada con base, NO crean usuarios: sus usuarios (ScenarioUsers) los
@@ -110,7 +112,8 @@ var fixtures = []Fixture{
 // por su nombre.
 var standalone = []Fixture{
 	// demo = el mundo de la demo en KMP (MVP-DEMO, HU-DEMO.5). Va solo en la base
-	// de demo, recién recreada: no trunca y se niega si encuentra otra escuela.
+	// de demo, recién recreada: no trunca. Su comprobación de «otra escuela» solo
+	// vale para quien llama a Apply como librería (por el migrador no actúa).
 	{Name: "demo", Apply: demo.Apply},
 }
 

@@ -29,8 +29,10 @@ Fuera del rebuild, cualquier cambio que altere el output de `ComputeFilesHash()`
 >   `auth.identity_sync_outbox`. `all` solo expande a los autónomos (`base`, `mp10_material`,
 >   `f6_representante`), que invocan `base.Apply` (trunca todo): aplícalos antes que cualquier on-top.
 >   `demo` (HU-DEMO.5) es autónomo pero queda **fuera de `all`** (registro `standalone`): es el mundo de
->   la base de demo y solo se aplica con `--playground-v2=demo` sobre una base recién recreada (no trunca
->   y se niega si encuentra otra escuela).
+>   la base de demo y solo se aplica con `--playground-v2=demo` sobre una base recién recreada (no trunca).
+>   Su comprobación «se niega si encuentra otra escuela» **no protege por el migrador**: `--playground-v2`
+>   fuerza la recreación y los esquemas se borran antes. Solo vale para quien llama a `demo.Apply` como
+>   librería; contra la base equivocada, la guarda es `scripts/plan-b/demo-db-guard.sh` del repo raíz.
 > - **Eliminados:** `seeds/demo/` y `seeds/playground/` (v1). Ya no existen ni se invocan. Si ves
 >   referencias a ellos en docs viejas/journal, es historia. `playground_v2/demo/` es otra cosa: el
 >   fixture de la demo en KMP.

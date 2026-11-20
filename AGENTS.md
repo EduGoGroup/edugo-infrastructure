@@ -49,7 +49,11 @@ Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar 
   `system` + `base` (2 escuelas, 9 usuarios `@edugo.test`; entran por identity-core con `12345678`, sin credencial en infra). Fixtures autónomos:
   `make docker-playground-v2 P=<fixture>` (`base`, `mp10_material`, `f6_representante`; `all` = esos tres).
   `demo` (HU-DEMO.5, `playground_v2/demo/`) es autónomo pero **no entra en `all`**: solo va en la base de demo,
-  recién recreada, con `--playground-v2=demo`; no trunca y se niega si encuentra otra escuela.
+  recién recreada, con `--playground-v2=demo`; no trunca. **Ojo:** su comprobación «se niega si encuentra otra
+  escuela» solo protege a quien llama a `demo.Apply` como librería. Por el migrador no actúa nunca:
+  `--playground-v2` fuerza la recreación y los esquemas se borran antes de llegar a ella, así que
+  `make cloud-playground-v2 P=demo` borra la base a la que apunte. La única guarda contra la base equivocada es
+  `scripts/plan-b/demo-db-guard.sh`, en el repo raíz.
   Los 6 escenarios con usuarios son **on-top** (plan 053 T5.2): no crean usuarios; sus usuarios
   (`playground_v2.ScenarioUsers`) los crea la API y luego se llama a `playground_v2.ApplyOnTop`. `seeds/demo/` y `seeds/playground/` (v1) **fueron eliminados** (`playground_v2/demo/` es otra cosa).
 - **Schemas separados, una sola BD**: Postgres está particionado por schemas de dominio; cada API declara
