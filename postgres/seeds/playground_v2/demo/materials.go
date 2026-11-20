@@ -12,8 +12,10 @@ import (
 // MaterialFileKey(). El fixture no toca el bucket.
 const MaterialFileName = "fracciones-equivalentes.pdf"
 
-// materialFileSizeBytes es el tamaño declarado del PDF. Solo se muestra; si el
-// PDF que se sube pesa otra cosa, la descarga no cambia.
+// materialFileSizeBytes es el tamaño declarado del PDF. PROVISIONAL: el PDF aún
+// no se eligió, y el reinicio de la AR-DEMO.2 compara este valor con el tamaño
+// real del fichero antes de subirlo. Cuando se elija, esta constante pasa a su
+// tamaño exacto (`stat -f %z`) en el mismo cambio.
 const materialFileSizeBytes = 245760
 
 // buildMaterials arma T1: un tema de Matemáticas en estado `ready` (la tutora
