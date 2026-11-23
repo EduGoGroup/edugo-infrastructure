@@ -28,8 +28,14 @@ Fuera del rebuild, cualquier cambio que altere el output de `ComputeFilesHash()`
 >   `playground_v2.ApplyOnTop`, que los resuelve por email y encola su sync en
 >   `auth.identity_sync_outbox`. `all` solo expande a los autónomos (`base`, `mp10_material`,
 >   `f6_representante`), que invocan `base.Apply` (trunca todo): aplícalos antes que cualquier on-top.
+>   `demo` (HU-DEMO.5) es autónomo pero queda **fuera de `all`** (registro `standalone`): es el mundo de
+>   la base de demo y solo se aplica con `--playground-v2=demo` sobre una base recién recreada (no trunca).
+>   Su comprobación «se niega si encuentra otra escuela» **no protege por el migrador**: `--playground-v2`
+>   fuerza la recreación y los esquemas se borran antes. Solo vale para quien llama a `demo.Apply` como
+>   librería; contra la base equivocada, la guarda es `scripts/plan-b/demo-db-guard.sh` del repo raíz.
 > - **Eliminados:** `seeds/demo/` y `seeds/playground/` (v1). Ya no existen ni se invocan. Si ves
->   referencias a ellos en docs viejas/journal, es historia.
+>   referencias a ellos en docs viejas/journal, es historia. `playground_v2/demo/` es otra cosa: el
+>   fixture de la demo en KMP.
 
 ### system/ — Datos del sistema (SIEMPRE se aplican)
 
@@ -59,6 +65,9 @@ focalizados que componen encima.
   los tests de integración de las 4 APIs y los flow-tests de dev-environment (repointados desde el viejo
   `demo.ApplyDemo`). super_admin del mundo `base` = `super@edugo.test` (`base` resiembra `auth.users`, así
   que el bootstrap L0 `super_admin@edugo.system` queda sobrescrito dentro de este mundo).
+- `playground_v2/demo/` — `demo.Apply(gdb)`. El mundo de la demo en KMP (MVP-DEMO): «Colegio Los Aromos»,
+  cuatro cuentas con el `sub` de identity-core como id y 18 alumnos de relleno, con fechas relativas al
+  momento de aplicar. Rango de ids propio `de0000DD-…`, partido por dominio. Fuera de `all`.
 - `playground_v2/common/` — helpers compartidos de seed (`Seed*` con `Spec` structs).
 
 ### e2e/ — Fixtures focalizables (plan E2E + system-data-quality, Fase C)

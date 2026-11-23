@@ -16,7 +16,7 @@ func TestOnTopScenarios(t *testing.T) {
 		t.Fatalf("OnTopScenarios() = %v, esperado %v", got, want)
 	}
 	avail := playground_v2.Available()
-	for _, n := range append(want, "base", "mp10_material", "f6_representante") {
+	for _, n := range append(want, "base", "mp10_material", "f6_representante", "demo") {
 		if !slices.Contains(avail, n) {
 			t.Errorf("Available() no incluye %q: %v", n, avail)
 		}
@@ -56,7 +56,7 @@ func TestScenarioUsers(t *testing.T) {
 		t.Errorf("total de usuarios on-top = %d, esperado 41", total)
 	}
 
-	for _, name := range []string{"base", "mp10_material", "all", "nope"} {
+	for _, name := range []string{"base", "mp10_material", "demo", "all", "nope"} {
 		if _, err := playground_v2.ScenarioUsers(name); err == nil {
 			t.Errorf("ScenarioUsers(%q) debía fallar: no es on-top", name)
 		}

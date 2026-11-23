@@ -7,10 +7,15 @@
 // UUID dedicados (62000000-..., 12000000-...). No participa de
 // `ComputeFilesHash()` — cambiar un v2 no requiere bump de SchemaVersion.
 //
-// Dos clases de fixture (plan 053 T5.2):
+// Tres clases de fixture (plan 053 T5.2 y HU-DEMO.5):
 //   - Autónomos (`fixtures`): base, mp10_material, f6_representante. Siembran
 //     todo lo que necesitan; base (y los que lo componen) trunca y resiembra
-//     el mundo, incluido auth.users.
+//     el mundo, incluido auth.users. Son los que expande "all".
+//   - Autónomos fuera de "all" (`standalone`): demo, el mundo de la base de
+//     demo (MVP-DEMO). Siembra todo, pero no trunca: va sobre una base recién
+//     recreada. Llamado como librería se niega si encuentra otra escuela; por el
+//     migrador esa comprobación no actúa (--playground-v2 borra los esquemas
+//     antes), así que no protege de apuntar a la base equivocada.
 //   - On-top (`onTop`): onboarding, n1_inscripcion, n17_secciones,
 //     n4_evaluacion, multi_unidad, n0n1_escuelas. Se aplican ENCIMA de una BD
 //     ya migrada con base, NO crean usuarios: sus usuarios (ScenarioUsers) los
@@ -22,7 +27,7 @@
 //     Apply idempotente: Apply(tx *gorm.DB) error si es autónomo, o
 //     Users() []common.ScenarioUser + Apply(tx *gorm.DB, users common.UserIDs)
 //     error si es on-top.
-//  2. Agregar UNA línea al slice `fixtures` u `onTop`.
+//  2. Agregar UNA línea al slice `fixtures`, `standalone` u `onTop`.
 package playground_v2
 
 import (
@@ -31,6 +36,7 @@ import (
 
 	base "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/base"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/common"
+	demo "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/demo"
 	f6_representante "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/f6_representante"
 	mp10_material "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/mp10_material"
 	multi_unidad "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2/multi_unidad"
@@ -58,7 +64,11 @@ import (
 // v0.4.0 (2026-11-17, plan 053 T6.2): base deja de sembrar password_hash (sus
 // 10 usuarios y los 2 representantes) y de truncar auth.refresh_tokens; el
 // login lo hace identity-core. Mismos usuarios, UUID y datos.
-const SeedVersion = "v0.4.0"
+//
+// v0.5.0 (2026-11-20, HU-DEMO.5): nace `demo`, el mundo de la base de demo, en
+// un registro aparte (`standalone`) que "all" no expande. Los fixtures que ya
+// existían no cambian.
+const SeedVersion = "v0.5.0"
 
 // ApplyFunc es la firma estable de la función Apply de cada playground v2
 // autónomo.
@@ -98,6 +108,15 @@ var fixtures = []Fixture{
 	{Name: "f6_representante", Apply: f6_representante.Apply},
 }
 
+// standalone es el registry de autónomos que "all" NO expande: se aplican solo
+// por su nombre.
+var standalone = []Fixture{
+	// demo = el mundo de la demo en KMP (MVP-DEMO, HU-DEMO.5). Va solo en la base
+	// de demo, recién recreada: no trunca. Su comprobación de «otra escuela» solo
+	// vale para quien llama a Apply como librería (por el migrador no actúa).
+	{Name: "demo", Apply: demo.Apply},
+}
+
 // onTop es el registry de escenarios on-top (plan 053 T5.2), en orden estable.
 var onTop = []onTopFixture{
 	{Name: "onboarding", Users: onboarding.Users, Apply: onboarding.Apply},
@@ -108,11 +127,14 @@ var onTop = []onTopFixture{
 	{Name: "n0n1_escuelas", Users: n0n1_escuelas.Users, Apply: n0n1_escuelas.Apply},
 }
 
-// Available retorna los nombres de todos los playgrounds v2 (autónomos y
-// on-top).
+// Available retorna los nombres de todos los playgrounds v2 (autónomos, los
+// que quedan fuera de "all" y on-top).
 func Available() []string {
-	names := make([]string, 0, len(fixtures)+len(onTop))
+	names := make([]string, 0, len(fixtures)+len(standalone)+len(onTop))
 	for _, f := range fixtures {
+		names = append(names, f.Name)
+	}
+	for _, f := range standalone {
 		names = append(names, f.Name)
 	}
 	return append(names, OnTopScenarios()...)
@@ -201,7 +223,8 @@ func ApplyOnTop(gdb *gorm.DB, name string) error {
 //   - "all" expande SOLO a los autónomos (base, mp10_material,
 //     f6_representante), en el orden del registry. Los on-top quedan fuera:
 //     "all" corre dentro de Migrate sobre una BD recién forzada, donde los
-//     usuarios que crea la API no pueden existir todavía.
+//     usuarios que crea la API no pueden existir todavía. demo (standalone)
+//     también queda fuera: se aplica solo por su nombre.
 //   - Un escenario on-top delega en ApplyOnTop. Dentro de Migrate (BD recién
 //     recreada) falla siempre con la lista de usuarios ausentes: el camino es
 //     migrar con base, crear los usuarios por la API y llamar a ApplyOnTop.
@@ -214,9 +237,11 @@ func Apply(gdb *gorm.DB, name string) error {
 		}
 		return nil
 	}
-	for _, f := range fixtures {
-		if f.Name == name {
-			return f.Apply(gdb)
+	for _, list := range [][]Fixture{fixtures, standalone} {
+		for _, f := range list {
+			if f.Name == name {
+				return f.Apply(gdb)
+			}
 		}
 	}
 	if _, ok := findOnTop(name); ok {

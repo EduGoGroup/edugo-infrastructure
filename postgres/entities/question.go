@@ -38,8 +38,12 @@ type Question struct {
 	LLMPrepFeedback *string `db:"llm_prep_feedback" gorm:"type:text;default:null" validate:"omitempty"`
 	// LLMPrepUpdatedAt marca cuando se escribio el prep por ultima vez. timestamptz aditivo NULL.
 	LLMPrepUpdatedAt *time.Time `db:"llm_prep_updated_at" gorm:"default:null"`
-	CreatedAt        time.Time  `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
-	UpdatedAt        time.Time  `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
+	// AnswerSpec son las alternativas aceptadas y las reglas de la respuesta corta
+	// que escribe la docente (contrato versionado v1, ADR 0049; MVP-INF HU-INF.2).
+	// JSONB aditivo NULL; NULL = sin alternativas ni reglas. Lo valida learning.
+	AnswerSpec json.RawMessage `db:"answer_spec" gorm:"type:jsonb;default:null"`
+	CreatedAt  time.Time       `db:"created_at" gorm:"not null;autoCreateTime" validate:"-"`
+	UpdatedAt  time.Time       `db:"updated_at" gorm:"not null;autoUpdateTime" validate:"-"`
 }
 
 // TableName retorna el nombre de la tabla en PostgreSQL

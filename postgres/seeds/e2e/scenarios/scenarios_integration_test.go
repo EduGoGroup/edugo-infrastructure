@@ -11,8 +11,8 @@ import (
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/scenarios"
 )
 
-// TestScenariosIntegration_ApplyAndCleanup ejercita los 3 scenarios
-// canónicos contra una BD efímera (testcontainers postgres:15-alpine
+// TestScenariosIntegration_ApplyAndCleanup ejercita el scenario
+// l0_minimal contra una BD efímera (testcontainers postgres:15-alpine
 // con migrations + production seed). Por cada scenario:
 //
 //  1. Aplica vía composer.Apply.
@@ -23,10 +23,7 @@ import (
 //  4. Aplica una segunda vez (idempotencia: no debe fallar).
 //  5. Cleanup vía Cleaner.Cleanup; verifica que no falla.
 //
-// El test cubre por composición las fixtures atómicas:
-// `role_only`, `screen_only`, `readonly_role`, `partial_crud`,
-// `menu_subtree`, `guardian_relation` — alimentando la cobertura sin
-// repetir setup en cada test.
+// l0_minimal solo compone la fixture `L0ConstantsExport`.
 //
 // Ejecución:
 //
@@ -40,27 +37,18 @@ func TestScenariosIntegration_ApplyAndCleanup(t *testing.T) {
 
 	gdb := testdb.StartPostgres(t)
 
+	// R-008: los casos observer_audits, teacher_grades_only y
+	// guardian_views_child llevaban un t.Skip fijo y se borraron; quedan
+	// para el MVP de tests.
 	cases := []struct {
-		name       string
-		scenario   framework.Scenario
-		skipReason string // si != "" se llama t.Skip con este motivo
+		name     string
+		scenario framework.Scenario
 	}{
-		// Estos 3 scenarios dependen del catálogo completo (permisos como
-		// audit:read, grades:create, schedules:read) que vivía en el seed
-		// legacy. Tras ADR-6 (Fase 2: legacy desactivado, solo L0 activa)
-		// los permisos faltan hasta que L1..L4 reconstruyan el catálogo.
-		// Se reactivan al cierre de Fase 6.
-		{"observer_audits", &scenarios.ObserverAudits{}, "depende de permisos del catálogo legacy; reactivar al cierre de Fase 6"},
-		{"teacher_grades_only", &scenarios.TeacherGradesOnly{}, "depende de permisos del catálogo legacy; reactivar al cierre de Fase 6"},
-		{"guardian_views_child", &scenarios.GuardianViewsChild{}, "depende de permisos del catálogo legacy; reactivar al cierre de Fase 6"},
-		{"l0_minimal", &scenarios.L0Minimal{}, ""},
+		{"l0_minimal", &scenarios.L0Minimal{}},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if c.skipReason != "" {
-				t.Skip(c.skipReason)
-			}
 			reg := framework.NewRegistry()
 			if err := reg.RegisterScenario(c.scenario); err != nil {
 				t.Fatalf("RegisterScenario: %v", err)

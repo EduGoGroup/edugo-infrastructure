@@ -32,7 +32,7 @@ en el job por módulo y **falla** si hay una vulnerabilidad alcanzable (plan 054
 2026-11-14). Corre la integración de `postgres/` (`ENABLE_INTEGRATION_TESTS=true`, `-tags integration`,
 `-count=1`, `-p 1`) contra un Postgres de testcontainers, así que **pide Docker en marcha**. Va un paquete
 a la vez porque cada uno arranca su contenedor con 60 s de espera: en paralelo y con la máquina cargada, el
-arranque vence («context deadline exceeded») sin que haya un fallo real. Vara: 155 tests en verde (`--- PASS` de nivel superior; 227 contando subtests). Se corre **antes de cada
+arranque vence («context deadline exceeded») sin que haya un fallo real. Vara: 165 tests en verde (`--- PASS` de nivel superior; 247 contando subtests; HU-DEMO.5 sumó 10). Se corre **antes de cada
 PR que toque `postgres/`**, sobre todo migraciones, seeds o entities, y el código de salida se lee sin pipe.
 **La CI no lo corre**: `make test` y `make ci-local` van con `-short` y sin el tag, de modo que un verde de CI
 no dice nada de la integración. El lint sí ve esos ficheros: `.golangci.yml` lleva `run.build-tags: [integration]`.
@@ -48,8 +48,14 @@ Scripts en `scripts/`: `dev-setup.sh` (ambiente local), `seed-data.sh` (aplicar 
   = **único mundo de datos**, con `base` como fixture **por defecto**. `make docker-recreate` sin flags →
   `system` + `base` (2 escuelas, 9 usuarios `@edugo.test`; entran por identity-core con `12345678`, sin credencial en infra). Fixtures autónomos:
   `make docker-playground-v2 P=<fixture>` (`base`, `mp10_material`, `f6_representante`; `all` = esos tres).
+  `demo` (HU-DEMO.5, `playground_v2/demo/`) es autónomo pero **no entra en `all`**: solo va en la base de demo,
+  recién recreada, con `--playground-v2=demo`; no trunca. **Ojo:** su comprobación «se niega si encuentra otra
+  escuela» solo protege a quien llama a `demo.Apply` como librería. Por el migrador no actúa nunca:
+  `--playground-v2` fuerza la recreación y los esquemas se borran antes de llegar a ella, así que
+  `make cloud-playground-v2 P=demo` borra la base a la que apunte. La única guarda contra la base equivocada es
+  `scripts/plan-b/demo-db-guard.sh`, en el repo raíz.
   Los 6 escenarios con usuarios son **on-top** (plan 053 T5.2): no crean usuarios; sus usuarios
-  (`playground_v2.ScenarioUsers`) los crea la API y luego se llama a `playground_v2.ApplyOnTop`. `seeds/demo/` y `seeds/playground/` (v1) **fueron eliminados**.
+  (`playground_v2.ScenarioUsers`) los crea la API y luego se llama a `playground_v2.ApplyOnTop`. `seeds/demo/` y `seeds/playground/` (v1) **fueron eliminados** (`playground_v2/demo/` es otra cosa).
 - **Schemas separados, una sola BD**: Postgres está particionado por schemas de dominio; cada API declara
   su `search_path` (p.ej. identity `auth,iam,academic,audit,public`; learning `content,assessment,auth,public`).
   Las entities y migraciones aquí definen esos schemas.
