@@ -1157,7 +1157,15 @@ import (
 //     ya migrada (NeedsForce). En Neon, por el camino aditivo y en orden:
 //     (1) ALTER COLUMN password_hash DROP NOT NULL, (2) desplegar el código
 //     nuevo, (3) los DROP.
-const SchemaVersion = "3.110.0"
+//   - 3.111.0 (MVP-INF HU-INF.2 — alternativas aceptadas de la respuesta
+//     corta, ADR 0049): una columna aditiva en assessment.question
+//     (entities/question.go): answer_spec (jsonb NULL, contrato versionado v1
+//     con alternatives y rules; lo valida learning). Cambio SOLO en el entity,
+//     como 3.106.0 → no toca pre/post_gorm.sql → ComputeFilesHash() NO cambia;
+//     bump obligatorio por la regla 1. AutoMigrate la agrega al recrear o
+//     migrar la BD local; en Neon el ADD COLUMN es aditivo y va antes de
+//     desplegar un learning que la lea (runbook migrar-neon-aditivo).
+const SchemaVersion = "3.111.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

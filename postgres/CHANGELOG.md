@@ -23,6 +23,16 @@ HU-DEMO.5 (MVP-DEMO, fase 4): el mundo de datos de la demo en KMP. `SchemaVersio
   recorren y `"all"` no. Pruebas: `demo_test.go` (sin base) y `demo_integration_test.go` y
   `demo_scenes_integration_test.go` (testcontainers).
 
+HU-INF.2 (MVP-INF, fase 4): las alternativas aceptadas de la respuesta corta. `SchemaVersion` 3.110.0 →
+**3.111.0**.
+
+### Added
+
+- **`assessment.question.answer_spec`** (`jsonb` NULL): el contrato versionado v1 del ADR 0049 del
+  repo raíz (alternativas aceptadas y reglas de la corta). Campo `entities.Question.AnswerSpec` (`json.RawMessage`). Solo cambia el
+  entity: `pre_gorm.sql` y `post_gorm.sql` no se tocan y `ComputeFilesHash()` no cambia. El `AutoMigrate`
+  la crea en la base local; en Neon, el `ADD COLUMN` aditivo va antes de desplegar el learning que la lee.
+
 ## [0.900.30] - 2026-11-17
 
 Plan 053 T6.2, Ola D (fin del login propio y del HS256 de
