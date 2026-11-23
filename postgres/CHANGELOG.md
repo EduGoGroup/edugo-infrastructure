@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.31] - 2026-11-23
+
 HU-DEMO.5 (MVP-DEMO, fase 4): el mundo de datos de la demo en KMP. `SchemaVersion` no cambia
 (`playground_v2/` no entra en la huella); `playground_v2.SeedVersion` v0.4.0 → **v0.5.0**.
 
@@ -32,6 +34,11 @@ HU-INF.2 (MVP-INF, fase 4): las alternativas aceptadas de la respuesta corta. `S
   repo raíz (alternativas aceptadas y reglas de la corta). Campo `entities.Question.AnswerSpec` (`json.RawMessage`). Solo cambia el
   entity: `pre_gorm.sql` y `post_gorm.sql` no se tocan y `ComputeFilesHash()` no cambia. El `AutoMigrate`
   la crea en la base local; en Neon, el `ADD COLUMN` aditivo va antes de desplegar el learning que la lee.
+
+### Security
+
+- **GO-2026-6974**: `go.opentelemetry.io/otel`, `otel/metric` y `otel/trace` v1.44.0 → **v1.47.0**
+  (indirectas; arrastran `go-logr/logr` v1.4.4 y `otel/log` v1.47.0). `make vuln` vuelve a verde.
 
 ## [0.900.30] - 2026-11-17
 
