@@ -1165,7 +1165,14 @@ import (
 //     bump obligatorio por la regla 1. AutoMigrate la agrega al recrear o
 //     migrar la BD local; en Neon el ADD COLUMN es aditivo y va antes de
 //     desplegar un learning que la lea (runbook migrar-neon-aditivo).
-const SchemaVersion = "3.111.0"
+//   - 3.112.0 (MVP-INF HU-INF.3 — la docente escribe las alternativas): solo
+//     datos de seed L4 (L4_SEED_VERSION 1.91.0 → 1.92.0) → cambia el hash de
+//     seeds → bump obligatorio, sin DDL. El formulario assessment-question-form
+//     gana tres campos visibles solo en la corta: answer_alternatives
+//     (text-list) y los interruptores rule_gender_number y rule_accents_strict.
+//     El contrato KMP los traduce a answer_spec. Como todo cambio de seed, el
+//     migrador pide forzar: en local se resiembra.
+const SchemaVersion = "3.112.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

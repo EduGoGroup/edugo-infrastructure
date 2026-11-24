@@ -1502,7 +1502,16 @@ func assessmentQuestionsList() l4ScreenInstanceRow {
 //     `ms_correct_letters` (checkboxes de la lista marcan N correctas). En BD,
 //     correct_answer guarda un ARRAY JSON de textos (["Texto A","Texto C"]).
 //   - true_false → field `correct_answer_bool` (select Verdadero/Falso).
-//   - short_answer → field `correct_answer_text` (text).
+//   - short_answer → field `correct_answer_text` (text) y, debajo, lo que la
+//     docente acepta además (HU-INF.3, ADR 0049 del repo raíz):
+//     `answer_alternatives` (type=text-list, «También se acepta») y dos
+//     interruptores de regla, `rule_gender_number` («Aceptar otro género y
+//     número», encendido manda gender_number=true) y `rule_accents_strict` («La
+//     tilde cuenta», encendido manda accents=false). Las tres keys son SOLO de la
+//     pantalla: el AssessmentQuestionFormContract del KMP las traduce al
+//     `answer_spec` de learning y no deja que viajen sueltas. Ninguna se llama
+//     `answer_spec`: una app que no conoce `text-list` lo pinta como caja de
+//     texto, y lo que escriba ahí cae en una key que el servidor ignora.
 //   - open_ended → ningún campo de respuesta correcta (no se evalúa de forma
 //     automática); queda implícito porque ninguno lo incluye en su in/equals.
 //
@@ -1543,6 +1552,9 @@ func assessmentQuestionForm() l4ScreenInstanceRow {
       {"value": "false", "label": "Falso"}
     ]},
     {"key": "correct_answer_text", "label": "Respuesta correcta", "type": "text", "required": true, "visible_when": {"field": "question_type", "equals": "short_answer"}},
+    {"key": "answer_alternatives", "label": "También se acepta", "type": "text-list", "placeholder": "Otra respuesta válida", "visible_when": {"field": "question_type", "equals": "short_answer"}},
+    {"key": "rule_gender_number", "label": "Aceptar otro género y número", "type": "toggle", "default": "false", "visible_when": {"field": "question_type", "equals": "short_answer"}},
+    {"key": "rule_accents_strict", "label": "La tilde cuenta", "type": "toggle", "default": "false", "visible_when": {"field": "question_type", "equals": "short_answer"}},
     {"key": "points", "label": "Puntaje", "type": "number", "required": true, "min": 0},
     {"key": "explanation", "label": "Explicación", "type": "textarea"},
     {"key": "difficulty", "label": "Dificultad", "type": "select", "options": [
