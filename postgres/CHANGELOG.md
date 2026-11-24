@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.32] - 2026-11-23
+
 HU-INF.3 (MVP-INF, fase 4): la docente escribe las alternativas al configurar la pregunta.
 `SchemaVersion` 3.111.0 → **3.112.0**; `L4_SEED_VERSION` 1.91.0 → **1.92.0**. Sin DDL.
 
