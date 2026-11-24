@@ -885,7 +885,15 @@ package layers
 //	publicada como UI (nadie llama a ese endpoint). La pantalla pasa a render
 //	nativo unificado en KMP (diseño 5.2, plan 052) que ni lee estos valores; el
 //	vaciado sanea los clientes viejos. Decisión del dueño 2026-08-02.
-const L4_SEED_VERSION = "1.91.0"
+//
+// 1.92.0 (MVP-INF HU-INF.3 — la docente escribe las alternativas): el formulario
+//
+//	`assessment-question-form` gana, debajo de «Respuesta correcta» y solo en la
+//	corta, la lista `answer_alternatives` (type=text-list) y los interruptores
+//	`rule_gender_number` y `rule_accents_strict` (type=toggle). Keys solo de la
+//	pantalla: el contrato KMP las traduce a `answer_spec` (ADR 0049). El permiso
+//	del formulario no cambia. Dato visible → cambia el hash de seeds.
+const L4_SEED_VERSION = "1.92.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

@@ -133,3 +133,81 @@ func TestL4EntityPickerConformanceFixture(t *testing.T) {
 		t.Errorf("%s.%s ahora declara `min_chars`; actualiza el golden de conformidad y los fronts que validan contra él", screenKey, fieldKey)
 	}
 }
+
+// TestL4AssessmentQuestionFormAnswerSpecFields fija los tres campos que la
+// HU-INF.3 suma al formulario de la pregunta: la lista de alternativas y los dos
+// interruptores de regla, con su tipo y visibles solo en la respuesta corta. Las
+// keys son de la pantalla; ninguna puede llamarse `answer_spec`, porque una app
+// que no conoce `text-list` lo pinta como caja de texto y enviaría un texto
+// donde learning espera un objeto.
+func TestL4AssessmentQuestionFormAnswerSpecFields(t *testing.T) {
+	var form *l4ScreenInstanceRow
+	for _, r := range l4ScreenInstanceRows() {
+		if r.screenKey == "assessment-question-form" {
+			r := r
+			form = &r
+		}
+	}
+	if form == nil {
+		t.Fatal("no está la pantalla assessment-question-form")
+	}
+
+	type visibleWhen struct {
+		Field  string `json:"field"`
+		Equals string `json:"equals"`
+	}
+	type field struct {
+		Key         string       `json:"key"`
+		Label       string       `json:"label"`
+		Type        string       `json:"type"`
+		Default     *string      `json:"default"`
+		VisibleWhen *visibleWhen `json:"visible_when"`
+	}
+	var slot struct {
+		Fields []field `json:"fields"`
+	}
+	if err := json.Unmarshal([]byte(form.slotData), &slot); err != nil {
+		t.Fatalf("slot_data inválido: %v", err)
+	}
+
+	index := make(map[string]int, len(slot.Fields))
+	for i, f := range slot.Fields {
+		if f.Key == "answer_spec" {
+			t.Errorf("ningún campo puede llamarse answer_spec (decisión 1 de la ficha)")
+		}
+		index[f.Key] = i
+	}
+
+	want := []struct {
+		key, label, typ string
+		defaultValue    *string
+	}{
+		{"answer_alternatives", "También se acepta", "text-list", nil},
+		{"rule_gender_number", "Aceptar otro género y número", "toggle", strPtr("false")},
+		{"rule_accents_strict", "La tilde cuenta", "toggle", strPtr("false")},
+	}
+	anchor, ok := index["correct_answer_text"]
+	if !ok {
+		t.Fatal("falta correct_answer_text")
+	}
+	for offset, w := range want {
+		i, ok := index[w.key]
+		if !ok {
+			t.Errorf("falta el campo %s", w.key)
+			continue
+		}
+		if i != anchor+1+offset {
+			t.Errorf("%s en la posición %d; se espera %d, justo debajo de «Respuesta correcta»", w.key, i, anchor+1+offset)
+		}
+		f := slot.Fields[i]
+		if f.Label != w.label || f.Type != w.typ {
+			t.Errorf("%s = (%q, %q); se espera (%q, %q)", w.key, f.Label, f.Type, w.label, w.typ)
+		}
+		if !reflect.DeepEqual(f.Default, w.defaultValue) {
+			t.Errorf("%s: default %v; se espera %v", w.key, f.Default, w.defaultValue)
+		}
+		if f.VisibleWhen == nil || *f.VisibleWhen != (visibleWhen{Field: "question_type", Equals: "short_answer"}) {
+			t.Errorf("%s: visible_when %+v; se espera solo en la corta", w.key, f.VisibleWhen)
+		}
+	}
+}
