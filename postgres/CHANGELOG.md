@@ -6,6 +6,20 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.32] - 2026-11-23
+
+HU-INF.3 (MVP-INF, fase 4): la docente escribe las alternativas al configurar la pregunta.
+`SchemaVersion` 3.111.0 → **3.112.0**; `L4_SEED_VERSION` 1.91.0 → **1.92.0**. Sin DDL.
+
+### Added
+
+- **`assessment-question-form`**, tres campos nuevos debajo de «Respuesta correcta», visibles solo en la
+  corta (`visible_when` `question_type = short_answer`): `answer_alternatives` («También se acepta»,
+  `type: text-list`), `rule_gender_number` («Aceptar otro género y número», `toggle`) y
+  `rule_accents_strict` («La tilde cuenta», `toggle`). Son claves solo de la pantalla: el contrato del
+  formulario en `edugo-ui-kmp` las traduce al `answer_spec` de learning (ADR 0049 del repo raíz). El
+  permiso del formulario no cambia. Prueba: `TestL4AssessmentQuestionFormAnswerSpecFields`.
+
 ## [0.900.31] - 2026-11-23
 
 HU-DEMO.5 (MVP-DEMO, fase 4): el mundo de datos de la demo en KMP. `SchemaVersion` no cambia
