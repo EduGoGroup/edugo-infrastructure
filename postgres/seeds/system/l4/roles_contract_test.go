@@ -224,6 +224,26 @@ func TestContratoGrants_AuditorSigueSiendoDeSoloLectura(t *testing.T) {
 	)
 }
 
+// TestContratoGrants_FallosDeLaIASoloLosVeQuienPuedeRevisar fija la decisión 1
+// de la HU-IA.7 (R-068): «Fallos de la IA» abre con content.ai_failures.review,
+// pero sus botones y las rutas de learning piden content.assessments.review. Si
+// un rol alcanzara uno sin el otro, vería una opción que da 403 o perdería una
+// que sí puede usar. Recorre el catálogo entero, alias aplanados incluidos.
+func TestContratoGrants_FallosDeLaIASoloLosVeQuienPuedeRevisar(t *testing.T) {
+	for _, r := range l4RoleSpecs() {
+		ve := roleCan(t, r.idStr, "content.ai_failures.review")
+		revisa := roleCan(t, r.idStr, "content.assessments.review")
+		if ve != revisa {
+			t.Errorf("%s: content.ai_failures.review=%v pero content.assessments.review=%v; deben ir juntos", r.name, ve, revisa)
+		}
+	}
+	assertAllowed(t, L4_ROLE_TEACHER_ID, "teacher", "content.ai_failures.review")
+	assertAllowed(t, L4_ROLE_SCHOOL_ADMIN_ID, "school_admin", "content.ai_failures.review")
+	assertDenied(t, L4_ROLE_READONLY_AUDITOR_ID, "readonly_auditor", "content.ai_failures.review")
+	assertDenied(t, L4_ROLE_STUDENT_ID, "student", "content.ai_failures.review")
+	assertDenied(t, L4_ROLE_GUARDIAN_ID, "guardian", "content.ai_failures.review")
+}
+
 // TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI es el ancla
 // del golden de filtrado SDUI que vive en la otra punta del ecosistema:
 // `edugo-api-platform/internal/core/usecase/screen_config/resolve_permission_golden_test.go`.
@@ -282,6 +302,7 @@ func TestContratoGrants_PatronesEfectivosDeLosRolesDelGoldenSDUI(t *testing.T) {
 				"academic.memberships.read",
 				"academic.my_teaching.read:own",
 				"content.assessments.*",
+				"content.ai_failures.review",
 				"content.materials.*",
 				"dashboard.*",
 				"menu.*",

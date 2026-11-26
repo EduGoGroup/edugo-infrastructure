@@ -1189,7 +1189,14 @@ import (
 //     NO quita un CHECK que ya existe; el CHECK solo desaparece en una base
 //     recreada (en local, docker-recreate; en Neon, al recrearla). Hasta
 //     entonces una base vieja rechaza 'cancelled'.
-const SchemaVersion = "3.113.0"
+//   - 3.114.0 (MVP-IA HU-IA.7 — «Fallos de la IA» de la docente): solo datos
+//     de seed. L4 (L4_SEED_VERSION 1.92.0 → 1.93.0): recurso ai_failures,
+//     permiso content.ai_failures.review, su literal en teacher, la
+//     screen_instance nativa ai-failures-list y su resource_screen. El mundo
+//     demo siembra tres filas en assessment.ai_failure sobre intentos de E-R
+//     (base, ninguna). Sin DDL → ComputeFilesHash() no cambia; bump
+//     obligatorio por la regla 1. El migrador pide forzar: se resiembra.
+const SchemaVersion = "3.114.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

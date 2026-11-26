@@ -297,6 +297,12 @@ func l4Permissions() []l4PermissionSpec {
 		{"a6000000-0000-0000-0000-000000000001", L4_RESOURCE_ASSESSMENTS_ID, "content.assessments.review", "Revisar Evaluaciones", "Revisar intentos de evaluaciones de estudiantes", "review", "unit"},
 		{"b457a385-29bc-4e5e-a79d-06c74f81d23e", L4_RESOURCE_ASSESSMENTS_ID, "content.assessments.view_results", "Ver Resultados", "Ver resultados propios", "view_results", "unit"},
 
+		// --- ai_failures (HU-IA.7, resource …37) ---
+		// Su propio permiso para que el menú le esconda la opción al auditor: su
+		// deny content.*.review lo cubre. TestContratoGrants_FallosDeLaIASoloLosVeQuienPuedeRevisar
+		// lo ata a content.assessments.review: lo alcanzan los mismos roles.
+		{L4_PERM_AI_FAILURES_REVIEW_ID, L4_RESOURCE_AI_FAILURES_ID, "content.ai_failures.review", "Revisar Fallos de la IA", "Ver lo que la IA no pudo y decidir: reencolar, corregir o cancelar", "review", "unit"},
+
 		// --- assessments_student (resource 20000000-…-33) ---
 		{"30000000-0000-0000-0000-000000000033", L4_RESOURCE_ASSESSMENTS_STUDENT_ID, "content.assessments_student.read", "Ver evaluaciones como estudiante", "Ver y tomar evaluaciones desde perspectiva del estudiante", "read", "unit"},
 
@@ -673,6 +679,10 @@ func roleGrantPatterns() map[string][]string {
 		// convertido el fix de QA-09 en cosmético, porque el nodo padre seguiría
 		// apareciendo. (Decisión del dueño 2026-08-01.)
 		"content.assessments.*",
+		// HU-IA.7 (R-068): literal, NO content.*: la docente ve «Fallos de la IA»
+		// sin ganar el resto del árbol content. Lo heredan assistant_teacher y
+		// observer (ADR-6).
+		"content.ai_failures.review",
 		"content.materials.*",
 		"dashboard.*",
 		"menu.*",

@@ -211,3 +211,64 @@ func TestL4AssessmentQuestionFormAnswerSpecFields(t *testing.T) {
 		}
 	}
 }
+
+// TestL4AIFailuresListContract fija la pantalla nativa de la HU-IA.7: abre con
+// su permiso, no hereda create/edit/delete y declara sus tres botones de fila
+// con el permiso de las rutas y a qué filas aplican.
+func TestL4AIFailuresListContract(t *testing.T) {
+	var row *l4ScreenInstanceRow
+	for _, r := range l4ScreenInstanceRows() {
+		if r.screenKey == "ai-failures-list" {
+			r := r
+			row = &r
+		}
+	}
+	if row == nil {
+		t.Fatal("no está la pantalla ai-failures-list")
+	}
+	if row.requiredPermission != "content.ai_failures.review" {
+		t.Errorf("required_permission = %q; se espera content.ai_failures.review", row.requiredPermission)
+	}
+	if row.id != L4_SCREEN_INST_AI_FAILURES_LIST_ID || row.templateID != L0_SCREEN_TPL_LIST_ID_REF {
+		t.Errorf("id/template = %s/%s", row.id, row.templateID)
+	}
+	var slot struct {
+		ActionsRemoved []string `json:"actions_removed"`
+		ActionsAdded   []struct {
+			ID          string          `json:"id"`
+			Scope       string          `json:"scope"`
+			Permission  string          `json:"permission"`
+			VisibleWhen json.RawMessage `json:"visible_when"`
+		} `json:"actions_added"`
+	}
+	if err := json.Unmarshal([]byte(row.slotData), &slot); err != nil {
+		t.Fatalf("slot_data inválido: %v", err)
+	}
+	if !reflect.DeepEqual(slot.ActionsRemoved, []string{"create", "edit", "delete"}) {
+		t.Errorf("actions_removed = %v", slot.ActionsRemoved)
+	}
+	want := map[string]string{
+		"requeue":       `{"field":"status","equals":"failed"}`,
+		"review-myself": `[{"field":"target_type","equals":"attempt"},{"field":"status","in":["failed","retrying"]}]`,
+		"cancel":        `{"field":"status","in":["failed","retrying"]}`,
+	}
+	if len(slot.ActionsAdded) != len(want) {
+		t.Fatalf("%d acciones; se esperan %d", len(slot.ActionsAdded), len(want))
+	}
+	for _, a := range slot.ActionsAdded {
+		vw, ok := want[a.ID]
+		if !ok {
+			t.Errorf("acción inesperada %q", a.ID)
+			continue
+		}
+		if a.Scope != "row" || a.Permission != "content.assessments.review" {
+			t.Errorf("%s: scope=%q permission=%q", a.ID, a.Scope, a.Permission)
+		}
+		var got, exp any
+		_ = json.Unmarshal(a.VisibleWhen, &got)
+		_ = json.Unmarshal([]byte(vw), &exp)
+		if !reflect.DeepEqual(got, exp) {
+			t.Errorf("%s: visible_when %s; se espera %s", a.ID, a.VisibleWhen, vw)
+		}
+	}
+}

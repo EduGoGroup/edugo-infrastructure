@@ -893,7 +893,17 @@ package layers
 //	`rule_gender_number` y `rule_accents_strict` (type=toggle). Keys solo de la
 //	pantalla: el contrato KMP las traduce a `answer_spec` (ADR 0049). El permiso
 //	del formulario no cambia. Dato visible → cambia el hash de seeds.
-const L4_SEED_VERSION = "1.92.0"
+//
+// 1.93.0 (MVP-IA HU-IA.7 — la docente ve lo que la IA no pudo, R-061/R-068): el
+//
+//	recurso `ai_failures` («Fallos de la IA», bajo content, sort 4), su permiso
+//	`content.ai_failures.review`, el literal del mismo nombre en el rol teacher
+//	(lo heredan assistant_teacher y observer; school_admin lo cubre por content.*
+//	y el auditor lo pierde por su deny content.*.review), la screen_instance
+//	nativa `ai-failures-list` (list-basic-v1, sin create/edit/delete, tres
+//	acciones de fila con content.assessments.review) y su resource_screen por
+//	defecto. Cambia el hash de seeds.
+const L4_SEED_VERSION = "1.93.0"
 
 // L4_LAYER_NAME es el nombre canónico de la capa, usado por
 // --seed-up-to-layer y por logs.

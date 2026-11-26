@@ -124,6 +124,12 @@ const (
 	L4_RESOURCE_ASSESSMENTS_STUDENT_ID  = "b4000000-0000-0000-0000-000000000033"
 	L4_RESOURCE_ASSESSMENTS_KEY         = "assessments"
 	L4_RESOURCE_ASSESSMENTS_STUDENT_KEY = "assessments_student"
+	// HU-IA.7 (MVP-IA): «Fallos de la IA», la opción del menú de la docente que
+	// lista lo que el carril de IA no pudo (assessment.ai_failure). Hermano de
+	// assessments bajo content, NO hijo: como hijo convertiría «Evaluaciones» en
+	// rama y dejaría de abrir su lista. Sufijo …37, libre en el bloque de content.
+	L4_RESOURCE_AI_FAILURES_ID  = "b4000000-0000-0000-0000-000000000037"
+	L4_RESOURCE_AI_FAILURES_KEY = "ai_failures"
 
 	// Hijos de reports
 	// Eliminado (2026-06-15): recurso `progress` (…40); su UUID queda libre.
