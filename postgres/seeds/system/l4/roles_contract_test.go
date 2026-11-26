@@ -231,10 +231,10 @@ func TestContratoGrants_AuditorSigueSiendoDeSoloLectura(t *testing.T) {
 // que sí puede usar. Recorre el catálogo entero, alias aplanados incluidos.
 func TestContratoGrants_FallosDeLaIASoloLosVeQuienPuedeRevisar(t *testing.T) {
 	for _, r := range l4RoleSpecs() {
-		ve := roleCan(t, r.idStr, "content.ai_failures.review")
-		revisa := roleCan(t, r.idStr, "content.assessments.review")
-		if ve != revisa {
-			t.Errorf("%s: content.ai_failures.review=%v pero content.assessments.review=%v; deben ir juntos", r.name, ve, revisa)
+		seesMenu := roleCan(t, r.idStr, "content.ai_failures.review")
+		canReview := roleCan(t, r.idStr, "content.assessments.review")
+		if seesMenu != canReview {
+			t.Errorf("%s: content.ai_failures.review=%v pero content.assessments.review=%v; deben ir juntos", r.name, seesMenu, canReview)
 		}
 	}
 	assertAllowed(t, L4_ROLE_TEACHER_ID, "teacher", "content.ai_failures.review")
