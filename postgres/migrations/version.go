@@ -1172,7 +1172,24 @@ import (
 //     (text-list) y los interruptores rule_gender_number y rule_accents_strict.
 //     El contrato KMP los traduce a answer_spec. Como todo cambio de seed, el
 //     migrador pide forzar: en local se resiembra.
-const SchemaVersion = "3.112.0"
+//   - 3.113.0 (MVP-IA HU-IA.6 — el rescate de lo fallado, ADR 0050): tabla
+//     nueva assessment.ai_failure (entities/ai_failure.go), una fila por destino
+//     del carril de IA (target_type attempt|question + target_id sin FK), con
+//     status (retrying|failed|resolved|cancelled), cause_class (service|data),
+//     last_error, retry_count, next_retry_at y closed_at; tres CHECK
+//     (ai_failure_target_type_check, ai_failure_status_check,
+//     ai_failure_cause_class_check), UNIQUE uq_ai_failure_target
+//     (target_type, target_id) e índice idx_ai_failure_due
+//     (status, next_retry_at), todo desde los tags GORM; su trigger
+//     set_updated_at va en post_gorm.sql → ComputeFilesHash() cambia. Además
+//     assessment_attempt_answer.review_status gana el valor 'cancelled' y
+//     PIERDE su CHECK (assessment_attempt_answer_review_status_check, R-062):
+//     sale del tag del entity y no se repone; los valores los valida learning.
+//     Sin ALTER TABLE: AutoMigrate crea la tabla nueva en cualquier base, pero
+//     NO quita un CHECK que ya existe; el CHECK solo desaparece en una base
+//     recreada (en local, docker-recreate; en Neon, al recrearla). Hasta
+//     entonces una base vieja rechaza 'cancelled'.
+const SchemaVersion = "3.113.0"
 
 // ComputeFilesHash calcula un SHA256 de los archivos SQL embebidos
 // en el paquete migrations (pre_gorm.sql y post_gorm.sql).

@@ -130,6 +130,10 @@ func autoMigrateAll(gdb *gorm.DB) error {
 		&entities.AssessmentAttempt{},
 		&entities.AssessmentAttemptAnswer{},
 		&entities.AttemptReview{},
+		// ai_failure (MVP-IA HU-IA.6, ADR 0050): el registro de lo que falla en el
+		// carril de IA, una fila por destino (intento o pregunta). Sin FK: el
+		// destino se nombra con target_type + target_id.
+		&entities.AIFailure{},
 
 		// Plano de PRACTICA (plan 035 D-035.4). practice_session (cabecera del log)
 		// antes de practice_session_answer (FK session_id → practice_session).

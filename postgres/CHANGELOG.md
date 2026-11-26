@@ -6,6 +6,30 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.33] - 2026-11-26
+
+HU-IA.6 (MVP-IA, fase 4), PR 1 de 3: la tabla de lo fallado en el carril de IA y `cancelled` en la
+respuesta. `SchemaVersion` 3.112.0 → **3.113.0**. Sin seeds. Tag previsto: `postgres/v0.900.33`.
+
+### Added
+
+- **`assessment.ai_failure`** (`entities.AIFailure`), una fila por destino del carril de IA que se
+  reabre: `target_type` (`attempt` o `question`) y `target_id` sin FK, `status` (`retrying`, `failed`,
+  `resolved`, `cancelled`), `cause_class` (`service`, `data`), `last_error`, `retry_count`,
+  `next_retry_at`, `closed_at`, `created_at` y `updated_at`. Tres CHECK
+  (`ai_failure_target_type_check`, `ai_failure_status_check`, `ai_failure_cause_class_check`), el único
+  `uq_ai_failure_target (target_type, target_id)` y el índice `idx_ai_failure_due (status, next_retry_at)`
+  salen de los tags GORM; el trigger `set_updated_at`, de `post_gorm.sql`. Diseño: ADR 0050 del repo raíz.
+  Prueba: `TestAIFailureTable_Exists`.
+
+### Changed
+
+- **`assessment.assessment_attempt_answer.review_status`** admite `cancelled` y **pierde su CHECK**
+  (`assessment_attempt_answer_review_status_check`, R-062 del repo raíz): sale del tag de la entity y no
+  se repone; los valores los valida learning. Es el único CHECK que sale. Sin `ALTER TABLE`: AutoMigrate
+  no quita un CHECK que ya existe, así que **solo desaparece en una base recreada**; una base anterior
+  sigue rechazando `cancelled` hasta entonces. Prueba: `TestAnswerReviewStatus_AcceptsCancelled`.
+
 ## [0.900.32] - 2026-11-23
 
 HU-INF.3 (MVP-INF, fase 4): la docente escribe las alternativas al configurar la pregunta.
