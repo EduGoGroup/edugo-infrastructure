@@ -6,6 +6,8 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.33] - 2026-11-26
+
 HU-IA.6 (MVP-IA, fase 4), PR 1 de 3: la tabla de lo fallado en el carril de IA y `cancelled` en la
 respuesta. `SchemaVersion` 3.112.0 → **3.113.0**. Sin seeds. Tag previsto: `postgres/v0.900.33`.
 
