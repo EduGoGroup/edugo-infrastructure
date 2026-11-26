@@ -909,6 +909,11 @@ CREATE OR REPLACE TRIGGER set_updated_at
     BEFORE UPDATE ON assessment.attempt_review
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+-- assessment.ai_failure (MVP-IA HU-IA.6, ADR 0050: el rescate de lo fallado)
+CREATE OR REPLACE TRIGGER set_updated_at
+    BEFORE UPDATE ON assessment.ai_failure
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- assessment.practice_session (plan 035; practice_session_answer no tiene
 -- updated_at, solo answered_at, por eso no lleva trigger).
 CREATE OR REPLACE TRIGGER set_updated_at

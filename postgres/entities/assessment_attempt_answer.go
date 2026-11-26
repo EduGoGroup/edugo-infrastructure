@@ -12,13 +12,19 @@ import (
 //
 // FKs (attempt_id → assessment_attempt CASCADE, question_id → question SET NULL) y
 // el UNIQUE (attempt_id, question_index) se materializan en post_gorm.sql.
+//
+// review_status NO lleva CHECK en la base, a propósito (MVP-IA HU-IA.6, R-062 del
+// repo raíz): assessment_attempt_answer_review_status_check salió al entrar
+// 'cancelled' (la respuesta que la docente cancela tras un fallo del carril de
+// IA; no suma puntos ni máximo). Los valores los valida learning antes de
+// escribir y el `oneof` de este struct. No se repone el CHECK.
 type AssessmentAttemptAnswer struct {
 	ID               uuid.UUID  `db:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" validate:"required,uuid"`
 	AttemptID        uuid.UUID  `db:"attempt_id" gorm:"type:uuid;not null;index;constraint:assessment_attempt_answer_attempt_fkey,OnDelete:CASCADE;uniqueIndex:uq_attempt_answer_question,priority:1" validate:"required,uuid"`
 	QuestionIndex    int        `db:"question_index" gorm:"not null;uniqueIndex:uq_attempt_answer_question,priority:2" validate:"required"`
 	QuestionID       *uuid.UUID `db:"question_id" gorm:"type:uuid;constraint:assessment_attempt_answer_question_fkey,OnDelete:SET NULL" validate:"omitempty,uuid"`
 	StudentAnswer    *string    `db:"student_answer" gorm:"default:null" validate:"omitempty"`
-	ReviewStatus     string     `db:"review_status" gorm:"not null;type:varchar(20);default:'pending';check:assessment_attempt_answer_review_status_check,review_status IN ('pending','auto_graded','reviewed','ai_reviewed')" validate:"required,oneof=pending auto_graded reviewed ai_reviewed"`
+	ReviewStatus     string     `db:"review_status" gorm:"not null;type:varchar(20);default:'pending'" validate:"required,oneof=pending auto_graded reviewed ai_reviewed cancelled"`
 	IsCorrect        *bool      `db:"is_correct" gorm:"default:null"`
 	PointsEarned     *float64   `db:"points_earned" gorm:"type:decimal(5,2)" validate:"omitempty"`
 	MaxPoints        *float64   `db:"max_points" gorm:"type:decimal(5,2)" validate:"omitempty"`
