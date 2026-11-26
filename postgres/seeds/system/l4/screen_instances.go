@@ -498,6 +498,7 @@ func l4ScreenInstanceRows() []l4ScreenInstanceRow {
 		assessmentReviewDashboard(), // F3 (mínima)
 		assignedAssessmentsList(),
 		attemptReviewDetail(), // F3 (mínima)
+		aiFailuresList(),      // HU-IA.7: nativa, «Fallos de la IA»
 
 		// ===========================================================
 		// REPORTS (detalles + report-card)

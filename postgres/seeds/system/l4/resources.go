@@ -304,6 +304,13 @@ var l4Resources = []l4ResourceRow{
 	// estudiante (rendir) de la del docente (configurar/calificar).
 	// Renombrar rompería esta semántica.
 	{ID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, Key: "assessments_student", DisplayName: "Tomar Evaluación", Description: "Vista de evaluaciones desde perspectiva del estudiante", Icon: "play-circle", Scope: "unit", ParentID: L4_RESOURCE_CONTENT_ID, SortOrder: 3, IsMenuVisible: true, IsActive: true},
+	// HU-IA.7 (MVP-IA, R-061/R-068): lo que la IA no pudo, para que la docente
+	// lo reencole, lo corrija o lo dé por cancelado. Detrás de «Tomar
+	// Evaluación». Lo enseña el menú a quien toque `content.ai_failures` (la
+	// docente por su literal, school_admin por content.*); el auditor lo pierde
+	// porque su único permiso, `content.ai_failures.review`, cae en su deny
+	// `content.*.review`. La pantalla es nativa (ai-failures-list).
+	{ID: L4_RESOURCE_AI_FAILURES_ID, Key: L4_RESOURCE_AI_FAILURES_KEY, DisplayName: "Fallos de la IA", Description: "Lo que la IA no pudo revisar o preparar, para decidirlo a mano", Icon: "warning", Scope: "unit", ParentID: L4_RESOURCE_CONTENT_ID, SortOrder: 4, IsMenuVisible: true, IsActive: true},
 
 	// -------------------------------------------------------------
 	// Hijos de "reports"

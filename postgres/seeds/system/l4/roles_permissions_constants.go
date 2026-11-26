@@ -122,6 +122,11 @@ const (
 	L4_PERM_MY_WARDS_MATERIALS_READ_OWN_ID     = "b4000000-0002-0028-0000-000000000001"
 	L4_PERM_MY_WARDS_ASSESSMENTS_READ_OWN_ID   = "b4000000-0002-0029-0000-000000000001"
 
+	// HU-IA.7 (MVP-IA): permiso ÚNICO del recurso ai_failures (suffix 0037).
+	// Abre la pantalla ai-failures-list y hace salir la opción del menú; los tres
+	// botones de fila piden content.assessments.review, el que miran las rutas.
+	L4_PERM_AI_FAILURES_REVIEW_ID = "b4000000-0002-0037-0000-000000000001"
+
 	// Plan 025 (mensajería WhatsApp): permisos del recurso API-only `messaging`
 	// (suffix 00d0). Path de 3 segmentos messaging.<sub>.<accion>; los roles de
 	// staff reciben el wildcard messaging.* (wildcard-first). La API messaging

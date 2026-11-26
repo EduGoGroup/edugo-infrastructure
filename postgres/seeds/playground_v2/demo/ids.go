@@ -51,6 +51,7 @@ const (
 	domAnnouncement
 	domUserGrant
 	domSchoolConcept
+	domAIFailure // HU-IA.7: filas de assessment.ai_failure (failures.go)
 )
 
 // IDPrefix es el prefijo de todo id que elige el fixture.
