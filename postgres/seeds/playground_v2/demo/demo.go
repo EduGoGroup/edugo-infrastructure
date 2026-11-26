@@ -122,6 +122,7 @@ func write(tx *gorm.DB, w *world) error {
 		{"recorte de permisos", func(tx *gorm.DB, w *world) error { return insert(tx, &w.grants) }},
 		{"evaluaciones", writeAssessments},
 		{"intentos", writeAttempts},
+		{"fallos de la IA", writeFailures},
 		{"materiales", writeMaterials},
 		{"avisos", func(tx *gorm.DB, w *world) error { return insert(tx, &w.notifications) }},
 		{"notas, asistencia y anuncios", writeRecords},

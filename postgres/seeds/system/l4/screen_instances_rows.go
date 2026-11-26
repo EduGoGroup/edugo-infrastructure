@@ -1664,6 +1664,49 @@ func attemptReviewDetail() l4ScreenInstanceRow {
 	}
 }
 
+// aiFailuresList (HU-IA.7, MVP-IA; ADR 0050 puntos 7 y 8): «Fallos de la IA».
+// OVERRIDE NATIVO en el FE, al modo de grades-batch: MainScreen intercepta el
+// screen_key y pinta la pantalla Kotlin, porque la lista genérica no filtra
+// acciones por fila ni combina dos filtros. El slot_data se conserva mínimo y
+// válido (list-basic-v1) y es la única fuente de los permisos (ADR 0003):
+//   - abrir la pantalla pide content.ai_failures.review (el del recurso, que el
+//     auditor no alcanza por su deny content.*.review);
+//   - los tres botones de fila piden content.assessments.review, el que miran
+//     las rutas de learning (GET/POST /api/v1/ai-failures, HU-IA.6);
+//   - list-basic-v1 hereda create/edit/delete como ai_failures.*, que no existen:
+//     se quitan.
+//
+// visible_when dice a qué fila aplica cada botón; «corregirla yo» nunca va en
+// una fila de pregunta (abre attempt-review-detail con el intento).
+func aiFailuresList() l4ScreenInstanceRow {
+	return l4ScreenInstanceRow{
+		id:                 L4_SCREEN_INST_AI_FAILURES_LIST_ID,
+		screenKey:          "ai-failures-list",
+		templateID:         L0_SCREEN_TPL_LIST_ID_REF,
+		name:               "Fallos de la IA",
+		description:        "Lo que la IA no pudo revisar o preparar, con su razón y sus acciones",
+		scope:              "unit",
+		requiredPermission: "content.ai_failures.review",
+		slotData: `{
+  "title": "Fallos de la IA",
+  "columns": [
+    {"key": "assessment_title", "label": "Evaluación"},
+    {"key": "target_type", "label": "Tipo"},
+    {"key": "status", "label": "Estado"},
+    {"key": "cause_class", "label": "Causa"},
+    {"key": "retry_count", "label": "Reintentos"}
+  ],
+  "actions_removed": ["create", "edit", "delete"],
+  "actions_added": [
+    {"id": "requeue", "scope": "row", "label": "Reencolar", "icon": "refresh", "permission": "content.assessments.review", "condition": "always", "event_id": "requeue", "order": 10, "visible_when": {"field": "status", "equals": "failed"}},
+    {"id": "review-myself", "scope": "row", "label": "Corregirla yo", "icon": "edit", "permission": "content.assessments.review", "condition": "always", "event_id": "review-myself", "order": 20, "visible_when": [{"field": "target_type", "equals": "attempt"}, {"field": "status", "in": ["failed", "retrying"]}]},
+    {"id": "cancel", "scope": "row", "label": "Dar por cancelada", "icon": "block", "permission": "content.assessments.review", "condition": "always", "event_id": "cancel", "order": 30, "visible_when": {"field": "status", "in": ["failed", "retrying"]}}
+  ],
+  "api_prefix": "learning"
+}`,
+	}
+}
+
 // ===============================================================
 // REPORTS: stats / report-card
 // ===============================================================

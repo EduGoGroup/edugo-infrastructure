@@ -176,6 +176,11 @@ const (
 	L4_SCREEN_INST_ASSESS_REVIEW_DASH_ID    = "b4400000-0000-0000-0000-000000000089"
 	L4_SCREEN_INST_ASSESS_ASSIGNED_LIST_ID  = "b4400000-0000-0000-0000-00000000008a"
 	L4_SCREEN_INST_ATTEMPT_REVIEW_DETAIL_ID = "b4400000-0000-0000-0000-00000000008b"
+	// ai-failures-list (HU-IA.7, MVP-IA): pantalla NATIVA «Fallos de la IA» de la
+	// docente. Como grades-batch, existe para la FK de resource_screens, para que
+	// el menú resuelva el screen_key y para declarar los permisos de la pantalla y
+	// de sus tres botones (ADR 0003); la pinta Kotlin. Sufijo …8c, tras …8b.
+	L4_SCREEN_INST_AI_FAILURES_LIST_ID = "b4400000-0000-0000-0000-00000000008c"
 
 	// reports
 	// Poda F2 (plan 004-permisologia-mvp): retiradas las constantes de

@@ -326,6 +326,12 @@ func l4ResourceScreens() []l4ResourceScreenRow {
 		{id: "b4500000-0000-0000-0000-0000000000c1", resourceID: L4_RESOURCE_ASSESSMENTS_STUDENT_ID, resourceKey: L4_RESOURCE_ASSESSMENTS_STUDENT_KEY, screenKey: "assigned-assessments-list", screenType: "assigned-list", isDefault: true, sortOrder: 1},
 
 		// =============================================================
+		// content → ai_failures (HU-IA.7): único mapping, por defecto, a la
+		// pantalla nativa ai-failures-list. Sufijo …c2, tras assessments_student.
+		// =============================================================
+		{id: "b4500000-0000-0000-0000-0000000000c2", resourceID: L4_RESOURCE_AI_FAILURES_ID, resourceKey: L4_RESOURCE_AI_FAILURES_KEY, screenKey: "ai-failures-list", screenType: "list", isDefault: true, sortOrder: 1},
+
+		// =============================================================
 		// reports → stats (report-card legacy)
 		// =============================================================
 		// Poda F2 (plan 004-permisologia-mvp): retiradas las pantallas

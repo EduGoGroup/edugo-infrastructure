@@ -6,6 +6,27 @@ Los tags historicos del modulo siguen existiendo en Git. El ultimo tag observado
 
 ## [Unreleased]
 
+## [0.900.34] - 2026-11-26
+
+HU-IA.7 (MVP-IA, fase 5), PR 1 de 3: «Fallos de la IA» en el menú de la docente. `SchemaVersion`
+3.113.0 → **3.114.0**; `L4_SEED_VERSION` 1.92.0 → **1.93.0**. Sin DDL. Tag previsto: `postgres/v0.900.34`.
+
+### Added
+
+- **Recurso `ai_failures`** (`b4000000-0000-0000-0000-000000000037`), «Fallos de la IA», bajo `content`,
+  detrás de «Tomar Evaluación».
+- **Permiso `content.ai_failures.review`** (`b4000000-0002-0037-0000-000000000001`) y el **literal** del
+  mismo nombre en `teacher` (R-068), que heredan `assistant_teacher` y `observer`. `school_admin` lo alcanza
+  por `content.*`; `readonly_auditor` no, por su deny `content.*.review`. Prueba:
+  `TestContratoGrants_FallosDeLaIASoloLosVeQuienPuedeRevisar`.
+- **Pantalla nativa `ai-failures-list`** (`b4400000-0000-0000-0000-00000000008c`, `list-basic-v1`): pide
+  `content.ai_failures.review`, quita `create`, `edit` y `delete`, y declara tres acciones de fila
+  (`requeue`, `review-myself`, `cancel`) con `content.assessments.review` y su `visible_when`. Su
+  `resource_screen` por defecto, `b4500000-0000-0000-0000-0000000000c2`. Prueba:
+  `TestL4_AIFailuresMenu_Seeded`.
+- **Mundo `demo`**: tres filas en `assessment.ai_failure` sobre intentos de E-R (una `failed` de servicio con
+  5 reintentos, una `failed` de dato y una `retrying` de servicio). `base` no siembra ninguna.
+
 ## [0.900.33] - 2026-11-26
 
 HU-IA.6 (MVP-IA, fase 4), PR 1 de 3: la tabla de lo fallado en el carril de IA y `cancelled` en la

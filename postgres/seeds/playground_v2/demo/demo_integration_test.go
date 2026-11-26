@@ -103,6 +103,18 @@ func TestDemoWorld(t *testing.T) {
 	expectInt(t, gdb, int64(4+demo.FillerCount), `SELECT count(*) FROM auth.users WHERE id <> ?`, layers.L0_USER_SUPER_ADMIN_ID)
 	expectInt(t, gdb, int64(5+demo.FillerCount), `SELECT count(*) FROM auth.users`)
 
+	// Lo fallado (HU-IA.7, decisión 10): tres filas, cada una sobre un intento de E-R.
+	expectInt(t, gdb, demo.AIFailureCount, `SELECT count(*) FROM assessment.ai_failure`)
+	expectInt(t, gdb, demo.AIFailureCount, `SELECT count(*) FROM assessment.ai_failure f
+		JOIN assessment.assessment_attempt a ON a.id = f.target_id
+		WHERE f.target_type = 'attempt' AND a.assessment_id = ?`, demo.AssessmentReviewID.String())
+	for n, want := range map[int]string{1: "failed/service/5", 2: "failed/data/0", 3: "retrying/service/2"} {
+		expectInt(t, gdb, 1, `SELECT count(*) FROM assessment.ai_failure
+			WHERE id = ? AND target_id = ? AND status || '/' || cause_class || '/' || retry_count = ?`,
+			demo.AIFailureID(n), demo.ReviewAttemptID(n), want)
+	}
+	expectInt(t, gdb, 1, `SELECT count(*) FROM assessment.ai_failure WHERE next_retry_at IS NOT NULL`)
+
 	// Sincronización apagada: nada en el outbox.
 	expectInt(t, gdb, 0, `SELECT count(*) FROM auth.identity_sync_outbox`)
 
